@@ -1,0 +1,794 @@
+import React, { useState, useEffect } from 'react';
+import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser } from 'lucide-react';
+import { isApiConfigured } from '../services/geminiService';
+import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
+import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS } from '../services/firebase';
+import { Reservation } from '../types';
+
+const AdminView: React.FC = () => {
+  // Auth State
+  const [user, setUser] = useState<any>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Form State
+  const [activeTab, setActiveTab] = useState<'create' | 'list'>('create');
+  const [guestName, setGuestName] = useState('');
+  const [lockCode, setLockCode] = useState('');
+  const [welcomeMessage, setWelcomeMessage] = useState(''); 
+  const [adminNotes, setAdminNotes] = useState(''); 
+  const [checkInDate, setCheckInDate] = useState(''); 
+  const [checkoutDate, setCheckoutDate] = useState(''); 
+  const [checkInTime, setCheckInTime] = useState('14:00');
+  const [checkOutTime, setCheckOutTime] = useState('11:00');
+  
+  // Logic State
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [listCopiedId, setListCopiedId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isShortening, setIsShortening] = useState(false);
+  const [isShortened, setIsShortened] = useState(false);
+  const [apiKeyStatus, setApiKeyStatus] = useState<'checking' | 'ok' | 'missing'>('checking');
+  
+  // Data State
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [searchTerm, setSearchTerm] = useState(''); 
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null); 
+  
+  // History Accordion State
+  const [openHistoryGroups, setOpenHistoryGroups] = useState<number[]>([0]);
+
+  // 1. Auth Listener
+  useEffect(() => {
+    const unsubscribe = subscribeToAuth((u) => {
+      setUser(u);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Reservations Listener
+  useEffect(() => {
+    if (user) {
+      const unsub = subscribeToReservations((data) => {
+        setReservations(data);
+      });
+      return () => unsub();
+    }
+  }, [user]);
+
+  // 3. Init Dates
+  useEffect(() => {
+    const initializeDates = async () => {
+      const officialNow = await fetchOfficialTime();
+      const yyyy = officialNow.getFullYear();
+      const mm = String(officialNow.getMonth() + 1).padStart(2, '0');
+      const dd = String(officialNow.getDate()).padStart(2, '0');
+      setCheckInDate(`${yyyy}-${mm}-${dd}`);
+
+      const tomorrow = new Date(officialNow);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const t_yyyy = tomorrow.getFullYear();
+      const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const t_dd = String(tomorrow.getDate()).padStart(2, '0');
+      setCheckoutDate(`${t_yyyy}-${t_mm}-${t_dd}`);
+    };
+    initializeDates();
+  }, []);
+
+  useEffect(() => {
+    if (copied) {
+      const timeout = setTimeout(() => setCopied(false), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [copied]);
+
+  useEffect(() => {
+    if (listCopiedId) {
+      const timeout = setTimeout(() => setListCopiedId(null), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [listCopiedId]);
+
+  useEffect(() => {
+    if (isApiConfigured) setApiKeyStatus('ok');
+    else setApiKeyStatus('missing');
+  }, []);
+
+  // CORREÇÃO: Removido o useEffect que limpava o link ao digitar.
+  // Isso evita que o link suma "sozinho" após ser criado.
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await loginCMS(email, password);
+    } catch (e) {
+      alert("Erro ao entrar. Verifique email e senha.");
+    }
+  };
+
+  const handleCreateReservation = async () => {
+    // --- VALIDAÇÃO DE DADOS ---
+    if (!guestName.trim()) {
+      alert("Por favor, preencha o nome do hóspede.");
+      return;
+    }
+    if (!lockCode.trim()) {
+      alert("Por favor, defina a senha da porta.");
+      return;
+    }
+    if (!checkInDate || !checkoutDate) {
+      alert("Por favor, verifique as datas de Check-in e Check-out.");
+      return;
+    }
+
+    const start = new Date(checkInDate);
+    const end = new Date(checkoutDate);
+    start.setHours(0,0,0,0);
+    end.setHours(0,0,0,0);
+
+    if (end <= start) {
+      alert("⛔ Erro na Data:\nA data de Saída (Check-out) deve ser DEPOIS da data de Entrada (Check-in).");
+      return;
+    }
+    // --------------------------
+
+    // Limpa link anterior para evitar confusão visual durante salvamento
+    setGeneratedLink('');
+    
+    setIsSaving(true);
+    try {
+      const finalGuestName = guestName.trim();
+      
+      const payload: Reservation = {
+        guestName: finalGuestName, 
+        lockCode: lockCode.trim(),
+        welcomeMessage: welcomeMessage.trim(),
+        adminNotes: adminNotes.trim(),
+        checkInDate: checkInDate, 
+        checkoutDate: checkoutDate, 
+        checkInTime: checkInTime,
+        checkOutTime: checkOutTime,
+        status: 'active',
+        createdAt: '' 
+      };
+
+      const reservationId = await saveReservation(payload);
+      
+      const baseUrl = window.location.origin + window.location.pathname;
+      const link = `${baseUrl}?rid=${reservationId}`;
+      
+      setGeneratedLink(link);
+      setIsShortened(false);
+      
+      // CORREÇÃO: NÃO limpamos mais o formulário automaticamente.
+      // Os dados ficam na tela para conferência junto com o link.
+
+    } catch (e) {
+      alert("Erro ao criar reserva no banco de dados. Verifique se está logado.");
+      console.error(e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // NOVA FUNÇÃO: Limpeza Manual
+  const handleClearForm = () => {
+    if (confirm("Limpar todos os campos do formulário?")) {
+      setGuestName('');
+      setLockCode('');
+      setWelcomeMessage('');
+      setAdminNotes('');
+      setGeneratedLink('');
+      setIsShortened(false);
+      // Mantém as datas atuais para facilitar
+    }
+  };
+
+  const handleDelete = async (id?: string) => {
+    if(!id) return;
+    if(confirm("ATENÇÃO: Isso vai remover a reserva e o link do hóspede parará de funcionar. Confirmar?")) {
+      await deleteReservation(id);
+      if (selectedReservation?.id === id) setSelectedReservation(null);
+    }
+  };
+
+  const getLinkForReservation = (id?: string) => {
+    if (!id) return '';
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?rid=${id}`;
+  };
+
+  const handleCopyListLink = (id?: string) => {
+    if (!id) return;
+    const link = getLinkForReservation(id);
+    navigator.clipboard.writeText(link);
+    setListCopiedId(id);
+  };
+
+  const handleShareListWhatsApp = (res: Reservation) => {
+    if (!res.id) return;
+    const link = getLinkForReservation(res.id);
+    const message = `Olá, ${res.guestName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${link}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const shortenLink = async () => {
+    if (!generatedLink) return;
+    if (!TINY_URL_TOKEN) {
+      alert("⚠️ Configure o Token do TinyURL no arquivo constants.tsx!");
+      return;
+    }
+    setIsShortening(true);
+    try {
+      const response = await fetch('https://api.tinyurl.com/create', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TINY_URL_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url: generatedLink, domain: "tiny.one" })
+      });
+      const data = await response.json();
+      if (data.data && data.data.tiny_url) {
+        setGeneratedLink(data.data.tiny_url);
+        setIsShortened(true);
+      } else {
+        alert("Erro ao encurtar.");
+      }
+    } catch (error) {
+      alert("Erro de conexão ao encurtar.");
+    } finally {
+      setIsShortening(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generatedLink);
+    setCopied(true);
+  };
+
+  const shareOnWhatsApp = () => {
+    if (!generatedLink) return;
+    const formattedName = guestName.trim();
+    const message = `Olá, ${formattedName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${generatedLink}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleNumericInput = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setter(e.target.value.replace(/\D/g, ''));
+  };
+
+  const toggleHistoryGroup = (index: number) => {
+    setOpenHistoryGroups(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(i => i !== index);
+      } else {
+        return [...prev, index];
+      }
+    });
+  };
+
+  // --- LÓGICA DE FILTRO E SEPARAÇÃO ---
+  const getFilteredAndSplitReservations = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const filteredList = reservations.filter(res => {
+      const term = searchTerm.toLowerCase();
+      const nameMatch = res.guestName.toLowerCase().includes(term);
+      const notesMatch = res.adminNotes?.toLowerCase().includes(term); 
+      const inDateMatch = res.checkInDate?.includes(term);
+      const outDateMatch = res.checkoutDate?.includes(term);
+      return nameMatch || inDateMatch || outDateMatch || notesMatch;
+    });
+
+    const active: Reservation[] = [];
+    const history: Reservation[] = [];
+
+    filteredList.forEach(res => {
+      if (!res.checkoutDate) {
+        active.push(res); 
+      } else {
+        const [y, m, d] = res.checkoutDate.split('-').map(Number);
+        const outDate = new Date(y, m - 1, d);
+        if (outDate >= today) {
+          active.push(res);
+        } else {
+          history.push(res);
+        }
+      }
+    });
+
+    active.sort((a, b) => {
+      if (!a.checkInDate) return 1;
+      if (!b.checkInDate) return -1;
+      return a.checkInDate.localeCompare(b.checkInDate);
+    });
+
+    history.sort((a, b) => {
+      if (!a.checkoutDate) return 1;
+      if (!b.checkoutDate) return -1;
+      return b.checkoutDate.localeCompare(a.checkoutDate);
+    });
+
+    return { active, history };
+  };
+
+  const { active, history } = getFilteredAndSplitReservations();
+
+  // --- LÓGICA DE AGRUPAMENTO DO HISTÓRICO ---
+  const groupedHistory = history.reduce((groups, res) => {
+    if (!res.checkoutDate) return groups;
+    
+    const [y, m] = res.checkoutDate.split('-');
+    const date = new Date(parseInt(y), parseInt(m) - 1, 1);
+    const labelRaw = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
+
+    const lastGroup = groups[groups.length - 1];
+    
+    if (lastGroup && lastGroup.label === label) {
+      lastGroup.items.push(res);
+    } else {
+      groups.push({ label, items: [res] });
+    }
+    
+    return groups;
+  }, [] as { label: string; items: Reservation[] }[]);
+
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white"><Loader2 className="animate-spin" /></div>;
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-gray-800 p-8 rounded-3xl w-full max-w-sm border border-gray-700 shadow-2xl">
+           <div className="flex justify-center mb-6 text-orange-500"><Lock size={40} /></div>
+           <h2 className="text-2xl font-bold text-white text-center mb-6">Acesso Administrativo</h2>
+           <form onSubmit={handleLogin} className="space-y-4">
+             <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="w-full bg-gray-700 text-white p-3 rounded-xl border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" />
+             <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" className="w-full bg-gray-700 text-white p-3 rounded-xl border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" />
+             <button type="submit" className="w-full bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">Entrar</button>
+           </form>
+        </div>
+      </div>
+    );
+  }
+
+  const isSearching = searchTerm.length > 0;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center p-6 font-sans text-gray-900 dark:text-gray-100 relative">
+      
+      {/* HEADER */}
+      <div className="w-full max-w-lg flex justify-between items-center mb-6">
+         <h1 className="text-2xl font-heading font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Sparkles className="text-orange-500" /> Gestão de Reservas
+         </h1>
+         <div className="flex gap-2">
+             <a href="/?mode=cms" className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" title="Gerenciar Conteúdo"><LayoutGrid size={20} /></a>
+             <button onClick={logoutCMS} className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full text-red-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" title="Sair"><LogIn className="rotate-180" size={20} /></button>
+         </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-[32px] shadow-2xl shadow-gray-200/50 dark:shadow-black/50 overflow-hidden border border-white/50 dark:border-gray-700 backdrop-blur-sm">
+        
+        {/* TABS */}
+        <div className="flex border-b border-gray-100 dark:border-gray-700">
+           <button 
+             onClick={() => setActiveTab('create')}
+             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'create' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+           >
+             Nova Reserva
+           </button>
+           <button 
+             onClick={() => setActiveTab('list')}
+             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${activeTab === 'list' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+           >
+             Gerenciar <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full text-[10px]">{reservations.filter(r => r.status === 'active' && (!r.checkoutDate || new Date(r.checkoutDate) >= new Date(new Date().setHours(0,0,0,0)))).length}</span>
+           </button>
+        </div>
+
+        {/* CONTENT - NEW RESERVATION */}
+        {activeTab === 'create' && (
+          <div className="p-8 space-y-6 relative">
+            
+            {/* Botão Limpar Campos (Manual) */}
+            <button 
+              onClick={handleClearForm}
+              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
+              title="Limpar Formulário"
+            >
+              <Eraser size={18} />
+            </button>
+
+            {/* API Status */}
+            <div className={`p-3 rounded-2xl border flex items-center gap-3 text-xs ${apiKeyStatus === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400' : 'bg-red-50 border-red-200 text-red-700'}`}>
+              {apiKeyStatus === 'ok' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+              <span className="font-bold">{apiKeyStatus === 'ok' ? 'IA Concierge Ativa' : 'IA Inativa (Verifique API Key)'}</span>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
+                <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={() => setGuestName(prev => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nome Completo" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Senha Porta (Apenas Números)</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
+                  <input type="text" inputMode="numeric" value={lockCode} onChange={handleNumericInput(setLockCode)} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest" placeholder="123456" />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1 ml-1">* A senha do cofre é gerenciada no CMS.</p>
+              </div>
+            </div>
+
+            {/* SEÇÃO DE DATAS E HORÁRIOS */}
+            <div className="grid grid-cols-2 gap-4">
+               {/* BLOCO CHECK-IN */}
+               <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
+                     <CalendarDays size={12} className="text-green-500"/> Check-in
+                  </label>
+                  <div className="relative group">
+                     <input 
+                        type="date" 
+                        value={checkInDate} 
+                        onChange={(e) => setCheckInDate(e.target.value)} 
+                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-green-500" 
+                     />
+                  </div>
+                  <div className="relative group">
+                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500" size={16} />
+                     <input 
+                        type="time" 
+                        value={checkInTime} 
+                        onChange={(e) => setCheckInTime(e.target.value)} 
+                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none focus:ring-2 focus:ring-green-500 text-center" 
+                     />
+                  </div>
+               </div>
+
+               {/* BLOCO CHECK-OUT */}
+               <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
+                     <History size={12} className="text-orange-500"/> Check-out
+                  </label>
+                  <div className="relative group">
+                     <input 
+                        type="date" 
+                        value={checkoutDate} 
+                        onChange={(e) => setCheckoutDate(e.target.value)} 
+                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-orange-500" 
+                     />
+                  </div>
+                  <div className="relative group">
+                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={16} />
+                     <input 
+                        type="time" 
+                        value={checkOutTime} 
+                        onChange={(e) => setCheckOutTime(e.target.value)} 
+                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 text-center" 
+                     />
+                  </div>
+               </div>
+            </div>
+
+            {/* BOAS VINDAS */}
+            <div>
+               <label className="text-xs font-bold text-gray-400 uppercase ml-1">Boas-vindas (Hóspede vê)</label>
+               <textarea value={welcomeMessage} onChange={(e) => setWelcomeMessage(e.target.value)} onBlur={() => setWelcomeMessage(prev => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-orange-500 text-sm h-20 resize-none" placeholder="Mensagem personalizada..." />
+            </div>
+
+            {/* NOTAS INTERNAS */}
+            <div>
+               <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><StickyNote size={12} /> Observações Internas (Hóspede NÃO vê)</label>
+               <textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} onBlur={() => setAdminNotes(prev => prev.trim())} className="w-full bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-yellow-500 text-sm h-20 resize-none text-gray-700 dark:text-gray-300" placeholder="Ex: Falta pagar 50%, pediu berço extra..." />
+            </div>
+
+            <button
+              onClick={handleCreateReservation}
+              disabled={isSaving}
+              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 shadow-xl flex items-center justify-center gap-2"
+            >
+              {isSaving ? <Loader2 className="animate-spin" /> : <Sparkles className="text-yellow-400" />}
+              {isSaving ? 'Salvando...' : 'Gerar Magic Link'}
+            </button>
+
+            {generatedLink && (
+              <div className="animate-fadeIn mt-4 bg-orange-50 dark:bg-orange-900/10 p-4 rounded-2xl border border-orange-100 dark:border-orange-800/30">
+                <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase text-center mb-2">Reserva Criada!</p>
+                <div onClick={copyToClipboard} className="bg-white dark:bg-gray-800 p-3 rounded-xl text-xs font-mono text-center break-all cursor-pointer border border-gray-200 dark:border-gray-600 mb-3">{generatedLink}</div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                   <button onClick={copyToClipboard} className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${copied ? 'bg-green-100 text-green-700 border-green-200' : 'bg-white text-gray-700 border-gray-200'}`}>
+                      {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copiado' : 'Copiar'}
+                   </button>
+                   <button onClick={shareOnWhatsApp} className="py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-500 text-white hover:bg-green-600 shadow-sm">
+                      <Send size={14} /> WhatsApp
+                   </button>
+                </div>
+                <button onClick={shortenLink} disabled={isShortening || isShortened} className="w-full mt-2 py-2 text-xs font-bold text-orange-600 hover:underline flex items-center justify-center gap-1">
+                   {isShortening ? <Loader2 size={12} className="animate-spin"/> : <ExternalLink size={12} />} {isShortened ? 'Encurtado!' : 'Encurtar (TinyURL)'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CONTENT - LIST RESERVATIONS */}
+        {activeTab === 'list' && (
+           <div className="p-4 bg-gray-50 dark:bg-gray-900/50 min-h-[400px] space-y-6">
+
+              {/* SEARCH BAR */}
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={18} />
+                <input 
+                  type="text" 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-10 text-sm outline-none focus:ring-2 focus:ring-orange-500" 
+                  placeholder="Buscar por nome, data, notas..." 
+                />
+                {searchTerm && (
+                  <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              
+              {/* ATIVOS */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1">
+                  <UserCheck size={14} /> {isSearching ? 'Resultados (Hospedados)' : 'Hospedados & Chegando'}
+                </h3>
+                
+                {active.length === 0 ? (
+                   <div className="text-center py-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-xs font-medium">
+                     {isSearching ? 'Nenhum hóspede ativo encontrado.' : 'Ninguém por enquanto.'}
+                   </div>
+                ) : (
+                  <div className="space-y-3">
+                    {active.map(res => (
+                        <div 
+                          key={res.id} 
+                          onClick={() => setSelectedReservation(res)}
+                          className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-green-100 dark:border-green-900/30 flex flex-col gap-3 group relative cursor-pointer hover:shadow-md transition-all"
+                        >
+                          <div className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full m-3 animate-pulse"></div>
+                          
+                          <div className="flex justify-between items-start">
+                              <div>
+                                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    {res.guestName}
+                                  </h3>
+                                  <div className="flex flex-col mt-1.5 gap-1">
+                                    <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} className="text-green-500"/> Check-in: {res.checkInDate ? res.checkInDate.split('-').reverse().join('/') : 'S/ Data'}</span>
+                                    <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} className="text-orange-500"/> Saída: {res.checkoutDate ? res.checkoutDate.split('-').reverse().join('/') : 'S/ Data'}</span>
+                                  </div>
+                                  {/* Indicador Visual de Notas */}
+                                  {res.adminNotes && (
+                                    <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
+                                      <StickyNote size={10} /> Tem observação
+                                    </div>
+                                  )}
+                              </div>
+                              
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
+                                className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors mt-6"
+                                title="Cancelar Reserva"
+                              >
+                                  <Trash2 size={16} />
+                              </button>
+                          </div>
+
+                          <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
+                              >
+                                  {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
+                                  {listCopiedId === res.id ? 'Copiado!' : 'Copiar'}
+                              </button>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
+                                className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
+                              >
+                                  <Share2 size={12} /> WhatsApp
+                              </button>
+                          </div>
+                        </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* HISTÓRICO AGRUPADO E COLAPSÁVEL */}
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 border-dashed">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 ml-1">
+                  <History size={14} /> {isSearching ? 'Resultados (Histórico)' : 'Histórico Recente'}
+                </h3>
+                
+                {groupedHistory.length === 0 ? (
+                   <div className="text-center py-4 text-gray-400 text-[10px]">
+                     {isSearching ? 'Nenhum histórico encontrado.' : 'Nenhum histórico.'}
+                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    {groupedHistory.map((group, idx) => {
+                      // Se estiver buscando, forçamos o grupo a abrir
+                      const isOpen = openHistoryGroups.includes(idx) || isSearching;
+                      const itemCount = group.items.length;
+                      
+                      return (
+                        <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                          
+                          {/* Cabeçalho do Grupo (Botão) */}
+                          <button 
+                            onClick={() => toggleHistoryGroup(idx)}
+                            className={`w-full flex items-center justify-between p-4 transition-colors ${isSearching ? 'cursor-default bg-orange-50/50 dark:bg-orange-900/10' : 'bg-gray-50/50 dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-gray-900/40'}`}
+                          >
+                             <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
+                                  {group.label}
+                                </span>
+                                <span className="text-[10px] bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
+                                   {itemCount} {itemCount === 1 ? 'reserva' : 'reservas'}
+                                </span>
+                             </div>
+                             {!isSearching && (
+                               <div className="text-gray-400">
+                                 {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                               </div>
+                             )}
+                          </button>
+                          
+                          {/* Conteúdo do Grupo (Acordeão) */}
+                          {isOpen && (
+                            <div className="p-3 space-y-2 animate-fadeIn bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+                              {group.items.map(res => (
+                                  <div 
+                                    key={res.id} 
+                                    onClick={() => setSelectedReservation(res)}
+                                    className="p-3 rounded-xl border border-gray-50 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 flex justify-between items-center group shadow-sm bg-gray-50/30 dark:bg-gray-900/30 cursor-pointer transition-colors"
+                                  >
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                            {/* Realce (Highlight) se estiver buscando */}
+                                            {isSearching ? (
+                                                <span dangerouslySetInnerHTML={{
+                                                    __html: res.guestName.replace(new RegExp(`(${searchTerm})`, 'gi'), '<span class="bg-yellow-200 dark:bg-yellow-900 text-black dark:text-white rounded px-0.5">$1</span>')
+                                                }} />
+                                            ) : res.guestName}
+                                        </p>
+                                        <p className="text-[10px] text-gray-500">Saiu em {res.checkoutDate ? res.checkoutDate.split('-').reverse().join('/') : '-'}</p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <button 
+                                          onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
+                                          className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                                          title="Copiar Link"
+                                        >
+                                          <LinkIcon size={14} />
+                                        </button>
+                                      <button 
+                                          onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
+                                          className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                          title="Apagar do Histórico"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                  </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+           </div>
+        )}
+
+      </div>
+
+      {/* MODAL DE DETALHES DA RESERVA */}
+      {selectedReservation && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedReservation(null)}></div>
+          <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[28px] overflow-hidden shadow-2xl relative z-10 animate-scaleIn flex flex-col max-h-[90vh] border border-white/10">
+             
+             <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+               <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">Detalhes da Reserva</h2>
+               <button onClick={() => setSelectedReservation(null)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={18} /></button>
+             </div>
+
+             <div className="p-6 overflow-y-auto space-y-6">
+                
+                <div className="text-center">
+                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 dark:text-orange-400">
+                      <User size={32} />
+                   </div>
+                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedReservation.guestName}</h3>
+                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Hóspede</p>
+                </div>
+
+                {/* OBSERVAÇÕES INTERNAS */}
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 p-4 rounded-xl relative">
+                   <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                      <StickyNote size={12} /> Observações Internas
+                   </p>
+                   {selectedReservation.adminNotes ? (
+                     <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                       {selectedReservation.adminNotes}
+                     </p>
+                   ) : (
+                     <p className="text-sm text-gray-400 italic">Nenhuma observação registrada.</p>
+                   )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-in</p>
+                      <p className="font-bold text-gray-900 dark:text-white text-sm">{selectedReservation.checkInDate?.split('-').reverse().join('/')}</p>
+                      <p className="text-xs text-gray-500">{selectedReservation.checkInTime}</p>
+                   </div>
+                   <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-out</p>
+                      <p className="font-bold text-gray-900 dark:text-white text-sm">{selectedReservation.checkoutDate?.split('-').reverse().join('/')}</p>
+                      <p className="text-xs text-gray-500">{selectedReservation.checkOutTime}</p>
+                   </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600 flex justify-between items-center">
+                   <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Senha Porta</p>
+                      <p className="font-mono font-bold text-lg text-gray-900 dark:text-white tracking-widest">{selectedReservation.lockCode}</p>
+                   </div>
+                   <Lock size={20} className="text-gray-300" />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                   <button 
+                      onClick={() => handleCopyListLink(selectedReservation.id)} 
+                      className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+                   >
+                      <LinkIcon size={16} /> Copiar Link de Acesso
+                   </button>
+                   <button 
+                      onClick={() => handleShareListWhatsApp(selectedReservation)} 
+                      className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+                   >
+                      <Send size={16} /> Enviar no WhatsApp
+                   </button>
+                   <button 
+                      onClick={() => handleDelete(selectedReservation.id)} 
+                      className="w-full py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors mt-2"
+                   >
+                      <Trash2 size={16} /> Excluir Reserva
+                   </button>
+                </div>
+
+             </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default AdminView;
