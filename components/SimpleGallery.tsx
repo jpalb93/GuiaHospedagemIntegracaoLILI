@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
-import OptimizedImage from './OptimizedImage';
+// REMOVIDO: import OptimizedImage from './OptimizedImage'; // Esta linha causava o erro!
 
 interface SimpleGalleryProps {
   images: string[];
@@ -20,16 +20,13 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
         const isLastSlide = activeIndex === images.length - 1;
 
         if (isLastSlide) {
-          // Se for o último, volta para o começo suavemente
           current.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
-          // Se não, vai para o próximo
           current.scrollBy({ left: current.clientWidth, behavior: 'smooth' });
         }
       }
     }, 4000); // Muda a cada 4 segundos
 
-    // Limpa o timer se o usuário interagir (para não brigar com ele)
     return () => clearInterval(interval);
   }, [activeIndex, images.length]);
 
@@ -71,8 +68,7 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
 
       <div className="relative group rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700 bg-gray-900 mb-8">
         
-        {/* --- 2. BOTÕES (AGORA VISÍVEIS NO CELULAR) --- */}
-        {/* Removi o 'hidden sm:flex' e ajustei a opacidade para ser visível sempre */}
+        {/* --- BOTÕES --- */}
         
         {/* Botão Esquerda */}
         <button 
@@ -99,13 +95,13 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
           {images.map((src, idx) => (
             <div key={idx} className="min-w-full snap-center relative h-full">
               <div className="w-full h-full overflow-hidden">
-                 {/* Usamos img direta para garantir compatibilidade */}
                  <img 
                     src={src} 
                     alt={`Foto ${idx + 1}`} 
                     className="w-full h-full object-cover transition-transform duration-1000"
                   />
               </div>
+              
               <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
             </div>
           ))}
