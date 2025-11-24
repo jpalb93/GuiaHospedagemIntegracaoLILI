@@ -97,9 +97,6 @@ const AdminView: React.FC = () => {
     else setApiKeyStatus('missing');
   }, []);
 
-  // CORREÇÃO: Removido o useEffect que limpava o link ao digitar.
-  // Isso evita que o link suma "sozinho" após ser criado.
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -108,6 +105,35 @@ const AdminView: React.FC = () => {
       alert("Erro ao entrar. Verifique email e senha.");
     }
   };
+
+  // --- LÓGICA DE DIGITAÇÃO DE HORA INTELIGENTE ---
+  const handleTimeChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove tudo que não for número e limita a 4 digitos
+    let val = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setter(val);
+  };
+
+  const handleTimeBlur = (currentVal: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
+    // Formata para HH:mm quando o usuário sai do campo
+    let clean = currentVal.replace(/\D/g, '');
+    
+    // Se digitou "900" vira "0900"
+    if (clean.length === 3) clean = '0' + clean;
+    
+    if (clean.length === 4) {
+      const hh = clean.substring(0, 2);
+      const mm = clean.substring(2, 4);
+      
+      // Validação básica de hora
+      if (parseInt(hh) < 24 && parseInt(mm) < 60) {
+        setter(`${hh}:${mm}`);
+      } else {
+        alert("Hora inválida! Use o formato 24h (ex: 1400 para 14:00)");
+        setter('12:00'); // Reset seguro
+      }
+    }
+  };
+  // --------------------------------------------------
 
   const handleCreateReservation = async () => {
     // --- VALIDAÇÃO DE DADOS ---
@@ -123,6 +149,11 @@ const AdminView: React.FC = () => {
       alert("Por favor, verifique as datas de Check-in e Check-out.");
       return;
     }
+    // Validação simples de formato de hora
+    if (!checkInTime.includes(':') || !checkOutTime.includes(':')) {
+        alert("Por favor, preencha as horas corretamente (ex: 1400 vira 14:00).");
+        return;
+    }
 
     const start = new Date(checkInDate);
     const end = new Date(checkoutDate);
@@ -135,7 +166,6 @@ const AdminView: React.FC = () => {
     }
     // --------------------------
 
-    // Limpa link anterior para evitar confusão visual durante salvamento
     setGeneratedLink('');
     
     setIsSaving(true);
@@ -157,14 +187,11 @@ const AdminView: React.FC = () => {
 
       const reservationId = await saveReservation(payload);
       
-      const baseUrl = window.location.origin + window.location.pathname;
+      const baseUrl = window.location.origin + '/'; 
       const link = `${baseUrl}?rid=${reservationId}`;
       
       setGeneratedLink(link);
       setIsShortened(false);
-      
-      // CORREÇÃO: NÃO limpamos mais o formulário automaticamente.
-      // Os dados ficam na tela para conferência junto com o link.
 
     } catch (e) {
       alert("Erro ao criar reserva no banco de dados. Verifique se está logado.");
@@ -174,7 +201,6 @@ const AdminView: React.FC = () => {
     }
   };
 
-  // NOVA FUNÇÃO: Limpeza Manual
   const handleClearForm = () => {
     if (confirm("Limpar todos os campos do formulário?")) {
       setGuestName('');
@@ -183,7 +209,6 @@ const AdminView: React.FC = () => {
       setAdminNotes('');
       setGeneratedLink('');
       setIsShortened(false);
-      // Mantém as datas atuais para facilitar
     }
   };
 
@@ -197,7 +222,7 @@ const AdminView: React.FC = () => {
 
   const getLinkForReservation = (id?: string) => {
     if (!id) return '';
-    const baseUrl = window.location.origin + window.location.pathname;
+    const baseUrl = window.location.origin + '/';
     return `${baseUrl}?rid=${id}`;
   };
 
@@ -321,7 +346,6 @@ const AdminView: React.FC = () => {
 
   const { active, history } = getFilteredAndSplitReservations();
 
-  // --- LÓGICA DE AGRUPAMENTO DO HISTÓRICO ---
   const groupedHistory = history.reduce((groups, res) => {
     if (!res.checkoutDate) return groups;
     
@@ -398,16 +422,8 @@ const AdminView: React.FC = () => {
         {activeTab === 'create' && (
           <div className="p-8 space-y-6 relative">
             
-            {/* Botão Limpar Campos (Manual) */}
-            <button 
-              onClick={handleClearForm}
-              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
-              title="Limpar Formulário"
-            >
-              <Eraser size={18} />
-            </button>
+            <button onClick={handleClearForm} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10" title="Limpar Formulário"><Eraser size={18} /></button>
 
-            {/* API Status */}
             <div className={`p-3 rounded-2xl border flex items-center gap-3 text-xs ${apiKeyStatus === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400' : 'bg-red-50 border-red-200 text-red-700'}`}>
               {apiKeyStatus === 'ok' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
               <span className="font-bold">{apiKeyStatus === 'ok' ? 'IA Concierge Ativa' : 'IA Inativa (Verifique API Key)'}</span>
@@ -421,75 +437,87 @@ const AdminView: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Senha Porta (Apenas Números)</label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
-                  <input type="text" inputMode="numeric" value={lockCode} onChange={handleNumericInput(setLockCode)} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest" placeholder="123456" />
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1 ml-1">* A senha do cofre é gerenciada no CMS.</p>
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Senha Porta (Apenas Números)</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
+                <input type="text" inputMode="numeric" value={lockCode} onChange={handleNumericInput(setLockCode)} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest" placeholder="123456" />
               </div>
+              <p className="text-[10px] text-gray-400 mt-1 ml-1">* A senha do cofre é gerenciada no CMS.</p>
             </div>
 
-            {/* SEÇÃO DE DATAS E HORÁRIOS */}
-            <div className="grid grid-cols-2 gap-4">
-               {/* BLOCO CHECK-IN */}
-               <div className="space-y-2">
+            {/* SEÇÃO DE DATAS E HORÁRIOS (LAYOUT NOVO: LISTA VERTICAL) */}
+            <div className="space-y-4 bg-gray-50 dark:bg-gray-900/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+               
+               {/* 1. CHECK-IN DATA */}
+               <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
-                     <CalendarDays size={12} className="text-green-500"/> Check-in
+                     <CalendarDays size={12} className="text-green-500"/> Check-in (Data)
                   </label>
-                  <div className="relative group">
-                     <input 
-                        type="date" 
-                        value={checkInDate} 
-                        onChange={(e) => setCheckInDate(e.target.value)} 
-                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-green-500" 
-                     />
-                  </div>
-                  <div className="relative group">
-                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500" size={16} />
-                     <input 
-                        type="time" 
-                        value={checkInTime} 
-                        onChange={(e) => setCheckInTime(e.target.value)} 
-                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none focus:ring-2 focus:ring-green-500 text-center" 
-                     />
-                  </div>
+                  <input 
+                    type="date" 
+                    value={checkInDate} 
+                    onChange={(e) => setCheckInDate(e.target.value)} 
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-green-500" 
+                  />
                </div>
 
-               {/* BLOCO CHECK-OUT */}
-               <div className="space-y-2">
+               {/* 2. CHECK-IN HORA (Input Numérico) */}
+               <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
-                     <History size={12} className="text-orange-500"/> Check-out
+                     <Clock size={12} className="text-green-500"/> Check-in (Hora)
                   </label>
-                  <div className="relative group">
-                     <input 
-                        type="date" 
-                        value={checkoutDate} 
-                        onChange={(e) => setCheckoutDate(e.target.value)} 
-                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-orange-500" 
-                     />
-                  </div>
-                  <div className="relative group">
-                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={16} />
-                     <input 
-                        type="time" 
-                        value={checkOutTime} 
-                        onChange={(e) => setCheckOutTime(e.target.value)} 
-                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 text-center" 
-                     />
-                  </div>
+                  <input 
+                    type="text" 
+                    inputMode="numeric" // Abre teclado numérico no celular
+                    value={checkInTime} 
+                    onChange={handleTimeChange(setCheckInTime)}
+                    onBlur={() => handleTimeBlur(checkInTime, setCheckInTime)}
+                    placeholder="Ex: 1400"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-green-500 font-mono tracking-wider" 
+                  />
+                  <p className="text-[10px] text-gray-400 ml-1">Digite apenas números (Ex: 1400 para 14:00)</p>
                </div>
+
+               <div className="h-px bg-gray-200 dark:bg-gray-700 my-2 border-dashed"></div>
+
+               {/* 3. CHECK-OUT DATA */}
+               <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
+                     <History size={12} className="text-orange-500"/> Check-out (Data)
+                  </label>
+                  <input 
+                    type="date" 
+                    value={checkoutDate} 
+                    onChange={(e) => setCheckoutDate(e.target.value)} 
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-orange-500" 
+                  />
+               </div>
+
+               {/* 4. CHECK-OUT HORA (Input Numérico) */}
+               <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
+                     <Clock size={12} className="text-orange-500"/> Check-out (Hora)
+                  </label>
+                  <input 
+                    type="text" 
+                    inputMode="numeric" // Abre teclado numérico no celular
+                    value={checkOutTime} 
+                    onChange={handleTimeChange(setCheckOutTime)}
+                    onBlur={() => handleTimeBlur(checkOutTime, setCheckOutTime)}
+                    placeholder="Ex: 1100"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-wider" 
+                  />
+                  <p className="text-[10px] text-gray-400 ml-1">Digite apenas números (Ex: 1100 para 11:00)</p>
+               </div>
+
             </div>
 
-            {/* BOAS VINDAS */}
             <div>
                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Boas-vindas (Hóspede vê)</label>
                <textarea value={welcomeMessage} onChange={(e) => setWelcomeMessage(e.target.value)} onBlur={() => setWelcomeMessage(prev => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-orange-500 text-sm h-20 resize-none" placeholder="Mensagem personalizada..." />
             </div>
 
-            {/* NOTAS INTERNAS */}
             <div>
                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><StickyNote size={12} /> Observações Internas (Hóspede NÃO vê)</label>
                <textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} onBlur={() => setAdminNotes(prev => prev.trim())} className="w-full bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-yellow-500 text-sm h-20 resize-none text-gray-700 dark:text-gray-300" placeholder="Ex: Falta pagar 50%, pediu berço extra..." />
@@ -529,176 +557,172 @@ const AdminView: React.FC = () => {
         {activeTab === 'list' && (
            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 min-h-[400px] space-y-6">
 
-              {/* SEARCH BAR */}
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={18} />
-                <input 
-                  type="text" 
-                  value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-10 text-sm outline-none focus:ring-2 focus:ring-orange-500" 
-                  placeholder="Buscar por nome, data, notas..." 
-                />
-                {searchTerm && (
-                  <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-              
-              {/* ATIVOS */}
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1">
-                  <UserCheck size={14} /> {isSearching ? 'Resultados (Hospedados)' : 'Hospedados & Chegando'}
-                </h3>
-                
-                {active.length === 0 ? (
-                   <div className="text-center py-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-xs font-medium">
-                     {isSearching ? 'Nenhum hóspede ativo encontrado.' : 'Ninguém por enquanto.'}
-                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {active.map(res => (
-                        <div 
-                          key={res.id} 
-                          onClick={() => setSelectedReservation(res)}
-                          className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-green-100 dark:border-green-900/30 flex flex-col gap-3 group relative cursor-pointer hover:shadow-md transition-all"
-                        >
-                          <div className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full m-3 animate-pulse"></div>
-                          
-                          <div className="flex justify-between items-start">
-                              <div>
-                                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    {res.guestName}
-                                  </h3>
-                                  <div className="flex flex-col mt-1.5 gap-1">
-                                    <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} className="text-green-500"/> Check-in: {res.checkInDate ? res.checkInDate.split('-').reverse().join('/') : 'S/ Data'}</span>
-                                    <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} className="text-orange-500"/> Saída: {res.checkoutDate ? res.checkoutDate.split('-').reverse().join('/') : 'S/ Data'}</span>
-                                  </div>
-                                  {/* Indicador Visual de Notas */}
-                                  {res.adminNotes && (
-                                    <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
-                                      <StickyNote size={10} /> Tem observação
-                                    </div>
-                                  )}
-                              </div>
-                              
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
-                                className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors mt-6"
-                                title="Cancelar Reserva"
-                              >
-                                  <Trash2 size={16} />
-                              </button>
-                          </div>
-
-                          <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
-                              >
-                                  {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
-                                  {listCopiedId === res.id ? 'Copiado!' : 'Copiar'}
-                              </button>
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
-                                className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
-                              >
-                                  <Share2 size={12} /> WhatsApp
-                              </button>
-                          </div>
-                        </div>
-                    ))}
+             {/* SEARCH BAR */}
+             <div className="relative group">
+               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={18} />
+               <input 
+                 type="text" 
+                 value={searchTerm} 
+                 onChange={(e) => setSearchTerm(e.target.value)} 
+                 className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-10 text-sm outline-none focus:ring-2 focus:ring-orange-500" 
+                 placeholder="Buscar por nome, data, notas..." 
+               />
+               {searchTerm && (
+                 <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                   <X size={16} />
+                 </button>
+               )}
+             </div>
+             
+             {/* ATIVOS */}
+             <div>
+               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1">
+                 <UserCheck size={14} /> {isSearching ? 'Resultados (Hospedados)' : 'Hospedados & Chegando'}
+               </h3>
+               
+               {active.length === 0 ? (
+                  <div className="text-center py-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-xs font-medium">
+                    {isSearching ? 'Nenhum hóspede ativo encontrado.' : 'Ninguém por enquanto.'}
                   </div>
-                )}
-              </div>
-
-              {/* HISTÓRICO AGRUPADO E COLAPSÁVEL */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 border-dashed">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 ml-1">
-                  <History size={14} /> {isSearching ? 'Resultados (Histórico)' : 'Histórico Recente'}
-                </h3>
-                
-                {groupedHistory.length === 0 ? (
-                   <div className="text-center py-4 text-gray-400 text-[10px]">
-                     {isSearching ? 'Nenhum histórico encontrado.' : 'Nenhum histórico.'}
-                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {groupedHistory.map((group, idx) => {
-                      // Se estiver buscando, forçamos o grupo a abrir
-                      const isOpen = openHistoryGroups.includes(idx) || isSearching;
-                      const itemCount = group.items.length;
-                      
-                      return (
-                        <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                          
-                          {/* Cabeçalho do Grupo (Botão) */}
-                          <button 
-                            onClick={() => toggleHistoryGroup(idx)}
-                            className={`w-full flex items-center justify-between p-4 transition-colors ${isSearching ? 'cursor-default bg-orange-50/50 dark:bg-orange-900/10' : 'bg-gray-50/50 dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-gray-900/40'}`}
-                          >
-                             <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
-                                  {group.label}
-                                </span>
-                                <span className="text-[10px] bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
-                                   {itemCount} {itemCount === 1 ? 'reserva' : 'reservas'}
-                                </span>
+               ) : (
+                 <div className="space-y-3">
+                   {active.map(res => (
+                       <div 
+                         key={res.id} 
+                         onClick={() => setSelectedReservation(res)}
+                         className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-green-100 dark:border-green-900/30 flex flex-col gap-3 group relative cursor-pointer hover:shadow-md transition-all"
+                       >
+                         <div className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full m-3 animate-pulse"></div>
+                         
+                         <div className="flex justify-between items-start">
+                             <div>
+                                 <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                   {res.guestName}
+                                 </h3>
+                                 <div className="flex flex-col mt-1.5 gap-1">
+                                   <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} className="text-green-500"/> Check-in: {res.checkInDate ? res.checkInDate.split('-').reverse().join('/') : 'S/ Data'}</span>
+                                   <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} className="text-orange-500"/> Saída: {res.checkoutDate ? res.checkoutDate.split('-').reverse().join('/') : 'S/ Data'}</span>
+                                 </div>
+                                 {/* Indicador Visual de Notas */}
+                                 {res.adminNotes && (
+                                   <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
+                                     <StickyNote size={10} /> Tem observação
+                                   </div>
+                                 )}
                              </div>
-                             {!isSearching && (
-                               <div className="text-gray-400">
-                                 {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                               </div>
-                             )}
-                          </button>
-                          
-                          {/* Conteúdo do Grupo (Acordeão) */}
-                          {isOpen && (
-                            <div className="p-3 space-y-2 animate-fadeIn bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
-                              {group.items.map(res => (
-                                  <div 
-                                    key={res.id} 
-                                    onClick={() => setSelectedReservation(res)}
-                                    className="p-3 rounded-xl border border-gray-50 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 flex justify-between items-center group shadow-sm bg-gray-50/30 dark:bg-gray-900/30 cursor-pointer transition-colors"
-                                  >
-                                    <div>
-                                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            {/* Realce (Highlight) se estiver buscando */}
-                                            {isSearching ? (
-                                                <span dangerouslySetInnerHTML={{
-                                                    __html: res.guestName.replace(new RegExp(`(${searchTerm})`, 'gi'), '<span class="bg-yellow-200 dark:bg-yellow-900 text-black dark:text-white rounded px-0.5">$1</span>')
-                                                }} />
-                                            ) : res.guestName}
-                                        </p>
-                                        <p className="text-[10px] text-gray-500">Saiu em {res.checkoutDate ? res.checkoutDate.split('-').reverse().join('/') : '-'}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <button 
-                                          onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
-                                          className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
-                                          title="Copiar Link"
-                                        >
-                                          <LinkIcon size={14} />
-                                        </button>
-                                      <button 
-                                          onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
-                                          className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-                                          title="Apagar do Histórico"
-                                        >
-                                          <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                  </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                             
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
+                               className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors mt-6"
+                               title="Cancelar Reserva"
+                             >
+                                 <Trash2 size={16} />
+                             </button>
+                         </div>
+
+                         <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
+                               className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
+                             >
+                                 {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
+                                 {listCopiedId === res.id ? 'Copiado!' : 'Copiar'}
+                             </button>
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
+                               className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
+                             >
+                                 <Share2 size={12} /> WhatsApp
+                             </button>
+                         </div>
+                       </div>
+                   ))}
+                 </div>
+               )}
+             </div>
+
+             {/* HISTÓRICO AGRUPADO E COLAPSÁVEL */}
+             <div className="pt-4 border-t border-gray-200 dark:border-gray-700 border-dashed">
+               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 ml-1">
+                 <History size={14} /> {isSearching ? 'Resultados (Histórico)' : 'Histórico Recente'}
+               </h3>
+               
+               {groupedHistory.length === 0 ? (
+                  <div className="text-center py-4 text-gray-400 text-[10px]">
+                    {isSearching ? 'Nenhum histórico encontrado.' : 'Nenhum histórico.'}
                   </div>
-                )}
-              </div>
+               ) : (
+                 <div className="space-y-4">
+                   {groupedHistory.map((group, idx) => {
+                     const isOpen = openHistoryGroups.includes(idx) || isSearching;
+                     const itemCount = group.items.length;
+                     
+                     return (
+                       <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                         
+                         <button 
+                           onClick={() => toggleHistoryGroup(idx)}
+                           className={`w-full flex items-center justify-between p-4 transition-colors ${isSearching ? 'cursor-default bg-orange-50/50 dark:bg-orange-900/10' : 'bg-gray-50/50 dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-gray-900/40'}`}
+                         >
+                            <div className="flex items-center gap-2">
+                               <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
+                                 {group.label}
+                               </span>
+                               <span className="text-[10px] bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
+                                  {itemCount} {itemCount === 1 ? 'reserva' : 'reservas'}
+                               </span>
+                            </div>
+                            {!isSearching && (
+                              <div className="text-gray-400">
+                                {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              </div>
+                            )}
+                         </button>
+                         
+                         {isOpen && (
+                           <div className="p-3 space-y-2 animate-fadeIn bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+                             {group.items.map(res => (
+                                 <div 
+                                   key={res.id} 
+                                   onClick={() => setSelectedReservation(res)}
+                                   className="p-3 rounded-xl border border-gray-50 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 flex justify-between items-center group shadow-sm bg-gray-50/30 dark:bg-gray-900/30 cursor-pointer transition-colors"
+                                 >
+                                   <div>
+                                       <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                           {isSearching ? (
+                                               <span dangerouslySetInnerHTML={{
+                                                   __html: res.guestName.replace(new RegExp(`(${searchTerm})`, 'gi'), '<span class="bg-yellow-200 dark:bg-yellow-900 text-black dark:text-white rounded px-0.5">$1</span>')
+                                               }} />
+                                           ) : res.guestName}
+                                       </p>
+                                       <p className="text-[10px] text-gray-500">Saiu em {res.checkoutDate ? res.checkoutDate.split('-').reverse().join('/') : '-'}</p>
+                                   </div>
+                                   <div className="flex gap-2">
+                                     <button 
+                                         onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
+                                         className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                                         title="Copiar Link"
+                                     >
+                                       <LinkIcon size={14} />
+                                     </button>
+                                     <button 
+                                         onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
+                                         className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                         title="Apagar do Histórico"
+                                     >
+                                       <Trash2 size={14} />
+                                     </button>
+                                   </div>
+                                 </div>
+                             ))}
+                           </div>
+                         )}
+                       </div>
+                     );
+                   })}
+                 </div>
+               )}
+             </div>
 
            </div>
         )}
@@ -717,78 +741,78 @@ const AdminView: React.FC = () => {
              </div>
 
              <div className="p-6 overflow-y-auto space-y-6">
-                
-                <div className="text-center">
-                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 dark:text-orange-400">
-                      <User size={32} />
-                   </div>
-                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedReservation.guestName}</h3>
-                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Hóspede</p>
-                </div>
+               
+               <div className="text-center">
+                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 dark:text-orange-400">
+                     <User size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedReservation.guestName}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Hóspede</p>
+               </div>
 
-                {/* OBSERVAÇÕES INTERNAS */}
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 p-4 rounded-xl relative">
-                   <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                      <StickyNote size={12} /> Observações Internas
-                   </p>
-                   {selectedReservation.adminNotes ? (
-                     <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
-                       {selectedReservation.adminNotes}
-                     </p>
-                   ) : (
-                     <p className="text-sm text-gray-400 italic">Nenhuma observação registrada.</p>
-                   )}
-                </div>
+               {/* OBSERVAÇÕES INTERNAS */}
+               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 p-4 rounded-xl relative">
+                  <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                     <StickyNote size={12} /> Observações Internas
+                  </p>
+                  {selectedReservation.adminNotes ? (
+                    <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                      {selectedReservation.adminNotes}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">Nenhuma observação registrada.</p>
+                  )}
+               </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-in</p>
-                      <p className="font-bold text-gray-900 dark:text-white text-sm">{selectedReservation.checkInDate?.split('-').reverse().join('/')}</p>
-                      <p className="text-xs text-gray-500">{selectedReservation.checkInTime}</p>
-                   </div>
-                   <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-out</p>
-                      <p className="font-bold text-gray-900 dark:text-white text-sm">{selectedReservation.checkoutDate?.split('-').reverse().join('/')}</p>
-                      <p className="text-xs text-gray-500">{selectedReservation.checkOutTime}</p>
-                   </div>
-                </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
+                     <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-in</p>
+                     <p className="font-bold text-gray-900 dark:text-white text-sm">{selectedReservation.checkInDate?.split('-').reverse().join('/')}</p>
+                     <p className="text-xs text-gray-500">{selectedReservation.checkInTime}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
+                     <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-out</p>
+                     <p className="font-bold text-gray-900 dark:text-white text-sm">{selectedReservation.checkoutDate?.split('-').reverse().join('/')}</p>
+                     <p className="text-xs text-gray-500">{selectedReservation.checkOutTime}</p>
+                  </div>
+               </div>
 
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600 flex justify-between items-center">
-                   <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Senha Porta</p>
-                      <p className="font-mono font-bold text-lg text-gray-900 dark:text-white tracking-widest">{selectedReservation.lockCode}</p>
-                   </div>
-                   <Lock size={20} className="text-gray-300" />
-                </div>
+               <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600 flex justify-between items-center">
+                  <div>
+                     <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Senha Porta</p>
+                     <p className="font-mono font-bold text-lg text-gray-900 dark:text-white tracking-widest">{selectedReservation.lockCode}</p>
+                  </div>
+                  <Lock size={20} className="text-gray-300" />
+               </div>
 
-                <div className="flex flex-col gap-2">
-                   <button 
-                      onClick={() => handleCopyListLink(selectedReservation.id)} 
-                      className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
-                   >
-                      <LinkIcon size={16} /> Copiar Link de Acesso
-                   </button>
-                   <button 
-                      onClick={() => handleShareListWhatsApp(selectedReservation)} 
-                      className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
-                   >
-                      <Send size={16} /> Enviar no WhatsApp
-                   </button>
-                   <button 
-                      onClick={() => handleDelete(selectedReservation.id)} 
-                      className="w-full py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors mt-2"
-                   >
-                      <Trash2 size={16} /> Excluir Reserva
-                   </button>
-                </div>
+               <div className="flex flex-col gap-2">
+                  <button 
+                     onClick={() => handleCopyListLink(selectedReservation.id)} 
+                     className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+                  >
+                     <LinkIcon size={16} /> Copiar Link de Acesso
+                  </button>
+                  <button 
+                     onClick={() => handleShareListWhatsApp(selectedReservation)} 
+                     className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+                  >
+                     <Send size={16} /> Enviar no WhatsApp
+                  </button>
+                  <button 
+                     onClick={() => handleDelete(selectedReservation.id)} 
+                     className="w-full py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors mt-2"
+                  >
+                     <Trash2 size={16} /> Excluir Reserva
+                  </button>
+               </div>
 
-             </div>
-          </div>
-        </div>
-      )}
+            </div>
+         </div>
+       </div>
+     )}
 
-    </div>
-  );
+   </div>
+ );
 };
 
 export default AdminView;
