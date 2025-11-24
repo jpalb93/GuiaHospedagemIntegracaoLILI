@@ -265,6 +265,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         isOpen={isCheckinModalOpen}
         onClose={() => setIsCheckinModalOpen(false)}
         safeCode={currentSafeCode}
+        lockCode={config.lockCode}
         isPasswordReleased={isPasswordReleased}
         onOpenVideo={openVideoModal}
       />
