@@ -21,10 +21,10 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
   return (
     <div className="fixed inset-0 bg-gray-900/95 z-[70] flex flex-col items-center justify-center p-6 animate-fadeIn backdrop-blur-sm">
       
-      {/* BOTÃO FECHAR (CORRIGIDO) */}
+      {/* BOTÃO FECHAR (CORRIGIDO PARA MODO CLARO E ESCURO) */}
       <button 
         onClick={onClose}
-        className="absolute top-6 right-6 z-50 p-3 rounded-full transition-colors bg-white/10 hover:bg-white/20 text-white"
+        className="absolute top-6 right-6 z-50 p-2 rounded-full backdrop-blur-md transition-colors bg-white/10 hover:bg-white/20 text-white dark:bg-black/20 dark:hover:bg-black/40"
       >
         <X size={24} />
       </button>
