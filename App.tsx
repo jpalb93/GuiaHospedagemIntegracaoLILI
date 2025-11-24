@@ -102,11 +102,13 @@ const App: React.FC = () => {
   // Effect Principal de Roteamento Inicial (Fetch Once)
   useEffect(() => {
     const initApp = async () => {
+      const path = window.location.pathname; // Pega o caminho da URL (ex: /admin)
       const params = new URLSearchParams(window.location.search);
-      // REMOVIDO: const encodedData = params.get('d'); 
       const reservationId = params.get('rid'); // ID da Reserva do Firebase
-      const isAdmin = params.get('admin') === 'true';
-      const isCMS = params.get('mode') === 'cms'; 
+      
+      // ALTERAÇÃO AQUI: Verifica o caminho ao invés do parâmetro
+      const isAdmin = path === '/admin' || params.get('admin') === 'true'; // Mantém compatibilidade com o antigo
+      const isCMS = path === '/cms' || params.get('mode') === 'cms'; 
 
       // 1. Rota CMS (Content Management System)
       if (isCMS) {
@@ -164,8 +166,6 @@ const App: React.FC = () => {
         }
       }
 
-      // 4. LEGADO REMOVIDO: Não aceitamos mais links ?d= por segurança.
-      
       // 5. Landing Page (Default)
       setAppState({ mode: 'LANDING', config: { guestName: '', lockCode: '' } });
     };
