@@ -6,14 +6,12 @@ interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   config: GuestConfig;
-  startOnKeyDetails?: boolean; // <--- AQUI ESTÁ A CORREÇÃO (Adicionamos essa propriedade)
+  startOnKeyDetails?: boolean;
 }
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, config, startOnKeyDetails = false }) => {
-  // Estado para controlar a visualização dos detalhes da chave
   const [showKeyDetails, setShowKeyDetails] = useState(false);
 
-  // Efeito para abrir direto na tela da chave se solicitado pelo GuestView
   useEffect(() => {
     if (isOpen) {
       setShowKeyDetails(!!startOnKeyDetails);
@@ -35,25 +33,25 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, config, 
       ></div>
       <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[28px] overflow-hidden shadow-2xl relative z-10 animate-scaleIn flex flex-col max-h-[90vh] border border-white/10">
          
-         {/* Botão de Fechar (X) */}
+         {/* BOTÃO FECHAR (CORRIGIDO PARA APARECER NO CLARO E ESCURO) */}
          <button 
           onClick={handleClose}
-          className="absolute top-3 right-3 z-50 bg-white/20 hover:bg-white/30 text-white p-1.5 rounded-full backdrop-blur-md transition-colors"
+          className="absolute top-3 right-3 z-50 p-2 rounded-full backdrop-blur-md transition-colors bg-black/5 hover:bg-black/10 text-gray-600 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white"
         >
-          <X size={18} />
+          <X size={20} />
         </button>
 
         {/* === CONTEÚDO 1: TELA DE DETALHES DA CHAVE === */}
         {showKeyDetails ? (
            <div className="flex flex-col h-full bg-white dark:bg-gray-800 animate-fadeIn">
-              <div className="p-4 bg-gray-100 dark:bg-gray-700 flex items-center gap-3 border-b border-gray-200 dark:border-gray-600">
+              <div className="p-4 bg-gray-100 dark:bg-gray-700 flex items-center gap-3 border-b border-gray-200 dark:border-gray-600 pr-12">
                  <button 
                    onClick={() => setShowKeyDetails(false)}
                    className="p-1.5 bg-white dark:bg-gray-600 rounded-full shadow-sm text-gray-600 dark:text-white hover:bg-gray-50 transition-colors"
                  >
                    <ArrowLeft size={18} />
                  </button>
-                 <h3 className="font-heading font-bold text-gray-800 dark:text-white">Devolução da Chave</h3>
+                 <h3 className="font-heading font-bold text-gray-800 dark:text-white truncate">Devolução da Chave</h3>
               </div>
 
               <div className="p-5 overflow-y-auto">

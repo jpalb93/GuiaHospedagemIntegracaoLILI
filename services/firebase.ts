@@ -222,6 +222,20 @@ export const subscribeToReservations = (callback: (reservations: Reservation[]) 
   });
 };
 
+// --- NOVO: ATUALIZAR RESERVA ---
+export const updateReservation = async (id: string, data: Partial<Reservation>) => {
+  if (!db) throw new Error("Firebase não configurado");
+  try {
+    // Removemos o ID do objeto de dados para não duplicar dentro do documento
+    const { id: _, ...updateData } = data as any;
+    await db.collection('reservations').doc(id).update(updateData);
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar reserva:", error);
+    throw error;
+  }
+};
+
 // --- SERVIÇOS DE AUTENTICAÇÃO ---
 
 export const loginCMS = async (email: string, pass: string) => {

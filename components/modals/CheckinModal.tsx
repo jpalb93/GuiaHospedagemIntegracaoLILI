@@ -1,21 +1,22 @@
 import React from 'react';
 import { X, Video, Lock } from 'lucide-react';
-import { GuestConfig } from '../../types';
-import { SAFE_VIDEO_URL, LOCK_VIDEO_URL } from '../../constants';
 
+// Removi 'config' da interface
 interface CheckinModalProps {
   isOpen: boolean;
   onClose: () => void;
-  config: GuestConfig;
   safeCode: string;
+  lockCode?: string;
   isPasswordReleased: boolean;
   onOpenVideo: (url: string, isVertical: boolean) => void;
 }
 
-const CheckinModal: React.FC<CheckinModalProps> = ({ 
-  isOpen, onClose, config, safeCode, isPasswordReleased, onOpenVideo 
-}) => {
+// Removi 'config' dos props recebidos
+const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, lockCode, isPasswordReleased, onOpenVideo }) => {
   if (!isOpen) return null;
+
+  const CHECKIN_SAFE_VIDEO_URL = "https://youtube.com/shorts/0d6g8bB-5Yc?feature=share";
+  const CHECKIN_LOCK_VIDEO_URL = "https://youtube.com/shorts/e7a8Z4d1zO0?feature=share";
 
   return (
      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
@@ -24,11 +25,12 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
         onClick={onClose}
       ></div>
       <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[28px] overflow-hidden shadow-2xl relative z-10 animate-scaleIn flex flex-col max-h-[90vh] border border-white/10">
+         
          <button 
           onClick={onClose}
-          className="absolute top-3 right-3 z-50 bg-white/20 hover:bg-white/30 text-white p-1.5 rounded-full backdrop-blur-md transition-colors"
+          className="absolute top-3 right-3 z-50 p-2 rounded-full backdrop-blur-md transition-colors bg-black/5 hover:bg-black/10 text-gray-600 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white"
         >
-          <X size={18} />
+          <X size={20} />
         </button>
 
         <div className="p-6 bg-gradient-to-br from-orange-500 to-amber-600 text-white">
@@ -64,7 +66,7 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
                   )}
 
                   <button 
-                    onClick={() => onOpenVideo(SAFE_VIDEO_URL, true)}
+                    onClick={() => onOpenVideo(CHECKIN_SAFE_VIDEO_URL, true)}
                     className="w-full py-3 px-4 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-600 dark:text-gray-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-500 hover:border-orange-200 transition-all shadow-sm"
                   >
                     <Video size={16}/> Ver Vídeo do Cofre
@@ -87,7 +89,7 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
                 
                 {isPasswordReleased ? (
                   <div className="py-4 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                    <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-widest font-mono">{config.lockCode || '----'}</p>
+                    <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-widest font-mono">{lockCode || '----'}</p>
                   </div>
                 ) : (
                   <div className="py-4 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 flex flex-col items-center justify-center">
@@ -98,7 +100,7 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
                 )}
 
                 <button 
-                  onClick={() => onOpenVideo(LOCK_VIDEO_URL, true)}
+                  onClick={() => onOpenVideo(CHECKIN_LOCK_VIDEO_URL, true)}
                   className="w-full py-3 px-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-all"
                 >
                   <Video size={16}/> Ver Vídeo da Fechadura

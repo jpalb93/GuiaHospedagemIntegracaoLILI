@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Wifi, MapPin, Camera, Lock } from 'lucide-react';
+import { X, Wifi, MapPin, Camera, User, Lock } from 'lucide-react';
 import { GuestConfig } from '../../types';
 
 interface OfflineCardModalProps {
@@ -14,14 +14,17 @@ interface OfflineCardModalProps {
 }
 
 const OfflineCardModal: React.FC<OfflineCardModalProps> = ({ 
-  isOpen, onClose, config, wifiSSID, wifiPass, safeCode, isPasswordReleased}) => {
+  isOpen, onClose, config, wifiSSID, wifiPass, safeCode, isPasswordReleased, address 
+}) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-900/95 z-[70] flex flex-col items-center justify-center p-6 animate-fadeIn backdrop-blur-sm">
+      
+      {/* BOTÃO FECHAR (CORRIGIDO) */}
       <button 
         onClick={onClose}
-        className="absolute top-6 right-6 z-50 text-white/70 hover:text-white p-3 bg-white/10 rounded-full transition-colors"
+        className="absolute top-6 right-6 z-50 p-3 rounded-full transition-colors bg-white/10 hover:bg-white/20 text-white"
       >
         <X size={24} />
       </button>
@@ -82,7 +85,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                <div className="bg-purple-50 dark:bg-purple-900/30 p-2.5 rounded-xl text-purple-600 dark:text-purple-400"><MapPin size={18} strokeWidth={2.5}/></div>
                <div>
                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide mb-0.5">Endereço</p>
-                 <p className="font-bold text-gray-900 dark:text-white text-xs leading-tight">Rua São José, 475 B • Flat 304</p>
+                 <p className="font-bold text-gray-900 dark:text-white text-xs leading-tight">{address}</p>
                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Centro, Petrolina</p>
                </div>
              </div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle } from 'lucide-react';
+import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save } from 'lucide-react';
 import { isApiConfigured } from '../services/geminiService';
 import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
-import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS } from '../services/firebase';
+import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation } from '../services/firebase';
 import { Reservation } from '../types';
 
 const AdminView: React.FC = () => {
@@ -23,6 +23,9 @@ const AdminView: React.FC = () => {
   const [checkInTime, setCheckInTime] = useState('14:00');
   const [checkOutTime, setCheckOutTime] = useState('11:00');
   
+  // EDIT STATE
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   // Logic State
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
@@ -40,7 +43,6 @@ const AdminView: React.FC = () => {
   // History Accordion State
   const [openHistoryGroups, setOpenHistoryGroups] = useState<number[]>([0]);
 
-  // Variável Auxiliar para saber se está buscando
   const isSearching = searchTerm.length > 0;
 
   // 1. Auth Listener
@@ -64,21 +66,7 @@ const AdminView: React.FC = () => {
 
   // 3. Init Dates
   useEffect(() => {
-    const initializeDates = async () => {
-      const officialNow = await fetchOfficialTime();
-      const yyyy = officialNow.getFullYear();
-      const mm = String(officialNow.getMonth() + 1).padStart(2, '0');
-      const dd = String(officialNow.getDate()).padStart(2, '0');
-      setCheckInDate(`${yyyy}-${mm}-${dd}`);
-
-      const tomorrow = new Date(officialNow);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const t_yyyy = tomorrow.getFullYear();
-      const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const t_dd = String(tomorrow.getDate()).padStart(2, '0');
-      setCheckoutDate(`${t_yyyy}-${t_mm}-${t_dd}`);
-    };
-    initializeDates();
+    resetForm(); 
   }, []);
 
   useEffect(() => {
@@ -99,6 +87,32 @@ const AdminView: React.FC = () => {
     if (isApiConfigured) setApiKeyStatus('ok');
     else setApiKeyStatus('missing');
   }, []);
+
+  // --- RESET FORM & DATES ---
+  const resetForm = async () => {
+    const officialNow = await fetchOfficialTime();
+    const yyyy = officialNow.getFullYear();
+    const mm = String(officialNow.getMonth() + 1).padStart(2, '0');
+    const dd = String(officialNow.getDate()).padStart(2, '0');
+    
+    const tomorrow = new Date(officialNow);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const t_yyyy = tomorrow.getFullYear();
+    const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const t_dd = String(tomorrow.getDate()).padStart(2, '0');
+
+    setCheckInDate(`${yyyy}-${mm}-${dd}`);
+    setCheckoutDate(`${t_yyyy}-${t_mm}-${t_dd}`);
+    setCheckInTime('14:00');
+    setCheckOutTime('11:00');
+    setGuestName('');
+    setLockCode('');
+    setWelcomeMessage('');
+    setAdminNotes('');
+    setGeneratedLink('');
+    setIsShortened(false);
+    setEditingId(null);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,58 +144,73 @@ const AdminView: React.FC = () => {
     }
   };
 
-  const handleCreateReservation = async () => {
-    if (!guestName.trim()) { alert("Por favor, preencha o nome do hóspede."); return; }
-    if (!lockCode.trim()) { alert("Por favor, defina a senha da porta."); return; }
-    if (!checkInDate || !checkoutDate) { alert("Por favor, verifique as datas de Check-in e Check-out."); return; }
-    if (!checkInTime.includes(':') || !checkOutTime.includes(':')) { alert("Por favor, preencha as horas corretamente."); return; }
+  // --- LÓGICA DE EDIÇÃO ---
+  const handleStartEdit = (res: Reservation) => {
+    setEditingId(res.id!);
+    setGuestName(res.guestName);
+    setLockCode(res.lockCode);
+    setWelcomeMessage(res.welcomeMessage || '');
+    setAdminNotes(res.adminNotes || '');
+    setCheckInDate(res.checkInDate || '');
+    setCheckoutDate(res.checkoutDate || '');
+    setCheckInTime(res.checkInTime || '14:00');
+    setCheckOutTime(res.checkOutTime || '11:00');
+    
+    setActiveTab('create');
+    setGeneratedLink('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSave = async () => {
+    if (!guestName.trim()) { alert("Preencha o nome."); return; }
+    if (!lockCode.trim()) { alert("Defina a senha."); return; }
+    if (!checkInDate || !checkoutDate) { alert("Verifique as datas."); return; }
+    if (!checkInTime.includes(':') || !checkOutTime.includes(':')) { alert("Verifique os horários."); return; }
 
     const start = new Date(checkInDate);
     const end = new Date(checkoutDate);
-    start.setHours(0,0,0,0);
-    end.setHours(0,0,0,0);
+    start.setHours(0,0,0,0); end.setHours(0,0,0,0);
 
     if (end <= start) {
-      alert("⛔ Erro na Data:\nA data de Saída (Check-out) deve ser DEPOIS da data de Entrada (Check-in).");
+      alert("⛔ Erro: Check-out deve ser DEPOIS do Check-in.");
       return;
     }
 
-    setGeneratedLink('');
     setIsSaving(true);
     try {
-      const finalGuestName = guestName.trim();
       const payload: Reservation = {
-        guestName: finalGuestName, lockCode: lockCode.trim(),
+        guestName: guestName.trim(), lockCode: lockCode.trim(),
         welcomeMessage: welcomeMessage.trim(), adminNotes: adminNotes.trim(),
         checkInDate: checkInDate, checkoutDate: checkoutDate, 
         checkInTime: checkInTime, checkOutTime: checkOutTime,
         status: 'active', createdAt: '' 
       };
 
-      const reservationId = await saveReservation(payload);
-      const baseUrl = window.location.origin + '/'; 
-      const link = `${baseUrl}?rid=${reservationId}`;
-      
-      setGeneratedLink(link);
-      setIsShortened(false);
+      if (editingId) {
+         // MODO ATUALIZAÇÃO
+         await updateReservation(editingId, payload);
+         alert("✅ Reserva atualizada com sucesso!");
+         resetForm();
+      } else {
+         // MODO CRIAÇÃO
+         const reservationId = await saveReservation(payload);
+         const baseUrl = window.location.origin + '/'; 
+         const link = `${baseUrl}?rid=${reservationId}`;
+         setGeneratedLink(link);
+         setIsShortened(false);
+      }
+
     } catch (e) {
-      alert("Erro ao criar reserva.");
+      alert("Erro ao salvar.");
       console.error(e);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleClearForm = () => {
-    if (confirm("Limpar todos os campos do formulário?")) {
-      setGuestName(''); setLockCode(''); setWelcomeMessage(''); setAdminNotes('');
-      setGeneratedLink(''); setIsShortened(false);
-    }
-  };
-
   const handleDelete = async (id?: string) => {
     if(!id) return;
-    if(confirm("ATENÇÃO: Isso vai remover a reserva e o link do hóspede parará de funcionar. Confirmar?")) {
+    if(confirm("ATENÇÃO: Isso apaga permanentemente. Confirmar?")) {
       await deleteReservation(id);
       if (selectedReservation?.id === id) setSelectedReservation(null);
     }
@@ -245,12 +274,12 @@ const AdminView: React.FC = () => {
     setOpenHistoryGroups(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
   };
 
-  // --- NOVA LÓGICA DE FILTRO INTELIGENTE (CORRIGIDA) ---
+  // --- FILTROS ---
   const getFilteredAndSplitReservations = () => {
     const today = new Date();
-    const todayStr = today.toLocaleDateString('en-CA'); // Formato YYYY-MM-DD (local)
+    // Ajuste de fuso para garantir comparação correta de datas (YYYY-MM-DD)
+    const todayStr = today.toLocaleDateString('en-CA'); 
 
-    // Filtra primeiro pela busca
     const filteredList = reservations.filter(res => {
       const term = searchTerm.toLowerCase();
       const nameMatch = res.guestName.toLowerCase().includes(term);
@@ -267,21 +296,17 @@ const AdminView: React.FC = () => {
       if (!res.checkoutDate || !res.checkInDate) return;
 
       if (res.checkoutDate < todayStr) {
-        // Passado
         historyList.push(res);
       } else if (res.checkoutDate === todayStr) {
-        // SAI HOJE (Prioridade Máxima)
         leavingToday.push(res);
       } else if (res.checkInDate > todayStr) {
-        // Futuro (Ainda vai chegar)
         upcoming.push(res);
       } else {
-        // Está no meio da estadia
         staying.push(res);
       }
     });
 
-    // Ordenações com Safety Check (?? '') para evitar erro de undefined
+    // Ordenações
     leavingToday.sort((a, b) => a.guestName.localeCompare(b.guestName));
     staying.sort((a, b) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
     upcoming.sort((a, b) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
@@ -291,11 +316,8 @@ const AdminView: React.FC = () => {
   };
 
   const { leavingToday, staying, upcoming, historyList } = getFilteredAndSplitReservations();
-
-  // Total ativo para o badge
   const activeCount = leavingToday.length + staying.length + upcoming.length;
 
-  // Agrupamento do Histórico
   const groupedHistory = historyList.reduce((groups, res) => {
     if (!res.checkoutDate) return groups;
     const [y, m] = res.checkoutDate.split('-');
@@ -308,7 +330,7 @@ const AdminView: React.FC = () => {
   }, [] as { label: string; items: Reservation[] }[]);
 
 
-  // --- COMPONENTE DE CARD DE LISTA ---
+  // --- CARD DE LISTA (COMPONENT) ---
   const ReservationListItem = ({ res, statusColor, statusLabel }: { res: Reservation, statusColor: string, statusLabel?: string }) => (
     <div 
       onClick={() => setSelectedReservation(res)}
@@ -331,12 +353,22 @@ const AdminView: React.FC = () => {
               )}
           </div>
           
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
-            className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-          >
-              <Trash2 size={16} />
-          </button>
+          <div className="flex flex-col gap-2">
+             <button 
+                onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }}
+                className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
+                title="Editar"
+             >
+                <Pencil size={16} />
+             </button>
+             <button 
+                onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
+                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                title="Excluir"
+             >
+                <Trash2 size={16} />
+             </button>
+          </div>
       </div>
 
       <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
@@ -379,7 +411,6 @@ const AdminView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center p-6 font-sans text-gray-900 dark:text-gray-100 relative">
       
-      {/* HEADER */}
       <div className="w-full max-w-lg flex justify-between items-center mb-6">
          <h1 className="text-2xl font-heading font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Sparkles className="text-orange-500" /> Gestão de Reservas
@@ -392,13 +423,12 @@ const AdminView: React.FC = () => {
 
       <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-[32px] shadow-2xl shadow-gray-200/50 dark:shadow-black/50 overflow-hidden border border-white/50 dark:border-gray-700 backdrop-blur-sm">
         
-        {/* TABS */}
         <div className="flex border-b border-gray-100 dark:border-gray-700">
            <button 
              onClick={() => setActiveTab('create')}
              className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'create' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
            >
-             Nova Reserva
+             {editingId ? 'Editando Reserva' : 'Nova Reserva'}
            </button>
            <button 
              onClick={() => setActiveTab('list')}
@@ -408,15 +438,24 @@ const AdminView: React.FC = () => {
            </button>
         </div>
 
-        {/* CONTENT - NEW RESERVATION */}
+        {/* CONTENT - FORM */}
         {activeTab === 'create' && (
           <div className="p-8 space-y-6 relative">
-            <button onClick={handleClearForm} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10" title="Limpar Formulário"><Eraser size={18} /></button>
+            
+            <button onClick={resetForm} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10" title="Limpar/Cancelar">
+                {editingId ? <X size={18} className="text-red-500"/> : <Eraser size={18} />}
+            </button>
 
-            <div className={`p-3 rounded-2xl border flex items-center gap-3 text-xs ${apiKeyStatus === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400' : 'bg-red-50 border-red-200 text-red-700'}`}>
-              {apiKeyStatus === 'ok' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <span className="font-bold">{apiKeyStatus === 'ok' ? 'IA Concierge Ativa' : 'IA Inativa'}</span>
-            </div>
+            {editingId ? (
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/30">
+                    <Pencil size={14} /> Você está editando a reserva de <strong>{guestName}</strong>.
+                </div>
+            ) : (
+               <div className={`p-3 rounded-2xl border flex items-center gap-3 text-xs ${apiKeyStatus === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                 {apiKeyStatus === 'ok' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                 <span className="font-bold">{apiKeyStatus === 'ok' ? 'IA Concierge Ativa' : 'IA Inativa'}</span>
+               </div>
+            )}
 
             <div>
               <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
@@ -427,7 +466,7 @@ const AdminView: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Senha Porta (Apenas Números)</label>
+              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Senha Porta</label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
                 <input type="text" inputMode="numeric" value={lockCode} onChange={handleNumericInput(setLockCode)} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest" placeholder="123456" />
@@ -435,25 +474,20 @@ const AdminView: React.FC = () => {
               <p className="text-[10px] text-gray-400 mt-1 ml-1">* A senha do cofre é gerenciada no CMS.</p>
             </div>
 
-            {/* SEÇÃO DE DATAS E HORÁRIOS (LAYOUT NOVO: LISTA VERTICAL + CLICK-TO-CLEAR) */}
             <div className="space-y-4 bg-gray-50 dark:bg-gray-900/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-               {/* 1. CHECK-IN DATA */}
                <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><CalendarDays size={12} className="text-green-500"/> Check-in (Data)</label>
                   <input type="date" value={checkInDate} onChange={(e) => setCheckInDate(e.target.value)} className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-green-500" />
                </div>
-               {/* 2. CHECK-IN HORA */}
                <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><Clock size={12} className="text-green-500"/> Check-in (Hora)</label>
                   <input type="text" inputMode="numeric" value={checkInTime} onFocus={() => setCheckInTime('')} onChange={handleTimeChange(setCheckInTime)} onBlur={() => handleTimeBlur(checkInTime, setCheckInTime)} placeholder="Ex: 1400" className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-green-500 font-mono tracking-wider" />
                </div>
                <div className="h-px bg-gray-200 dark:bg-gray-700 my-2 border-dashed"></div>
-               {/* 3. CHECK-OUT DATA */}
                <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><History size={12} className="text-orange-500"/> Check-out (Data)</label>
                   <input type="date" value={checkoutDate} onChange={(e) => setCheckoutDate(e.target.value)} className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-orange-500" />
                </div>
-               {/* 4. CHECK-OUT HORA */}
                <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><Clock size={12} className="text-orange-500"/> Check-out (Hora)</label>
                   <input type="text" inputMode="numeric" value={checkOutTime} onFocus={() => setCheckOutTime('')} onChange={handleTimeChange(setCheckOutTime)} onBlur={() => handleTimeBlur(checkOutTime, setCheckOutTime)} placeholder="Ex: 1100" className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-wider" />
@@ -471,15 +505,15 @@ const AdminView: React.FC = () => {
             </div>
 
             <button
-              onClick={handleCreateReservation}
+              onClick={handleSave}
               disabled={isSaving}
-              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 shadow-xl flex items-center justify-center gap-2"
+              className={`w-full py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 shadow-xl flex items-center justify-center gap-2 ${editingId ? 'bg-orange-500 text-white' : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'}`}
             >
-              {isSaving ? <Loader2 className="animate-spin" /> : <Sparkles className="text-yellow-400" />}
-              {isSaving ? 'Salvando...' : 'Gerar Magic Link'}
+              {isSaving ? <Loader2 className="animate-spin" /> : (editingId ? <Save size={20} /> : <Sparkles className="text-yellow-400" />)}
+              {isSaving ? 'Salvando...' : (editingId ? 'Salvar Alterações' : 'Gerar Magic Link')}
             </button>
 
-            {generatedLink && (
+            {generatedLink && !editingId && (
               <div className="animate-fadeIn mt-4 bg-orange-50 dark:bg-orange-900/10 p-4 rounded-2xl border border-orange-100 dark:border-orange-800/30">
                 <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase text-center mb-2">Reserva Criada!</p>
                 <div onClick={copyToClipboard} className="bg-white dark:bg-gray-800 p-3 rounded-xl text-xs font-mono text-center break-all cursor-pointer border border-gray-200 dark:border-gray-600 mb-3">{generatedLink}</div>
@@ -493,7 +527,7 @@ const AdminView: React.FC = () => {
           </div>
         )}
 
-        {/* CONTENT - LIST RESERVATIONS (COM NOVOS GRUPOS) */}
+        {/* CONTENT - LIST */}
         {activeTab === 'list' && (
            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 min-h-[400px] space-y-6">
              <div className="relative group">
@@ -502,44 +536,31 @@ const AdminView: React.FC = () => {
                {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"><X size={16} /></button>}
              </div>
              
-             {/* GRUPO 1: SAINDO HOJE (URGENTE) */}
              {leavingToday.length > 0 && (
                <div>
-                 <h3 className="text-xs font-bold text-red-500 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1 animate-pulse">
-                   <LogOut size={14} /> Check-out Hoje
-                 </h3>
+                 <h3 className="text-xs font-bold text-red-500 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1 animate-pulse"><LogOut size={14} /> Check-out Hoje</h3>
                  {leavingToday.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-red-500" statusLabel="Sai Hoje" />)}
                </div>
              )}
-
-             {/* GRUPO 2: HOSPEDADOS (TRANQUILO) */}
              {staying.length > 0 && (
                <div>
-                 <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1">
-                   <UserCheck size={14} /> Hospedados Agora
-                 </h3>
+                 <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1"><UserCheck size={14} /> Hospedados Agora</h3>
                  {staying.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-green-500" />)}
                </div>
              )}
-
-             {/* GRUPO 3: CHEGANDO (FUTURO) */}
              {upcoming.length > 0 && (
                <div>
-                 <h3 className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1">
-                   <ArrowRightCircle size={14} /> Chegando em Breve
-                 </h3>
+                 <h3 className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1"><ArrowRightCircle size={14} /> Chegando em Breve</h3>
                  {upcoming.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-blue-500" statusLabel="Futuro" />)}
                </div>
              )}
 
-             {/* EMPTY STATE */}
              {leavingToday.length === 0 && staying.length === 0 && upcoming.length === 0 && (
                 <div className="text-center py-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-xs font-medium">
                   {isSearching ? 'Nada encontrado.' : 'Nenhuma reserva ativa.'}
                 </div>
              )}
 
-             {/* HISTÓRICO */}
              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 border-dashed">
                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 ml-1"><History size={14} /> Histórico Recente</h3>
                {groupedHistory.length === 0 ? <div className="text-center py-4 text-gray-400 text-[10px]">Vazio.</div> : (
@@ -567,7 +588,7 @@ const AdminView: React.FC = () => {
         )}
       </div>
 
-      {/* MODAL DE DETALHES (MANTIDO IGUAL) */}
+      {/* MODAL DETALHES (MANTIDO) */}
       {selectedReservation && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedReservation(null)}></div>
@@ -605,14 +626,18 @@ const AdminView: React.FC = () => {
                <div className="flex flex-col gap-2">
                   <button onClick={() => handleCopyListLink(selectedReservation.id)} className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2"><LinkIcon size={16} /> Copiar Link</button>
                   <button onClick={() => handleShareListWhatsApp(selectedReservation)} className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"><Send size={16} /> WhatsApp</button>
-                  <button onClick={() => handleDelete(selectedReservation.id)} className="w-full py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 mt-2"><Trash2 size={16} /> Excluir</button>
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button onClick={() => { handleStartEdit(selectedReservation); setSelectedReservation(null); }} className="w-full py-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-blue-100 dark:border-blue-900/30"><Pencil size={16} /> Editar</button>
+                    <button onClick={() => handleDelete(selectedReservation.id)} className="w-full py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-red-100 dark:border-red-900/30"><Trash2 size={16} /> Excluir</button>
+                  </div>
                </div>
             </div>
          </div>
        </div>
-     )}
-   </div>
- );
+      )}
+    </div>
+  );
 };
 
 export default AdminView;

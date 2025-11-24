@@ -264,7 +264,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       <CheckinModal 
         isOpen={isCheckinModalOpen}
         onClose={() => setIsCheckinModalOpen(false)}
-        config={config}
         safeCode={currentSafeCode}
         isPasswordReleased={isPasswordReleased}
         onOpenVideo={openVideoModal}
@@ -501,40 +500,53 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                        </div>
                     )}
 
-                    {/* PAINEL COMPACTO (MEIO DA ESTADIA) - Normal */}
+                    {/* PAINEL COMPACTO (MEIO DA ESTADIA) - Refinado */}
                     {stayStage === 'middle' && (
                       <div className="p-2 animate-fadeIn">
                         <div className="grid grid-cols-2 gap-2 mb-2">
+                          
+                          {/* 1. SENHA */}
                           <div className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden group">
-                              <div className="absolute top-0 right-0 p-1.5 text-orange-300/30 dark:text-orange-900/20"><Key size={40} strokeWidth={1.5} /></div>
+                              <div className="absolute top-0 right-0 p-1.5 text-orange-100 dark:text-orange-900/10 transform rotate-12"><Key size={48} strokeWidth={1.5} /></div>
                               <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Senha</p>
-                              <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono tracking-wider">{config.lockCode}</p>
+                              <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono tracking-wider z-10">{config.lockCode}</p>
+                              
                               <button 
-                              onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }}
-                              className="text-[9px] text-orange-500 hover:text-orange-700 underline decoration-1 underline-offset-2 mt-1 font-medium"
+                                onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }}
+                                className="mt-1.5 px-2 py-1 bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 text-orange-700 dark:text-orange-300 text-[9px] font-bold rounded-lg flex items-center gap-1 transition-colors z-10"
                               >
-                                Ver vídeo
+                                <Video size={10} /> Ver vídeo
                               </button>
                           </div>
+
+                          {/* 2. ENDEREÇO */}
                           <div 
                             onClick={handleCopyAddress}
                             className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group"
                           >
-                              <div className="absolute top-2 right-2 text-purple-400"><Maximize2 size={12} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowDriverMode(true); }} /></div>
+                              <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowDriverMode(true); }} /></div>
                               <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Endereço</p>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2">R. São José, 475 B</p>
-                              <p className="text-[9px] text-gray-400 mt-1">{addressCopied ? 'Copiado!' : 'Copiar'}</p>
+                              <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">R. São José, 475 B</p>
+                              <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}</p>
                           </div>
+
+                          {/* 3. WIFI (AGORA COM O NOME DA REDE) */}
                           <div 
                             onClick={handleCopyWifi}
                             className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                           >
                               <div className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 p-2 rounded-lg shrink-0"><Wifi size={16} /></div>
-                              <div>
-                                <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase">WiFi</p>
-                                <p className="text-[10px] text-gray-500 dark:text-gray-400">{wifiCopied ? 'Senha Copiada!' : 'Copiar Senha'}</p>
+                              <div className="overflow-hidden">
+                                <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase truncate" title={currentWifiSSID}>
+                                  {currentWifiSSID}
+                                </p>
+                                <p className="text-[10px] text-gray-600 dark:text-gray-300 font-medium truncate">
+                                   {wifiCopied ? 'Senha Copiada!' : (currentWifiPass.length < 12 ? currentWifiPass : 'Copiar Senha')}
+                                </p>
                               </div>
                           </div>
+
+                          {/* 4. CHECKOUT */}
                           <div
                             onClick={(e) => { e.stopPropagation(); setIsCheckoutModalOpen(true); }}
                             className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
@@ -548,8 +560,8 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                       {(() => {
                                           const [y, m, d] = config.checkoutDate.split('-').map(Number);
                                           const date = new Date(y, m - 1, d);
-                                          const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-                                          return `${days[date.getDay()]} (${d < 10 ? '0'+d : d}/${m < 10 ? '0'+m : m})`;
+                                          const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                                          return `${days[date.getDay()]} (${d}/${m})`;
                                       })()}
                                     </p>
                                     <p className="text-[9px] text-gray-500 dark:text-gray-400">
@@ -562,6 +574,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                               </div>
                           </div>
                         </div>
+                        
                         <a 
                           href={`https://wa.me/${HOST_PHONE}`}
                           target="_blank"
@@ -873,7 +886,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                     <div>
                       <p className="font-bold text-rose-800 dark:text-rose-200 text-sm font-heading mb-0.5">Hóspedes da Reserva</p>
                       <p className="text-xs text-rose-700 dark:text-rose-300 font-medium leading-relaxed">
-                        Acesso exclusivo aos hóspedes informados na reserva. Proibida a entrada de visitantes.
+                        Acesso exclusivo aos hóspedes da reserva. Proibida a entrada de visitantes.
                       </p>
                     </div>
                   </div>
@@ -1101,7 +1114,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
           
           <h3 className="text-xl font-heading font-bold mb-2">Sua opinião vale ouro! ⭐</h3>
           <p className="text-blue-50 text-sm mb-6 leading-relaxed font-medium opacity-90">
-            Olá, {config.guestName?.split(' ')[0] || 'Visitante'}! Espero que tenha amado a estadia. 
+            Olá, {config.guestName}! Espero que tenha amado a estadia. 
             Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!
           </p>
           
