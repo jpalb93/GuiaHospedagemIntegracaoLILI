@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
-// REMOVIDO: import OptimizedImage from './OptimizedImage'; // Esta linha causava o erro!
 
 interface SimpleGalleryProps {
   images: string[];
