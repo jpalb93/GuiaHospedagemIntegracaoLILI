@@ -14,7 +14,7 @@ export const HERO_IMAGE_3_URL = "https://i.postimg.cc/XvJHhts5/Gemini-Generated-
 // VÍDEOS DE INSTRUÇÃO (YOUTUBE)
 export const DRONE_VIDEO_URL = "https://www.youtube.com/embed/qACw10uUSeo?autoplay=1";
 export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/cFD68mZO9bY?autoplay=1"; // Vídeo do Cofre
-export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/cFD68mZO9bY?autoplay=1"; // Vídeo da Fechadura
+export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/slW_3OZdT20?autoplay=1"; // Vídeo da Fechadura
 
 // BLACKLIST / BLOQUEIO DE HÓSPEDES
 export const BLOCKED_LIST: BlockedGuest[] = [];

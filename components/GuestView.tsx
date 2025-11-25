@@ -6,7 +6,7 @@ import {
   Maximize2, ExternalLink, Camera, Share2, Video, MessageCircle, Pizza, LogOut, Siren, 
   HeartPulse, Moon, Sun, Clock, Megaphone, CalendarHeart, AlertTriangle, Ambulance, 
   Flame, Shield, Phone, Briefcase, ShowerHead, Trash2, Ban, AlertCircle, Lightbulb, 
-  Droplets, UserCheck, Car, Footprints, Calendar, X, Sparkles, MessageSquare, Wind, Zap, Globe
+  Droplets, UserCheck, Car, Footprints, X, Sparkles, MessageSquare, Wind, Zap, Globe
 } from 'lucide-react';
 import SectionCard from './SectionCard';
 import PlaceCard from './PlaceCard';
@@ -866,7 +866,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                           <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group">
                               <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowDriverMode(true); }} /></div>
                               <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Endereço</p>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4 notranslate">R. São José, 475 B</p>
+                              <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4 notranslate">R. São José, 475</p>
                               <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}</p>
                           </div>
                           <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
@@ -1154,8 +1154,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
 
           <SectionCard title="Cafés e Padarias" icon={Coffee} color="bg-amber-600"><ExpandablePlaceList places={mergePlaces(CAFES, 'cafes')} /></SectionCard>
           <SectionCard title="Passeios Imperdíveis" icon={Map} color="bg-indigo-500"><ExpandablePlaceList places={mergePlaces(ATTRACTIONS, 'attractions')} /></SectionCard>
-          {activeEvents.length > 0 && <SectionCard title="Eventos & Agenda" icon={Calendar} color="bg-pink-500"><ExpandablePlaceList places={activeEvents} /></SectionCard>}
-
+          
           <div ref={emergencyRef}>
             <SectionCard title="SOS & Emergência" icon={HeartPulse} color="bg-red-600" forceOpen={openEmergency}>
               <div className="grid grid-cols-2 gap-3 mb-5">
