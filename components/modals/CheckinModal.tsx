@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Video, Lock } from 'lucide-react';
+import { SAFE_VIDEO_URL, LOCK_VIDEO_URL } from '../../constants';
 
 interface CheckinModalProps {
   isOpen: boolean;
@@ -12,9 +13,6 @@ interface CheckinModalProps {
 
 const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, lockCode, isPasswordReleased, onOpenVideo }) => {
   if (!isOpen) return null;
-
-  const CHECKIN_SAFE_VIDEO_URL = "https://youtube.com/shorts/0d6g8bB-5Yc?feature=share";
-  const CHECKIN_LOCK_VIDEO_URL = "https://youtube.com/shorts/e7a8Z4d1zO0?feature=share";
 
   return (
      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
@@ -65,7 +63,7 @@ const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, 
                   )}
 
                   <button 
-                    onClick={() => onOpenVideo(CHECKIN_SAFE_VIDEO_URL, true)}
+                    onClick={() => onOpenVideo(SAFE_VIDEO_URL, true)}
                     className="w-full py-3 px-4 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-600 dark:text-gray-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-500 hover:border-orange-200 transition-all shadow-sm"
                   >
                     <Video size={16}/> Ver Vídeo do Cofre
@@ -100,7 +98,7 @@ const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, 
                 )}
 
                 <button 
-                  onClick={() => onOpenVideo(CHECKIN_LOCK_VIDEO_URL, true)}
+                  onClick={() => onOpenVideo(LOCK_VIDEO_URL, true)}
                   className="w-full py-3 px-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-all"
                 >
                   <Video size={16}/> Ver Vídeo da Fechadura

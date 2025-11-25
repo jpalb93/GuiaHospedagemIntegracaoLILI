@@ -12,9 +12,10 @@ export const HERO_IMAGE_2_URL = "https://i.postimg.cc/HWK5mRBG/Whats-App-Image-2
 export const HERO_IMAGE_3_URL = "https://i.postimg.cc/XvJHhts5/Gemini-Generated-Image-qgzulyqgzulyqgzu.png";
 
 // VÍDEOS DE INSTRUÇÃO (YOUTUBE)
+// ATENÇÃO: Para funcionar no modal, o link DEVE conter "/embed/" e não "/shorts/" ou "/watch"
 export const DRONE_VIDEO_URL = "https://www.youtube.com/embed/qACw10uUSeo?autoplay=1";
-export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/cFD68mZO9bY?autoplay=1"; // Vídeo do Cofre
-export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/slW_3OZdT20?autoplay=1"; // Vídeo da Fechadura
+export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/cFD68mZO9bY?autoplay=1"; // ID corrigido
+export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/slW_3OZdT20?autoplay=1"; // ID corrigido (do short original)
 
 // BLACKLIST / BLOQUEIO DE HÓSPEDES
 export const BLOCKED_LIST: BlockedGuest[] = [];
@@ -22,7 +23,7 @@ export const EXTERNAL_BLOCKLIST_URL = "";
 
 export const WIFI_SSID = "Flat_Petrolina_5G";
 export const WIFI_PASS = "visitante123"; // Mude aqui a senha real
-export const FLAT_ADDRESS = "R. São José, 475 B - Centro, Petrolina - PE, 56302-270"; // Endereço Real
+export const FLAT_ADDRESS = "R. São José, 475 - Centro, Petrolina - PE, 56302-270"; // Endereço Real
 export const GOOGLE_REVIEW_LINK = 'https://search.google.com/local/writereview?placeid=ChIJz0sHkXpxcwcRwekJL9cyLjY';
 export const HOST_PHONE = "5587988342138"; // Número da Lili
 
