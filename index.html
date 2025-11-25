@@ -61,6 +61,7 @@
               scaleIn: 'scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'spin-slow-once': 'spin 1s ease-out forwards',
+              shimmer: 'shimmer 2s infinite',
             },
             keyframes: {
               fadeIn: {
@@ -70,6 +71,9 @@
               scaleIn: {
                 '0%': { opacity: '0', transform: 'scale(0.95)' },
                 '100%': { opacity: '1', transform: 'scale(1)' },
+              },
+              shimmer: {
+                '100%': { transform: 'translateX(100%)' },
               }
             }
           }

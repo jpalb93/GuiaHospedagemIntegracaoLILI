@@ -1,37 +1,39 @@
+
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 import { PlaceRecommendation, Reservation, AppConfig, SmartSuggestionsConfig, GuestReview, BlockedDateRange } from '../types';
 
 // ============================================================================
-// CONFIGURAÇÃO DO FIREBASE (PROJETO FLAT LILI)
+// CONFIGURAÇÃO DO FIREBASE (VARIÁVEIS DE AMBIENTE)
 // ============================================================================
-
-// ÁREA DE CONFIGURAÇÃO MANUAL
-// Se você não quiser usar .env, cole suas chaves aqui dentro das aspas.
-const MANUAL_CONFIG = {
-  apiKey: "AIzaSyArp-983ckWo-el-6gO7nCMgT9pC2bB4bM",
-  authDomain: "flatlili.firebaseapp.com",
-  projectId: "flatlili",
-  storageBucket: "flatlili.firebasestorage.app",
-  messagingSenderId: "216016161136",
-  appId: "1:216016161136:web:682169966be23fcad767b5"
+// Configure estas variáveis no .env.local e na Vercel
+const firebaseConfig = {
+  apiKey: import.meta.env?.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env?.VITE_FIREBASE_APP_ID
 };
-
-const firebaseConfig = MANUAL_CONFIG;
 
 // Inicializa o Firebase
 let db: firebase.firestore.Firestore | undefined;
 let auth: firebase.auth.Auth | undefined;
 
 try {
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  // Verifica se a config tem pelo menos a API Key antes de tentar inicializar
+  if (firebaseConfig.apiKey) {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    } else {
+      firebase.app(); // Use existing app
+    }
+    db = firebase.firestore();
+    auth = firebase.auth();
   } else {
-    firebase.app(); // Use existing app
+    console.warn("Firebase Config não encontrada. Verifique as variáveis de ambiente (VITE_FIREBASE_...).");
   }
-  db = firebase.firestore();
-  auth = firebase.auth();
 } catch (e) {
   console.warn("Erro ao inicializar Firebase:", e);
 }

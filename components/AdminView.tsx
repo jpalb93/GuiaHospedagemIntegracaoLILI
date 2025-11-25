@@ -429,8 +429,8 @@ const AdminView: React.FC = () => {
   }, [] as { label: string; items: Reservation[] }[]);
 
 
-  // --- CARD DE LISTA (COMPONENT) ---
-  const ReservationListItem = ({ res, statusColor, statusLabel }: { res: Reservation, statusColor: string, statusLabel?: string }) => {
+  // --- CARD DE LISTA (HELPER FUNCTION) ---
+  const renderReservationListItem = (res: Reservation, statusColor: string, statusLabel?: string) => {
     
     // Lógica para Botões de Lembrete
     const isCheckinTomorrow = res.checkInDate === tomorrowStr;
@@ -438,6 +438,7 @@ const AdminView: React.FC = () => {
 
     return (
       <div 
+        key={res.id}
         onClick={() => setSelectedReservation(res)}
         className={`bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-3 group relative cursor-pointer hover:shadow-md transition-all mb-3`}
       >
@@ -777,19 +778,19 @@ const AdminView: React.FC = () => {
              {leavingToday.length > 0 && (
                <div>
                  <h3 className="text-xs font-bold text-red-500 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1 animate-pulse"><LogOut size={14} /> Check-out Hoje</h3>
-                 {leavingToday.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-red-500" statusLabel="Sai Hoje" />)}
+                 {leavingToday.map(res => renderReservationListItem(res, "border-red-500", "Sai Hoje"))}
                </div>
              )}
              {staying.length > 0 && (
                <div>
                  <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1"><UserCheck size={14} /> Hospedados Agora</h3>
-                 {staying.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-green-500" />)}
+                 {staying.map(res => renderReservationListItem(res, "border-green-500"))}
                </div>
              )}
              {upcoming.length > 0 && (
                <div>
                  <h3 className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2 ml-1"><ArrowRightCircle size={14} /> Chegando em Breve</h3>
-                 {upcoming.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-blue-500" statusLabel="Futuro" />)}
+                 {upcoming.map(res => renderReservationListItem(res, "border-blue-500", "Futuro"))}
                </div>
              )}
 
@@ -813,7 +814,7 @@ const AdminView: React.FC = () => {
                          </button>
                          {isOpen && (
                            <div className="p-3 space-y-2 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
-                             {group.items.map(res => <ReservationListItem key={res.id} res={res} statusColor="border-gray-300" />)}
+                             {group.items.map(res => renderReservationListItem(res, "border-gray-300"))}
                            </div>
                          )}
                        </div>

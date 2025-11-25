@@ -3,15 +3,7 @@ import { MapPin, Star, Phone, ChevronLeft, ChevronRight, XCircle, Wifi, Tv, Coff
 import { subscribeToFutureReservations, getGuestReviews, subscribeToFutureBlockedDates } from '../services/firebase';
 import { Reservation, GuestReview, BlockedDateRange } from '../types';
 import SimpleGallery from './SimpleGallery';
-
-// --- FOTOS PARA A GALERIA ---
-const GALLERY_IMAGES = [
-  "https://i.postimg.cc/JnkG03mm/5930cc64-fdef-4d4a-b6ba-a8380fde40de.jpg",
-  "https://i.postimg.cc/vBVcT7M8/78e0984d-5800-4027-9578-e43b4de1815a.jpg",
-  "https://i.postimg.cc/nzDCrKZn/aca338a7-c3f0-4838-90bf-4639fde2d2c4.jpg",
-  "https://i.postimg.cc/50C6y514/d98177da-7250-456d-bd58-b4f9dfcebec7-1.jpg",
-  "https://i.postimg.cc/Ls7JmQdM/dda93871-f7aa-4867-a0bd-49d59319fd64.jpg"
-];
+import { LANDING_GALLERY_IMAGES, LANDING_HERO_SLIDES, GOOGLE_REVIEW_LINK, FLAT_ADDRESS } from '../constants';
 
 // --- CALENDÁRIO DINÂMICO (OTIMIZADO) ---
 const AvailabilityCalendar = () => {
@@ -115,12 +107,6 @@ const LandingPageLili: React.FC = () => {
   const [openAccordion, setOpenAccordion] = useState<string | null>('quarto');
   const [reviews, setReviews] = useState<GuestReview[]>([]);
 
-  // Slideshow
-  const slides = [
-     "https://i.postimg.cc/4dZ1Q3dN/Whats-App-Image-2025-11-15-at-17-43-54.jpg",
-     "https://i.postimg.cc/MTDmP8Mw/Whats-App-Image-2025-11-15-at-17-46-43.jpg"
-  ];
-
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev === 1 ? 0 : 1));
@@ -194,7 +180,7 @@ const LandingPageLili: React.FC = () => {
 
        {/* HERO SECTION */}
        <section id="inicio" className="relative h-[60vh] min-h-[500px] w-full overflow-hidden bg-gray-900">
-          {slides.map((img, index) => (
+          {LANDING_HERO_SLIDES.map((img, index) => (
              <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}>
                 <img src={img} className="w-full h-full object-cover opacity-60" alt="Flat de Lili" />
              </div>
@@ -220,7 +206,7 @@ const LandingPageLili: React.FC = () => {
              </div>
 
              <div className="mb-16 max-w-4xl mx-auto">
-                <SimpleGallery images={GALLERY_IMAGES} />
+                <SimpleGallery images={LANDING_GALLERY_IMAGES} />
              </div>
 
              <div className="bg-white p-8 md:p-12 rounded-lg shadow-lg max-w-4xl mx-auto border-t-4 border-amber-600">
@@ -318,9 +304,9 @@ const LandingPageLili: React.FC = () => {
                    <p className="text-lg text-gray-700 mb-4">Encontre-nos no coração de Petrolina, com fácil acesso aos melhores pontos da cidade.</p>
                    <div className="flex items-start text-gray-800 mb-6 bg-white p-4 rounded-lg shadow-sm">
                       <MapPin className="h-6 w-6 text-amber-700 mr-3 flex-shrink-0 mt-1" />
-                      <span>R. São José, 475 B - Centro, Petrolina - PE, 56302-270</span>
+                      <span className="notranslate">{FLAT_ADDRESS}</span>
                    </div>
-                   <a href="https://goo.gl/maps/SEU_LINK_AQUI" target="_blank" rel="noopener noreferrer" className="inline-block bg-amber-700 text-white px-6 py-3 rounded-full font-semibold hover:bg-amber-800 transition duration-300 shadow-md">
+                   <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(FLAT_ADDRESS)}`} target="_blank" rel="noopener noreferrer" className="inline-block bg-amber-700 text-white px-6 py-3 rounded-full font-semibold hover:bg-amber-800 transition duration-300 shadow-md">
                       Abrir no Google Maps
                    </a>
                 </div>
@@ -388,7 +374,7 @@ const AccordionItem = ({ title, icon, isOpen, onClick, children }: any) => (
   </div>
 );
 
-const ReviewCard = ({ name, text }: { name: string, text: string }) => (
+const ReviewCard: React.FC<{ name: string, text: string }> = ({ name, text }) => (
   <div className="bg-amber-50 p-6 rounded-xl shadow-sm border border-amber-100">
      <div className="flex text-amber-500 mb-4">
         {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="currentColor" />)}

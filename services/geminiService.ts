@@ -2,36 +2,32 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { DEFAULT_SYSTEM_INSTRUCTION } from "../constants";
 
 // =============================================================================================
-// ÁREA DE CONFIGURAÇÃO DA CHAVE (API KEY)
+// CONFIGURAÇÃO SEGURA (VARIÁVEIS DE AMBIENTE - VITE)
 // =============================================================================================
-// Cole sua chave API do Google Gemini (começa com AIza...) dentro das aspas abaixo:
-// Adicionei ": string" para evitar o erro de comparação do TypeScript
-const CHAVE_DIRETA: string = "AIzaSyBp73XuslBeV4ixWwaTE0mHKGaEzFJDOYA"; 
+// A chave deve ser configurada no arquivo .env.local ou no painel da Vercel
+// Nome da variável: VITE_GEMINI_API_KEY
 // =============================================================================================
 
-// Tenta pegar a chave da variável direta (prioridade) ou das variáveis de ambiente (modo avançado)
-// @ts-ignore
-const envKey = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env.VITE_API_KEY : process.env.API_KEY;
-const apiKey = CHAVE_DIRETA || envKey;
+const apiKey = import.meta.env?.VITE_GEMINI_API_KEY;
 
-export const isApiConfigured = !!apiKey && apiKey.length > 0;
+export const isApiConfigured = !!apiKey;
 
-// Inicializa a IA com a chave configurada
-const ai = new GoogleGenAI({ apiKey: apiKey || "CHAVE_PENDENTE" });
+// Inicializa a IA apenas se a chave existir
+let ai: GoogleGenAI | null = null;
+if (apiKey) {
+  ai = new GoogleGenAI({ apiKey: apiKey });
+}
 
 export const sendMessageToGemini = async (
   message: string, 
   history: { role: 'user' | 'model'; text: string }[],
   guestName: string,
-  customSystemInstruction?: string // NOVO PARÂMETRO OPCIONAL
+  customSystemInstruction?: string
 ): Promise<string> => {
   try {
-    // Conversão forçada para string para evitar erro de tipos literais no TypeScript
-    const currentKey = apiKey as string;
-
-    // Verifica se a chave existe antes de tentar chamar
-    if (!currentKey || currentKey.length === 0 || currentKey === "CHAVE_PENDENTE") {
-      return "⚠️ A chave de API (IA) não foi configurada. Por favor, avise a anfitriã para verificar o arquivo geminiService.ts.";
+    if (!ai || !apiKey) {
+      console.error("API Key do Gemini não encontrada. Configure VITE_GEMINI_API_KEY no .env.local");
+      return "⚠️ O sistema de IA está temporariamente indisponível (Configuração pendente).";
     }
 
     const model = 'gemini-2.5-flash';

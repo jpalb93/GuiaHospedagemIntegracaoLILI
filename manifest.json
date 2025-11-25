@@ -1,7 +1,7 @@
 {
   "name": "Flats Integração - Guia Digital",
   "short_name": "Flat de Lili",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#f97316",
