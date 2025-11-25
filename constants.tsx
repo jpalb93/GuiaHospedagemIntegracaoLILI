@@ -36,11 +36,11 @@ export const LANDING_HERO_SLIDES = [
 // --- IMAGENS DOS STORIES (CURIOSIDADES DE PETROLINA) ---
 // Estas imagens são embaralhadas e exibidas nos cards de curiosidades
 export const CURIOSITY_STORY_IMAGES = [
-  "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=800&auto=format&fit=crop", // Ponte/Rio
-  "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=800&auto=format&fit=crop", // Uvas/Vinho
-  "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=800&auto=format&fit=crop", // Pôr do Sol
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop", // Rio
-  "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?q=80&w=800&auto=format&fit=crop"  // Turismo
+  "https://i.postimg.cc/g2HPZXvW/Whats-App-Image-2025-11-15-at-17-46-43.jpg", // Ponte/Rio
+  "https://i.postimg.cc/t4jjJtnS/Whats-App-Image-2025-11-24-at-17-39-45.jpg", // Uvas/Vinho
+  "https://i.postimg.cc/rwkksCRh/Whats-App-Image-2025-11-24-at-17-39-46.jpg", // Pôr do Sol
+  "https://i.postimg.cc/fRNNyjS8/Whats-App-Image-2025-11-24-at-17-39-47.jpg", // Rio
+  "https://i.postimg.cc/DwPKXJ1Q/Whats-App-Image-2025-11-24-at-17-39-48.jpg"  // Turismo
 ];
 
 // --- IMAGENS DOS STORIES (DICAS ÚTEIS DO FLAT) ---
