@@ -1,7 +1,6 @@
 import React from 'react';
 import { X, Video, Lock } from 'lucide-react';
 
-// Removi 'config' da interface
 interface CheckinModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,7 +10,6 @@ interface CheckinModalProps {
   onOpenVideo: (url: string, isVertical: boolean) => void;
 }
 
-// Removi 'config' dos props recebidos
 const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, lockCode, isPasswordReleased, onOpenVideo }) => {
   if (!isOpen) return null;
 
@@ -55,7 +53,8 @@ const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, 
                   {isPasswordReleased ? (
                     <div className="py-3 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
                        <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5 font-bold">Senha do Cofre</p>
-                       <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-widest font-mono">{safeCode}</p>
+                       {/* NOTRANSLATE ADDED */}
+                       <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-widest font-mono notranslate">{safeCode}</p>
                     </div>
                   ) : (
                     <div className="py-3 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 flex flex-col items-center justify-center">
@@ -89,7 +88,8 @@ const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, 
                 
                 {isPasswordReleased ? (
                   <div className="py-4 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                    <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-widest font-mono">{lockCode || '----'}</p>
+                    {/* NOTRANSLATE ADDED */}
+                    <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-widest font-mono notranslate">{lockCode || '----'}</p>
                   </div>
                 ) : (
                   <div className="py-4 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 flex flex-col items-center justify-center">

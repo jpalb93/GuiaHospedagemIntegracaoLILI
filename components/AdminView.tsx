@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save } from 'lucide-react';
+import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing } from 'lucide-react';
 import { isApiConfigured } from '../services/geminiService';
 import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
-import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation } from '../services/firebase';
-import { Reservation } from '../types';
+import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation, addBlockedDate, deleteBlockedDate, subscribeToBlockedDates } from '../services/firebase';
+import { Reservation, BlockedDateRange } from '../types';
 
 const AdminView: React.FC = () => {
   // Auth State
@@ -13,16 +13,29 @@ const AdminView: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
 
   // Form State
-  const [activeTab, setActiveTab] = useState<'create' | 'list'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'list' | 'blocks'>('create');
   const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState(''); // NOVO STATE
   const [lockCode, setLockCode] = useState('');
   const [welcomeMessage, setWelcomeMessage] = useState(''); 
   const [adminNotes, setAdminNotes] = useState(''); 
+  
+  // NOVO: Alerta Específico
+  const [guestAlertActive, setGuestAlertActive] = useState(false);
+  const [guestAlertText, setGuestAlertText] = useState('');
+
   const [checkInDate, setCheckInDate] = useState(''); 
   const [checkoutDate, setCheckoutDate] = useState(''); 
   const [checkInTime, setCheckInTime] = useState('14:00');
   const [checkOutTime, setCheckOutTime] = useState('11:00');
   
+  // Blocked Dates State
+  const [blockedStartDate, setBlockedStartDate] = useState('');
+  const [blockedEndDate, setBlockedEndDate] = useState('');
+  const [blockedReason, setBlockedReason] = useState('');
+  const [blockedDates, setBlockedDates] = useState<BlockedDateRange[]>([]);
+  const [isBlocking, setIsBlocking] = useState(false);
+
   // EDIT STATE
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -54,13 +67,21 @@ const AdminView: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // 2. Reservations Listener
+  // 2. Reservations & Blocked Dates Listener
   useEffect(() => {
     if (user) {
-      const unsub = subscribeToReservations((data) => {
+      // OTIMIZAÇÃO: Limitando a 300 reservas mais recentes para não pesar o banco
+      const unsubReservations = subscribeToReservations((data) => {
         setReservations(data);
+      }, 300); 
+      
+      const unsubBlocked = subscribeToBlockedDates((data) => {
+        setBlockedDates(data);
       });
-      return () => unsub();
+      return () => {
+        unsubReservations();
+        unsubBlocked();
+      };
     }
   }, [user]);
 
@@ -106,12 +127,19 @@ const AdminView: React.FC = () => {
     setCheckInTime('14:00');
     setCheckOutTime('11:00');
     setGuestName('');
+    setGuestPhone('');
     setLockCode('');
     setWelcomeMessage('');
     setAdminNotes('');
+    setGuestAlertActive(false);
+    setGuestAlertText('');
     setGeneratedLink('');
     setIsShortened(false);
     setEditingId(null);
+    
+    setBlockedStartDate(`${yyyy}-${mm}-${dd}`);
+    setBlockedEndDate(`${t_yyyy}-${t_mm}-${t_dd}`);
+    setBlockedReason('');
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -144,13 +172,50 @@ const AdminView: React.FC = () => {
     }
   };
 
-  // --- LÓGICA DE EDIÇÃO ---
+  // --- LÓGICA DE BLOQUEIO DE DATAS ---
+  const handleAddBlock = async () => {
+    if (!blockedStartDate || !blockedEndDate) {
+        alert("Selecione as datas de início e fim.");
+        return;
+    }
+    if (blockedEndDate < blockedStartDate) {
+        alert("A data final deve ser depois da data inicial.");
+        return;
+    }
+
+    setIsBlocking(true);
+    try {
+        await addBlockedDate({
+            startDate: blockedStartDate,
+            endDate: blockedEndDate,
+            reason: blockedReason
+        });
+        setBlockedReason('');
+        alert("Datas bloqueadas com sucesso!");
+    } catch (e) {
+        alert("Erro ao bloquear datas.");
+    } finally {
+        setIsBlocking(false);
+    }
+  };
+
+  const handleDeleteBlock = async (id?: string) => {
+      if (!id) return;
+      if (confirm("Tem certeza que deseja desbloquear estas datas?")) {
+          await deleteBlockedDate(id);
+      }
+  };
+
+  // --- LÓGICA DE RESERVA ---
   const handleStartEdit = (res: Reservation) => {
     setEditingId(res.id!);
     setGuestName(res.guestName);
+    setGuestPhone(res.guestPhone || '');
     setLockCode(res.lockCode);
     setWelcomeMessage(res.welcomeMessage || '');
     setAdminNotes(res.adminNotes || '');
+    setGuestAlertActive(res.guestAlertActive || false);
+    setGuestAlertText(res.guestAlertText || '');
     setCheckInDate(res.checkInDate || '');
     setCheckoutDate(res.checkoutDate || '');
     setCheckInTime(res.checkInTime || '14:00');
@@ -179,8 +244,12 @@ const AdminView: React.FC = () => {
     setIsSaving(true);
     try {
       const payload: Reservation = {
-        guestName: guestName.trim(), lockCode: lockCode.trim(),
+        guestName: guestName.trim(), 
+        guestPhone: guestPhone.replace(/\D/g, ''), // Salva apenas números
+        lockCode: lockCode.trim(),
         welcomeMessage: welcomeMessage.trim(), adminNotes: adminNotes.trim(),
+        guestAlertActive: guestAlertActive,
+        guestAlertText: guestAlertText.trim(),
         checkInDate: checkInDate, checkoutDate: checkoutDate, 
         checkInTime: checkInTime, checkOutTime: checkOutTime,
         status: 'active', createdAt: '' 
@@ -233,8 +302,33 @@ const AdminView: React.FC = () => {
     if (!res.id) return;
     const link = getLinkForReservation(res.id);
     const message = `Olá, ${res.guestName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${link}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const phone = res.guestPhone ? res.guestPhone : '';
+    // Se tiver telefone, abre direto na conversa. Se não, abre janela de seleção de contato.
+    const whatsappUrl = phone 
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    
     window.open(whatsappUrl, '_blank');
+  };
+
+  // --- NOVO: Lógica de Envio de Lembretes Inteligentes ---
+  const sendReminder = (res: Reservation, type: 'checkin' | 'checkout') => {
+      if (!res.id) return;
+      const link = getLinkForReservation(res.id);
+      const phone = res.guestPhone || ''; // Se não tiver telefone, abre tela de seleção
+      let message = '';
+
+      if (type === 'checkin') {
+          message = `Olá, ${res.guestName}! Tudo pronto para sua chegada amanhã? ✈️\n\nJá deixei tudo preparado no seu Guia Digital (Senha da porta, Wi-Fi e Localização).\n\nAcesse aqui: ${link}\n\nQualquer dúvida, estou por aqui!`;
+      } else {
+          message = `Oi, ${res.guestName}! Espero que a estadia esteja sendo ótima. 🌵\n\nComo seu check-out é amanhã, deixei as instruções de saída facilitadas aqui no guia: ${link}\n\nBoa viagem de volta!`;
+      }
+
+      const whatsappUrl = phone 
+        ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+        : `https://wa.me/?text=${encodeURIComponent(message)}`;
+      
+      window.open(whatsappUrl, '_blank');
   };
 
   const shortenLink = async () => {
@@ -262,7 +356,9 @@ const AdminView: React.FC = () => {
     if (!generatedLink) return;
     const formattedName = guestName.trim();
     const message = `Olá, ${formattedName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${generatedLink}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = guestPhone 
+      ? `https://wa.me/${guestPhone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -277,8 +373,11 @@ const AdminView: React.FC = () => {
   // --- FILTROS ---
   const getFilteredAndSplitReservations = () => {
     const today = new Date();
-    // Ajuste de fuso para garantir comparação correta de datas (YYYY-MM-DD)
     const todayStr = today.toLocaleDateString('en-CA'); 
+    // Amanhã para comparações
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
 
     const filteredList = reservations.filter(res => {
       const term = searchTerm.toLowerCase();
@@ -312,10 +411,10 @@ const AdminView: React.FC = () => {
     upcoming.sort((a, b) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
     historyList.sort((a, b) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
 
-    return { leavingToday, staying, upcoming, historyList };
+    return { leavingToday, staying, upcoming, historyList, tomorrowStr };
   };
 
-  const { leavingToday, staying, upcoming, historyList } = getFilteredAndSplitReservations();
+  const { leavingToday, staying, upcoming, historyList, tomorrowStr } = getFilteredAndSplitReservations();
   const activeCount = leavingToday.length + staying.length + upcoming.length;
 
   const groupedHistory = historyList.reduce((groups, res) => {
@@ -331,63 +430,94 @@ const AdminView: React.FC = () => {
 
 
   // --- CARD DE LISTA (COMPONENT) ---
-  const ReservationListItem = ({ res, statusColor, statusLabel }: { res: Reservation, statusColor: string, statusLabel?: string }) => (
-    <div 
-      onClick={() => setSelectedReservation(res)}
-      className={`bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-3 group relative cursor-pointer hover:shadow-md transition-all mb-3`}
-    >
-      <div className="flex justify-between items-start">
-          <div>
-              <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                {res.guestName}
-                {statusLabel && <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${statusColor.replace('border-', 'bg-').replace('500', '100')} text-gray-700 dark:text-gray-900`}>{statusLabel}</span>}
-              </h3>
-              <div className="flex flex-col mt-1.5 gap-1">
-                <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} /> In: {res.checkInDate?.split('-').reverse().join('/')}</span>
-                <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} /> Out: {res.checkoutDate?.split('-').reverse().join('/')}</span>
-              </div>
-              {res.adminNotes && (
-                <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
-                  <StickyNote size={10} /> Nota
-                </div>
-              )}
-          </div>
-          
-          <div className="flex flex-col gap-2">
-             <button 
-                onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }}
-                className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
-                title="Editar"
-             >
-                <Pencil size={16} />
-             </button>
-             <button 
-                onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
-                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                title="Excluir"
-             >
-                <Trash2 size={16} />
-             </button>
-          </div>
-      </div>
+  const ReservationListItem = ({ res, statusColor, statusLabel }: { res: Reservation, statusColor: string, statusLabel?: string }) => {
+    
+    // Lógica para Botões de Lembrete
+    const isCheckinTomorrow = res.checkInDate === tomorrowStr;
+    const isCheckoutTomorrow = res.checkoutDate === tomorrowStr;
 
-      <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
-          >
-              {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
-              {listCopiedId === res.id ? 'Copiado' : 'Copiar'}
-          </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
-            className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
-          >
-              <Share2 size={12} /> WhatsApp
-          </button>
+    return (
+      <div 
+        onClick={() => setSelectedReservation(res)}
+        className={`bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-3 group relative cursor-pointer hover:shadow-md transition-all mb-3`}
+      >
+        <div className="flex justify-between items-start">
+            <div>
+                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  {res.guestName}
+                  {statusLabel && <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${statusColor.replace('border-', 'bg-').replace('500', '100')} text-gray-700 dark:text-gray-900`}>{statusLabel}</span>}
+                </h3>
+                <div className="flex flex-col mt-1.5 gap-1">
+                  <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} /> In: {res.checkInDate?.split('-').reverse().join('/')}</span>
+                  <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} /> Out: {res.checkoutDate?.split('-').reverse().join('/')}</span>
+                </div>
+                {res.adminNotes && (
+                  <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
+                    <StickyNote size={10} /> Nota
+                  </div>
+                )}
+                {res.guestAlertActive && (
+                  <div className="mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
+                    <MessageSquare size={10} /> Recado para {res.guestName}
+                  </div>
+                )}
+            </div>
+            
+            <div className="flex flex-col gap-2">
+               <button 
+                  onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }}
+                  className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
+                  title="Editar"
+               >
+                  <Pencil size={16} />
+               </button>
+               <button 
+                  onClick={(e) => { e.stopPropagation(); handleDelete(res.id); }}
+                  className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                  title="Excluir"
+               >
+                  <Trash2 size={16} />
+               </button>
+            </div>
+        </div>
+
+        {/* BOTÕES DE AÇÃO DE LEMBRETE (CONDICIONAL) */}
+        {isCheckinTomorrow && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkin'); }}
+              className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm animate-pulse"
+            >
+               <BellRing size={14} /> Enviar Lembrete de Chegada
+            </button>
+        )}
+
+        {isCheckoutTomorrow && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkout'); }}
+              className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
+            >
+               <LogOut size={14} /> Enviar Instruções de Saída
+            </button>
+        )}
+
+        <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleCopyListLink(res.id); }}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
+            >
+                {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
+                {listCopiedId === res.id ? 'Copiado' : 'Copiar'}
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
+            >
+                <Share2 size={12} /> Convite
+            </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
 
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white"><Loader2 className="animate-spin" /></div>;
@@ -421,20 +551,26 @@ const AdminView: React.FC = () => {
          </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-[32px] shadow-2xl shadow-gray-200/50 dark:shadow-black/50 overflow-hidden border border-white/50 dark:border-gray-700 backdrop-blur-sm">
+      <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-[32px] shadow-2xl shadow-gray-200/50 dark:shadow-black/5 overflow-hidden border border-white/50 dark:border-gray-700 backdrop-blur-sm">
         
         <div className="flex border-b border-gray-100 dark:border-gray-700">
            <button 
              onClick={() => setActiveTab('create')}
-             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'create' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+             className={`flex-1 py-4 font-bold text-xs uppercase tracking-wide transition-colors ${activeTab === 'create' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
            >
-             {editingId ? 'Editando Reserva' : 'Nova Reserva'}
+             {editingId ? 'Editando' : 'Nova Reserva'}
            </button>
            <button 
              onClick={() => setActiveTab('list')}
-             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${activeTab === 'list' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+             className={`flex-1 py-4 font-bold text-xs uppercase tracking-wide transition-colors flex items-center justify-center gap-1 ${activeTab === 'list' ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
            >
-             Gerenciar <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full text-[10px]">{activeCount}</span>
+             Lista <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full text-[9px]">{activeCount}</span>
+           </button>
+           <button 
+             onClick={() => setActiveTab('blocks')}
+             className={`flex-1 py-4 font-bold text-xs uppercase tracking-wide transition-colors flex items-center justify-center gap-1 ${activeTab === 'blocks' ? 'text-red-500 border-b-2 border-red-500 bg-red-50/50 dark:bg-red-900/10' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+           >
+             Bloqueios <CalendarOff size={14} />
            </button>
         </div>
 
@@ -457,11 +593,27 @@ const AdminView: React.FC = () => {
                </div>
             )}
 
-            <div>
-              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
-              <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
-                <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={() => setGuestName(prev => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nome Completo" />
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
+                  <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={() => setGuestName(prev => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nome Completo" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase ml-1">WhatsApp (Opcional)</label>
+                <div className="relative group">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500" size={20} />
+                  <input 
+                    type="tel" 
+                    value={guestPhone} 
+                    onChange={handleNumericInput(setGuestPhone)} 
+                    className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-green-500" 
+                    placeholder="87999998888" 
+                  />
+                </div>
               </div>
             </div>
 
@@ -492,6 +644,33 @@ const AdminView: React.FC = () => {
                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1"><Clock size={12} className="text-orange-500"/> Check-out (Hora)</label>
                   <input type="text" inputMode="numeric" value={checkOutTime} onFocus={() => setCheckOutTime('')} onChange={handleTimeChange(setCheckOutTime)} onBlur={() => handleTimeBlur(checkOutTime, setCheckOutTime)} placeholder="Ex: 1100" className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-wider" />
                </div>
+            </div>
+
+            {/* ÁREA DE ALERTA PESSOAL */}
+            <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30 space-y-3">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2 uppercase tracking-wider">
+                     <MessageSquare size={14} /> Recado para {guestName || 'o Hóspede'}
+                  </h3>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={guestAlertActive}
+                        onChange={(e) => setGuestAlertActive(e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                  </label>
+               </div>
+               
+               {guestAlertActive && (
+                 <textarea 
+                    value={guestAlertText} 
+                    onChange={(e) => setGuestAlertText(e.target.value)} 
+                    className="w-full bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800/50 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm h-20 resize-none text-gray-700 dark:text-gray-200" 
+                    placeholder="Ex: Sua encomenda chegou na portaria." 
+                 />
+               )}
             </div>
 
             <div>
@@ -525,6 +704,65 @@ const AdminView: React.FC = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* CONTENT - BLOCKS */}
+        {activeTab === 'blocks' && (
+            <div className="p-6 space-y-6 bg-white dark:bg-gray-800 min-h-[400px]">
+                <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-2xl border border-red-100 dark:border-red-800/30 text-center">
+                    <h2 className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center justify-center gap-2 uppercase tracking-wide mb-2">
+                        <Ban size={16} /> Bloquear Datas
+                    </h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Use isso para fechar o calendário para manutenção ou uso próprio. 
+                        <strong> Isso não impede você de criar reservas manuais.</strong>
+                    </p>
+                </div>
+
+                <div className="space-y-3 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Início</label>
+                            <input type="date" value={blockedStartDate} onChange={(e) => setBlockedStartDate(e.target.value)} className="w-full p-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800" />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Fim</label>
+                            <input type="date" value={blockedEndDate} onChange={(e) => setBlockedEndDate(e.target.value)} className="w-full p-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Motivo (Opcional)</label>
+                        <input type="text" value={blockedReason} onChange={(e) => setBlockedReason(e.target.value)} placeholder="Ex: Reforma, Férias..." className="w-full p-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800" />
+                    </div>
+                    <button 
+                        onClick={handleAddBlock} 
+                        disabled={isBlocking}
+                        className="w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                    >
+                        {isBlocking ? <Loader2 size={14} className="animate-spin"/> : <CalendarOff size={14} />}
+                        Bloquear no Calendário
+                    </button>
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Bloqueios Ativos</h3>
+                    {blockedDates.length === 0 && <p className="text-center text-gray-400 text-xs py-4">Nenhum bloqueio ativo.</p>}
+                    
+                    {blockedDates.map(block => (
+                        <div key={block.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <div>
+                                <p className="text-xs font-bold text-gray-700 dark:text-gray-200">
+                                    {block.startDate.split('-').reverse().join('/')} até {block.endDate.split('-').reverse().join('/')}
+                                </p>
+                                {block.reason && <p className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-0.5">{block.reason}</p>}
+                            </div>
+                            <button onClick={() => handleDeleteBlock(block.id)} className="text-gray-400 hover:text-red-500 p-2 transition-colors">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
         )}
 
         {/* CONTENT - LIST */}
@@ -602,11 +840,29 @@ const AdminView: React.FC = () => {
                   <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 dark:text-orange-400"><User size={32} /></div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedReservation.guestName}</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Hóspede</p>
+                  {selectedReservation.guestPhone && (
+                    <p className="text-xs text-green-600 font-mono mt-1">{selectedReservation.guestPhone}</p>
+                  )}
                </div>
-               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 p-4 rounded-xl relative">
-                  <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider mb-2 flex items-center gap-1"><StickyNote size={12} /> Observações Internas</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-200">{selectedReservation.adminNotes || "Nenhuma observação."}</p>
-               </div>
+               
+               {/* RECADOS NO MODAL */}
+               {(selectedReservation.adminNotes || selectedReservation.guestAlertActive) && (
+                 <div className="space-y-2">
+                    {selectedReservation.adminNotes && (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 p-4 rounded-xl relative">
+                          <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider mb-2 flex items-center gap-1"><StickyNote size={12} /> Observações Internas</p>
+                          <p className="text-sm text-gray-800 dark:text-gray-200">{selectedReservation.adminNotes}</p>
+                      </div>
+                    )}
+                    {selectedReservation.guestAlertActive && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 p-4 rounded-xl relative">
+                          <p className="text-[10px] font-bold text-blue-700 dark:text-blue-500 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> Recado ao Hóspede (Ativo)</p>
+                          <p className="text-sm text-gray-800 dark:text-gray-200">{selectedReservation.guestAlertText}</p>
+                      </div>
+                    )}
+                 </div>
+               )}
+
                <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Check-in</p>

@@ -5,17 +5,28 @@ import { sendMessageToGemini } from '../services/geminiService';
 
 interface ChatWidgetProps {
   guestName: string;
+  systemInstruction?: string;
+  language?: 'pt' | 'en'; // NOVO PROP
 }
 
-const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName }) => {
+const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction, language = 'pt' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: `Olá, ${guestName}! Sou o Concierge Virtual do flat. Posso ajudar com dicas de Petrolina, regras da casa ou dúvidas gerais?` }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Mensagem inicial dinâmica baseada no idioma
+  useEffect(() => {
+    if (messages.length === 0) {
+        const initialText = language === 'pt' 
+            ? `Olá, ${guestName}! Sou o Concierge Virtual do flat. Posso ajudar com dicas de Petrolina, regras da casa ou dúvidas gerais?`
+            : `Hello, ${guestName}! I'm the Virtual Concierge. Can I help you with tips about Petrolina, house rules, or general questions?`;
+        
+        setMessages([{ role: 'model', text: initialText }]);
+    }
+  }, [language, guestName]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,13 +56,25 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName }) => {
 
     try {
       const history = messages.filter(m => !m.isError);
-      const responseText = await sendMessageToGemini(userText, history, guestName);
+      
+      // INJEÇÃO DE IDIOMA NO PROMPT
+      // Se o idioma for inglês, adicionamos uma instrução extra para a IA
+      const langInstruction = language === 'en' 
+        ? "\nIMPORTANT: The user is viewing the app in English. Please answer ALL questions in English."
+        : "";
+
+      const finalInstruction = (systemInstruction || "") + langInstruction;
+
+      const responseText = await sendMessageToGemini(userText, history, guestName, finalInstruction);
       
       if (responseText) {
         setMessages(prev => [...prev, { role: 'model', text: responseText }]);
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "Desculpe, tive um problema ao conectar. Tente novamente mais tarde.", isError: true }]);
+      const errorText = language === 'pt' 
+        ? "Desculpe, tive um problema ao conectar. Tente novamente mais tarde."
+        : "Sorry, I had trouble connecting. Please try again later.";
+      setMessages(prev => [...prev, { role: 'model', text: errorText, isError: true }]);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +134,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName }) => {
                <Sparkles size={20} className="text-yellow-200" />
             </div>
             <div>
-              <h3 className="font-bold font-heading text-lg">Concierge Virtual</h3>
+              <h3 className="font-bold font-heading text-lg">{language === 'pt' ? 'Concierge Virtual' : 'Virtual Concierge'}</h3>
               <p className="text-xs text-orange-100 opacity-90 font-medium">Powered by Gemini AI</p>
             </div>
           </div>
@@ -139,7 +162,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName }) => {
              <div className="flex justify-start animate-fadeIn">
                <div className="bg-white dark:bg-gray-700 p-3 rounded-2xl rounded-bl-none border border-gray-100 dark:border-gray-600 shadow-sm flex items-center gap-3 px-4">
                  <Loader2 size={18} className="animate-spin text-orange-500" />
-                 <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Digitando...</span>
+                 <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{language === 'pt' ? 'Digitando...' : 'Typing...'}</span>
                </div>
              </div>
           )}
@@ -154,7 +177,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Pergunte sobre o flat ou a cidade..."
+              placeholder={language === 'pt' ? "Pergunte sobre o flat ou a cidade..." : "Ask about the flat or the city..."}
               className="w-full bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white rounded-full py-3.5 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:bg-white dark:focus:bg-gray-700 transition-all text-sm font-medium placeholder:text-gray-400"
             />
             <button 

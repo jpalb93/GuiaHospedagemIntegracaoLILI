@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PlaceRecommendation } from '../types';
-import { MapPin, ExternalLink, X, Car, Footprints, Phone, ShoppingBag, Ticket } from 'lucide-react';
+import { MapPin, ExternalLink, X, Car, Footprints, Phone, ShoppingBag, Ticket, Calendar, Clock } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
 
 interface PlaceCardProps {
@@ -10,7 +10,6 @@ interface PlaceCardProps {
 const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // A URL do Google Maps funciona melhor com o nome e o endereço juntos
   const googleMapsUrl = place.address 
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name} ${place.address} Petrolina PE`)}`
     : null;
@@ -20,14 +19,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
     return dist.replace(/\s*\(.*?\)/g, '').trim();
   };
 
-  // --- LÓGICA INTELIGENTE: TRATANDO CATEGORIAS ESPECÍFICAS ---
-  // A classe 'attractions' ou 'passeios' deve ser tratada diferente de comida.
-  // Usamos (place.category ?? '') para garantir que sempre seja uma string (corrigindo o erro TS)
   const category = (place.category ?? '').toLowerCase();
-  const isAttraction = category === 'attractions' || category === 'passeios';
+  const isAttraction = category === 'attractions' || category === 'passeios' || category === 'events' || category === 'eventos';
   
   const actionLabel = isAttraction ? 'Reservar / Ver Site' : 'Fazer Pedido Online';
   const ActionIcon = isAttraction ? Ticket : ShoppingBag;
+
+  const getFormattedEventDate = () => {
+      if (!place.eventDate) return null;
+      const [, m, d] = place.eventDate.split('-');
+      return `${d}/${m}`;
+  };
 
   return (
     <>
@@ -36,7 +38,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
         onClick={() => setIsOpen(true)}
         className="flex bg-white dark:bg-gray-800 rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:bg-gray-750 transition-all duration-300 h-32 w-full cursor-pointer active:scale-[0.99] group relative"
       >
-        {/* Imagem Pequena (Esquerda) */}
         <div className="w-28 h-full shrink-0 relative overflow-hidden bg-gray-50 dark:bg-gray-700">
           <OptimizedImage 
             src={place.imageUrl} 
@@ -45,16 +46,26 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
           />
           <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors pointer-events-none"></div>
           
-          {/* Badge de Distância */}
-          {place.distance && (
+          {place.eventDate && (
+             <div className="absolute top-1.5 left-1.5 bg-pink-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm z-10 border border-white/10 font-sans tracking-wide">
+               <Calendar size={9} />
+               <span>{getFormattedEventDate()}</span>
+               {place.eventTime && (
+                 <span className="border-l border-white/20 pl-1 ml-1 flex items-center gap-0.5">
+                    <Clock size={8} /> {place.eventTime}
+                 </span>
+               )}
+             </div>
+          )}
+
+          {place.distance && !place.eventDate && (
              <div className="absolute bottom-1.5 right-1.5 bg-gray-900/80 backdrop-blur-md text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm z-10 border border-white/10 font-sans tracking-wide">
                <Footprints size={9} className="text-orange-300" />
                <span>{cleanDistance(place.distance)}</span>
              </div>
           )}
           
-          {/* Badge de Ação (Delivery ou Ticket) */}
-          {!place.distance && place.orderLink && (
+          {!place.distance && place.orderLink && !place.eventDate && (
              <div className={`absolute bottom-1.5 right-1.5 backdrop-blur-md text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm z-10 border border-white/10 font-sans tracking-wide ${isAttraction ? 'bg-purple-600/90' : 'bg-green-600/90'}`}>
                <ActionIcon size={9} className="text-white" />
                <span>{isAttraction ? 'Reservar' : 'Delivery'}</span>
@@ -62,8 +73,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
           )}
         </div>
         
-        {/* Conteúdo (Direita) */}
         <div className="flex-1 p-3.5 flex flex-col h-full min-w-0">
+          {/* NOTRANSLATE ADDED */}
           <h4 className="font-heading font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1 notranslate">
             {place.name}
           </h4>
@@ -75,7 +86,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
           {place.address ? (
             <div className="flex items-center gap-1 pt-2 mt-1 border-t border-gray-50 dark:border-gray-700">
                <MapPin size={10} className="text-gray-400 dark:text-gray-500 shrink-0" />
-               <p className="text-[9px] text-gray-500 dark:text-gray-400 truncate font-semibold font-sans">{place.address}</p>
+               <p className="text-[9px] text-gray-500 dark:text-gray-400 truncate font-semibold font-sans notranslate">{place.address}</p>
             </div>
           ) : (
              <div className="pt-1"></div>
@@ -125,15 +136,36 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
               </p>
 
               <div className="space-y-5">
+                
+                {place.eventDate && (
+                    <div className="flex items-start gap-3 bg-pink-50 dark:bg-pink-900/20 p-4 rounded-2xl border border-pink-100 dark:border-pink-800/30">
+                        <div className="bg-pink-100 dark:bg-pink-900/40 p-2 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm"><Calendar size={20} /></div>
+                        <div>
+                            <p className="text-[10px] text-pink-500 dark:text-pink-400 uppercase font-bold mb-0.5 font-heading tracking-wider">Quando</p>
+                            <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug">
+                                {place.eventDate.split('-').reverse().join('/')}
+                                {place.eventEndDate && ` até ${place.eventEndDate.split('-').reverse().join('/')}`}
+                            </p>
+                            {place.eventTime && (
+                                <div className="mt-1 flex items-center gap-1 text-xs text-pink-700 dark:text-pink-300 font-medium">
+                                    <Clock size={12} />
+                                    {place.eventTime} {place.eventEndTime ? `- ${place.eventEndTime}` : ''}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {place.address && (
                   <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
                     <div className="bg-white dark:bg-gray-700 p-2 rounded-xl text-orange-500 dark:text-orange-400 shadow-sm border border-orange-50 dark:border-orange-900/30"><MapPin size={18} /></div>
                     <div>
                       <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-bold mb-0.5 font-heading tracking-wider">Localização</p>
-                      <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug">{place.address}</p>
+                      {/* NOTRANSLATE ADDED */}
+                      <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug notranslate">{place.address}</p>
                       {place.distance && (
                         <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1 font-medium font-sans">
-                          <Car size={12} /> Aprox. {place.distance} do flat
+                          <Car size={12} /> Aprox. {place.distance}
                         </p>
                       )}
                     </div>

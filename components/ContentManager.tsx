@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, LogIn, Save, X, LayoutGrid, Image as ImageIcon, MapPin, Phone, Tag, Link as LinkIcon, AlertCircle, Settings, Store, Wifi, Megaphone, Check, Box, Lock, Sparkles, Coffee, Utensils, Sunset, Moon, Edit } from 'lucide-react';
-import { PlaceRecommendation, PlaceCategory, AppConfig, SmartSuggestionsConfig, TimeOfDaySuggestion } from '../types';
-import { loginCMS, logoutCMS, subscribeToAuth, getDynamicPlaces, addDynamicPlace, updateDynamicPlace, deleteDynamicPlace, isFirebaseConfigured, getHeroImages, updateHeroImages, getAppSettings, saveAppSettings, getSmartSuggestions, saveSmartSuggestions } from '../services/firebase';
+import { Trash2, Plus, LogIn, Save, X, LayoutGrid, Image as ImageIcon, MapPin, Phone, Tag, Link as LinkIcon, AlertCircle, Settings, Store, Wifi, Megaphone, Check, Box, Lock, Sparkles, Coffee, Utensils, Sunset, Moon, Edit, Calendar, Clock, Lightbulb, Star } from 'lucide-react';
+import { PlaceRecommendation, PlaceCategory, AppConfig, SmartSuggestionsConfig, TimeOfDaySuggestion, GuestReview } from '../types';
+import { loginCMS, logoutCMS, subscribeToAuth, getDynamicPlaces, addDynamicPlace, updateDynamicPlace, deleteDynamicPlace, isFirebaseConfigured, getHeroImages, updateHeroImages, getAppSettings, saveAppSettings, getSmartSuggestions, saveSmartSuggestions, getGuestReviews, addGuestReview, deleteGuestReview, cleanupExpiredEvents } from '../services/firebase';
 import OptimizedImage from './OptimizedImage';
+import { DEFAULT_SYSTEM_INSTRUCTION } from '../constants';
 
 const CATEGORIES: { id: PlaceCategory; label: string }[] = [
   { id: 'burgers', label: 'Hambúrgueres' },
@@ -17,6 +18,7 @@ const CATEGORIES: { id: PlaceCategory; label: string }[] = [
   { id: 'snacks', label: 'Lanches & Delivery' },
   { id: 'essentials', label: 'Mercados & Farmácias' },
   { id: 'attractions', label: 'Passeios' },
+  { id: 'events', label: 'Eventos & Shows' },
   { id: 'emergency', label: 'Emergência' },
 ];
 
@@ -27,8 +29,9 @@ const ContentManager: React.FC = () => {
   const [error, setError] = useState('');
   
   // Content State
-  const [activeTab, setActiveTab] = useState<'places' | 'config' | 'suggestions'>('places');
+  const [activeTab, setActiveTab] = useState<'places' | 'config' | 'suggestions' | 'reviews'>('places');
   const [places, setPlaces] = useState<PlaceRecommendation[]>([]);
+  const [reviews, setReviews] = useState<GuestReview[]>([]);
   const [loading, setLoading] = useState(false);
   
   // Config State
@@ -38,10 +41,15 @@ const ContentManager: React.FC = () => {
     wifiPass: '',
     safeCode: '', 
     noticeActive: false,
-    noticeText: ''
+    noticeText: '',
+    aiSystemPrompt: '',
+    cityCuriosities: []
   });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [configSavedSuccess, setConfigSavedSuccess] = useState(false);
+  
+  // Temp state for adding new curiosity
+  const [newCuriosity, setNewCuriosity] = useState('');
 
   // Suggestions State (Agora Listas)
   const [suggestions, setSuggestions] = useState<SmartSuggestionsConfig>({
@@ -60,6 +68,9 @@ const ContentManager: React.FC = () => {
     description: string;
   }>({ category: 'morning', title: '', description: '' });
 
+  // Reviews Temp State
+  const [newReview, setNewReview] = useState<{name: string, text: string}>({name: '', text: ''});
+
   // Form States (Places)
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -77,8 +88,11 @@ const ContentManager: React.FC = () => {
     const unsubscribe = subscribeToAuth((u) => {
       setUser(u);
       if (u) {
+        // Assim que o admin logar, carrega os dados e faz a faxina
         loadPlaces();
         loadConfig();
+        loadReviews();
+        cleanupExpiredEvents(); // <--- LIMPEZA AUTOMÁTICA AQUI
       }
     });
     return () => unsubscribe();
@@ -86,14 +100,21 @@ const ContentManager: React.FC = () => {
 
   const loadPlaces = async () => {
     setLoading(true);
-    const data = await getDynamicPlaces();
+    // O ADMIN SEMPRE FORÇA REFRESH (TRUE) PARA VER DADOS FRESCOS E IGNORAR CACHE
+    const data = await getDynamicPlaces(true);
     setPlaces(data);
     setLoading(false);
   };
 
+  const loadReviews = async () => {
+    // OTIMIZAÇÃO: Carrega apenas as últimas 50 avaliações para gestão
+    const data = await getGuestReviews(50);
+    setReviews(data);
+  };
+
   const loadConfig = async () => {
-    // Carrega Imagens
-    const images = await getHeroImages();
+    // Carrega Imagens (FORÇANDO REFRESH NO ADMIN)
+    const images = await getHeroImages(true);
     setHeroImages(images);
 
     // Carrega Configs Gerais
@@ -104,7 +125,9 @@ const ContentManager: React.FC = () => {
         wifiPass: settings.wifiPass || '',
         safeCode: settings.safeCode || '',
         noticeActive: settings.noticeActive || false,
-        noticeText: settings.noticeText || ''
+        noticeText: settings.noticeText || '',
+        aiSystemPrompt: settings.aiSystemPrompt || '',
+        cityCuriosities: settings.cityCuriosities || []
       });
     }
 
@@ -152,17 +175,26 @@ const ContentManager: React.FC = () => {
         phoneNumber: newPlace.phoneNumber || "",
         orderLink: newPlace.orderLink || "",
         distance: newPlace.distance || "",
+        // NOVOS CAMPOS DE EVENTO
+        eventDate: newPlace.eventDate || "",
+        eventEndDate: newPlace.eventEndDate || "",
+        eventTime: newPlace.eventTime || "",
+        eventEndTime: newPlace.eventEndTime || "",
         visible: true
       };
 
       if (editingId) {
         await updateDynamicPlace(editingId, placeData);
+        // ATUALIZAÇÃO OTIMISTA: Atualiza o array localmente sem chamar loadPlaces()
+        setPlaces(prev => prev.map(p => p.id === editingId ? { ...p, ...placeData } : p));
       } else {
-        await addDynamicPlace(placeData);
+        const newId = await addDynamicPlace(placeData);
+        // ATUALIZAÇÃO OTIMISTA: Adiciona ao array localmente
+        setPlaces(prev => [...prev, { id: newId, ...placeData }]);
       }
       
       handleCloseForm();
-      loadPlaces();
+      // REMOVIDO: loadPlaces(); -> Economiza leitura
     } catch (e: any) {
       console.error(e);
       alert(`Erro ao salvar: ${e.message || "Tente novamente."}`);
@@ -190,7 +222,9 @@ const ContentManager: React.FC = () => {
     setLoading(true);
     try {
       await deleteDynamicPlace(id);
-      loadPlaces();
+      // ATUALIZAÇÃO OTIMISTA: Remove do array localmente
+      setPlaces(prev => prev.filter(p => p.id !== id));
+      // REMOVIDO: loadPlaces(); -> Economiza leitura
     } catch (e) {
       alert("Erro ao excluir.");
     } finally {
@@ -234,6 +268,22 @@ const ContentManager: React.FC = () => {
 
   // --- CONFIG LOGIC (GENERAL APP SETTINGS) ---
   
+  const handleAddCuriosity = () => {
+    if (!newCuriosity.trim()) return;
+    const currentList = appSettings.cityCuriosities || [];
+    setAppSettings({
+      ...appSettings,
+      cityCuriosities: [...currentList, newCuriosity.trim()]
+    });
+    setNewCuriosity('');
+  };
+
+  const handleRemoveCuriosity = (index: number) => {
+    const currentList = appSettings.cityCuriosities || [];
+    const updated = currentList.filter((_, i) => i !== index);
+    setAppSettings({ ...appSettings, cityCuriosities: updated });
+  };
+
   const handleSaveAppConfig = async () => {
     setIsSavingConfig(true);
     setConfigSavedSuccess(false);
@@ -285,6 +335,41 @@ const ContentManager: React.FC = () => {
       alert("Erro ao salvar sugestões.");
     } finally {
       setIsSavingSuggestions(false);
+    }
+  };
+
+  // --- REVIEWS LOGIC ---
+  const handleAddReview = async () => {
+    if(!newReview.name || !newReview.text) {
+      alert("Preencha nome e comentário.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const newId = await addGuestReview(newReview);
+      // ATUALIZAÇÃO OTIMISTA
+      setReviews(prev => [...prev, { id: newId, ...newReview }]);
+      setNewReview({name: '', text: ''});
+      // REMOVIDO: loadReviews();
+    } catch(e) {
+      alert("Erro ao adicionar avaliação.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (id?: string) => {
+    if(!id || !confirm("Excluir esta avaliação?")) return;
+    setLoading(true);
+    try {
+      await deleteGuestReview(id);
+      // ATUALIZAÇÃO OTIMISTA
+      setReviews(prev => prev.filter(r => r.id !== id));
+      // REMOVIDO: loadReviews();
+    } catch(e) {
+      alert("Erro ao excluir.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -431,6 +516,12 @@ const ContentManager: React.FC = () => {
                <Sparkles size={14} /> Sugestões
              </button>
              <button 
+               onClick={() => setActiveTab('reviews')}
+               className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'reviews' ? 'bg-white dark:bg-gray-600 text-orange-600 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}
+             >
+               <Star size={14} /> Avaliações
+             </button>
+             <button 
                onClick={() => setActiveTab('config')}
                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'config' ? 'bg-white dark:bg-gray-600 text-orange-600 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}
              >
@@ -452,6 +543,66 @@ const ContentManager: React.FC = () => {
 
       <main className="max-w-5xl mx-auto p-4 sm:p-6 pb-20">
         {loading && <div className="text-center py-10 opacity-50 flex items-center justify-center gap-2"><div className="animate-spin w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full"></div> Carregando...</div>}
+
+        {/* === ABA: AVALIAÇÕES (REVIEWS) === */}
+        {activeTab === 'reviews' && !loading && (
+           <div className="max-w-2xl mx-auto space-y-6">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                 <h2 className="text-lg font-bold font-heading mb-4 flex items-center gap-2">
+                   <Star size={20} className="text-orange-500" />
+                   Gestão de Avaliações (Landing Page)
+                 </h2>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                   Copie os melhores comentários do Airbnb e cole aqui para exibir no site. Isso ajuda a passar confiança!
+                 </p>
+
+                 {/* Formulário de Adição */}
+                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-6 space-y-3">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase">Adicionar Nova</h3>
+                    <input 
+                      placeholder="Nome do Hóspede (ex: Maria Silva)"
+                      className="w-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 outline-none focus:ring-1 focus:ring-orange-500 text-sm"
+                      value={newReview.name}
+                      onChange={(e) => setNewReview({...newReview, name: e.target.value})}
+                    />
+                    <textarea 
+                      placeholder="Cole o comentário aqui..."
+                      className="w-full p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 outline-none focus:ring-1 focus:ring-orange-500 text-sm resize-none h-24"
+                      value={newReview.text}
+                      onChange={(e) => setNewReview({...newReview, text: e.target.value})}
+                    />
+                    <button 
+                      onClick={handleAddReview}
+                      className="w-full bg-orange-500 text-white py-2 rounded-lg font-bold text-sm hover:bg-orange-600 transition-colors"
+                    >
+                      Adicionar Avaliação
+                    </button>
+                 </div>
+
+                 {/* Lista de Avaliações */}
+                 <div className="space-y-3">
+                    {reviews.length === 0 && <p className="text-center text-gray-400 text-sm py-4">Nenhuma avaliação cadastrada.</p>}
+                    {reviews.map(review => (
+                       <div key={review.id} className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-start gap-4">
+                          <div>
+                             <p className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1">
+                               {review.name} 
+                               <span className="text-amber-500 flex"><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /></span>
+                             </p>
+                             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 italic">"{review.text}"</p>
+                          </div>
+                          <button 
+                            onClick={() => handleDeleteReview(review.id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        )}
 
         {/* === ABA: SUGESTÕES INTELIGENTES === */}
         {activeTab === 'suggestions' && !loading && (
@@ -491,7 +642,7 @@ const ContentManager: React.FC = () => {
            </div>
         )}
 
-        {/* === ABA: CONFIGURAÇÕES (CAPA + WIFI + AVISOS) === */}
+        {/* === ABA: CONFIGURAÇÕES (CAPA + WIFI + AVISOS + IA + CURIOSIDADES) === */}
         {activeTab === 'config' && !loading && (
            <div className="max-w-2xl mx-auto space-y-6">
               
@@ -508,7 +659,7 @@ const ContentManager: React.FC = () => {
                  <div className="space-y-4 mb-6">
                     {heroImages.length === 0 && (
                       <p className="text-sm italic text-gray-400 text-center py-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
-                        Nenhuma imagem customizada. O site está usando as imagens padrão.
+                        Nenhuma imagem customizada. O site usará as imagens padrão.
                       </p>
                     )}
                     {heroImages.map((url, idx) => (
@@ -611,7 +762,7 @@ const ContentManager: React.FC = () => {
                     <div className="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
                        <div className="flex justify-between items-center mb-3">
                           <h3 className="text-sm font-bold text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
-                             <Megaphone size={16}/> Aviso de Topo (Banner)
+                             <Megaphone size={16}/> Aviso Global (Para Todos)
                           </h3>
                           <div className="flex items-center gap-2">
                              <label className="relative inline-flex items-center cursor-pointer">
@@ -639,6 +790,67 @@ const ContentManager: React.FC = () => {
                              Prévia: {appSettings.noticeText || "Seu texto aqui..."}
                           </div>
                        )}
+                    </div>
+
+                    {/* CÉREBRO DA IA */}
+                    <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                       <h3 className="text-sm font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2 mb-3">
+                          <Sparkles size={16}/> Cérebro da IA (Mandacaru)
+                       </h3>
+                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 leading-relaxed">
+                          Aqui você define a personalidade e o conhecimento da Inteligência Artificial. Tudo o que você escrever aqui será a "verdade absoluta" para o robô.
+                       </p>
+                       
+                       <textarea 
+                          value={appSettings.aiSystemPrompt || ''}
+                          onChange={(e) => setAppSettings({...appSettings, aiSystemPrompt: e.target.value})}
+                          placeholder={DEFAULT_SYSTEM_INSTRUCTION}
+                          className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-purple-500 min-h-[200px] font-mono leading-relaxed"
+                       />
+                       <p className="text-[10px] text-gray-400 mt-2 text-right">
+                          Deixe em branco para usar o padrão do sistema (definido no código).
+                       </p>
+                    </div>
+
+                    {/* CURIOSIDADES DA CIDADE (NOVO) */}
+                    <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                       <h3 className="text-sm font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2 mb-3">
+                          <Lightbulb size={16}/> Curiosidades da Cidade (Stories)
+                       </h3>
+                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
+                          Essas frases aparecem aleatoriamente nos Stories para os hóspedes. Adicione fatos interessantes sobre Petrolina.
+                       </p>
+                       
+                       <div className="space-y-2 mb-4">
+                          {appSettings.cityCuriosities?.map((curiosity, idx) => (
+                             <div key={idx} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-300">
+                                <span>{curiosity}</span>
+                                <button onClick={() => handleRemoveCuriosity(idx)} className="text-gray-400 hover:text-red-500 transition-colors p-1">
+                                   <Trash2 size={14} />
+                                </button>
+                             </div>
+                          ))}
+                          {(!appSettings.cityCuriosities || appSettings.cityCuriosities.length === 0) && (
+                             <p className="text-xs text-gray-400 italic text-center py-2">Nenhuma curiosidade personalizada (usando padrão).</p>
+                          )}
+                       </div>
+
+                       <div className="flex gap-2">
+                          <input 
+                             value={newCuriosity}
+                             onChange={(e) => setNewCuriosity(e.target.value)}
+                             placeholder="Nova curiosidade..."
+                             className="flex-1 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                             onKeyDown={(e) => e.key === 'Enter' && handleAddCuriosity()}
+                          />
+                          <button 
+                             onClick={handleAddCuriosity}
+                             disabled={!newCuriosity.trim()}
+                             className="bg-blue-500 text-white px-3 rounded-lg font-bold text-xs hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                          >
+                             Adicionar
+                          </button>
+                       </div>
                     </div>
 
                     <button 
@@ -692,6 +904,15 @@ const ContentManager: React.FC = () => {
                     <h3 className="font-bold text-lg font-heading mb-1">{place.name}</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">{place.description}</p>
                     
+                    {/* EXIBIÇÃO DA DATA SE FOR EVENTO */}
+                    {(place.category === 'events' && place.eventDate) && (
+                        <div className="mb-3 flex items-center gap-1.5 text-xs font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20 px-2 py-1 rounded-md w-fit">
+                            <Calendar size={12} /> 
+                            {place.eventDate.split('-').reverse().join('/')}
+                            {place.eventTime && ` • ${place.eventTime}`}
+                        </div>
+                    )}
+
                     <div className="mt-auto flex justify-end pt-3 border-t border-gray-100 dark:border-gray-700 gap-2">
                         <button 
                           onClick={() => handleEditPlace(place)}
@@ -748,6 +969,65 @@ const ContentManager: React.FC = () => {
                       ))}
                     </select>
                  </div>
+
+                 {/* --- CAMPOS ESPECÍFICOS PARA EVENTOS --- */}
+                 {newPlace.category === 'events' && (
+                    <div className="col-span-1 md:col-span-2 bg-pink-50 dark:bg-pink-900/20 p-4 rounded-xl border border-pink-100 dark:border-pink-800/30 grid grid-cols-2 gap-4 animate-fadeIn">
+                        <div className="col-span-2">
+                            <p className="text-xs font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1 mb-2 uppercase tracking-wider">
+                                <Calendar size={14} /> Configuração do Evento
+                            </p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Data do Evento (Início) *</label>
+                            <input 
+                                type="date"
+                                className="w-full p-3 bg-white dark:bg-gray-800 rounded-xl border border-pink-200 dark:border-gray-700 focus:ring-2 focus:ring-pink-500 outline-none text-sm"
+                                value={newPlace.eventDate || ''}
+                                onChange={e => setNewPlace({...newPlace, eventDate: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Data Fim (Opcional)</label>
+                            <input 
+                                type="date"
+                                className="w-full p-3 bg-white dark:bg-gray-800 rounded-xl border border-pink-200 dark:border-gray-700 focus:ring-2 focus:ring-pink-500 outline-none text-sm"
+                                value={newPlace.eventEndDate || ''}
+                                onChange={e => setNewPlace({...newPlace, eventEndDate: e.target.value})}
+                            />
+                        </div>
+                        
+                        {/* CAMPOS DE HORA (NOVO) */}
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Hora Início (Opcional)</label>
+                            <div className="relative">
+                                <Clock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input 
+                                    type="time"
+                                    className="w-full p-3 pl-9 bg-white dark:bg-gray-800 rounded-xl border border-pink-200 dark:border-gray-700 focus:ring-2 focus:ring-pink-500 outline-none text-sm"
+                                    value={newPlace.eventTime || ''}
+                                    onChange={e => setNewPlace({...newPlace, eventTime: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Hora Fim (Opcional)</label>
+                            <div className="relative">
+                                <Clock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input 
+                                    type="time"
+                                    className="w-full p-3 pl-9 bg-white dark:bg-gray-800 rounded-xl border border-pink-200 dark:border-gray-700 focus:ring-2 focus:ring-pink-500 outline-none text-sm"
+                                    value={newPlace.eventEndTime || ''}
+                                    onChange={e => setNewPlace({...newPlace, eventEndTime: e.target.value})}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="col-span-2 text-[10px] text-pink-600 dark:text-pink-400 italic">
+                            * O evento deixará de aparecer no guia automaticamente após a data final.
+                        </div>
+                    </div>
+                 )}
                  
                  <div className="col-span-1 md:col-span-2">
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Descrição *</label>

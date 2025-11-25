@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { SYSTEM_INSTRUCTION } from "../constants";
+import { DEFAULT_SYSTEM_INSTRUCTION } from "../constants";
 
 // =============================================================================================
 // ÁREA DE CONFIGURAÇÃO DA CHAVE (API KEY)
@@ -22,7 +22,8 @@ const ai = new GoogleGenAI({ apiKey: apiKey || "CHAVE_PENDENTE" });
 export const sendMessageToGemini = async (
   message: string, 
   history: { role: 'user' | 'model'; text: string }[],
-  guestName: string
+  guestName: string,
+  customSystemInstruction?: string // NOVO PARÂMETRO OPCIONAL
 ): Promise<string> => {
   try {
     // Conversão forçada para string para evitar erro de tipos literais no TypeScript
@@ -35,10 +36,15 @@ export const sendMessageToGemini = async (
 
     const model = 'gemini-2.5-flash';
     
+    // Usa a instrução customizada do CMS se existir, senão usa o padrão (fallback)
+    const instructionToUse = customSystemInstruction && customSystemInstruction.trim().length > 0
+      ? customSystemInstruction
+      : DEFAULT_SYSTEM_INSTRUCTION;
+
     const chat = ai.chats.create({
       model: model,
       config: {
-        systemInstruction: `${SYSTEM_INSTRUCTION}\nO nome do hóspede atual é ${guestName}.`,
+        systemInstruction: `${instructionToUse}\nO nome do hóspede atual é ${guestName}.`,
         temperature: 0.7,
       },
       history: history.map(h => ({

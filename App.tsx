@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminView from './components/AdminView';
 import GuestView from './components/GuestView';
 import ContentManager from './components/ContentManager';
-import LandingPageLili from './components/LandingPageLili'; // <--- IMPORT NOVO
+import LandingPageLili from './components/LandingPageLili'; 
 import { AppMode, GuestConfig } from './types';
 import { Lock, MapPin, CalendarX, MessageCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { HERO_IMAGE_URL, HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } from './constants';
@@ -59,7 +59,6 @@ const App: React.FC = () => {
   }, []);
 
   // --- LÓGICA DO APP (ROTEAMENTO E DADOS) ---
-  // Adicionei 'LILI_LANDING' nos modos possíveis
   const [appState, setAppState] = useState<{ mode: AppMode | 'LANDING' | 'LILI_LANDING' | 'EXPIRED' | 'BLOCKED' | 'LOADING'; config: GuestConfig }>(() => {
     return { mode: 'LOADING', config: { guestName: '', lockCode: '' } };
   });
@@ -89,7 +88,13 @@ const App: React.FC = () => {
                    return { mode: 'EXPIRED', config: { guestName: '', lockCode: '' }};
                  }
                }
-               return { mode: AppMode.GUEST, config: updatedReservation };
+               
+               // SANITIZAÇÃO DE DADOS (SEGURANÇA)
+               // Usando desestruturação para garantir que dados sensíveis sejam descartados
+               // e não fiquem no objeto safeConfig
+               const { guestPhone, adminNotes, ...safeConfig } = updatedReservation;
+
+               return { mode: AppMode.GUEST, config: safeConfig };
             }
             return prev;
           });
@@ -109,7 +114,7 @@ const App: React.FC = () => {
       const isAdmin = path === '/admin' || params.get('admin') === 'true';
       const isCMS = path === '/cms' || params.get('mode') === 'cms'; 
       
-      // NOVO: Verifica se é a página da Lili
+      // Verifica se é a página da Lili
       const isLiliPage = path === '/lili' || path === '/flat-lili';
 
       // 1. Rota CMS
@@ -124,7 +129,7 @@ const App: React.FC = () => {
         return;
       }
 
-      // 3. Rota Landing Page Lili (NOVO)
+      // 3. Rota Landing Page Lili
       if (isLiliPage) {
          setAppState({ mode: 'LILI_LANDING', config: { guestName: '', lockCode: '' } });
          return;
@@ -158,7 +163,11 @@ const App: React.FC = () => {
              }
           }
 
-          setAppState({ mode: AppMode.GUEST, config: reservation });
+          // SANITIZAÇÃO DE DADOS (SEGURANÇA)
+          // Garante que o telefone e notas nunca cheguem ao state do componente
+          const { guestPhone, adminNotes, ...safeConfig } = reservation;
+
+          setAppState({ mode: AppMode.GUEST, config: safeConfig });
           return;
 
         } catch (error) {
@@ -185,7 +194,7 @@ const App: React.FC = () => {
     return <ContentManager />;
   }
 
-  // NOVO: Renderiza a Landing Page da Lili
+  // Renderiza a Landing Page da Lili
   if (appState.mode === 'LILI_LANDING') {
     return <LandingPageLili />;
   }

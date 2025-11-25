@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
-import { PlaceRecommendation, Reservation, AppConfig, SmartSuggestionsConfig } from '../types';
+import { PlaceRecommendation, Reservation, AppConfig, SmartSuggestionsConfig, GuestReview, BlockedDateRange } from '../types';
 
 // ============================================================================
 // CONFIGURAÇÃO DO FIREBASE (PROJETO FLAT LILI)
@@ -38,25 +38,72 @@ try {
 
 export const isFirebaseConfigured = () => !!db;
 
-// --- SERVIÇOS DE BANCO DE DADOS (LOCAIS) ---
+// --- HELPER PARA CACHE LOCAL (REDUÇÃO DE LEITURAS) ---
+const CACHE_EXPIRY_MS = 3600000; // 1 hora
 
-export const getDynamicPlaces = async (): Promise<PlaceRecommendation[]> => {
+const getFromCache = <T>(key: string): T | null => {
+  try {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    
+    const { data, timestamp } = JSON.parse(cached);
+    const now = Date.now();
+    
+    // Se o cache for mais velho que 1 hora, descarta
+    if (now - timestamp > CACHE_EXPIRY_MS) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    
+    return data as T;
+  } catch (e) {
+    return null;
+  }
+};
+
+const saveToCache = (key: string, data: any) => {
+  try {
+    const cacheObj = { data, timestamp: Date.now() };
+    localStorage.setItem(key, JSON.stringify(cacheObj));
+  } catch (e) {
+    console.warn("Erro ao salvar cache local", e);
+  }
+};
+
+// ============================================================================
+// 1. SERVIÇOS DE BANCO DE DADOS (LOCAIS / PLACES)
+// ============================================================================
+
+export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecommendation[]> => {
   if (!db) return [];
+  
+  // Verifica Cache se não for refresh forçado
+  if (!forceRefresh) {
+    const cachedData = getFromCache<PlaceRecommendation[]>('cached_places');
+    if (cachedData) return cachedData;
+  }
+
   try {
     const snapshot = await db.collection('places').get();
-    return snapshot.docs.map(doc => ({
+    const data = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as any)
     } as PlaceRecommendation));
+    
+    // Salva no Cache
+    saveToCache('cached_places', data);
+    
+    return data;
   } catch (error) {
     console.error("Erro ao buscar locais:", error);
     return [];
   }
 };
 
-export const addDynamicPlace = async (place: Omit<PlaceRecommendation, 'id'>) => {
+export const addDynamicPlace = async (place: Omit<PlaceRecommendation, 'id'>): Promise<string> => {
   if (!db) throw new Error("Firebase não configurado");
-  await db.collection('places').add(place);
+  const docRef = await db.collection('places').add(place);
+  return docRef.id;
 };
 
 export const updateDynamicPlace = async (id: string, place: Partial<PlaceRecommendation>) => {
@@ -71,16 +118,69 @@ export const deleteDynamicPlace = async (id: string) => {
   await db.collection('places').doc(id).delete();
 };
 
-// --- SERVIÇOS DE CONFIGURAÇÃO (IMAGENS DE CAPA) ---
+// --- FUNÇÃO DE LIMPEZA AUTOMÁTICA DE EVENTOS ---
+export const cleanupExpiredEvents = async () => {
+  if (!db) return;
+  
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  console.log("🧹 Verificando eventos expirados antes de: ", today);
 
-export const getHeroImages = async (): Promise<string[]> => {
+  try {
+    // Busca apenas locais que são eventos
+    const snapshot = await db.collection('places').where('category', '==', 'events').get();
+    
+    if (snapshot.empty) return;
+
+    const batch = db.batch();
+    let deletedCount = 0;
+
+    snapshot.docs.forEach(doc => {
+      const data = doc.data() as PlaceRecommendation;
+      // Usa a data final se existir, senão a data de início
+      const expiryDate = data.eventEndDate || data.eventDate;
+
+      // Se a data de validade for MENOR que hoje (ontem ou antes), deleta
+      if (expiryDate && expiryDate < today) {
+        batch.delete(doc.ref);
+        deletedCount++;
+      }
+    });
+
+    if (deletedCount > 0) {
+      await batch.commit();
+      console.log(`✅ Faxina completa: ${deletedCount} eventos antigos removidos automaticamente.`);
+    } else {
+      console.log("✨ Nenhum evento expirado encontrado.");
+    }
+  } catch (error) {
+    console.error("Erro na limpeza automática de eventos:", error);
+  }
+};
+
+// ============================================================================
+// 2. SERVIÇOS DE CONFIGURAÇÃO (IMAGENS DE CAPA)
+// ============================================================================
+
+export const getHeroImages = async (forceRefresh = false): Promise<string[]> => {
   if (!db) return [];
+
+  // Verifica Cache se não for refresh forçado
+  if (!forceRefresh) {
+    const cachedData = getFromCache<string[]>('cached_hero_images');
+    if (cachedData) return cachedData;
+  }
+
   try {
     const doc = await db.collection('app_config').doc('hero_images').get();
+    let data: string[] = [];
     if (doc.exists) {
-      return doc.data()?.urls || [];
+      data = doc.data()?.urls || [];
     }
-    return [];
+    
+    // Salva no Cache
+    saveToCache('cached_hero_images', data);
+    
+    return data;
   } catch (error) {
     console.error("Erro ao buscar imagens de capa:", error);
     return [];
@@ -92,7 +192,9 @@ export const updateHeroImages = async (urls: string[]) => {
   await db.collection('app_config').doc('hero_images').set({ urls });
 };
 
-// --- SERVIÇOS DE CONFIGURAÇÃO GERAL (WIFI & AVISOS) ---
+// ============================================================================
+// 3. SERVIÇOS DE CONFIGURAÇÃO GERAL (WIFI, AVISOS, IA)
+// ============================================================================
 
 export const getAppSettings = async (): Promise<AppConfig | null> => {
   if (!db) return null;
@@ -128,7 +230,9 @@ export const subscribeToAppSettings = (callback: (config: AppConfig | null) => v
   });
 };
 
-// --- SERVIÇOS DE SUGESTÕES INTELIGENTES (NOVO) ---
+// ============================================================================
+// 4. SERVIÇOS DE SUGESTÕES INTELIGENTES
+// ============================================================================
 
 export const getSmartSuggestions = async (): Promise<SmartSuggestionsConfig | null> => {
   if (!db) return null;
@@ -163,8 +267,45 @@ export const subscribeToSmartSuggestions = (callback: (config: SmartSuggestionsC
   });
 };
 
+// ============================================================================
+// 5. SERVIÇOS DE AVALIAÇÕES (REVIEWS)
+// ============================================================================
 
-// --- SERVIÇOS DE RESERVAS ---
+export const getGuestReviews = async (limitCount?: number): Promise<GuestReview[]> => {
+  if (!db) return [];
+  try {
+    let query: firebase.firestore.Query = db.collection('reviews');
+    
+    // Otimização: Limita o número de leituras se solicitado
+    if (limitCount) {
+      query = query.limit(limitCount);
+    }
+
+    const snapshot = await query.get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...(doc.data() as any)
+    } as GuestReview));
+  } catch (error) {
+    console.error("Erro ao buscar avaliações:", error);
+    return [];
+  }
+};
+
+export const addGuestReview = async (review: Omit<GuestReview, 'id'>): Promise<string> => {
+  if (!db) throw new Error("Firebase não configurado");
+  const docRef = await db.collection('reviews').add(review);
+  return docRef.id;
+};
+
+export const deleteGuestReview = async (id: string) => {
+  if (!db) throw new Error("Firebase não configurado");
+  await db.collection('reviews').doc(id).delete();
+};
+
+// ============================================================================
+// 6. SERVIÇOS DE RESERVAS (RESERVATIONS)
+// ============================================================================
 
 export const saveReservation = async (reservation: Reservation): Promise<string> => {
   if (!db) throw new Error("Firebase não configurado");
@@ -210,23 +351,47 @@ export const deleteReservation = async (id: string) => {
   await db.collection('reservations').doc(id).delete();
 };
 
-export const subscribeToReservations = (callback: (reservations: Reservation[]) => void) => {
+// Listener Geral (ADMIN) - Pega tudo para histórico
+// Otimização: limitCount padrão para evitar baixar todo o banco em contas antigas
+export const subscribeToReservations = (callback: (reservations: Reservation[]) => void, limitCount: number = 300) => {
   if (!db) return () => {};
   
-  return db.collection('reservations').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-    const data = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Reservation));
-    callback(data);
-  });
+  return db.collection('reservations')
+    .orderBy('createdAt', 'desc')
+    .limit(limitCount)
+    .onSnapshot((snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Reservation));
+      callback(data);
+    });
 };
 
-// --- NOVO: ATUALIZAR RESERVA ---
+// NOVO: Listener Otimizado (LANDING PAGE) - Pega só o FUTURO
+export const subscribeToFutureReservations = (callback: (reservations: Reservation[]) => void) => {
+  if (!db) return () => {};
+  
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+  // Filtra onde a data de saída é maior ou igual a hoje.
+  // Ignora reservas que já acabaram no passado.
+  return db.collection('reservations')
+    .where('checkoutDate', '>=', today)
+    .onSnapshot((snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Reservation));
+      callback(data);
+    }, (error) => {
+      console.error("Erro ao buscar reservas futuras:", error);
+    });
+};
+
 export const updateReservation = async (id: string, data: Partial<Reservation>) => {
   if (!db) throw new Error("Firebase não configurado");
   try {
-    // Removemos o ID do objeto de dados para não duplicar dentro do documento
     const { id: _, ...updateData } = data as any;
     await db.collection('reservations').doc(id).update(updateData);
     return true;
@@ -236,7 +401,53 @@ export const updateReservation = async (id: string, data: Partial<Reservation>) 
   }
 };
 
-// --- SERVIÇOS DE AUTENTICAÇÃO ---
+// ============================================================================
+// 7. SERVIÇOS DE BLOQUEIO DE DATAS (BLOCKED DATES)
+// ============================================================================
+
+export const addBlockedDate = async (block: BlockedDateRange) => {
+  if (!db) throw new Error("Firebase não configurado");
+  await db.collection('blocked_dates').add(block);
+};
+
+export const deleteBlockedDate = async (id: string) => {
+  if (!db) throw new Error("Firebase não configurado");
+  await db.collection('blocked_dates').doc(id).delete();
+};
+
+// Listener Geral (ADMIN)
+export const subscribeToBlockedDates = (callback: (blocks: BlockedDateRange[]) => void) => {
+  if (!db) return () => {};
+  
+  return db.collection('blocked_dates').onSnapshot((snapshot) => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...(doc.data() as any)
+    } as BlockedDateRange));
+    callback(data);
+  });
+};
+
+// NOVO: Listener Otimizado (LANDING PAGE)
+export const subscribeToFutureBlockedDates = (callback: (blocks: BlockedDateRange[]) => void) => {
+  if (!db) return () => {};
+  
+  const today = new Date().toISOString().split('T')[0];
+
+  return db.collection('blocked_dates')
+    .where('endDate', '>=', today)
+    .onSnapshot((snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as any)
+      } as BlockedDateRange));
+      callback(data);
+    });
+};
+
+// ============================================================================
+// 8. SERVIÇOS DE AUTENTICAÇÃO
+// ============================================================================
 
 export const loginCMS = async (email: string, pass: string) => {
   if (!auth) throw new Error("Firebase Auth não configurado");

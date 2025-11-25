@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Star, Phone, ChevronLeft, ChevronRight, XCircle, Wifi, Tv, Coffee, Wind, Shield, Menu, X } from 'lucide-react';
-import { subscribeToReservations } from '../services/firebase';
-import { Reservation } from '../types';
-import SimpleGallery from './SimpleGallery'; // <--- IMPORTANDO A GALERIA
+import { subscribeToFutureReservations, getGuestReviews, subscribeToFutureBlockedDates } from '../services/firebase';
+import { Reservation, GuestReview, BlockedDateRange } from '../types';
+import SimpleGallery from './SimpleGallery';
 
 // --- FOTOS PARA A GALERIA ---
 const GALLERY_IMAGES = [
@@ -13,16 +13,23 @@ const GALLERY_IMAGES = [
   "https://i.postimg.cc/Ls7JmQdM/dda93871-f7aa-4867-a0bd-49d59319fd64.jpg"
 ];
 
-// --- CALENDÁRIO DINÂMICO (Mantido) ---
+// --- CALENDÁRIO DINÂMICO (OTIMIZADO) ---
 const AvailabilityCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [blockedDates, setBlockedDates] = useState<BlockedDateRange[]>([]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToReservations((data) => {
+    const unsubscribeRes = subscribeToFutureReservations((data) => {
       setReservations(data);
     });
-    return () => unsubscribe();
+    const unsubscribeBlocked = subscribeToFutureBlockedDates((data) => {
+      setBlockedDates(data);
+    });
+    return () => {
+      unsubscribeRes();
+      unsubscribeBlocked();
+    };
   }, []);
 
   const isDateOccupied = (date: Date) => {
@@ -30,7 +37,8 @@ const AvailabilityCalendar = () => {
     target.setHours(0, 0, 0, 0);
     const targetTime = target.getTime();
 
-    return reservations.some(res => {
+    // 1. Checa Reservas
+    const isReserved = reservations.some(res => {
        if (!res.checkInDate || !res.checkoutDate || res.status === 'cancelled') return false;
        const [inY, inM, inD] = res.checkInDate.split('-').map(Number);
        const [outY, outM, outD] = res.checkoutDate.split('-').map(Number);
@@ -39,6 +47,21 @@ const AvailabilityCalendar = () => {
        start.setHours(0,0,0,0); end.setHours(0,0,0,0);
        return targetTime >= start.getTime() && targetTime < end.getTime();
     });
+
+    if (isReserved) return true;
+
+    // 2. Checa Bloqueios Administrativos
+    const isBlocked = blockedDates.some(block => {
+       if (!block.startDate || !block.endDate) return false;
+       const [inY, inM, inD] = block.startDate.split('-').map(Number);
+       const [outY, outM, outD] = block.endDate.split('-').map(Number);
+       const start = new Date(inY, inM - 1, inD);
+       const end = new Date(outY, outM - 1, outD);
+       start.setHours(0,0,0,0); end.setHours(0,0,0,0);
+       return targetTime >= start.getTime() && targetTime <= end.getTime();
+    });
+
+    return isBlocked;
   };
 
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
@@ -90,6 +113,7 @@ const LandingPageLili: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>('quarto');
+  const [reviews, setReviews] = useState<GuestReview[]>([]);
 
   // Slideshow
   const slides = [
@@ -102,6 +126,20 @@ const LandingPageLili: React.FC = () => {
       setCurrentSlide(prev => (prev === 1 ? 0 : 1));
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    getGuestReviews(3).then(data => {
+        if(data.length > 0) {
+            setReviews(data);
+        } else {
+            setReviews([
+                { name: "Joana S.", text: "Um lugar incrível! Extremamente limpo, organizado e com uma localização perfeita. A Lili foi muito atenciosa. Voltarei com certeza!" },
+                { name: "Ricardo F.", text: "O flat é exatamente como nas fotos. Muito bem equipado, não faltou nada. O processo de check-in foi super fácil." },
+                { name: "Mariana L.", text: "Silencioso, confortável e muito bonito. A TV com streaming foi um diferencial. Recomendo!" }
+            ]);
+        }
+    });
   }, []);
 
   const toggleAccordion = (id: string) => {
@@ -181,7 +219,6 @@ const LandingPageLili: React.FC = () => {
                 <p className="text-lg text-gray-600 mt-4 max-w-3xl mx-auto">Um espaço pensado em cada detalhe para o seu máximo conforto e conveniência.</p>
              </div>
 
-             {/* AQUI ESTÁ A NOVA GALERIA */}
              <div className="mb-16 max-w-4xl mx-auto">
                 <SimpleGallery images={GALLERY_IMAGES} />
              </div>
@@ -288,12 +325,12 @@ const LandingPageLili: React.FC = () => {
                    </a>
                 </div>
 
-                {/* CALENDÁRIO INTELIGENTE (Com ID para o link funcionar) */}
+                {/* CALENDÁRIO INTELIGENTE */}
                 <div id="calendario" className="bg-white p-6 rounded-2xl shadow-lg border border-amber-100 scroll-mt-24">
                    <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Verificar Disponibilidade</h3>
                    <AvailabilityCalendar />
                    <div className="mt-6 text-center">
-                      <a href="https://wa.me/558799999999?text=Ol%C3%A1%21%20Gostaria%20de%20saber%20mais%20sobre%20a%20disponibilidade%20do%20Flat%20de%20Lili." className="inline-block w-full bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition-colors shadow-md flex items-center justify-center gap-2">
+                      <a href="https://wa.me/558788342138?text=Ol%C3%A1%20Lili%21%20Gostaria%20de%20saber%20mais%20sobre%20a%20disponibilidade%20do%20Flat." className="inline-block w-full bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition-colors shadow-md flex items-center justify-center gap-2">
                          <Phone size={20} /> Falar com a Lili no WhatsApp
                       </a>
                    </div>
@@ -303,16 +340,16 @@ const LandingPageLili: React.FC = () => {
           </div>
        </section>
 
-       {/* AVALIAÇÕES */}
+       {/* AVALIAÇÕES (DINÂMICAS) */}
        <section id="avaliacoes" className="py-16 sm:py-24 bg-white">
           <div className="container mx-auto px-4">
              <div className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl font-heading font-bold text-amber-900">O que nossos hóspedes dizem</h2>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <ReviewCard name="Joana S." text="Um lugar incrível! Extremamente limpo, organizado e com uma localização perfeita. A Lili foi muito atenciosa. Voltarei com certeza!" />
-                <ReviewCard name="Ricardo F." text="O flat é exatamente como nas fotos. Muito bem equipado, não faltou nada. O processo de check-in foi super fácil." />
-                <ReviewCard name="Mariana L." text="Silencioso, confortável e muito bonito. A TV com streaming foi um diferencial. Recomendo!" />
+                {reviews.map((review, idx) => (
+                    <ReviewCard key={review.id || idx} name={review.name} text={review.text} />
+                ))}
              </div>
           </div>
        </section>
@@ -320,10 +357,13 @@ const LandingPageLili: React.FC = () => {
        {/* FOOTER */}
        <footer className="bg-gray-900 text-gray-400 py-8 text-center border-t border-gray-800">
           <p>© 2025 Flat de Lili. Todos os direitos reservados.</p>
+          <p className="text-xs mt-2 opacity-60">
+             Nós respeitamos sua privacidade. Seus dados são utilizados apenas para a gestão da sua reserva e nunca compartilhados.
+          </p>
        </footer>
 
        {/* BOTÃO FLUTUANTE WHATSAPP */}
-       <a href="https://wa.me/558799999999" target="_blank" rel="noreferrer" className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition duration-300 z-50 hover:scale-110">
+       <a href="https://wa.me/558788342138" target="_blank" rel="noreferrer" className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition duration-300 z-50 hover:scale-110">
           <Phone size={24} />
        </a>
     </div>
