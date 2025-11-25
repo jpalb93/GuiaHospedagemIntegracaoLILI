@@ -3,7 +3,7 @@ import { MapPin, Star, Phone, ChevronLeft, ChevronRight, XCircle, Wifi, Tv, Coff
 import { subscribeToFutureReservations, getGuestReviews, subscribeToFutureBlockedDates } from '../services/firebase';
 import { Reservation, GuestReview, BlockedDateRange } from '../types';
 import SimpleGallery from './SimpleGallery';
-import { LANDING_GALLERY_IMAGES, LANDING_HERO_SLIDES, GOOGLE_REVIEW_LINK, FLAT_ADDRESS } from '../constants';
+import { LANDING_GALLERY_IMAGES, LANDING_HERO_SLIDES, FLAT_ADDRESS } from '../constants';
 
 // --- CALENDÁRIO DINÂMICO (OTIMIZADO) ---
 const AvailabilityCalendar = () => {
