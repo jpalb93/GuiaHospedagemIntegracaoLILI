@@ -46,30 +46,30 @@ export const CURIOSITY_STORY_IMAGES = [
 // --- IMAGENS DOS STORIES (DICAS ÚTEIS DO FLAT) ---
 // Substitua os links abaixo pelas fotos reais quando tiver.
 export const TIPS_IMAGES = {
-  foto_arte: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop",
+  foto_arte: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
   foto_caixinha_checkout: "https://i.postimg.cc/vHR7g4F4/selfcheckout.jpg", // FOTO REAL DA CAIXINHA
-  foto_wifi: "https://images.unsplash.com/photo-1633113087654-c49c686c2cdf?q=80&w=800&auto=format&fit=crop",
-  foto_ventilador: "https://images.unsplash.com/photo-1618941716939-553df0c69278?q=80&w=800&auto=format&fit=crop",
-  foto_travesseiro: "https://images.unsplash.com/photo-1631049035182-249067d7618e?q=80&w=800&auto=format&fit=crop",
-  foto_cama: "https://images.unsplash.com/photo-1522771753035-0a15395376be?q=80&w=800&auto=format&fit=crop",
-  foto_tomada: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop",
-  foto_led: "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?q=80&w=800&auto=format&fit=crop",
-  foto_fechadura: "https://images.unsplash.com/photo-1558002038-1091a166111c?q=80&w=800&auto=format&fit=crop",
-  foto_lavanderia: "https://images.unsplash.com/photo-1545173168-9f1947eebb8f?q=80&w=800&auto=format&fit=crop",
-  foto_bagunca: "https://images.unsplash.com/photo-1584622050111-993a426fbf0a?q=80&w=800&auto=format&fit=crop",
-  foto_chuveiro: "https://images.unsplash.com/photo-1520367545041-5cf1b1268e43?q=80&w=800&auto=format&fit=crop",
-  foto_colchao: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=800&auto=format&fit=crop",
-  foto_sofa: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop",
-  foto_cafe: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop",
-  foto_jogos: "https://images.unsplash.com/photo-1610890716171-6b1bb98a7f31?q=80&w=800&auto=format&fit=crop",
-  foto_tv: "https://images.unsplash.com/photo-1593784680722-3763641fbc59?q=80&w=800&auto=format&fit=crop",
-  foto_quebrou: "https://images.unsplash.com/photo-1621252179027-94459d27d3ee?q=80&w=800&auto=format&fit=crop",
-  foto_ar_condicionado: "https://images.unsplash.com/photo-1616593969747-4797d7579421?q=80&w=800&auto=format&fit=crop",
-  foto_agua: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?q=80&w=800&auto=format&fit=crop",
-  foto_fogao: "https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800&auto=format&fit=crop",
-  foto_limpeza: "https://images.unsplash.com/photo-1581578731117-10d52143b0e8?q=80&w=800&auto=format&fit=crop",
-  foto_relogio: "https://images.unsplash.com/photo-1508962914676-134849ca8889?q=80&w=800&auto=format&fit=crop",
-  foto_vibe: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=800&auto=format&fit=crop"
+  foto_wifi: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_ventilador: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_travesseiro: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_cama: "https://i.postimg.cc/L8Z34zkx/06-foto-cama.jpg",
+  foto_tomada: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_led: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_fechadura: "https://i.postimg.cc/MpjmZy0t/09-foto-fechadura.jpg",
+  foto_lavanderia: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_bagunca: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_chuveiro: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_colchao: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_sofa: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_cafe: "https://i.postimg.cc/kgtvMxNj/15-foto-cafe.jpg",
+  foto_jogos: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_tv: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_quebrou: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_ar_condicionado: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_agua: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_fogao: "https://i.postimg.cc/rwtNySGn/21-foto-fogao.jpg",
+  foto_limpeza: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_relogio: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg",
+  foto_vibe: "https://i.postimg.cc/2SB7j4d2/17-foto-tv.jpg"
 };
 
 // --- CONTEÚDO DOS STORIES DE DICAS (TEXTOS DA LILI) ---
