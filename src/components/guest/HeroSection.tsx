@@ -39,8 +39,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   }, [heroSlides]);
 
   return (
-    <div className="relative h-[25rem] sm:h-[28rem] bg-gray-900 overflow-hidden shadow-xl group">
-      {/* Controles Superiores (Mantidos nos cantos da tela cheia) */}
+    <div className="relative h-[26rem] sm:h-[30rem] bg-gray-900 overflow-hidden shadow-xl group">
+      {/* Controles Superiores */}
       <div className="absolute top-5 right-5 z-50 flex gap-2">
         <button
           onClick={toggleLanguage}
@@ -72,8 +72,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
       <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-20" />
 
-      {/* AJUSTE DE LAYOUT: Wrapper para alinhar conteúdo com max-w-3xl */}
-      <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-end pb-20">
+      {/* Wrapper de Conteúdo com Padding Ajustado para a Dock */}
+      {/* AJUSTE FINO: pb-32 para empurrar o texto mais para cima e não ficar atrás da barra */}
+      <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-end pb-32">
         <div className="w-full max-w-3xl mx-auto px-6 sm:px-8 pointer-events-auto">
             <div className="mb-1">
               <p className="text-white/90 font-bold mb-2 tracking-widest uppercase text-[10px] font-heading bg-black/30 inline-block px-3 py-1 rounded-full backdrop-blur-md border border-white/10">

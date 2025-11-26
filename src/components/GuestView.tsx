@@ -657,7 +657,8 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       />
 
       {/* ACESSO RÁPIDO & CONTEÚDO */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-5 relative z-30 mt-6">
+      {/* AJUSTE FINO: mt-2 em vez de mt-6 para colar na barra de stories */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-5 relative z-30 mt-2">
         
         {/* CARD ACESSO RÁPIDO */}
         <div className="mb-6 p-0.5 rounded-[22px] bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 shadow-2xl shadow-orange-500/20 dark:shadow-black/50">
