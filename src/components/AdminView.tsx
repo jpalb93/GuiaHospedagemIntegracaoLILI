@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import firebase from 'firebase/compat/app'; // <--- NOVA IMPORTAÇÃO PARA PEGAR O TIPO firebase.User
-import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing, Sun, Moon } from 'lucide-react';
+import { Copy, Check, User as UserIcon, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing, Sun, Moon } from 'lucide-react';
 import { isApiConfigured } from '../services/geminiService';
 import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
 import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation, addBlockedDate, deleteBlockedDate, subscribeToBlockedDates } from '../services/firebase';
 import { Reservation, BlockedDateRange } from '../types';
 import ToastContainer, { ToastMessage, ToastType } from './Toast';
-// REMOVIDA: import { User } from 'firebase/compat/auth'; 
+import { User } from 'firebase/auth'; // Deixe assim
 
 interface AdminViewProps {
   theme: 'light' | 'dark';
@@ -15,7 +14,7 @@ interface AdminViewProps {
 
 const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
   // Auth State
-  const [user, setUser] = useState<firebase.User | null>(null); // CORREÇÃO: Usando firebase.User
+  const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(true);
@@ -646,7 +645,7 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
                 <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
+                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
                   <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={() => setGuestName(prev => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nome Completo" />
                 </div>
               </div>
@@ -886,7 +885,7 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
              </div>
              <div className="p-6 overflow-y-auto space-y-6">
                <div className="text-center">
-                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 dark:text-orange-400"><User size={32} /></div>
+                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 dark:text-orange-400"><UserIcon size={32} /></div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedReservation.guestName}</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Hóspede</p>
                   {selectedReservation.guestPhone && (

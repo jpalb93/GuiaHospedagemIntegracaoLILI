@@ -56,7 +56,8 @@ export interface GuestConfig {
   safeCode?: string;     // Mantido como opcional para compatibilidade com reservas antigas
   welcomeMessage?: string;
   adminNotes?: string;   // NOVA: Observações internas do admin
-  
+  wifiSSID?: string; // Novo
+  wifiPass?: string; // Novo
   // NOVOS CAMPOS DE ALERTA ESPECÍFICO
   guestAlertActive?: boolean;
   guestAlertText?: string;

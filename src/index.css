@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos globais */
+body { 
+  font-family: 'Inter', sans-serif; 
+  -webkit-font-smoothing: antialiased; 
+  -moz-osx-font-smoothing: grayscale; 
+  /* Removemos a cor de fundo hardcoded daqui para deixar o Tailwind controlar via classes no App.tsx ou index.html */
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Ajustes do Google Translate para não quebrar o layout */
+.goog-te-banner-frame.skiptranslate { display: none !important; } 
+body { top: 0px !important; }
+#google_translate_element { display: none; }
+.goog-tooltip { display: none !important; }
+.goog-te-gadget-icon { display: none !important; }

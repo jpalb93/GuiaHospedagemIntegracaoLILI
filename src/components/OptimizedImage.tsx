@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ImageOff, Image as ImageIcon } from 'lucide-react';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -11,12 +11,6 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({ src, alt, className = "", ...props }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-
-  // RESETAR ESTADO SE A FONTE MUDAR
-  useEffect(() => {
-    setIsLoading(true);
-    setHasError(false);
-  }, [src]);
 
   const handleLoad = () => {
     setIsLoading(false);

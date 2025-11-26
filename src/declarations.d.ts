@@ -9,8 +9,10 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APP_ID: string;
   readonly VITE_TINY_URL_TOKEN: string;
   readonly VITE_GEMINI_API_KEY: string;
+  readonly DEV: boolean;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+

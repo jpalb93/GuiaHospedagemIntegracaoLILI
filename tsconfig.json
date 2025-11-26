@@ -23,7 +23,7 @@
     /* Types */
     "types": ["node"]
   },
-  "include": ["./", "declarations.d.ts"],
+  "include": ["./", "src/declarations.d.ts"],
   "exclude": ["node_modules", "dist", "vite.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
