@@ -7,7 +7,7 @@ import {
   Maximize2, ExternalLink, Camera, Share2, Video, MessageCircle, Pizza, LogOut, Siren, 
   HeartPulse, Clock, Megaphone, CalendarHeart, AlertTriangle, Ambulance, 
   Flame, Shield, Phone, Briefcase, ShowerHead, Trash2, Ban, AlertCircle, Lightbulb, 
-  Droplets, UserCheck, Car, Footprints, Calendar, X, Sparkles, MessageSquare, Ticket, ShoppingBag, Moon
+  Droplets, UserCheck, Car, Footprints, Calendar, X, Sparkles, MessageSquare, Moon
 } from 'lucide-react';
 import SectionCard from './SectionCard';
 import PlaceCard from './PlaceCard';
