@@ -10,8 +10,8 @@ interface StoriesBarProps {
 
 const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory }) => {
   return (
-    // AJUSTE FINO: -mt-14 para subir mais, mb-1 para colar no conteúdo de baixo
-    <div className="relative z-40 -mt-14 w-full mb-1">
+    // AJUSTE FINO: -mt-20 para subir bem a barra (estilo App Nativo), mb-1 para colar no conteúdo
+    <div className="relative z-40 -mt-20 w-full mb-1">
       {/* Wrapper centralizado */}
       <div className="flex justify-center px-4">
         
