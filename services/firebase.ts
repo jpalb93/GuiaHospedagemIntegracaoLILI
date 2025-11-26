@@ -1,7 +1,8 @@
-
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
+// REMOVIDA: import { User } from 'firebase/compat/auth'; // <--- CAUSA DO ERRO
+
 import { PlaceRecommendation, Reservation, AppConfig, SmartSuggestionsConfig, GuestReview, BlockedDateRange } from '../types';
 
 // ============================================================================
@@ -19,7 +20,7 @@ const firebaseConfig = {
 
 // Inicializa o Firebase
 let db: firebase.firestore.Firestore | undefined;
-let auth: firebase.auth.Auth | undefined;
+let auth: firebase.auth.Auth | undefined; // Declaração movida para o topo
 
 try {
   // Verifica se a config tem pelo menos a API Key antes de tentar inicializar
@@ -30,7 +31,7 @@ try {
       firebase.app(); // Use existing app
     }
     db = firebase.firestore();
-    auth = firebase.auth();
+    auth = firebase.auth(); // Inicialização ocorre após firebase.initializeApp
   } else {
     console.warn("Firebase Config não encontrada. Verifique as variáveis de ambiente (VITE_FIREBASE_...).");
   }
@@ -461,7 +462,8 @@ export const logoutCMS = async () => {
   return auth.signOut();
 };
 
-export const subscribeToAuth = (callback: (user: any) => void) => {
+// CORREÇÃO: Usando firebase.User
+export const subscribeToAuth = (callback: (user: firebase.User | null) => void) => {
   if (!auth) return () => {};
   return auth.onAuthStateChanged(callback);
 };

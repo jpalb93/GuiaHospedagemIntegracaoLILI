@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import firebase from 'firebase/compat/app'; // <--- NOVA IMPORTAÇÃO PARA PEGAR O TIPO firebase.User
 import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing, Sun, Moon } from 'lucide-react';
 import { isApiConfigured } from '../services/geminiService';
 import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
 import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation, addBlockedDate, deleteBlockedDate, subscribeToBlockedDates } from '../services/firebase';
 import { Reservation, BlockedDateRange } from '../types';
 import ToastContainer, { ToastMessage, ToastType } from './Toast';
+// REMOVIDA: import { User } from 'firebase/compat/auth'; 
 
 interface AdminViewProps {
   theme: 'light' | 'dark';
@@ -13,7 +15,7 @@ interface AdminViewProps {
 
 const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
   // Auth State
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<firebase.User | null>(null); // CORREÇÃO: Usando firebase.User
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(true);

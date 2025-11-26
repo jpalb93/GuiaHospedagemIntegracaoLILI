@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import firebase from 'firebase/compat/app'; // <--- NOVA IMPORTAÇÃO PARA PEGAR O TIPO firebase.User
 import { Trash2, Plus, LogIn, Save, X, LayoutGrid, Image as ImageIcon, MapPin, Phone, Tag, Link as LinkIcon, AlertCircle, Settings, Store, Wifi, Megaphone, Check, Box, Lock, Sparkles, Coffee, Utensils, Sunset, Moon, Edit, Calendar, Clock, Lightbulb, Star } from 'lucide-react';
 import { PlaceRecommendation, PlaceCategory, AppConfig, SmartSuggestionsConfig, TimeOfDaySuggestion, GuestReview } from '../types';
 import { loginCMS, logoutCMS, subscribeToAuth, getDynamicPlaces, addDynamicPlace, updateDynamicPlace, deleteDynamicPlace, isFirebaseConfigured, getHeroImages, updateHeroImages, getAppSettings, saveAppSettings, getSmartSuggestions, saveSmartSuggestions, getGuestReviews, addGuestReview, deleteGuestReview, cleanupExpiredEvents } from '../services/firebase';
 import OptimizedImage from './OptimizedImage';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../constants';
+// REMOVIDA: import { User } from 'firebase/compat/auth'; 
 
 const CATEGORIES: { id: PlaceCategory; label: string }[] = [
   { id: 'burgers', label: 'Hambúrgueres' },
@@ -23,7 +25,7 @@ const CATEGORIES: { id: PlaceCategory; label: string }[] = [
 ];
 
 const ContentManager: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<firebase.User | null>(null); // CORREÇÃO: Usando firebase.User
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
