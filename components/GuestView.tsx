@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GuestConfig, PlaceRecommendation, AppConfig, SmartSuggestionsConfig } from '../types';
 import { getDynamicPlaces, getHeroImages, subscribeToAppSettings, subscribeToSmartSuggestions } from '../services/firebase';
@@ -372,8 +371,12 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       setDynamicPlaces(places.filter(p => p.visible !== false));
       
       const images = await getHeroImages();
+      // CORREÇÃO DE FLASH: Só atualiza o estado se as imagens forem diferentes
       if (images && images.length > 0) {
-        setHeroSlides(images);
+        setHeroSlides(prev => {
+          const isSame = images.length === prev.length && images.every((url, i) => url === prev[i]);
+          return isSame ? prev : images;
+        });
       }
     };
     loadData();
@@ -671,8 +674,9 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         </div>
         
         {heroSlides.map((img, index) => (
-           <div key={index} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-             <OptimizedImage src={img} alt="Flats Integração" className="w-full h-full object-cover opacity-60" />
+           <div key={`${img}-${index}`} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+             {/* FOTO NÍTIDA: opacity-100 */}
+             <OptimizedImage src={img} alt="Flats Integração" className="w-full h-full object-cover opacity-100" />
            </div>
         ))}
 
@@ -680,28 +684,33 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         
         <div className="absolute bottom-0 left-0 w-full p-6 sm:p-8 z-30 flex flex-col justify-end h-full pt-24">
           <div className="mb-4">
-            <p className="text-white/90 font-bold mb-1.5 tracking-widest uppercase text-[10px] font-heading bg-black/30 inline-block px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/10">Guia Interativo • Flat de Lili</p>
+            {/* TAG: DARK GLASS (bg-black/30) para elegância */}
+            <p className="text-white/90 font-bold mb-2 tracking-widest uppercase text-[10px] font-heading bg-black/30 inline-block px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
+              Guia Interativo • Flat de Lili
+            </p>
             <h1 className="text-3xl sm:text-5xl font-heading font-bold mb-2 leading-tight text-white drop-shadow-sm">Olá, {config.guestName?.split(' ')[0] || 'Visitante'}!</h1>
             
             {config.welcomeMessage ? (
-              <div className="mt-1.5 inline-block max-w-md">
-                <div className="bg-white/20 backdrop-blur-xl border border-white/30 px-4 py-3 rounded-xl shadow-lg">
-                  <p className="text-white text-sm sm:text-lg font-medium italic leading-relaxed font-sans">
+              <div className="mt-2 max-w-lg animate-fadeIn">
+                  {/* LINHA LARANJA DECORATIVA */}
+                  <div className="h-0.5 w-12 bg-orange-500 mb-3 rounded-full shadow-sm shadow-orange-500/50"></div>
+                  
+                  {/* MENSAGEM CLEAN: Sem itálico, Branco 90% */}
+                  <p className="text-white/90 text-lg sm:text-xl font-medium leading-relaxed font-sans drop-shadow-md tracking-tight">
                     "{config.welcomeMessage}"
                   </p>
-                </div>
               </div>
             ) : (
-              <p className="text-white/90 text-sm sm:text-lg font-medium font-sans max-w-lg leading-relaxed drop-shadow-sm">
+              <p className="text-white/90 text-sm sm:text-lg font-medium font-sans max-w-lg leading-relaxed drop-shadow-sm tracking-tight">
                 Sua casa longe de casa no Vale do São Francisco.
               </p>
             )}
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar items-start mt-2">
+          <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar items-start mt-2">
              {/* AGENDA */}
              {activeEvents.length > 0 && (
-                <button onClick={() => handleOpenStories('agenda')} className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
+                <button onClick={() => handleOpenStories('agenda')} className="w-20 flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-[2px] bg-gradient-to-tr from-pink-500 via-red-500 to-orange-500 shadow-lg shadow-pink-500/30 animate-spin-slow-once">
                       <div className="w-full h-full bg-gray-900 rounded-full border-2 border-white/10 flex items-center justify-center relative overflow-hidden">
                          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-red-500/20 opacity-50"></div>
@@ -709,30 +718,30 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                          <div className="absolute bottom-0 right-0 bg-red-600 text-white text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white shadow-sm z-20">{activeEvents.length}</div>
                       </div>
                    </div>
-                   <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10">Agenda</span>
+                   <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10 text-center whitespace-nowrap">Agenda</span>
                 </button>
              )}
 
              {/* CURIOSIDADES */}
-             <button onClick={() => handleOpenStories('curiosities')} className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
+             <button onClick={() => handleOpenStories('curiosities')} className="w-20 flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-[2px] bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-500 shadow-lg shadow-indigo-500/30">
                    <div className="w-full h-full bg-gray-900 rounded-full border-2 border-white/10 flex items-center justify-center relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 opacity-50"></div>
                       <Sparkles size={20} className="text-indigo-300 relative z-10" />
                    </div>
                 </div>
-                <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10">Curiosidades</span>
+                <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10 text-center whitespace-nowrap">Curiosidades</span>
              </button>
 
              {/* DICAS ÚTEIS */}
-             <button onClick={() => handleOpenStories('tips')} className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
+             <button onClick={() => handleOpenStories('tips')} className="w-20 flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-400 via-yellow-500 to-orange-500 shadow-lg shadow-amber-500/30">
                    <div className="w-full h-full bg-gray-900 rounded-full border-2 border-white/10 flex items-center justify-center relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 opacity-50"></div>
                       <Lightbulb size={20} className="text-yellow-300 relative z-10" />
                    </div>
                 </div>
-                <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10">Dicas do Flat</span>
+                <span className="text-[10px] font-bold text-white drop-shadow-md bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10 text-center whitespace-nowrap">Dicas do Flat</span>
              </button>
            </div>
         </div>

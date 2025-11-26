@@ -326,9 +326,10 @@ export const FLAT_TIPS = [
 */
 
 // VÍDEOS DE INSTRUÇÃO (YOUTUBE EMBED)
-export const DRONE_VIDEO_URL = "https://www.youtube.com/embed/qACw10uUSeo?autoplay=1";
-export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/0d6g8bB-5Yc?autoplay=1"; 
-export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/e7a8Z4d1zO0?autoplay=1"; 
+// REMOVIDO ?autoplay=1 para evitar conflitos com o modal que já adiciona isso.
+export const DRONE_VIDEO_URL = "https://www.youtube.com/embed/qACw10uUSeo";
+export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/cFD68mZO9bY"; // NOVO ID (Cofre)
+export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/slW_3OZdT20"; // NOVO ID (Fechadura)
 
 // BLACKLIST / BLOQUEIO DE HÓSPEDES
 export const BLOCKED_LIST: BlockedGuest[] = [];

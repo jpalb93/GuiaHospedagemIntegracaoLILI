@@ -9,79 +9,91 @@ import { HERO_IMAGE_URL, HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } fro
 import { getReservation, subscribeToSingleReservation } from './services/firebase';
 
 const App: React.FC = () => {
-  // --- LÓGICA DE TEMA ---
+  // ========================================================================
+  // 🌙 LÓGICA DE TEMA INTELIGENTE (SISTEMA + MANUAL + PERSISTÊNCIA)
+  // ========================================================================
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
-
-      if (initialTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+      // 1. Tenta pegar a escolha salva do usuário (Prioridade Máxima)
+      const savedTheme = localStorage.getItem('flat_lili_theme');
+      
+      // Se existir uma escolha salva válida, usa ela
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme;
       }
-      return initialTheme;
+
+      // 2. Se não tiver escolha salva, verifica o Sistema Operacional
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return prefersDark ? 'dark' : 'light';
     }
-    return 'light';
+    return 'light'; // Fallback padrão
   });
 
+  // EFEITO 1: Aplica a classe 'dark' no HTML sempre que o state mudar
+  // Isso garante que o Admin e o Guest fiquem escuros/claros visualmente
   useEffect(() => {
     const root = window.document.documentElement;
-    // 1. Cores exatas do Tailwind (gray-50 e gray-900) para a barra do navegador
-    const colorLight = '#f9fafb'; 
-    const colorDark = '#111827'; 
+    
+    // Cores para a barra de status do navegador mobile (Chrome/Safari)
+    const colorLight = '#f9fafb'; // gray-50
+    const colorDark = '#111827';  // gray-900
 
     if (theme === 'dark') {
       root.classList.add('dark');
+      document.querySelector("meta[name=theme-color]")?.setAttribute("content", colorDark);
     } else {
       root.classList.remove('dark');
-    }
-
-    // 2. "Pinta" a barra do navegador (Mobile)
-    const metaThemeColor = document.querySelector("meta[name=theme-color]");
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute("content", theme === 'dark' ? colorDark : colorLight);
+      document.querySelector("meta[name=theme-color]")?.setAttribute("content", colorLight);
     }
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
-
+  // EFEITO 2: Ouve mudanças no Sistema Operacional (Só funciona se não houver override manual)
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
     const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light');
+      // IMPORTANTE: Só muda automaticamente se o usuário NUNCA apertou o botão (localStorage vazio)
+      if (!localStorage.getItem('flat_lili_theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
     };
     
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // FUNÇÃO: Troca manual (Botão do Admin/Guest)
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      // Ao clicar manualmente, salvamos a preferência para sempre
+      localStorage.setItem('flat_lili_theme', newTheme);
+      return newTheme;
+    });
+  };
+  // ========================================================================
+
+
   // --- LÓGICA DO APP (ROTEAMENTO E DADOS) ---
   const [appState, setAppState] = useState<{ mode: AppMode | 'LANDING' | 'LILI_LANDING' | 'EXPIRED' | 'BLOCKED' | 'LOADING'; config: GuestConfig }>(() => {
     return { mode: 'LOADING', config: { guestName: '', lockCode: '' } };
   });
 
-  // State para Login Manual na Capa (PWA Recorrente)
   const [showManualLogin, setShowManualLogin] = useState(false);
   const [manualInput, setManualInput] = useState('');
 
   // Effect de Monitoramento em Tempo Real (Kill Switch)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    // Tenta pegar da URL OU do LocalStorage (Persistência para PWA)
     const urlRid = params.get('rid');
     const storedRid = localStorage.getItem('flat_lili_last_rid');
     const reservationId = urlRid || storedRid;
 
     if (reservationId) {
-      // Se veio pela URL, atualiza o storage para garantir
       if (urlRid) localStorage.setItem('flat_lili_last_rid', urlRid);
 
       const unsubscribe = subscribeToSingleReservation(reservationId, (updatedReservation) => {
         if (!updatedReservation) {
-          // Se a reserva foi apagada, limpa o storage para não ficar preso
           localStorage.removeItem('flat_lili_last_rid');
           setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
         } else {
@@ -97,17 +109,12 @@ const App: React.FC = () => {
                  expirationDate.setHours(23, 59, 59, 999);
 
                  if (now > expirationDate) {
-                   // Se expirou, limpa o storage
                    localStorage.removeItem('flat_lili_last_rid');
                    return { mode: 'EXPIRED', config: { guestName: '', lockCode: '' }};
                  }
                }
                
-               // SANITIZAÇÃO DE DADOS (SEGURANÇA)
-               // Usando desestruturação para garantir que dados sensíveis sejam descartados
-               // e não fiquem no objeto safeConfig
                const { guestPhone, adminNotes, ...safeConfig } = updatedReservation;
-
                return { mode: AppMode.GUEST, config: safeConfig };
             }
             return prev;
@@ -127,44 +134,35 @@ const App: React.FC = () => {
       
       const isAdmin = path === '/admin' || params.get('admin') === 'true';
       const isCMS = path === '/cms' || params.get('mode') === 'cms'; 
-      
-      // Verifica se é a página da Lili
       const isLiliPage = path === '/lili' || path === '/flat-lili';
 
-      // 1. Rota CMS
       if (isCMS) {
          setAppState({ mode: AppMode.CMS, config: { guestName: '', lockCode: '' }});
          return;
       }
 
-      // 2. Rota Admin (Só se não tiver rid)
       if (isAdmin && !reservationId) {
         setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
         return;
       }
 
-      // 3. Rota Landing Page Lili
       if (isLiliPage) {
          setAppState({ mode: 'LILI_LANDING', config: { guestName: '', lockCode: '' } });
          return;
       }
 
-      // 4. Lógica de Persistência (PWA Support)
-      // Se não tem ID na URL, tenta pegar do storage
       if (!reservationId) {
          reservationId = localStorage.getItem('flat_lili_last_rid');
       } else {
-         // Se tem ID na URL, salva no storage para o futuro
          localStorage.setItem('flat_lili_last_rid', reservationId);
       }
 
-      // 5. Processamento via ID do Banco de Dados (Guia do Hóspede)
       if (reservationId) {
         try {
           const reservation = await getReservation(reservationId);
           
           if (!reservation) {
-            localStorage.removeItem('flat_lili_last_rid'); // Limpa se inválido
+            localStorage.removeItem('flat_lili_last_rid');
             setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' }});
             return;
           }
@@ -182,16 +180,13 @@ const App: React.FC = () => {
              expirationDate.setHours(23, 59, 59, 999);
 
              if (now > expirationDate) {
-               localStorage.removeItem('flat_lili_last_rid'); // Limpa se expirado
+               localStorage.removeItem('flat_lili_last_rid'); 
                setAppState({ mode: 'EXPIRED', config: { guestName: '', lockCode: '' }});
                return;
              }
           }
 
-          // SANITIZAÇÃO DE DADOS (SEGURANÇA)
-          // Garante que o telefone e notas nunca cheguem ao state do componente
           const { guestPhone, adminNotes, ...safeConfig } = reservation;
-
           setAppState({ mode: AppMode.GUEST, config: safeConfig });
           return;
 
@@ -202,43 +197,32 @@ const App: React.FC = () => {
         }
       }
 
-      // 6. Landing Page Genérica (Default - Raiz)
       setAppState({ mode: 'LANDING', config: { guestName: '', lockCode: '' } });
     };
 
     initApp();
   }, []);
 
-  // Função para Resetar o App (Logout do Hóspede)
   const handleResetApp = () => {
     localStorage.removeItem('flat_lili_last_rid');
-    // Redireciona para a raiz limpa para garantir que o estado zere
     window.location.href = '/';
   };
 
-  // Função para Login Manual (Hóspede Recorrente)
   const handleManualSubmit = () => {
     if (!manualInput.trim()) return;
     
     let rid = manualInput.trim();
-    // Verifica se o usuário colou o link inteiro em vez do código
     try {
-        // Se for um link válido, extrai o parametro 'rid'
         if (rid.includes('http') || rid.includes('?')) {
             const urlObj = new URL(rid.startsWith('http') ? rid : `http://${rid}`);
             const id = urlObj.searchParams.get('rid');
             if (id) rid = id;
         }
-    } catch (e) {
-        // Não é URL, assume que é o ID direto
-    }
+    } catch (e) {}
 
-    // Salva e recarrega
     localStorage.setItem('flat_lili_last_rid', rid);
     window.location.href = `/?rid=${rid}`;
   };
-
-  // --- RENDERIZAÇÃO ---
 
   if (appState.mode === 'LOADING') {
      return <div className="min-h-screen bg-gray-900 flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={48}/></div>;
@@ -248,7 +232,6 @@ const App: React.FC = () => {
     return <ContentManager />;
   }
 
-  // Renderiza a Landing Page da Lili
   if (appState.mode === 'LILI_LANDING') {
     return <LandingPageLili />;
   }
@@ -442,7 +425,7 @@ const App: React.FC = () => {
   return (
     <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {appState.mode === AppMode.ADMIN ? (
-        <AdminView /> 
+        <AdminView theme={theme} toggleTheme={toggleTheme} /> 
       ) : (
         // @ts-ignore
         <GuestView config={appState.config} theme={theme} toggleTheme={toggleTheme} />

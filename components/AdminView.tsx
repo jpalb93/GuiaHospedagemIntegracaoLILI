@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing } from 'lucide-react';
+import { Copy, Check, User, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing, Sun, Moon } from 'lucide-react';
 import { isApiConfigured } from '../services/geminiService';
 import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
 import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation, addBlockedDate, deleteBlockedDate, subscribeToBlockedDates } from '../services/firebase';
 import { Reservation, BlockedDateRange } from '../types';
+import ToastContainer, { ToastMessage, ToastType } from './Toast';
 
-const AdminView: React.FC = () => {
+interface AdminViewProps {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+}
+
+const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
   // Auth State
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState('');
@@ -55,6 +61,9 @@ const AdminView: React.FC = () => {
   
   // History Accordion State
   const [openHistoryGroups, setOpenHistoryGroups] = useState<number[]>([0]);
+
+  // TOAST STATE
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const isSearching = searchTerm.length > 0;
 
@@ -109,6 +118,21 @@ const AdminView: React.FC = () => {
     else setApiKeyStatus('missing');
   }, []);
 
+  // --- HELPER: SHOW TOAST ---
+  const showToast = (message: string, type: ToastType = 'info') => {
+    const id = Date.now().toString() + Math.random().toString();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    
+    // Auto remove após 4s
+    setTimeout(() => {
+      removeToast(id);
+    }, 4000);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   // --- RESET FORM & DATES ---
   const resetForm = async () => {
     const officialNow = await fetchOfficialTime();
@@ -146,8 +170,9 @@ const AdminView: React.FC = () => {
     e.preventDefault();
     try {
       await loginCMS(email, password);
+      showToast("Bem-vindo de volta!", "success");
     } catch (e) {
-      alert("Erro ao entrar. Verifique email e senha.");
+      showToast("Erro ao entrar. Verifique email e senha.", "error");
     }
   };
 
@@ -166,7 +191,7 @@ const AdminView: React.FC = () => {
       if (parseInt(hh) < 24 && parseInt(mm) < 60) {
         setter(`${hh}:${mm}`);
       } else {
-        alert("Hora inválida! Use o formato 24h (ex: 1400 para 14:00)");
+        showToast("Hora inválida! Use o formato 24h (ex: 1400)", "warning");
         setter('12:00'); 
       }
     }
@@ -175,11 +200,11 @@ const AdminView: React.FC = () => {
   // --- LÓGICA DE BLOQUEIO DE DATAS ---
   const handleAddBlock = async () => {
     if (!blockedStartDate || !blockedEndDate) {
-        alert("Selecione as datas de início e fim.");
+        showToast("Selecione as datas de início e fim.", "warning");
         return;
     }
     if (blockedEndDate < blockedStartDate) {
-        alert("A data final deve ser depois da data inicial.");
+        showToast("A data final deve ser depois da data inicial.", "warning");
         return;
     }
 
@@ -191,9 +216,9 @@ const AdminView: React.FC = () => {
             reason: blockedReason
         });
         setBlockedReason('');
-        alert("Datas bloqueadas com sucesso!");
+        showToast("Datas bloqueadas com sucesso!", "success");
     } catch (e) {
-        alert("Erro ao bloquear datas.");
+        showToast("Erro ao bloquear datas.", "error");
     } finally {
         setIsBlocking(false);
     }
@@ -203,6 +228,7 @@ const AdminView: React.FC = () => {
       if (!id) return;
       if (confirm("Tem certeza que deseja desbloquear estas datas?")) {
           await deleteBlockedDate(id);
+          showToast("Datas desbloqueadas.", "success");
       }
   };
 
@@ -224,20 +250,21 @@ const AdminView: React.FC = () => {
     setActiveTab('create');
     setGeneratedLink('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast("Editando reserva de " + res.guestName, "info");
   };
 
   const handleSave = async () => {
-    if (!guestName.trim()) { alert("Preencha o nome."); return; }
-    if (!lockCode.trim()) { alert("Defina a senha."); return; }
-    if (!checkInDate || !checkoutDate) { alert("Verifique as datas."); return; }
-    if (!checkInTime.includes(':') || !checkOutTime.includes(':')) { alert("Verifique os horários."); return; }
+    if (!guestName.trim()) { showToast("Preencha o nome do hóspede.", "warning"); return; }
+    if (!lockCode.trim()) { showToast("Defina a senha da porta.", "warning"); return; }
+    if (!checkInDate || !checkoutDate) { showToast("Verifique as datas de entrada e saída.", "warning"); return; }
+    if (!checkInTime.includes(':') || !checkOutTime.includes(':')) { showToast("Verifique os horários.", "warning"); return; }
 
     const start = new Date(checkInDate);
     const end = new Date(checkoutDate);
     start.setHours(0,0,0,0); end.setHours(0,0,0,0);
 
     if (end <= start) {
-      alert("⛔ Erro: Check-out deve ser DEPOIS do Check-in.");
+      showToast("O Check-out deve ser DEPOIS do Check-in.", "error");
       return;
     }
 
@@ -258,7 +285,7 @@ const AdminView: React.FC = () => {
       if (editingId) {
          // MODO ATUALIZAÇÃO
          await updateReservation(editingId, payload);
-         alert("✅ Reserva atualizada com sucesso!");
+         showToast("Reserva atualizada com sucesso!", "success");
          resetForm();
       } else {
          // MODO CRIAÇÃO
@@ -267,10 +294,11 @@ const AdminView: React.FC = () => {
          const link = `${baseUrl}?rid=${reservationId}`;
          setGeneratedLink(link);
          setIsShortened(false);
+         showToast("Reserva criada! Link gerado.", "success");
       }
 
     } catch (e) {
-      alert("Erro ao salvar.");
+      showToast("Erro ao salvar reserva.", "error");
       console.error(e);
     } finally {
       setIsSaving(false);
@@ -282,6 +310,7 @@ const AdminView: React.FC = () => {
     if(confirm("ATENÇÃO: Isso apaga permanentemente. Confirmar?")) {
       await deleteReservation(id);
       if (selectedReservation?.id === id) setSelectedReservation(null);
+      showToast("Reserva excluída.", "success");
     }
   };
 
@@ -296,6 +325,7 @@ const AdminView: React.FC = () => {
     const link = getLinkForReservation(id);
     navigator.clipboard.writeText(link);
     setListCopiedId(id);
+    showToast("Link copiado!", "success");
   };
 
   const handleShareListWhatsApp = (res: Reservation) => {
@@ -303,7 +333,7 @@ const AdminView: React.FC = () => {
     const link = getLinkForReservation(res.id);
     const message = `Olá, ${res.guestName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${link}`;
     const phone = res.guestPhone ? res.guestPhone : '';
-    // Se tiver telefone, abre direto na conversa. Se não, abre janela de seleção de contato.
+    
     const whatsappUrl = phone 
       ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
       : `https://wa.me/?text=${encodeURIComponent(message)}`;
@@ -315,7 +345,7 @@ const AdminView: React.FC = () => {
   const sendReminder = (res: Reservation, type: 'checkin' | 'checkout') => {
       if (!res.id) return;
       const link = getLinkForReservation(res.id);
-      const phone = res.guestPhone || ''; // Se não tiver telefone, abre tela de seleção
+      const phone = res.guestPhone || ''; 
       let message = '';
 
       if (type === 'checkin') {
@@ -333,7 +363,7 @@ const AdminView: React.FC = () => {
 
   const shortenLink = async () => {
     if (!generatedLink) return;
-    if (!TINY_URL_TOKEN) { alert("⚠️ Configure o Token do TinyURL!"); return; }
+    if (!TINY_URL_TOKEN) { showToast("Configure o Token do TinyURL!", "error"); return; }
     setIsShortening(true);
     try {
       const response = await fetch('https://api.tinyurl.com/create', {
@@ -343,13 +373,15 @@ const AdminView: React.FC = () => {
       const data = await response.json();
       if (data.data && data.data.tiny_url) {
         setGeneratedLink(data.data.tiny_url); setIsShortened(true);
-      } else { alert("Erro ao encurtar."); }
-    } catch (error) { alert("Erro de conexão."); } finally { setIsShortening(false); }
+        showToast("Link encurtado com sucesso!", "success");
+      } else { showToast("Erro ao encurtar link.", "error"); }
+    } catch (error) { showToast("Erro de conexão ao encurtar.", "error"); } finally { setIsShortening(false); }
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedLink);
     setCopied(true);
+    showToast("Link copiado!", "success");
   };
 
   const shareOnWhatsApp = () => {
@@ -526,6 +558,9 @@ const AdminView: React.FC = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        {/* TOAST CONTAINER PARA LOGIN */}
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        
         <div className="bg-gray-800 p-8 rounded-3xl w-full max-w-sm border border-gray-700 shadow-2xl">
            <div className="flex justify-center mb-6 text-orange-500"><Lock size={40} /></div>
            <h2 className="text-2xl font-bold text-white text-center mb-6">Acesso Administrativo</h2>
@@ -542,11 +577,22 @@ const AdminView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center p-6 font-sans text-gray-900 dark:text-gray-100 relative">
       
+      {/* TOAST CONTAINER PRINCIPAL */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
       <div className="w-full max-w-lg flex justify-between items-center mb-6">
          <h1 className="text-2xl font-heading font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Sparkles className="text-orange-500" /> Gestão de Reservas
          </h1>
          <div className="flex gap-2">
+             <button 
+               onClick={toggleTheme} 
+               className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" 
+               title="Alternar Tema"
+             >
+               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+             </button>
+
              <a href="/?mode=cms" className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" title="Gerenciar Conteúdo"><LayoutGrid size={20} /></a>
              <button onClick={logoutCMS} className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full text-red-500 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" title="Sair"><LogIn className="rotate-180" size={20} /></button>
          </div>
