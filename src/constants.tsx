@@ -18,6 +18,13 @@ export const HERO_IMAGE_URL = "https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_
 export const HERO_IMAGE_2_URL = "https://i.postimg.cc/HWK5mRBG/Whats-App-Image-2025-11-15-at-17-46-43.jpg";
 export const HERO_IMAGE_3_URL = "https://i.postimg.cc/XvJHhts5/Gemini-Generated-Image-qgzulyqgzulyqgzu.png";
 
+// --- CONFIGURAÇÃO PADRÃO DE SLIDES (FALLBACK) ---
+export const DEFAULT_SLIDES = [
+  HERO_IMAGE_URL, 
+  HERO_IMAGE_2_URL,
+  HERO_IMAGE_3_URL 
+];
+
 // --- GALERIA DA LANDING PAGE (Página da Lili) ---
 export const LANDING_GALLERY_IMAGES = [
   "https://i.postimg.cc/JnkG03mm/5930cc64-fdef-4d4a-b6ba-a8380fde40de.jpg",
@@ -327,9 +334,9 @@ export const FLAT_TIPS = [
 
 // VÍDEOS DE INSTRUÇÃO (YOUTUBE EMBED)
 // REMOVIDO ?autoplay=1 para evitar conflitos com o modal que já adiciona isso.
-export const DRONE_VIDEO_URL = "https://www.youtube.com/embed/qACw10uUSeo";
-export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/cFD68mZO9bY"; // NOVO ID (Cofre)
-export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/slW_3OZdT20"; // NOVO ID (Fechadura)
+export const DRONE_VIDEO_URL = "https://www.youtube.com/embed/VWjqZrhIP2A?autoplay=1";
+export const SAFE_VIDEO_URL = "https://www.youtube.com/embed/n5H07VAzujY"; // NOVO ID (Cofre)
+export const LOCK_VIDEO_URL = "https://www.youtube.com/embed/d05nDY1YIEQ"; // NOVO ID (Fechadura)
 
 // BLACKLIST / BLOQUEIO DE HÓSPEDES
 export const BLOCKED_LIST: BlockedGuest[] = [];
