@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import AdminView from './components/AdminView';
-import GuestView from './components/GuestView';
-import ContentManager from './components/ContentManager';
-import LandingPageLili from './components/LandingPageLili'; 
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { AppMode, GuestConfig, Reservation } from './types';
 import { Lock, MapPin, CalendarX, MessageCircle, AlertTriangle, Loader2, LogOut, KeyRound, ArrowRight, RefreshCw } from 'lucide-react';
 import { HERO_IMAGE_URL, HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } from './constants';
 import { getReservation, subscribeToSingleReservation } from './services/firebase';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// --- LAZY LOADING (CODE SPLITTING) ---
+// Carrega os componentes pesados apenas quando necessários
+const AdminView = lazy(() => import('./components/AdminView'));
+const GuestView = lazy(() => import('./components/GuestView'));
+const ContentManager = lazy(() => import('./components/ContentManager'));
+const LandingPageLili = lazy(() => import('./components/LandingPageLili'));
 
 // --- FUNÇÃO DE SEGURANÇA: SANITIZAÇÃO ---
-// Esta função age como um "porteiro". Ela impede que as senhas entrem na memória do navegador antes da hora.
 const sanitizeConfig = (reservation: Reservation): GuestConfig => {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -18,7 +21,6 @@ const sanitizeConfig = (reservation: Reservation): GuestConfig => {
 
   if (reservation.checkInDate) {
     const [year, month, day] = reservation.checkInDate.split('-').map(Number);
-    // Nota: Mês em JS começa em 0 (Janeiro = 0)
     const checkIn = new Date(year, month - 1, day);
     checkIn.setHours(0, 0, 0, 0);
 
@@ -31,18 +33,23 @@ const sanitizeConfig = (reservation: Reservation): GuestConfig => {
     }
   }
 
-  // Se NÃO estiver liberado, censuramos os dados
   if (!isReleased) {
     return {
       ...reservation,
-      lockCode: '****', // Censurado
-      safeCode: '****', // Censurado
-      wifiPass: 'Disponível no Check-in' // Opcional: Esconder Wi-Fi também
+      lockCode: '****',
+      safeCode: '****',
+      wifiPass: 'Disponível no Check-in'
     };
   }
 
   return reservation;
 };
+
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+    <Loader2 className="animate-spin text-orange-500" size={48}/>
+  </div>
+);
 
 const App: React.FC = () => {
   // --- TEMA ---
@@ -86,7 +93,7 @@ const App: React.FC = () => {
   const [showManualLogin, setShowManualLogin] = useState(false);
   const [manualInput, setManualInput] = useState('');
 
-  // --- MONITORAMENTO EM TEMPO REAL (COM SEGURANÇA) ---
+  // --- MONITORAMENTO EM TEMPO REAL ---
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlRid = params.get('rid');
@@ -102,10 +109,8 @@ const App: React.FC = () => {
           setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
         } else {
           setAppState(prev => {
-            // Só processa se for modo Hóspede (Admin vê tudo)
             if (prev.mode !== AppMode.ADMIN && prev.mode !== AppMode.CMS) {
                
-               // 1. Checa Expiração
                if (updatedReservation.checkoutDate) {
                  const now = new Date();
                  const [year, month, day] = updatedReservation.checkoutDate.split('-').map(Number);
@@ -118,7 +123,6 @@ const App: React.FC = () => {
                  }
                }
                
-               // 2. APLICA A SEGURANÇA (Sanitização)
                const { guestPhone, adminNotes, ...configRaw } = updatedReservation;
                const safeConfig = sanitizeConfig(configRaw as Reservation);
 
@@ -174,7 +178,6 @@ const App: React.FC = () => {
             return;
           }
 
-          // Checa Expiração Inicial
           if (reservation.checkoutDate) {
              let now = new Date();
              if (USE_OFFICIAL_TIME) {
@@ -191,7 +194,6 @@ const App: React.FC = () => {
              }
           }
 
-          // SEGURANÇA INICIAL
           const { guestPhone, adminNotes, ...configRaw } = reservation;
           const safeConfig = sanitizeConfig(configRaw as Reservation);
 
@@ -231,14 +233,35 @@ const App: React.FC = () => {
   };
 
   // --- RENDERIZAÇÃO ---
+  
+  // 1. Tela de Carregamento (Enquanto decide a rota)
   if (appState.mode === 'LOADING') {
-     return <div className="min-h-screen bg-gray-900 flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={48}/></div>;
+     return <LoadingScreen />;
   }
 
-  if (appState.mode === AppMode.CMS) return <ContentManager />;
-  if (appState.mode === 'LILI_LANDING') return <LandingPageLili />;
+  // 2. Modo CMS (Admin de Conteúdo)
+  if (appState.mode === AppMode.CMS) {
+      return (
+        <ErrorBoundary>
+            <Suspense fallback={<LoadingScreen />}>
+                <ContentManager />
+            </Suspense>
+        </ErrorBoundary>
+      );
+  }
 
-  // Telas de Bloqueio / Expirado
+  // 3. Modo Landing Page Pública (Lili)
+  if (appState.mode === 'LILI_LANDING') {
+      return (
+        <ErrorBoundary>
+            <Suspense fallback={<LoadingScreen />}>
+                <LandingPageLili />
+            </Suspense>
+        </ErrorBoundary>
+      );
+  }
+
+  // 4. Telas de Bloqueio / Expirado
   if (appState.mode === 'BLOCKED' || appState.mode === 'EXPIRED') {
      const isExpired = appState.mode === 'EXPIRED';
      return (
@@ -278,7 +301,7 @@ const App: React.FC = () => {
      );
   }
 
-  // Tela Landing (Início sem código)
+  // 5. Tela Inicial (Landing / Login com Código)
   if (appState.mode === 'LANDING') {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center relative overflow-hidden font-sans text-white">
@@ -320,16 +343,20 @@ const App: React.FC = () => {
     );
   }
 
-  // App Principal
+  // 6. App Principal (Admin ou Guest) com Suspense e ErrorBoundary
   return (
-    <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {appState.mode === AppMode.ADMIN ? (
-        <AdminView theme={theme} toggleTheme={toggleTheme} /> 
-      ) : (
-        // @ts-ignore
-        <GuestView config={appState.config} theme={theme} toggleTheme={toggleTheme} />
-      )}
-    </div>
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingScreen />}>
+        <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+          {appState.mode === AppMode.ADMIN ? (
+            <AdminView theme={theme} toggleTheme={toggleTheme} /> 
+          ) : (
+            // @ts-ignore
+            <GuestView config={appState.config} theme={theme} toggleTheme={toggleTheme} />
+          )}
+        </div>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

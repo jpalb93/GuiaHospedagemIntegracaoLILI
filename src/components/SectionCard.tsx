@@ -21,7 +21,7 @@ const SectionCard: React.FC<SectionCardProps> = ({ title, icon: Icon, color, chi
   }, [forceOpen]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-[24px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-700 overflow-hidden mb-4 transition-all duration-300 hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]">
+    <div className="bg-white dark:bg-gray-800 rounded-[24px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-700 overflow-hidden mb-5 break-inside-avoid transition-all duration-300 hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]">
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-5 text-left bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700 transition-colors group"

@@ -216,7 +216,6 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
 
       {currentStory.image ? (
          // IMPORTANTE: key={currentStory.id} força o React a recriar o componente de imagem
-         // Isso evita que a imagem fique travada ou não carregue ao trocar de slide
          <div key={currentStory.id} className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-black/50 z-10" /> 
             <OptimizedImage 
@@ -281,7 +280,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                    )}
                 </>
              ) : (
-                /* CURIOSIDADE OU DICA (COM IMAGEM DE FUNDO AGORA) */
+                /* CURIOSIDADE OU DICA */
                 <>
                    {!currentStory.image && (
                      <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-8 border border-white/20 shadow-lg backdrop-blur-sm">
@@ -415,8 +414,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
 
   const currentWifiSSID = appSettings?.wifiSSID || DEFAULT_WIFI_SSID;
   
-  // LÓGICA DE SEGURANÇA DO WI-FI (NOVO)
-  // Só mostra a senha real se a variável isPasswordReleased for verdadeira.
+  // LÓGICA DE SEGURANÇA DO WI-FI
   const realWifiPass = appSettings?.wifiPass || DEFAULT_WIFI_PASS;
   const currentWifiPass = isPasswordReleased ? realWifiPass : "Disponível no check-in";
 
@@ -533,7 +531,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       });
       setCurrentStories(eventStories);
     } else if (type === 'tips') {
-      // Cast para garantir compatibilidade de tipos
       setCurrentStories(FLAT_TIPS as unknown as StoryItem[]);
     } else {
       const sourceCuriosities = (appSettings?.cityCuriosities && appSettings.cityCuriosities.length > 0)
@@ -541,7 +538,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         : DEFAULT_CITY_CURIOSITIES;
 
       const shuffled = [...sourceCuriosities].sort(() => 0.5 - Math.random()).slice(0, 5);
-      // Embaralhar as imagens também para garantir variedade
       const shuffledImages = [...CURIOSITY_STORY_IMAGES].sort(() => 0.5 - Math.random());
       
       const curiosityStories: StoryItem[] = shuffled.map((text, idx) => ({
@@ -551,7 +547,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         subtitle: 'Curiosidade de Petrolina',
         content: text,
         icon: Sparkles,
-        // Imagem aleatória da lista embaralhada
         image: shuffledImages[idx % shuffledImages.length]
       }));
       
@@ -640,7 +635,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         startIndex={storyStartIndex}
       />
 
-      {/* COMPONENTE 1: HERO SECTION REFACTOR */}
+      {/* HERO SECTION */}
       <HeroSection 
         config={config}
         heroSlides={heroSlides}
@@ -650,229 +645,236 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         toggleLanguage={toggleLanguage}
       />
 
-      {/* COMPONENTE 2: STORIES BAR REFACTOR */}
+      {/* STORIES BAR */}
       <StoriesBar 
         activeEvents={activeEvents}
         onOpenStory={handleOpenStories}
       />
 
-      {/* ACESSO RÁPIDO & CONTEÚDO */}
-      {/* AJUSTE FINO: mt-2 em vez de mt-6 para colar na barra de stories */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-5 relative z-30 mt-2">
+      {/* --- LAYOUT PRINCIPAL (GRID + MASONRY) --- */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-5 relative z-30 mt-2">
         
-        {/* CARD ACESSO RÁPIDO */}
-        <div className="mb-6 p-0.5 rounded-[22px] bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 shadow-2xl shadow-orange-500/20 dark:shadow-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-[20px] p-5 flex flex-col gap-4 h-full">
-            <div className="flex justify-between items-center px-1">
-              <h2 className="text-[10px] font-heading font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em]">Acesso Rápido</h2>
-              <div className="flex gap-2">
-                {stayStage !== 'pre_checkin' && (
-                  <button onClick={handleEmergencyClick} className="text-[9px] font-bold text-red-500 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-2.5 py-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-sans shadow-sm">
-                    <Siren size={10} /> SOS
-                  </button>
-                )}
-                <button onClick={() => setShowOfflineCard(true)} className="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2.5 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-sans shadow-sm">
-                  <Camera size={10} /> Salvar Acesso
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="bg-orange-50/80 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800/30 flex flex-col w-full overflow-hidden transition-all duration-500 min-h-[160px] justify-center">
-                {!isTimeVerified ? <CardSkeleton /> : (
-                  <>
-                    {stayStage === 'pre_checkin' && (
-                      <div className="p-6 animate-fadeIn text-center relative overflow-hidden group bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-fuchsia-900/20 dark:to-purple-900/20">
-                          <div className="absolute top-0 right-0 p-3 text-purple-200/50 dark:text-purple-900/30 transform rotate-12"><CalendarHeart size={80} strokeWidth={1} /></div>
-                          {isPasswordReleased ? (
-                            <>
-                              <h3 className="text-lg font-heading font-bold text-purple-900 dark:text-purple-100 mb-2 relative z-10">SEU CHECK-IN É AMANHÃ! 🤩</h3>
-                              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-xs mx-auto mb-4 relative z-10">
-                                Enquanto não chega, dá uma olhada nas regras e o que te espera na cidade!
-                                <br/><br/>
-                                <span className="text-purple-800 dark:text-purple-200 font-bold">AH, suas senhas já estão liberadas, viu?</span>
-                                <br/>
-                                Clique acima em <span className="font-bold border-b border-purple-300">Salvar Acesso</span> e tira um print do seu cartão!
-                              </p>
-                              <button onClick={() => setIsCheckinModalOpen(true)} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
-                                Ver instruções de acesso
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <h3 className="text-lg font-heading font-bold text-purple-900 dark:text-purple-100 mb-2 relative z-10">Sua viagem está chegando! ✈️</h3>
-                              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-xs mx-auto mb-4 relative z-10">
-                                Seu check-in é no dia <strong className="text-purple-700 dark:text-purple-300">{formatFriendlyDate(config.checkInDate)}</strong>, a partir das <strong className="text-purple-700 dark:text-purple-300">{config.checkInTime || '14:00'}</strong>.
-                                <br/><br/>
-                                Enquanto não chega, dá uma olhada nas regras e o que te espera na cidade!
-                              </p>
-                              <button onClick={() => setIsCheckinModalOpen(true)} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
-                                Ver instruções de acesso
-                              </button>
-                            </>
-                          )}
+        {/* GRID SUPERIOR: ACESSO RÁPIDO + SUGESTÕES */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            
+            {/* COLUNA 1: ACESSO RÁPIDO */}
+            <div className="h-full">
+                <div className="p-0.5 rounded-[22px] bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 shadow-2xl shadow-orange-500/20 dark:shadow-black/50 h-full">
+                  <div className="bg-white dark:bg-gray-800 rounded-[20px] p-5 flex flex-col gap-4 h-full">
+                    <div className="flex justify-between items-center px-1">
+                      <h2 className="text-[10px] font-heading font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em]">Acesso Rápido</h2>
+                      <div className="flex gap-2">
+                        {stayStage !== 'pre_checkin' && (
+                          <button onClick={handleEmergencyClick} className="text-[9px] font-bold text-red-500 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-2.5 py-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-sans shadow-sm">
+                            <Siren size={10} /> SOS
+                          </button>
+                        )}
+                        <button onClick={() => setShowOfflineCard(true)} className="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2.5 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-sans shadow-sm">
+                          <Camera size={10} /> Salvar Acesso
+                        </button>
                       </div>
-                    )}
-
-                    {stayStage === 'pre_checkout' && (
-                        <div className="p-2 animate-fadeIn">
-                          <div className="mb-3 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800/30 flex flex-col items-center text-center">
-                             <h3 className="text-sm font-heading font-bold text-indigo-900 dark:text-indigo-100 mb-1">Amanhã é dia de partir 😢</h3>
-                             <p className="text-[10px] text-indigo-700 dark:text-indigo-300 mb-3 max-w-[240px] leading-tight">
-                               Seu check-out é amanhã até às <strong className="text-indigo-900 dark:text-white">{config.checkOutTime || '11:00'}</strong>. 
-                               Vai sair de madrugada? Veja as instruções.
-                             </p>
-                             <button onClick={() => setIsCheckoutModalOpen(true)} className="w-full py-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wide border border-indigo-200 dark:border-indigo-800/50 rounded-lg shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-                               Ver instruções de saída
-                             </button>
-                           </div>
-                           <div className="grid grid-cols-3 gap-2">
-                              <div className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-center gap-1">
-                                  <div className="text-orange-500 bg-orange-50 dark:bg-orange-900/20 p-1.5 rounded-lg"><Key size={18} strokeWidth={2.5} /></div>
-                                  <div><p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider text-center mb-0.5">Senha</p><p className="text-lg font-bold text-gray-900 dark:text-white font-mono leading-none">{config.lockCode}</p></div>
-                              </div>
-                              <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex flex-col justify-center items-center gap-1 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                                  <div className={`p-1.5 rounded-lg transition-colors ${wifiCopied ? 'bg-green-100 text-green-600' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500'}`}>{wifiCopied ? <Check size={18} /> : <Wifi size={18} />}</div>
-                                  <div><p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider text-center mb-0.5">WiFi</p><p className="text-[10px] font-bold text-gray-900 dark:text-white leading-none truncate max-w-[80px]">Conectar</p></div>
-                              </div>
-                              <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-center gap-1 cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
-                                  <div className={`p-1.5 rounded-lg transition-colors ${addressCopied ? 'bg-green-100 text-green-600' : 'text-purple-500 bg-purple-50 dark:bg-purple-900/20'}`}>{addressCopied ? <Check size={18} /> : <MapPin size={18} />}</div>
-                                   <div><p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider text-center mb-0.5">Local</p><p className="text-[10px] font-bold text-gray-900 dark:text-white leading-none">{addressCopied ? 'Copiado!' : 'Copiar'}</p></div>
-                              </div>
-                           </div>
-                        </div>
-                    )}
-
-                    {stayStage === 'middle' && (
-                      <div className="p-2 animate-fadeIn">
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                          <div className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden group">
-                              <div className="absolute top-0 right-0 p-1.5 text-orange-100 dark:text-orange-900/10 transform rotate-12"><Key size={48} strokeWidth={1.5} /></div>
-                              <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Senha</p>
-                              <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono tracking-wider z-10">{config.lockCode}</p>
-                              <button onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }} className="mt-1.5 px-2 py-1 bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 text-orange-700 dark:text-orange-300 text-[9px] font-bold rounded-lg flex items-center gap-1 transition-colors z-10">
-                                <Video size={10} /> Ver vídeo
-                              </button>
-                          </div>
-                          <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group">
-                              <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowDriverMode(true); }} /></div>
-                              <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Endereço</p>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">R. São José, 475 B</p>
-                              <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}</p>
-                          </div>
-                          <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                              <div className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 p-2 rounded-lg shrink-0"><Wifi size={16} /></div>
-                              <div className="overflow-hidden">
-                                <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase truncate" title={currentWifiSSID}>{currentWifiSSID}</p>
-                                <p className="text-[10px] text-gray-600 dark:text-gray-300 font-medium truncate">{wifiCopied ? 'Senha Copiada!' : (currentWifiPass.length < 12 ? currentWifiPass : 'Copiar Senha')}</p>
-                              </div>
-                          </div>
-                          <div onClick={(e) => { e.stopPropagation(); setIsCheckoutModalOpen(true); }} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
-                              <div className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 p-2 rounded-lg shrink-0"><LogOut size={16} /></div>
-                              <div>
-                                <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-bold uppercase mb-0.5">Check-out</p>
-                                {config.checkoutDate ? (
-                                  <div className="leading-tight">
-                                    <p className="text-[10px] font-bold text-gray-800 dark:text-gray-200">
-                                      {(() => {
-                                        const [y, m, d] = config.checkoutDate.split('-').map(Number);
-                                        const date = new Date(y, m - 1, d);
-                                        const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-                                        return `${days[date.getDay()]} (${d}/${m})`;
-                                      })()}
-                                    </p>
-                                    <p className="text-[9px] text-gray-500 dark:text-gray-400">às {config.checkOutTime || '11:00'}</p>
-                                  </div>
-                                ) : (
-                                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{config.checkOutTime || '11:00'}</p>
-                                )}
-                              </div>
-                          </div>
-                        </div>
-                        <a href={`https://wa.me/${HOST_PHONE}`} target="_blank" rel="noreferrer" className="w-full py-3.5 bg-white dark:bg-gray-700 border-2 border-green-100 dark:border-green-900/30 hover:border-green-50 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 rounded-xl flex items-center justify-center gap-2 transition-all font-sans group shadow-sm mt-4 animate-fadeIn">
-                          <MessageCircle size={18} className="text-green-500 group-hover:scale-110 transition-transform" />
-                          <span className="text-xs font-bold uppercase tracking-wide">Falar com a Lili</span>
-                        </a>
-                      </div>
-                    )}
-
-                    {(stayStage === 'checkin' || stayStage === 'checkout') && (
-                      <div onClick={isCheckoutToday ? () => setIsCheckoutModalOpen(true) : undefined} className={`p-6 flex flex-col items-center text-center group animate-fadeIn ${isCheckoutToday ? 'cursor-pointer hover:bg-orange-100/50 dark:hover:bg-orange-900/30 transition-colors' : ''}`}>
-                          {stayStage === 'checkout' && (
-                            <>
-                              <div className="p-3 rounded-full mb-3 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm animate-pulse-slow border border-blue-50 dark:border-blue-900/30"><LogOut size={24} strokeWidth={2} /></div>
-                              <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-white mb-1.5">Hoje é seu Check-out</h3>
-                              <p className="text-xs text-gray-600 dark:text-gray-300 mb-4 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors font-medium max-w-xs leading-relaxed">Esperamos que sua estadia tenha sido incrível! Toque aqui para ver o checklist.</p>
-                              <div className="flex flex-col gap-2 w-full max-w-[260px]">
-                                <div className="flex items-center justify-center gap-2.5 bg-white dark:bg-gray-800 py-2.5 px-4 rounded-xl border border-blue-100 dark:border-blue-900/30 shadow-sm">
-                                  <Clock size={16} className="text-blue-500"/>
-                                  <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">Horário do Check-Out: {config.checkOutTime || '11:00'}</span>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                          {stayStage === 'checkin' && (
-                            <>
-                              <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center gap-2"><Key size={20} className="text-orange-500" strokeWidth={2.5} /> Que alegria te receber, {config.guestName?.split(' ')[0] || 'Visitante'}!</h3>
-                              <p className="text-xs text-gray-600 dark:text-gray-300 mb-5 font-medium max-w-xs mx-auto leading-relaxed">Preparamos um guia rápido para você entrar sem estresse.</p>
-                              <button onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }} className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2 font-sans active:scale-[0.98]">Iniciar Passo a Passo</button>
-                            </>
-                          )}
-                      </div>
-                    )}
-
-                    {stayStage === 'checkin' && (
-                      <div className="bg-orange-50/50 dark:bg-orange-900/20 border-t border-orange-100/50 dark:border-orange-800/30 px-5 py-2.5 flex justify-center items-center animate-fadeIn">
-                          <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300"><Clock size={14} /><p className="text-xs font-bold font-sans">Check-in liberado a partir das {config.checkInTime || '14:00'}</p></div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {isTimeVerified && stayStage !== 'middle' && stayStage !== 'pre_checkout' && (
-                <div className="animate-fadeIn">
-                  {stayStage === 'checkin' && (
-                    <button onClick={handleCopyWifi} className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30 flex flex-col items-center text-center transition-all active:scale-[0.98] hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-lg hover:shadow-blue-500/5 cursor-pointer relative overflow-hidden group w-full mb-4">
-                      <div className={`p-2.5 rounded-full mb-2 shadow-sm transition-colors duration-300 ${wifiCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-white dark:bg-gray-700 text-blue-500 border border-blue-50 dark:border-blue-900/30'}`}>{wifiCopied ? <Check size={20} /> : <Wifi size={20} />}</div>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 font-bold uppercase tracking-wide">Rede WiFi</p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white break-all leading-tight mb-1.5 font-sans">{currentWifiSSID}</p>
-                      <div className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide transition-colors duration-300 border ${wifiCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-700 text-blue-500 border-blue-100 dark:border-blue-900/30 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500'}`}>{wifiCopied ? 'Senha Copiada!' : 'Toque p/ Copiar Senha'}</div>
-                    </button>
-                  )}
-
-                  <div className="bg-purple-50/50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30 flex flex-col items-center text-center relative group w-full hover:shadow-lg hover:shadow-purple-500/5 transition-all">
-                    <button onClick={(e) => { e.stopPropagation(); setShowDriverMode(true); }} className="absolute top-2 right-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Modo Motorista (Tela Cheia)"><Maximize2 size={16} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleShareLocation(); }} className="absolute top-2 left-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Compartilhar Localização"><Share2 size={16} /></button>
-                    <div onClick={handleCopyAddress} className="cursor-pointer w-full flex flex-col items-center active:scale-95 transition-transform mb-3">
-                      <div className={`p-2.5 rounded-full mb-2 shadow-sm transition-colors duration-300 ${addressCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-white dark:bg-gray-700 text-purple-500 border border-purple-50 dark:border-purple-900/30'}`}>{addressCopied ? <Check size={20} /> : <MapPin size={20} />}</div>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 font-bold uppercase tracking-wide">Localização</p>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight mb-1.5 line-clamp-2 px-2 font-sans">{FLAT_ADDRESS}</p>
-                      <div className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide transition-colors duration-300 border ${addressCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-700 text-purple-500 border-purple-100 dark:border-purple-900/30'}`}>{addressCopied ? 'Endereço Copiado!' : 'Toque p/ Copiar'}</div>
                     </div>
-                    <div className="w-full flex gap-2">
-                      <a href={mapsNavigationUrl} target="_blank" rel="noreferrer" className="flex-1 py-2 bg-white dark:bg-gray-700 border border-purple-100 dark:border-purple-800/30 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors font-sans shadow-sm" onClick={(e) => e.stopPropagation()}><ExternalLink size={12} /> Abrir Mapa</a>
-                      <button onClick={(e) => { e.stopPropagation(); openVideoModal(DRONE_VIDEO_URL); }} className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 hover:bg-purple-700 transition-colors shadow-md shadow-purple-500/20 font-sans"><Video size={12} /> Ver do Alto</button>
+
+                    {/* CARD DINÂMICO (CHECKIN/WIFI/ADDRESS) */}
+                    <div className="flex flex-col gap-4 flex-1">
+                      <div className="bg-orange-50/80 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800/30 flex flex-col w-full overflow-hidden transition-all duration-500 min-h-[160px] justify-center flex-1">
+                        {!isTimeVerified ? <CardSkeleton /> : (
+                          <>
+                            {stayStage === 'pre_checkin' && (
+                              <div className="p-6 animate-fadeIn text-center relative overflow-hidden group bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-fuchsia-900/20 dark:to-purple-900/20 h-full flex flex-col justify-center">
+                                  <div className="absolute top-0 right-0 p-3 text-purple-200/50 dark:text-purple-900/30 transform rotate-12"><CalendarHeart size={80} strokeWidth={1} /></div>
+                                  {isPasswordReleased ? (
+                                    <>
+                                      <h3 className="text-lg font-heading font-bold text-purple-900 dark:text-purple-100 mb-2 relative z-10">SEU CHECK-IN É AMANHÃ! 🤩</h3>
+                                      <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-xs mx-auto mb-4 relative z-10">
+                                        Enquanto não chega, dá uma olhada nas regras e o que te espera na cidade!
+                                        <br/><br/>
+                                        <span className="text-purple-800 dark:text-purple-200 font-bold">AH, suas senhas já estão liberadas, viu?</span>
+                                        <br/>
+                                        Clique acima em <span className="font-bold border-b border-purple-300">Salvar Acesso</span> e tira um print do seu cartão!
+                                      </p>
+                                      <button onClick={() => setIsCheckinModalOpen(true)} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+                                        Ver instruções de acesso
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <h3 className="text-lg font-heading font-bold text-purple-900 dark:text-purple-100 mb-2 relative z-10">Sua viagem está chegando! ✈️</h3>
+                                      <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-xs mx-auto mb-4 relative z-10">
+                                        Seu check-in é no dia <strong className="text-purple-700 dark:text-purple-300">{formatFriendlyDate(config.checkInDate)}</strong>, a partir das <strong className="text-purple-700 dark:text-purple-300">{config.checkInTime || '14:00'}</strong>.
+                                        <br/><br/>
+                                        Enquanto não chega, dá uma olhada nas regras e o que te espera na cidade!
+                                      </p>
+                                      <button onClick={() => setIsCheckinModalOpen(true)} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+                                        Ver instruções de acesso
+                                      </button>
+                                    </>
+                                  )}
+                              </div>
+                            )}
+
+                            {stayStage === 'pre_checkout' && (
+                                <div className="p-2 animate-fadeIn h-full flex flex-col justify-between">
+                                  <div className="mb-3 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800/30 flex flex-col items-center text-center">
+                                     <h3 className="text-sm font-heading font-bold text-indigo-900 dark:text-indigo-100 mb-1">Amanhã é dia de partir 😢</h3>
+                                     <p className="text-[10px] text-indigo-700 dark:text-indigo-300 mb-3 max-w-[240px] leading-tight">
+                                       Seu check-out é amanhã até às <strong className="text-indigo-900 dark:text-white">{config.checkOutTime || '11:00'}</strong>. 
+                                       Vai sair de madrugada? Veja as instruções.
+                                     </p>
+                                     <button onClick={() => setIsCheckoutModalOpen(true)} className="w-full py-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wide border border-indigo-200 dark:border-indigo-800/50 rounded-lg shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                                       Ver instruções de saída
+                                     </button>
+                                   </div>
+                                   <div className="grid grid-cols-3 gap-2">
+                                      <div className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-center gap-1">
+                                          <div className="text-orange-500 bg-orange-50 dark:bg-orange-900/20 p-1.5 rounded-lg"><Key size={18} strokeWidth={2.5} /></div>
+                                          <div><p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider text-center mb-0.5">Senha</p><p className="text-lg font-bold text-gray-900 dark:text-white font-mono leading-none">{config.lockCode}</p></div>
+                                      </div>
+                                      <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex flex-col justify-center items-center gap-1 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                          <div className={`p-1.5 rounded-lg transition-colors ${wifiCopied ? 'bg-green-100 text-green-600' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500'}`}>{wifiCopied ? <Check size={18} /> : <Wifi size={18} />}</div>
+                                          <div><p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider text-center mb-0.5">WiFi</p><p className="text-[10px] font-bold text-gray-900 dark:text-white leading-none truncate max-w-[80px]">Conectar</p></div>
+                                      </div>
+                                      <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-center gap-1 cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+                                          <div className={`p-1.5 rounded-lg transition-colors ${addressCopied ? 'bg-green-100 text-green-600' : 'text-purple-500 bg-purple-50 dark:bg-purple-900/20'}`}>{addressCopied ? <Check size={18} /> : <MapPin size={18} />}</div>
+                                           <div><p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider text-center mb-0.5">Local</p><p className="text-[10px] font-bold text-gray-900 dark:text-white leading-none">{addressCopied ? 'Copiado!' : 'Copiar'}</p></div>
+                                      </div>
+                                   </div>
+                                </div>
+                            )}
+
+                            {stayStage === 'middle' && (
+                              <div className="p-2 animate-fadeIn h-full flex flex-col justify-between">
+                                <div className="grid grid-cols-2 gap-2 mb-2 flex-1">
+                                  <div className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden group">
+                                      <div className="absolute top-0 right-0 p-1.5 text-orange-100 dark:text-orange-900/10 transform rotate-12"><Key size={48} strokeWidth={1.5} /></div>
+                                      <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Senha</p>
+                                      <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono tracking-wider z-10">{config.lockCode}</p>
+                                      <button onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }} className="mt-1.5 px-2 py-1 bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 text-orange-700 dark:text-orange-300 text-[9px] font-bold rounded-lg flex items-center gap-1 transition-colors z-10">
+                                        <Video size={10} /> Ver vídeo
+                                      </button>
+                                  </div>
+                                  <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group">
+                                      <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowDriverMode(true); }} /></div>
+                                      <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Endereço</p>
+                                      <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">R. São José, 475 B</p>
+                                      <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}</p>
+                                  </div>
+                                  <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                      <div className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 p-2 rounded-lg shrink-0"><Wifi size={16} /></div>
+                                      <div className="overflow-hidden">
+                                        <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase truncate" title={currentWifiSSID}>{currentWifiSSID}</p>
+                                        <p className="text-[10px] text-gray-600 dark:text-gray-300 font-medium truncate">{wifiCopied ? 'Senha Copiada!' : (currentWifiPass.length < 12 ? currentWifiPass : 'Copiar Senha')}</p>
+                                      </div>
+                                  </div>
+                                  <div onClick={(e) => { e.stopPropagation(); setIsCheckoutModalOpen(true); }} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                                      <div className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 p-2 rounded-lg shrink-0"><LogOut size={16} /></div>
+                                      <div>
+                                        <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-bold uppercase mb-0.5">Check-out</p>
+                                        {config.checkoutDate ? (
+                                          <div className="leading-tight">
+                                            <p className="text-[10px] font-bold text-gray-800 dark:text-gray-200">
+                                              {(() => {
+                                                const [y, m, d] = config.checkoutDate.split('-').map(Number);
+                                                const date = new Date(y, m - 1, d);
+                                                const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                                                return `${days[date.getDay()]} (${d}/${m})`;
+                                              })()}
+                                            </p>
+                                            <p className="text-[9px] text-gray-500 dark:text-gray-400">às {config.checkOutTime || '11:00'}</p>
+                                          </div>
+                                        ) : (
+                                          <p className="text-[10px] text-gray-500 dark:text-gray-400">{config.checkOutTime || '11:00'}</p>
+                                        )}
+                                      </div>
+                                  </div>
+                                </div>
+                                <a href={`https://wa.me/${HOST_PHONE}`} target="_blank" rel="noreferrer" className="w-full py-3.5 bg-white dark:bg-gray-700 border-2 border-green-100 dark:border-green-900/30 hover:border-green-50 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 rounded-xl flex items-center justify-center gap-2 transition-all font-sans group shadow-sm mt-2 animate-fadeIn">
+                                  <MessageCircle size={18} className="text-green-500 group-hover:scale-110 transition-transform" />
+                                  <span className="text-xs font-bold uppercase tracking-wide">Falar com a Lili</span>
+                                </a>
+                              </div>
+                            )}
+
+                            {(stayStage === 'checkin' || stayStage === 'checkout') && (
+                              <div onClick={isCheckoutToday ? () => setIsCheckoutModalOpen(true) : undefined} className={`p-6 flex flex-col items-center text-center group animate-fadeIn h-full justify-center ${isCheckoutToday ? 'cursor-pointer hover:bg-orange-100/50 dark:hover:bg-orange-900/30 transition-colors' : ''}`}>
+                                  {stayStage === 'checkout' && (
+                                    <>
+                                      <div className="p-3 rounded-full mb-3 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm animate-pulse-slow border border-blue-50 dark:border-blue-900/30"><LogOut size={24} strokeWidth={2} /></div>
+                                      <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-white mb-1.5">Hoje é seu Check-out</h3>
+                                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-4 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors font-medium max-w-xs leading-relaxed">Esperamos que sua estadia tenha sido incrível! Toque aqui para ver o checklist.</p>
+                                      <div className="flex flex-col gap-2 w-full max-w-[260px]">
+                                        <div className="flex items-center justify-center gap-2.5 bg-white dark:bg-gray-800 py-2.5 px-4 rounded-xl border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                                          <Clock size={16} className="text-blue-500"/>
+                                          <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">Horário do Check-Out: {config.checkOutTime || '11:00'}</span>
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                  {stayStage === 'checkin' && (
+                                    <>
+                                      <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center gap-2"><Key size={20} className="text-orange-500" strokeWidth={2.5} /> Que alegria te receber, {config.guestName?.split(' ')[0] || 'Visitante'}!</h3>
+                                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-5 font-medium max-w-xs mx-auto leading-relaxed">Preparamos um guia rápido para você entrar sem estresse.</p>
+                                      <button onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }} className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2 font-sans active:scale-[0.98]">Iniciar Passo a Passo</button>
+                                    </>
+                                  )}
+                              </div>
+                            )}
+
+                            {stayStage === 'checkin' && (
+                              <div className="bg-orange-50/50 dark:bg-orange-900/20 border-t border-orange-100/50 dark:border-orange-800/30 px-5 py-2.5 flex justify-center items-center animate-fadeIn mt-auto w-full">
+                                  <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300"><Clock size={14} /><p className="text-xs font-bold font-sans">Check-in liberado a partir das {config.checkInTime || '14:00'}</p></div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
             </div>
 
-            <div className="mt-0">
-               {isTimeVerified && stayStage !== 'middle' && (
-                 <a href={`https://wa.me/${HOST_PHONE}`} target="_blank" rel="noreferrer" className="w-full py-3.5 bg-white dark:bg-gray-700 border-2 border-green-100 dark:border-green-900/30 hover:border-green-50 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 rounded-xl flex items-center justify-center gap-2 transition-all font-sans group shadow-sm mt-4 animate-fadeIn">
-                   <MessageCircle size={18} className="text-green-500 group-hover:scale-110 transition-transform" />
-                   <span className="text-xs font-bold uppercase tracking-wide">Falar com a Lili</span>
-                 </a>
-               )}
+            {/* COLUNA 2: SUGESTÃO INTELIGENTE (EMBAIXO NO MOBILE, LADO A LADO NO DESKTOP) */}
+            <div className="flex flex-col h-full gap-6">
+                <SmartSuggestion 
+                    stayStage={stayStage} 
+                    onCheckoutClick={() => setIsCheckoutModalOpen(true)} 
+                    isTimeVerified={isTimeVerified} 
+                    customSuggestions={smartSuggestions} 
+                />
+
+                {/* OPÇÕES EXTRAS (MOVERAM PRA CÁ PARA BALANCEAR O GRID) */}
+                {isTimeVerified && stayStage !== 'middle' && stayStage !== 'pre_checkout' && (
+                    <div className="animate-fadeIn flex-1 flex flex-col">
+                      {stayStage === 'checkin' && (
+                        <button onClick={handleCopyWifi} className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30 flex flex-col items-center text-center transition-all active:scale-[0.98] hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-lg hover:shadow-blue-500/5 cursor-pointer relative overflow-hidden group w-full mb-4 h-full justify-center">
+                          <div className={`p-2.5 rounded-full mb-2 shadow-sm transition-colors duration-300 ${wifiCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-white dark:bg-gray-700 text-blue-500 border border-blue-50 dark:border-blue-900/30'}`}>{wifiCopied ? <Check size={20} /> : <Wifi size={20} />}</div>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 font-bold uppercase tracking-wide">Rede WiFi</p>
+                          <p className="text-base font-bold text-gray-900 dark:text-white break-all leading-tight mb-1.5 font-sans">{currentWifiSSID}</p>
+                          <div className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide transition-colors duration-300 border ${wifiCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-700 text-blue-500 border-blue-100 dark:border-blue-900/30 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500'}`}>{wifiCopied ? 'Senha Copiada!' : 'Toque p/ Copiar Senha'}</div>
+                        </button>
+                      )}
+
+                      <div className="bg-purple-50/50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30 flex flex-col items-center text-center relative group w-full hover:shadow-lg hover:shadow-purple-500/5 transition-all h-full justify-center">
+                        <button onClick={(e) => { e.stopPropagation(); setShowDriverMode(true); }} className="absolute top-2 right-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Modo Motorista (Tela Cheia)"><Maximize2 size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); handleShareLocation(); }} className="absolute top-2 left-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Compartilhar Localização"><Share2 size={16} /></button>
+                        <div onClick={handleCopyAddress} className="cursor-pointer w-full flex flex-col items-center active:scale-95 transition-transform mb-3">
+                          <div className={`p-2.5 rounded-full mb-2 shadow-sm transition-colors duration-300 ${addressCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-white dark:bg-gray-700 text-purple-500 border border-purple-50 dark:border-purple-900/30'}`}>{addressCopied ? <Check size={20} /> : <MapPin size={20} />}</div>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 font-bold uppercase tracking-wide">Localização</p>
+                          <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight mb-1.5 line-clamp-2 px-2 font-sans">{FLAT_ADDRESS}</p>
+                          <div className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide transition-colors duration-300 border ${addressCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-700 text-purple-500 border-purple-100 dark:border-purple-900/30'}`}>{addressCopied ? 'Endereço Copiado!' : 'Toque p/ Copiar'}</div>
+                        </div>
+                        <div className="w-full flex gap-2 mt-auto">
+                          <a href={mapsNavigationUrl} target="_blank" rel="noreferrer" className="flex-1 py-2 bg-white dark:bg-gray-700 border border-purple-100 dark:border-purple-800/30 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors font-sans shadow-sm" onClick={(e) => e.stopPropagation()}><ExternalLink size={12} /> Abrir Mapa</a>
+                          <button onClick={(e) => { e.stopPropagation(); openVideoModal(DRONE_VIDEO_URL); }} className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 hover:bg-purple-700 transition-colors shadow-md shadow-purple-500/20 font-sans"><Video size={12} /> Ver do Alto</button>
+                        </div>
+                      </div>
+                    </div>
+                )}
             </div>
-          </div>
         </div>
 
-        <SmartSuggestion stayStage={stayStage} onCheckoutClick={() => setIsCheckoutModalOpen(true)} isTimeVerified={isTimeVerified} customSuggestions={smartSuggestions} />
-
-        <div className="space-y-5 mb-10">
+        {/* MOSAICO DE SEÇÕES (MASONRY LAYOUT) */}
+        <div className="space-y-5 md:space-y-0 md:columns-2 md:gap-6 mb-10">
           <SectionCard title="O Flat & Comodidades" icon={Home} color="bg-orange-500">
             <div className="space-y-6">
               <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
@@ -1013,7 +1015,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
             </SectionCard>
           )}
 
-          <div ref={emergencyRef}>
+          <div ref={emergencyRef} className="break-inside-avoid">
             <SectionCard title="SOS & Emergência" icon={HeartPulse} color="bg-red-600" forceOpen={openEmergency}>
               <div className="grid grid-cols-2 gap-3 mb-5">
                  <a href="tel:192" className="flex flex-col items-center justify-center p-4 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/30 transition-all active:scale-95 group"><Ambulance size={28} className="mb-1 group-hover:scale-110 transition-transform"/><span className="text-2xl font-bold font-heading leading-none">192</span><span className="text-[10px] uppercase font-bold tracking-wider opacity-90">SAMU</span></a>

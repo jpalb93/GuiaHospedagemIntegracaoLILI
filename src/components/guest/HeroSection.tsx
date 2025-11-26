@@ -74,8 +74,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
       {/* Wrapper de Conteúdo com Padding Ajustado para a Dock */}
       {/* AJUSTE FINO: pb-32 para empurrar o texto mais para cima e não ficar atrás da barra */}
-      <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-end pb-32">
-        <div className="w-full max-w-3xl mx-auto px-6 sm:px-8 pointer-events-auto">
+      <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-end pb-40">
+        <div className="w-full max-w-5xl mx-auto px-6 sm:px-8 pointer-events-auto">
             <div className="mb-1">
               <p className="text-white/90 font-bold mb-2 tracking-widest uppercase text-[10px] font-heading bg-black/30 inline-block px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
                 Guia Interativo • Flat de Lili

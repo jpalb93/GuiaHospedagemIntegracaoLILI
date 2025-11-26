@@ -1,11 +1,11 @@
 {
-  "name": "Flats Integração - Guia Digital",
+  "name": "Flat de Lili - Guia Digital",
   "short_name": "Flat de Lili",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111827",
-  "theme_color": "#f97316",
-  "orientation": "portrait",
+  "theme_color": "#111827",
+  "description": "Guia interativo do hóspede com senhas, wi-fi e dicas locais.",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/5988/5988479.png",
