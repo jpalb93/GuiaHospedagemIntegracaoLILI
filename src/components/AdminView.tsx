@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, User as UserIcon, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing, Sun, Moon } from 'lucide-react';
+import { Copy, Check, User as UserIcon, Lock, ExternalLink, AlertCircle, CheckCircle2, Send, Sparkles, Loader2, CalendarDays, Clock, LayoutGrid, LogIn, Trash2, Link as LinkIcon, Share2, History, UserCheck, ChevronDown, ChevronUp, Search, X, StickyNote, Eraser, LogOut, ArrowRightCircle, Pencil, Save, MessageSquare, CalendarOff, Ban, Phone, BellRing, Sun, Moon, ArrowDownCircle } from 'lucide-react';
 import { isApiConfigured } from '../services/geminiService';
 import { fetchOfficialTime, TINY_URL_TOKEN } from '../constants';
-import { saveReservation, subscribeToReservations, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation, addBlockedDate, deleteBlockedDate, subscribeToBlockedDates } from '../services/firebase';
+import { saveReservation, deleteReservation, loginCMS, subscribeToAuth, logoutCMS, updateReservation, addBlockedDate, deleteBlockedDate, subscribeToBlockedDates, subscribeToActiveReservations, fetchHistoryReservations } from '../services/firebase';
 import { Reservation, BlockedDateRange } from '../types';
 import ToastContainer, { ToastMessage, ToastType } from './Toast';
-import { User } from 'firebase/auth'; // Deixe assim
+import { User } from 'firebase/auth'; 
 
 interface AdminViewProps {
   theme: 'light' | 'dark';
@@ -22,7 +22,7 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
   // Form State
   const [activeTab, setActiveTab] = useState<'create' | 'list' | 'blocks'>('create');
   const [guestName, setGuestName] = useState('');
-  const [guestPhone, setGuestPhone] = useState(''); // NOVO STATE
+  const [guestPhone, setGuestPhone] = useState(''); 
   const [lockCode, setLockCode] = useState('');
   const [welcomeMessage, setWelcomeMessage] = useState(''); 
   const [adminNotes, setAdminNotes] = useState(''); 
@@ -55,8 +55,14 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
   const [isShortened, setIsShortened] = useState(false);
   const [apiKeyStatus, setApiKeyStatus] = useState<'checking' | 'ok' | 'missing'>('checking');
   
-  // Data State
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  // --- DATA STATE (OTIMIZADO) ---
+  // Separação entre ativas (realtime) e histórico (paginado)
+  const [activeReservations, setActiveReservations] = useState<Reservation[]>([]);
+  const [historyReservations, setHistoryReservations] = useState<Reservation[]>([]);
+  const [lastHistoryDoc, setLastHistoryDoc] = useState<any>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [hasMoreHistory, setHasMoreHistory] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState(''); 
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null); 
   
@@ -77,23 +83,47 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
     return () => unsubscribe();
   }, []);
 
-  // 2. Reservations & Blocked Dates Listener
+  // 2. Reservations & Blocked Dates Listener (OTIMIZADO)
   useEffect(() => {
     if (user) {
-      // OTIMIZAÇÃO: Limitando a 300 reservas mais recentes para não pesar o banco
-      const unsubReservations = subscribeToReservations((data) => {
-        setReservations(data);
-      }, 300); 
+      // A) Escuta apenas as reservas ATIVAS (Futuras ou Presentes) em tempo real
+      const unsubActive = subscribeToActiveReservations((data) => {
+        setActiveReservations(data);
+      });
       
+      // B) Carrega o primeiro lote do histórico manualmente
+      loadMoreHistory(true);
+
+      // C) Bloqueios (Mantido realtime pois são poucos)
       const unsubBlocked = subscribeToBlockedDates((data) => {
         setBlockedDates(data);
       });
+
       return () => {
-        unsubReservations();
+        unsubActive();
         unsubBlocked();
       };
     }
   }, [user]);
+
+  // Função para carregar histórico paginado
+  const loadMoreHistory = async (reset = false) => {
+      if (loadingHistory) return;
+      setLoadingHistory(true);
+      try {
+          const lastDoc = reset ? null : lastHistoryDoc;
+          const { data, lastVisible, hasMore } = await fetchHistoryReservations(lastDoc);
+          
+          setHistoryReservations(prev => reset ? data : [...prev, ...data]);
+          setLastHistoryDoc(lastVisible);
+          setHasMoreHistory(hasMore);
+      } catch (e) {
+          console.error("Erro ao carregar histórico", e);
+          showToast("Erro ao carregar histórico", "error");
+      } finally {
+          setLoadingHistory(false);
+      }
+  };
 
   // 3. Init Dates
   useEffect(() => {
@@ -311,6 +341,8 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
     if(confirm("ATENÇÃO: Isso apaga permanentemente. Confirmar?")) {
       await deleteReservation(id);
       if (selectedReservation?.id === id) setSelectedReservation(null);
+      // Atualização local otimista (se for do histórico, precisa remover manualmente)
+      setHistoryReservations(prev => prev.filter(r => r.id !== id));
       showToast("Reserva excluída.", "success");
     }
   };
@@ -342,7 +374,6 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
     window.open(whatsappUrl, '_blank');
   };
 
-  // --- NOVO: Lógica de Envio de Lembretes Inteligentes ---
   const sendReminder = (res: Reservation, type: 'checkin' | 'checkout') => {
       if (!res.id) return;
       const link = getLinkForReservation(res.id);
@@ -403,16 +434,21 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
     setOpenHistoryGroups(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
   };
 
-  // --- FILTROS ---
+  // --- FILTROS E COMBINAÇÃO DE DADOS ---
   const getFilteredAndSplitReservations = () => {
+    // Combina ativas e histórico carregado para filtragem
+    const allReservations = [...activeReservations, ...historyReservations];
+    
+    // Remove duplicatas (caso ocorra)
+    const uniqueReservations = Array.from(new Map(allReservations.map(item => [item.id, item])).values());
+
     const today = new Date();
     const todayStr = today.toLocaleDateString('en-CA'); 
-    // Amanhã para comparações
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
 
-    const filteredList = reservations.filter(res => {
+    const filteredList = uniqueReservations.filter(res => {
       const term = searchTerm.toLowerCase();
       const nameMatch = res.guestName.toLowerCase().includes(term);
       const notesMatch = res.adminNotes?.toLowerCase().includes(term); 
@@ -464,8 +500,6 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
 
   // --- CARD DE LISTA (HELPER FUNCTION) ---
   const renderReservationListItem = (res: Reservation, statusColor: string, statusLabel?: string) => {
-    
-    // Lógica para Botões de Lembrete
     const isCheckinTomorrow = res.checkInDate === tomorrowStr;
     const isCheckoutTomorrow = res.checkoutDate === tomorrowStr;
 
@@ -515,7 +549,6 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
             </div>
         </div>
 
-        {/* BOTÕES DE AÇÃO DE LEMBRETE (CONDICIONAL) */}
         {isCheckinTomorrow && (
             <button 
               onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkin'); }}
@@ -559,9 +592,7 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        {/* TOAST CONTAINER PARA LOGIN */}
         <ToastContainer toasts={toasts} removeToast={removeToast} />
-        
         <div className="bg-gray-800 p-8 rounded-3xl w-full max-w-sm border border-gray-700 shadow-2xl">
            <div className="flex justify-center mb-6 text-orange-500"><Lock size={40} /></div>
            <h2 className="text-2xl font-bold text-white text-center mb-6">Acesso Administrativo</h2>
@@ -577,8 +608,6 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center p-6 font-sans text-gray-900 dark:text-gray-100 relative">
-      
-      {/* TOAST CONTAINER PRINCIPAL */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       <div className="w-full max-w-lg flex justify-between items-center mb-6">
@@ -624,8 +653,8 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
 
         {/* CONTENT - FORM */}
         {activeTab === 'create' && (
+          // ... (Código do Formulário Mantido Igual) ...
           <div className="p-8 space-y-6 relative">
-            
             <button onClick={resetForm} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10" title="Limpar/Cancelar">
                 {editingId ? <X size={18} className="text-red-500"/> : <Eraser size={18} />}
             </button>
@@ -694,7 +723,6 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
                </div>
             </div>
 
-            {/* ÁREA DE ALERTA PESSOAL */}
             <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/30 space-y-3">
                <div className="flex justify-between items-center">
                   <h3 className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2 uppercase tracking-wider">
@@ -756,6 +784,7 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
 
         {/* CONTENT - BLOCKS */}
         {activeTab === 'blocks' && (
+            // ... (Código de Bloqueio Mantido Igual) ...
             <div className="p-6 space-y-6 bg-white dark:bg-gray-800 min-h-[400px]">
                 <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-2xl border border-red-100 dark:border-red-800/30 text-center">
                     <h2 className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center justify-center gap-2 uppercase tracking-wide mb-2">
@@ -818,7 +847,7 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 min-h-[400px] space-y-6">
              <div className="relative group">
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={18} />
-               <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-10 text-sm outline-none focus:ring-2 focus:ring-orange-500" placeholder="Buscar..." />
+               <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-10 text-sm outline-none focus:ring-2 focus:ring-orange-500" placeholder="Buscar (apenas carregados)..." />
                {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"><X size={16} /></button>}
              </div>
              
@@ -843,13 +872,13 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
 
              {leavingToday.length === 0 && staying.length === 0 && upcoming.length === 0 && (
                 <div className="text-center py-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-xs font-medium">
-                  {isSearching ? 'Nada encontrado.' : 'Nenhuma reserva ativa.'}
+                  {isSearching ? 'Nada encontrado nos ativos.' : 'Nenhuma reserva ativa.'}
                 </div>
              )}
 
              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 border-dashed">
-               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 ml-1"><History size={14} /> Histórico Recente</h3>
-               {groupedHistory.length === 0 ? <div className="text-center py-4 text-gray-400 text-[10px]">Vazio.</div> : (
+               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2 ml-1"><History size={14} /> Histórico</h3>
+               {groupedHistory.length === 0 && !loadingHistory ? <div className="text-center py-4 text-gray-400 text-[10px]">Vazio.</div> : (
                  <div className="space-y-4">
                    {groupedHistory.map((group, idx) => {
                      const isOpen = openHistoryGroups.includes(idx) || isSearching;
@@ -869,12 +898,24 @@ const AdminView: React.FC<AdminViewProps> = ({ theme, toggleTheme }) => {
                    })}
                  </div>
                )}
+
+               {/* BOTÃO DE CARREGAR MAIS */}
+               {hasMoreHistory && (
+                   <button 
+                        onClick={() => loadMoreHistory()}
+                        disabled={loadingHistory}
+                        className="w-full mt-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                   >
+                        {loadingHistory ? <Loader2 className="animate-spin" size={14} /> : <ArrowDownCircle size={14} />}
+                        {loadingHistory ? 'Carregando...' : 'Carregar Mais Antigos'}
+                   </button>
+               )}
              </div>
            </div>
         )}
       </div>
 
-      {/* MODAL DETALHES (MANTIDO) */}
+      {/* MODAL DETALHES (MANTIDO IGUAL) */}
       {selectedReservation && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedReservation(null)}></div>

@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, collection, doc, getDoc, getDocs, 
   addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, 
-  query, where, limit, orderBy, writeBatch 
+  query, where, limit, orderBy, writeBatch, startAfter 
 } from 'firebase/firestore';
 import { 
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, User 
@@ -250,7 +250,7 @@ export const deleteGuestReview = async (id: string) => {
 };
 
 // ============================================================================
-// 6. SERVIÇOS DE RESERVAS (RESERVATIONS)
+// 6. SERVIÇOS DE RESERVAS (RESERVATIONS) - OTIMIZADO PARA PAGINAÇÃO
 // ============================================================================
 
 export const saveReservation = async (reservation: Reservation): Promise<string> => {
@@ -289,14 +289,58 @@ export const deleteReservation = async (id: string) => {
   await deleteDoc(doc(db, 'reservations', id));
 };
 
-export const subscribeToReservations = (callback: (reservations: Reservation[]) => void, limitCount: number = 300) => {
-  const q = query(collection(db, 'reservations'), orderBy('createdAt', 'desc'), limit(limitCount));
+// --- OTIMIZAÇÃO DE LEITURA: Apenas Ativas em Tempo Real ---
+export const subscribeToActiveReservations = (callback: (reservations: Reservation[]) => void) => {
+  // Pega todas onde o checkout é hoje ou no futuro (Ativas)
+  const today = new Date().toISOString().split('T')[0]; 
+  const q = query(
+    collection(db, 'reservations'), 
+    where('checkoutDate', '>=', today),
+    orderBy('checkoutDate', 'asc') // Ordena por quem sai primeiro
+  );
   
   return onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Reservation));
+    callback(data);
+  });
+};
+
+// --- OTIMIZAÇÃO DE LEITURA: Histórico Paginado (Sob Demanda) ---
+export const fetchHistoryReservations = async (lastDoc: any = null, pageSize: number = 20) => {
+  const today = new Date().toISOString().split('T')[0];
+  
+  let q = query(
+    collection(db, 'reservations'),
+    where('checkoutDate', '<', today), // Apenas passado
+    orderBy('checkoutDate', 'desc'), // Mais recentes primeiro
+    limit(pageSize)
+  );
+
+  if (lastDoc) {
+    q = query(q, startAfter(lastDoc));
+  }
+
+  const snapshot = await getDocs(q);
+  const data = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Reservation));
+
+  return {
+    data,
+    lastVisible: snapshot.docs[snapshot.docs.length - 1],
+    hasMore: snapshot.docs.length === pageSize
+  };
+};
+
+// ANTIGO (Mantido para compatibilidade se necessário, mas depreciado)
+export const subscribeToReservations = (callback: (reservations: Reservation[]) => void, limitCount: number = 300) => {
+  const q = query(collection(db, 'reservations'), orderBy('createdAt', 'desc'), limit(limitCount));
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Reservation));
     callback(data);
   });
 };

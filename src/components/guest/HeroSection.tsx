@@ -24,11 +24,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   toggleLanguage
 }) => {
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
-  const [mountKey, setMountKey] = useState(0);
-
-  useEffect(() => {
-    setMountKey(prev => prev + 1);
-  }, []);
 
   useEffect(() => {
     if (!heroSlides || heroSlides.length <= 1) return;
@@ -63,7 +58,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
       {heroSlides.map((img, index) => (
         <div
-          key={`${img}-${index}-${mountKey}`}
+          key={`${img}-${index}`}
           className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
         >
           <OptimizedImage src={img} alt="Flats Integração" className="w-full h-full object-cover opacity-100" />

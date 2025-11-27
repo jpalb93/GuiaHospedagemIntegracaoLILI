@@ -95,6 +95,17 @@ const ContentManager: React.FC = () => {
     );
   };
 
+  // --- FUNÇÃO DE VALIDAÇÃO DE URL ---
+  const validateImageUrl = (url: string): boolean => {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = subscribeToAuth((u) => {
       setUser(u);
@@ -170,6 +181,12 @@ const ContentManager: React.FC = () => {
   const handleSavePlace = async () => {
     if (!newPlace.name || !newPlace.description || !newPlace.imageUrl || !newPlace.category) {
       alert("Preencha os campos obrigatórios!");
+      return;
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA DA URL
+    if (!validateImageUrl(newPlace.imageUrl)) {
+      alert("URL de imagem inválida! Certifique-se de usar um link completo começando com http:// ou https://");
       return;
     }
 
@@ -264,6 +281,13 @@ const ContentManager: React.FC = () => {
 
   const handleAddHeroImage = async () => {
     if (!newHeroImage.trim()) return;
+
+    // VALIDAÇÃO DE SEGURANÇA DA URL
+    if (!validateImageUrl(newHeroImage)) {
+        alert("URL de imagem inválida! Use um link http:// ou https://");
+        return;
+    }
+
     const updatedList = [...heroImages, newHeroImage.trim()];
     setHeroImages(updatedList);
     setNewHeroImage('');

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Coffee, Utensils, Sunset, Moon, LogOut, CalendarHeart, CalendarClock } from 'lucide-react';
 import { fetchOfficialTime } from '../constants';
-import { SmartSuggestionsConfig } from '../types';
+import { SmartSuggestionsConfig, TimeOfDaySuggestion } from '../types';
 
 // --- SKELETON DE CARREGAMENTO ---
 const SmartSuggestionSkeleton = () => (
@@ -67,6 +68,7 @@ interface SmartSuggestionProps {
 const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckoutClick, isTimeVerified, customSuggestions }) => {
   
   const [simpleTemp, setSimpleTemp] = useState<number | null>(null);
+  const [randomSuggestion, setRandomSuggestion] = useState<TimeOfDaySuggestion | null>(null);
 
   // Estado inicial preguiçoso
   const [timeOfDay, setTimeOfDay] = useState<'morning' | 'lunch' | 'sunset' | 'night'>(() => {
@@ -103,14 +105,19 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckout
     }
   }, [stayStage, simpleTemp]);
 
-  const randomSuggestion = useMemo(() => {
-    if (!customSuggestions) return null;
+  // Efeito para escolher a sugestão aleatória quando o horário ou as sugestões mudarem
+  useEffect(() => {
+    if (!customSuggestions) {
+      setRandomSuggestion(null);
+      return;
+    }
     const suggestionsList = customSuggestions[timeOfDay];
     if (suggestionsList && Array.isArray(suggestionsList) && suggestionsList.length > 0) {
       const randomIndex = Math.floor(Math.random() * suggestionsList.length);
-      return suggestionsList[randomIndex];
+      setRandomSuggestion(suggestionsList[randomIndex]);
+    } else {
+      setRandomSuggestion(null);
     }
-    return null;
   }, [customSuggestions, timeOfDay]);
 
   if (!isTimeVerified) return <SmartSuggestionSkeleton />;
@@ -140,7 +147,7 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckout
   return (
     <div 
       onClick={stayStage === 'checkout' ? onCheckoutClick : undefined}
-      className={`w-full shrink-0 rounded-[24px] p-[2px] bg-gradient-to-br ${activeContent.color} shadow-lg shadow-gray-200/50 dark:shadow-none relative overflow-hidden transition-all duration-300 ${stayStage === 'checkout' ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : ''}`}
+      className={`w-full shrink-0 rounded-[24px] p-[2px] bg-gradient-to-br ${activeContent.color} shadow-lg shadow-gray-200/50 dark:shadow-none relative overflow-hidden transition-all duration-300 ${stayStage === 'checkout' ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : 'shrink-0'}`}
     >
       <div className="bg-white/90 dark:bg-gray-800/95 backdrop-blur-xl p-5 rounded-[22px] flex items-start gap-4">
         <div className={`p-3.5 rounded-2xl ${activeContent.iconBg} shadow-sm shrink-0 mt-0.5 transition-transform hover:scale-110`}>

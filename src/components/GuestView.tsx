@@ -770,7 +770,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                   <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group">
                                       <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); if(navigator.vibrate) navigator.vibrate(50); setShowDriverMode(true); }} /></div>
                                       <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Endereço</p>
-                                      <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">R. São José, 475 B</p>
+                                      <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">R. São José, 475B</p>
                                       <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}</p>
                                   </div>
                                   <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
@@ -951,7 +951,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                <div>
                    <h4 className="font-heading font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 text-xs uppercase tracking-wider"><div className="p-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md"><MapPin size={14}/></div> Sobre a Localização</h4>
                    <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-3">
-                      <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">O flat fica na <strong>Rua São José, 475</strong>, ao lado da Av. da Integração. Acesso rápido ao centro, shopping e hospitais.</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">O flat fica na <strong>Rua São José, 475 B</strong>, ao lado da Av. da Integração. Acesso rápido ao centro, shopping e hospitais.</p>
                       <div className="flex flex-col gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                          <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300"><div className="p-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full mt-0.5"><Car size={10} /></div><p><strong>Não possuímos estacionamento</strong> (vagas disponíveis na rua).</p></div>
                          <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300"><div className="p-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full mt-0.5"><Footprints size={10} /></div><p>O prédio não possui elevador (acesso por escadas).</p></div>
