@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GuestConfig, PlaceRecommendation, AppConfig, SmartSuggestionsConfig } from '../types';
 import { getDynamicPlaces, getHeroImages, subscribeToAppSettings, subscribeToSmartSuggestions } from '../services/firebase';
@@ -26,12 +25,13 @@ import CheckoutModal from './modals/CheckoutModal';
 import OfflineCardModal from './modals/OfflineCardModal';
 import DriverModeModal from './modals/DriverModeModal';
 import VideoModal from './modals/VideoModal';
+import SupportModal from './modals/SupportModal';
 
 import { 
   BURGERS, SKEWERS, SALADS, PASTA, ORIENTAL, ALA_CARTE, SELF_SERVICE, BARS,
   CAFES, ATTRACTIONS, ESSENTIALS, SNACKS, EMERGENCY, DEFAULT_CITY_CURIOSITIES,
   WIFI_SSID as DEFAULT_WIFI_SSID, WIFI_PASS as DEFAULT_WIFI_PASS, GOOGLE_REVIEW_LINK, 
-  FLAT_ADDRESS, HOST_PHONE, DRONE_VIDEO_URL, CURIOSITY_STORY_IMAGES, FLAT_TIPS,
+  FLAT_ADDRESS, DRONE_VIDEO_URL, CURIOSITY_STORY_IMAGES, FLAT_TIPS,
   DEFAULT_SLIDES
 } from '../constants';
 
@@ -306,7 +306,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
 
 // --- COMPONENTE PRINCIPAL ---
 const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => {
-  const { stayStage, isTimeVerified, isPasswordReleased, isCheckoutToday } = useGuestStay(config);
+  const { stayStage, isTimeVerified, isPasswordReleased, isCheckoutToday, isSingleNight } = useGuestStay(config);
 
   const [wifiCopied, setWifiCopied] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
@@ -316,6 +316,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   
   const [isStoryOpen, setIsStoryOpen] = useState(false);
   const [currentStories, setCurrentStories] = useState<StoryItem[]>([]);
@@ -425,12 +426,14 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
   }, []);
 
   const openVideoModal = (url: string, vertical: boolean = false) => {
+    if (navigator.vibrate) navigator.vibrate(50);
     setCurrentVideoUrl(url);
     setIsVideoVertical(vertical);
     setShowVideoModal(true);
   };
 
   const handleOpenKeyDetails = () => {
+    if (navigator.vibrate) navigator.vibrate(50);
     setStartOnKeyDetails(true);
     setIsCheckoutModalOpen(true);
   };
@@ -441,18 +444,21 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
   };
 
   const handleCopyWifi = () => {
+    if (navigator.vibrate) navigator.vibrate(50);
     navigator.clipboard.writeText(currentWifiPass);
     setWifiCopied(true);
     setTimeout(() => setWifiCopied(false), 2000);
   };
 
   const handleCopyAddress = () => {
+    if (navigator.vibrate) navigator.vibrate(50);
     navigator.clipboard.writeText(FLAT_ADDRESS);
     setAddressCopied(true);
     setTimeout(() => setAddressCopied(false), 2000);
   };
 
   const handleShareLocation = async () => {
+    if (navigator.vibrate) navigator.vibrate(50);
     if (navigator.share) {
       try {
         await navigator.share({
@@ -469,6 +475,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
   };
 
   const handleEmergencyClick = () => {
+    if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Padrão SOS curto
     setOpenEmergency(false); 
     setTimeout(() => {
       setOpenEmergency(true);
@@ -508,6 +515,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
   const activeEvents = getActiveEvents();
 
   const handleOpenStories = (type: 'agenda' | 'curiosities' | 'tips') => {
+    if (navigator.vibrate) navigator.vibrate(50);
     if (type === 'agenda') {
       const eventStories: StoryItem[] = activeEvents.map(evt => {
         const startDate = evt.eventDate ? formatFriendlyDate(evt.eventDate) : '';
@@ -628,6 +636,12 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         isVertical={isVideoVertical}
       />
 
+      <SupportModal
+        isOpen={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+        guestName={config.guestName}
+      />
+
       <StoryViewer 
         isOpen={isStoryOpen}
         onClose={() => setIsStoryOpen(false)}
@@ -669,7 +683,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                             <Siren size={10} /> SOS
                           </button>
                         )}
-                        <button onClick={() => setShowOfflineCard(true)} className="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2.5 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-sans shadow-sm">
+                        <button onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setShowOfflineCard(true); }} className="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2.5 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-sans shadow-sm">
                           <Camera size={10} /> Salvar Acesso
                         </button>
                       </div>
@@ -693,7 +707,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                         <br/>
                                         Clique acima em <span className="font-bold border-b border-purple-300">Salvar Acesso</span> e tira um print do seu cartão!
                                       </p>
-                                      <button onClick={() => setIsCheckinModalOpen(true)} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+                                      <button onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckinModalOpen(true); }} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
                                         Ver instruções de acesso
                                       </button>
                                     </>
@@ -705,7 +719,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                         <br/><br/>
                                         Enquanto não chega, dá uma olhada nas regras e o que te espera na cidade!
                                       </p>
-                                      <button onClick={() => setIsCheckinModalOpen(true)} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+                                      <button onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckinModalOpen(true); }} className="px-4 py-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors bg-white/50 dark:bg-black/20 backdrop-blur-sm">
                                         Ver instruções de acesso
                                       </button>
                                     </>
@@ -721,7 +735,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                        Seu check-out é amanhã até às <strong className="text-indigo-900 dark:text-white">{config.checkOutTime || '11:00'}</strong>. 
                                        Vai sair de madrugada? Veja as instruções.
                                      </p>
-                                     <button onClick={() => setIsCheckoutModalOpen(true)} className="w-full py-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wide border border-indigo-200 dark:border-indigo-800/50 rounded-lg shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                                     <button onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckoutModalOpen(true); }} className="w-full py-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wide border border-indigo-200 dark:border-indigo-800/50 rounded-lg shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
                                        Ver instruções de saída
                                      </button>
                                    </div>
@@ -747,14 +761,14 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                 <div className="grid grid-cols-2 gap-2 mb-2 flex-1">
                                   <div className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden group">
                                       <div className="absolute top-0 right-0 p-1.5 text-orange-100 dark:text-orange-900/10 transform rotate-12"><Key size={48} strokeWidth={1.5} /></div>
-                                      <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Senha</p>
+                                      <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Senha Porta</p>
                                       <p className="text-2xl font-bold text-gray-900 dark:text-white font-mono tracking-wider z-10">{config.lockCode}</p>
-                                      <button onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }} className="mt-1.5 px-2 py-1 bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 text-orange-700 dark:text-orange-300 text-[9px] font-bold rounded-lg flex items-center gap-1 transition-colors z-10">
+                                      <button onClick={(e) => { e.stopPropagation(); if(navigator.vibrate) navigator.vibrate(50); setIsCheckinModalOpen(true); }} className="mt-1.5 px-2 py-1 bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 text-orange-700 dark:text-orange-300 text-[9px] font-bold rounded-lg flex items-center gap-1 transition-colors z-10">
                                         <Video size={10} /> Ver vídeo
                                       </button>
                                   </div>
                                   <div onClick={handleCopyAddress} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 shadow-sm flex flex-col justify-center items-start relative overflow-hidden cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group">
-                                      <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowDriverMode(true); }} /></div>
+                                      <div className="absolute top-2 right-2 text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1 rounded-md"><Maximize2 size={10} onClick={(e: React.MouseEvent) => { e.stopPropagation(); if(navigator.vibrate) navigator.vibrate(50); setShowDriverMode(true); }} /></div>
                                       <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mb-0.5 font-heading">Endereço</p>
                                       <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">R. São José, 475 B</p>
                                       <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}</p>
@@ -766,7 +780,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                         <p className="text-[10px] text-gray-600 dark:text-gray-300 font-medium truncate">{wifiCopied ? 'Senha Copiada!' : (currentWifiPass.length < 12 ? currentWifiPass : 'Copiar Senha')}</p>
                                       </div>
                                   </div>
-                                  <div onClick={(e) => { e.stopPropagation(); setIsCheckoutModalOpen(true); }} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                                  <div onClick={(e) => { e.stopPropagation(); if(navigator.vibrate) navigator.vibrate(50); setIsCheckoutModalOpen(true); }} className="col-span-1 bg-white dark:bg-gray-800 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm flex items-center gap-3 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                                       <div className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 p-2 rounded-lg shrink-0"><LogOut size={16} /></div>
                                       <div>
                                         <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-bold uppercase mb-0.5">Check-out</p>
@@ -788,36 +802,79 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                       </div>
                                   </div>
                                 </div>
-                                <a href={`https://wa.me/${HOST_PHONE}`} target="_blank" rel="noreferrer" className="w-full py-3.5 bg-white dark:bg-gray-700 border-2 border-green-100 dark:border-green-900/30 hover:border-green-50 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 rounded-xl flex items-center justify-center gap-2 transition-all font-sans group shadow-sm mt-2 animate-fadeIn">
-                                  <MessageCircle size={18} className="text-green-500 group-hover:scale-110 transition-transform" />
-                                  <span className="text-xs font-bold uppercase tracking-wide">Falar com a Lili</span>
-                                </a>
                               </div>
                             )}
 
                             {(stayStage === 'checkin' || stayStage === 'checkout') && (
-                              <div onClick={isCheckoutToday ? () => setIsCheckoutModalOpen(true) : undefined} className={`p-6 flex flex-col items-center text-center group animate-fadeIn h-full justify-center ${isCheckoutToday ? 'cursor-pointer hover:bg-orange-100/50 dark:hover:bg-orange-900/30 transition-colors' : ''}`}>
-                                  {stayStage === 'checkout' && (
-                                    <>
-                                      <div className="p-3 rounded-full mb-3 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm animate-pulse-slow border border-blue-50 dark:border-blue-900/30"><LogOut size={24} strokeWidth={2} /></div>
-                                      <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-white mb-1.5">Hoje é seu Check-out</h3>
-                                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-4 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors font-medium max-w-xs leading-relaxed">Esperamos que sua estadia tenha sido incrível! Toque aqui para ver o checklist.</p>
-                                      <div className="flex flex-col gap-2 w-full max-w-[260px]">
-                                        <div className="flex items-center justify-center gap-2.5 bg-white dark:bg-gray-800 py-2.5 px-4 rounded-xl border border-blue-100 dark:border-blue-900/30 shadow-sm">
-                                          <Clock size={16} className="text-blue-500"/>
-                                          <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">Horário do Check-Out: {config.checkOutTime || '11:00'}</span>
+                              isSingleNight && stayStage === 'checkin' ? (
+                                <div className="p-2 animate-fadeIn h-full flex flex-col justify-between">
+                                    <div className="mb-2 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50 flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-orange-800 dark:text-orange-200 uppercase tracking-wide flex items-center gap-1">
+                                            <Clock size={12} /> Check-out Amanhã
+                                            </p>
+                                            <p className="text-xs text-orange-900 dark:text-orange-100 font-bold">Até às {config.checkOutTime || '11:00'}</p>
                                         </div>
-                                      </div>
-                                    </>
-                                  )}
-                                  {stayStage === 'checkin' && (
-                                    <>
-                                      <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center gap-2"><Key size={20} className="text-orange-500" strokeWidth={2.5} /> Que alegria te receber, {config.guestName?.split(' ')[0] || 'Visitante'}!</h3>
-                                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-5 font-medium max-w-xs mx-auto leading-relaxed">Preparamos um guia rápido para você entrar sem estresse.</p>
-                                      <button onClick={(e) => { e.stopPropagation(); setIsCheckinModalOpen(true); }} className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2 font-sans active:scale-[0.98]">Iniciar Passo a Passo</button>
-                                    </>
-                                  )}
-                              </div>
+                                        <button onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckoutModalOpen(true); }} className="px-3 py-1.5 bg-white dark:bg-gray-800 text-orange-700 dark:text-orange-300 text-[9px] font-bold uppercase rounded-lg shadow-sm border border-orange-100 dark:border-orange-800 hover:bg-orange-50 transition-colors">
+                                            Ver Regras
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-2 flex-1">
+                                        <div className="col-span-1 bg-white dark:bg-gray-800 p-2 rounded-xl border border-orange-200 dark:border-orange-800/50 shadow-sm flex flex-col justify-center items-center relative overflow-hidden">
+                                            <p className="text-[8px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-widest mb-0.5">Senha Porta</p>
+                                            <p className="text-xl font-bold text-gray-900 dark:text-white font-mono tracking-wider">{config.lockCode}</p>
+                                        </div>
+                                        
+                                        <div onClick={handleCopyWifi} className="col-span-1 bg-white dark:bg-gray-800 p-2 rounded-xl border border-blue-200 dark:border-blue-800/50 shadow-sm flex flex-col justify-center items-center cursor-pointer active:bg-blue-50 dark:active:bg-blue-900/20 transition-colors group relative overflow-hidden">
+                                            <p className="text-[8px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mb-0.5">Rede Wi-Fi</p>
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white font-sans text-center leading-tight mb-1 px-1 break-all line-clamp-1">{currentWifiSSID}</p>
+                                            <div className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-colors ${wifiCopied ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 group-hover:bg-blue-100'}`}>
+                                                {wifiCopied ? 'Senha Copiada!' : 'Copiar Senha'}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckinModalOpen(true); }} 
+                                        className="w-full mt-2 py-2.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold uppercase rounded-xl flex items-center justify-center gap-2 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+                                    >
+                                        <Video size={14} /> Ver como entrar
+                                    </button>
+                                    
+                                    <div className="mt-3 text-center px-2">
+                                        <p className="text-base font-bold text-gray-700 dark:text-gray-200 font-heading leading-tight mb-1">
+                                            Poxa! Estadia rápida, {config.guestName?.split(' ')[0]}?
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                            Aqui você tem todas as informações que precisa, viu?
+                                        </p>
+                                    </div>
+                                </div>
+                              ) : (
+                                <div onClick={isCheckoutToday ? () => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckoutModalOpen(true); } : undefined} className={`p-6 flex flex-col items-center text-center group animate-fadeIn h-full justify-center ${isCheckoutToday ? 'cursor-pointer hover:bg-orange-100/50 dark:hover:bg-orange-900/30 transition-colors' : ''}`}>
+                                    {stayStage === 'checkout' && (
+                                      <>
+                                        <div className="p-3 rounded-full mb-3 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm animate-pulse-slow border border-blue-50 dark:border-blue-900/30"><LogOut size={24} strokeWidth={2} /></div>
+                                        <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-white mb-1.5">Hoje é seu Check-out</h3>
+                                        <p className="text-xs text-gray-600 dark:text-gray-300 mb-4 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors font-medium max-w-xs leading-relaxed">Esperamos que sua estadia tenha sido incrível! Toque aqui para ver o checklist.</p>
+                                        <div className="flex flex-col gap-2 w-full max-w-[260px]">
+                                          <div className="flex items-center justify-center gap-2.5 bg-white dark:bg-gray-800 py-2.5 px-4 rounded-xl border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                                            <Clock size={16} className="text-blue-500"/>
+                                            <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">Horário do Check-Out: {config.checkOutTime || '11:00'}</span>
+                                          </div>
+                                        </div>
+                                      </>
+                                    )}
+                                    {stayStage === 'checkin' && (
+                                      <>
+                                        <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center gap-2"><Key size={20} className="text-orange-500" strokeWidth={2.5} /> Que alegria te receber, {config.guestName?.split(' ')[0] || 'Visitante'}!</h3>
+                                        <p className="text-xs text-gray-600 dark:text-gray-300 mb-5 font-medium max-w-xs mx-auto leading-relaxed">Preparamos um guia rápido para você entrar sem estresse.</p>
+                                        <button onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckinModalOpen(true); }} className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2 font-sans active:scale-[0.98]">Iniciar Passo a Passo</button>
+                                      </>
+                                    )}
+                                </div>
+                              )
                             )}
 
                             {stayStage === 'checkin' && (
@@ -829,6 +886,16 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                         )}
                       </div>
                     </div>
+
+                    {/* BOTÃO CENTRAL DE AJUDA (AGORA FIXO NO RODAPÉ DO CARD) */}
+                    <button 
+                      onClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsSupportModalOpen(true); }} 
+                      className="w-full py-3.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl flex items-center justify-center gap-2 transition-all font-sans group shadow-sm active:scale-[0.98] mt-auto"
+                    >
+                      <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold uppercase tracking-wide">Falar com a Lili</span>
+                    </button>
+
                   </div>
                 </div>
             </div>
@@ -837,7 +904,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
             <div className="flex flex-col h-full gap-6">
                 <SmartSuggestion 
                     stayStage={stayStage} 
-                    onCheckoutClick={() => setIsCheckoutModalOpen(true)} 
+                    onCheckoutClick={() => { if(navigator.vibrate) navigator.vibrate(50); setIsCheckoutModalOpen(true); }} 
                     isTimeVerified={isTimeVerified} 
                     customSuggestions={smartSuggestions} 
                 />
@@ -845,8 +912,9 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                 {/* OPÇÕES EXTRAS (MOVERAM PRA CÁ PARA BALANCEAR O GRID) */}
                 {isTimeVerified && stayStage !== 'middle' && stayStage !== 'pre_checkout' && (
                     <div className="animate-fadeIn flex-1 flex flex-col">
-                      {stayStage === 'checkin' && (
-                        <button onClick={handleCopyWifi} className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30 flex flex-col items-center text-center transition-all active:scale-[0.98] hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-lg hover:shadow-blue-500/5 cursor-pointer relative overflow-hidden group w-full mb-4 h-full justify-center">
+                      {/* SÓ MOSTRA O BOTÃO GRANDE DE WIFI SE NÃO FOR ESTADIA RÁPIDA (POIS JÁ TEM NO CARD PRINCIPAL) */}
+                      {stayStage === 'checkin' && !isSingleNight && (
+                        <button onClick={handleCopyWifi} className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30 flex flex-col items-center text-center transition-all active:scale-[0.98] hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-lg hover:shadow-blue-500/5 cursor-pointer relative overflow-hidden group w-full mb-4 flex-1 justify-center">
                           <div className={`p-2.5 rounded-full mb-2 shadow-sm transition-colors duration-300 ${wifiCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-white dark:bg-gray-700 text-blue-500 border border-blue-50 dark:border-blue-900/30'}`}>{wifiCopied ? <Check size={20} /> : <Wifi size={20} />}</div>
                           <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 font-bold uppercase tracking-wide">Rede WiFi</p>
                           <p className="text-base font-bold text-gray-900 dark:text-white break-all leading-tight mb-1.5 font-sans">{currentWifiSSID}</p>
@@ -855,7 +923,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                       )}
 
                       <div className="bg-purple-50/50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30 flex flex-col items-center text-center relative group w-full hover:shadow-lg hover:shadow-purple-500/5 transition-all h-full justify-center">
-                        <button onClick={(e) => { e.stopPropagation(); setShowDriverMode(true); }} className="absolute top-2 right-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Modo Motorista (Tela Cheia)"><Maximize2 size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); if(navigator.vibrate) navigator.vibrate(50); setShowDriverMode(true); }} className="absolute top-2 right-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Modo Motorista (Tela Cheia)"><Maximize2 size={16} /></button>
                         <button onClick={(e) => { e.stopPropagation(); handleShareLocation(); }} className="absolute top-2 left-2 p-1.5 text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors" title="Compartilhar Localização"><Share2 size={16} /></button>
                         <div onClick={handleCopyAddress} className="cursor-pointer w-full flex flex-col items-center active:scale-95 transition-transform mb-3">
                           <div className={`p-2.5 rounded-full mb-2 shadow-sm transition-colors duration-300 ${addressCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-white dark:bg-gray-700 text-purple-500 border border-purple-50 dark:border-purple-900/30'}`}>{addressCopied ? <Check size={20} /> : <MapPin size={20} />}</div>

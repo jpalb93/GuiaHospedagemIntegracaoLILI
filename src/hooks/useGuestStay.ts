@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { GuestConfig } from '../types';
 import { fetchOfficialTime } from '../constants';
@@ -94,10 +95,22 @@ export const useGuestStay = (config: GuestConfig) => {
     return now.getTime() >= releaseDate.getTime();
   })();
 
+  const isSingleNight = (() => {
+      if (!config.checkInDate || !config.checkoutDate) return false;
+      const [y1, m1, d1] = config.checkInDate.split('-').map(Number);
+      const [y2, m2, d2] = config.checkoutDate.split('-').map(Number);
+      const d1Date = new Date(y1, m1 - 1, d1);
+      const d2Date = new Date(y2, m2 - 1, d2);
+      const diffTime = d2Date.getTime() - d1Date.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      return diffDays === 1;
+  })();
+
   return {
     stayStage,
     isTimeVerified,
     isPasswordReleased,
-    isCheckoutToday: stayStage === 'checkout'
+    isCheckoutToday: stayStage === 'checkout',
+    isSingleNight
   };
 };

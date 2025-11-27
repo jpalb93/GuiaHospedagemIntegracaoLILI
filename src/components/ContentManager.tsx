@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { Trash2, Plus, LogIn, Save, X, LayoutGrid, Image as ImageIcon, MapPin, Phone, Tag, Link as LinkIcon, AlertCircle, Settings, Store, Wifi, Megaphone, Check, Box, Lock, Sparkles, Coffee, Utensils, Sunset, Moon, Edit, Calendar, Clock, Lightbulb, Star } from 'lucide-react';
+import { Trash2, Plus, LogIn, Save, X, LayoutGrid, Image as ImageIcon, MapPin, Phone, Tag, Link as LinkIcon, AlertCircle, Settings, Store, Wifi, Megaphone, Check, Box, Lock, Sparkles, Coffee, Utensils, Sunset, Moon, Edit, Calendar, Clock, Lightbulb, Star, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { PlaceRecommendation, PlaceCategory, AppConfig, SmartSuggestionsConfig, TimeOfDaySuggestion, GuestReview } from '../types';
 import { loginCMS, logoutCMS, subscribeToAuth, getDynamicPlaces, addDynamicPlace, updateDynamicPlace, deleteDynamicPlace, isFirebaseConfigured, getHeroImages, updateHeroImages, getAppSettings, saveAppSettings, getSmartSuggestions, saveSmartSuggestions, getGuestReviews, addGuestReview, deleteGuestReview, cleanupExpiredEvents } from '../services/firebase';
 import OptimizedImage from './OptimizedImage';
@@ -85,6 +85,15 @@ const ContentManager: React.FC = () => {
 
   // Form States (Hero Images)
   const [newHeroImage, setNewHeroImage] = useState('');
+
+  // State for Collapsed Categories in Places Tab
+  const [collapsedCategories, setCollapsedCategories] = useState<string[]>([]);
+
+  const toggleCategory = (catId: string) => {
+    setCollapsedCategories(prev => 
+      prev.includes(catId) ? prev.filter(id => id !== catId) : [...prev, catId]
+    );
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeToAuth((u) => {
@@ -491,6 +500,9 @@ const ContentManager: React.FC = () => {
     );
   }
 
+  // CALCULATE UNCATEGORIZED ITEMS
+  const uncategorizedPlaces = places.filter(p => !CATEGORIES.some(c => c.id === p.category));
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 relative">
       {/* Header */}
@@ -874,16 +886,9 @@ const ContentManager: React.FC = () => {
            </div>
         )}
 
-        {/* === ABA: LOCAIS === */}
+        {/* === ABA: LOCAIS (AGRUPADO POR CATEGORIAS) === */}
         {activeTab === 'places' && (
           <>
-            {!loading && places.length === 0 && (
-              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 border-dashed">
-                <p className="text-gray-400 font-medium">Nenhum local cadastrado ainda.</p>
-                <button onClick={() => setIsFormOpen(true)} className="mt-4 text-orange-500 font-bold hover:underline">Cadastrar o primeiro</button>
-              </div>
-            )}
-
             <div className="flex justify-end mb-6">
                 <button 
                   onClick={() => setIsFormOpen(true)}
@@ -893,45 +898,109 @@ const ContentManager: React.FC = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {places.map(place => (
-                <div key={place.id} className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all flex flex-col group">
-                  <div className="h-40 bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-                    <OptimizedImage src={place.imageUrl} alt={place.name} className="w-full h-full object-cover" />
-                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-lg font-bold uppercase tracking-wide">
-                      {CATEGORIES.find(c => c.id === place.category)?.label || place.category}
-                    </div>
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="font-bold text-lg font-heading mb-1">{place.name}</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">{place.description}</p>
-                    
-                    {/* EXIBIÇÃO DA DATA SE FOR EVENTO */}
-                    {(place.category === 'events' && place.eventDate) && (
-                        <div className="mb-3 flex items-center gap-1.5 text-xs font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20 px-2 py-1 rounded-md w-fit">
-                            <Calendar size={12} /> 
-                            {place.eventDate.split('-').reverse().join('/')}
-                            {place.eventTime && ` • ${place.eventTime}`}
-                        </div>
-                    )}
+            {!loading && places.length === 0 && (
+              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 border-dashed">
+                <p className="text-gray-400 font-medium">Nenhum local cadastrado ainda.</p>
+                <button onClick={() => setIsFormOpen(true)} className="mt-4 text-orange-500 font-bold hover:underline">Cadastrar o primeiro</button>
+              </div>
+            )}
 
-                    <div className="mt-auto flex justify-end pt-3 border-t border-gray-100 dark:border-gray-700 gap-2">
-                        <button 
-                          onClick={() => handleEditPlace(place)}
-                          className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold uppercase"
-                        >
-                          <Edit size={16} /> Editar
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(place.id)}
-                          className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold uppercase"
-                        >
-                          <Trash2 size={16} /> Excluir
-                        </button>
-                    </div>
+            {/* RENDERIZAÇÃO AGRUPADA POR CATEGORIA */}
+            <div className="space-y-8">
+              {CATEGORIES.map(category => {
+                const categoryPlaces = places.filter(p => p.category === category.id);
+                if (categoryPlaces.length === 0) return null; // Não exibe categoria vazia
+
+                const isCollapsed = collapsedCategories.includes(category.id);
+
+                return (
+                  <div key={category.id} className="bg-white/50 dark:bg-gray-800/30 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    
+                    {/* CABEÇALHO DA CATEGORIA (CLICÁVEL) */}
+                    <button 
+                      onClick={() => toggleCategory(category.id)}
+                      className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-lg font-bold font-heading text-gray-800 dark:text-white flex items-center gap-2">
+                          {category.label} 
+                          <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs px-2 py-0.5 rounded-full font-sans">
+                            {categoryPlaces.length}
+                          </span>
+                        </h2>
+                      </div>
+                      {isCollapsed ? <ChevronDown className="text-gray-400" /> : <ChevronUp className="text-gray-400" />}
+                    </button>
+
+                    {/* GRID DE LOCAIS (COLLAPSIBLE) */}
+                    {!isCollapsed && (
+                      <div className="p-4 border-t border-gray-100 dark:border-gray-700 animate-fadeIn">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {categoryPlaces.map(place => (
+                            <div key={place.id} className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all flex flex-col group">
+                              <div className="h-40 bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+                                <OptimizedImage src={place.imageUrl} alt={place.name} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="p-4 flex-1 flex flex-col">
+                                <h3 className="font-bold text-lg font-heading mb-1">{place.name}</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">{place.description}</p>
+                                
+                                {(place.category === 'events' && place.eventDate) && (
+                                    <div className="mb-3 flex items-center gap-1.5 text-xs font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20 px-2 py-1 rounded-md w-fit">
+                                        <Calendar size={12} /> 
+                                        {place.eventDate.split('-').reverse().join('/')}
+                                        {place.eventTime && ` • ${place.eventTime}`}
+                                    </div>
+                                )}
+
+                                <div className="mt-auto flex justify-end pt-3 border-t border-gray-100 dark:border-gray-700 gap-2">
+                                    <button 
+                                      onClick={() => handleEditPlace(place)}
+                                      className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold uppercase"
+                                    >
+                                      <Edit size={16} /> Editar
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDelete(place.id)}
+                                      className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold uppercase"
+                                    >
+                                      <Trash2 size={16} /> Excluir
+                                    </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
+              {/* LOCAIS SEM CATEGORIA (SE HOUVER) */}
+              {uncategorizedPlaces.length > 0 && (
+                 <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl border border-red-200 dark:border-red-900 overflow-hidden">
+                    <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/30">
+                       <h2 className="text-lg font-bold font-heading text-red-700 dark:text-red-400 flex items-center gap-2">
+                          <AlertCircle size={20} /> Outros / Sem Categoria
+                          <span className="bg-white dark:bg-black/20 text-red-600 dark:text-red-400 text-xs px-2 py-0.5 rounded-full font-sans">
+                            {uncategorizedPlaces.length}
+                          </span>
+                       </h2>
+                    </div>
+                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                       {uncategorizedPlaces.map(place => (
+                          <div key={place.id} className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col">
+                              <div className="p-4">
+                                 <h3 className="font-bold">{place.name}</h3>
+                                 <p className="text-xs text-gray-500 mb-2">Categoria inválida: {place.category}</p>
+                                 <button onClick={() => handleEditPlace(place)} className="text-blue-500 text-xs font-bold uppercase">Corrigir Agora</button>
+                              </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+              )}
             </div>
           </>
         )}
