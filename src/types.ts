@@ -1,7 +1,10 @@
 import React from 'react';
 
 // Definição genérica para ícones (Lucide ou outros)
-export type IconType = React.ComponentType<any>;
+export type IconType = React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number | string; strokeWidth?: number | string }>;
+
+export type PropertyId = 'lili' | 'integracao';
+
 
 export interface GuideSection {
   id: string;
@@ -12,36 +15,43 @@ export interface GuideSection {
 }
 
 // Tipos de categorias para o CMS
-export type PlaceCategory = 
-  | 'burgers' 
-  | 'skewers' 
-  | 'salads' 
-  | 'pasta' 
-  | 'oriental' 
-  | 'alacarte' 
-  | 'selfservice' 
-  | 'bars' 
-  | 'cafes' 
-  | 'attractions' 
-  | 'events' 
-  | 'essentials' 
-  | 'snacks' 
-  | 'emergency';
+export type PlaceCategory =
+  | 'burgers'
+  | 'skewers'
+  | 'salads'
+  | 'pasta'
+  | 'oriental'
+  | 'alacarte'
+  | 'selfservice'
+  | 'bars'
+  | 'cafes'
+  | 'attractions'
+  | 'events'
+  | 'essentials'
+  | 'snacks'
+  | 'emergency'
+  | 'laundry'
+  | 'salon'
+  | 'gym'
+  | 'bikes'
+  | 'souvenirs';
 
 export interface PlaceRecommendation {
   id?: string; // ID do Firebase (opcional para os hardcoded)
   category?: PlaceCategory; // Categoria para filtro
   visible?: boolean; // Para ocultar sem deletar
-  
+
   name: string;
   description: string;
   address?: string;
   tags: string[];
   imageUrl: string;
+  mapsLink?: string; // Link para o Google Maps
   distance?: string; // Campo novo para distância (ex: "500m", "10 min a pé")
   phoneNumber?: string; // Novo: Para delivery
+  whatsapp?: string;    // Novo: Para contato direto via WhatsApp
   orderLink?: string;   // Novo: Link para pedir (iFood, site próprio)
-  
+
   // NOVOS CAMPOS PARA EVENTOS
   eventDate?: string;    // Data do evento (YYYY-MM-DD)
   eventEndDate?: string; // Data de término (opcional, para festivais de dias)
@@ -51,13 +61,18 @@ export interface PlaceRecommendation {
 
 export interface GuestConfig {
   guestName: string;
+  email?: string; // NOVO: Email do hóspede
   guestPhone?: string;   // NOVO: Telefone do hóspede para envio de lembretes
-  lockCode: string;
+  propertyId?: 'lili' | 'integracao'; // NOVO: Identificador da propriedade (opcional para compatibilidade)
+  flatNumber?: string;   // NOVO: Número do flat (apenas para Integração)
+  lockCode?: string;     // Opcional agora, pois Integração não usa
   safeCode?: string;     // Mantido como opcional para compatibilidade com reservas antigas
   welcomeMessage?: string;
   adminNotes?: string;   // NOVA: Observações internas do admin
   wifiSSID?: string; // Novo
   wifiPass?: string; // Novo
+  guestCount?: number; // Novo: Quantidade de hóspedes
+  paymentMethod?: 'pix' | 'money' | 'card'; // Novo: Forma de pagamento
   // NOVOS CAMPOS DE ALERTA ESPECÍFICO
   guestAlertActive?: boolean;
   guestAlertText?: string;
@@ -66,13 +81,15 @@ export interface GuestConfig {
   checkoutDate?: string; // Data de expiração do link (YYYY-MM-DD)
   checkInTime?: string;  // Horário de Check-in
   checkOutTime?: string; // Horário de Check-out
+  isReleased?: boolean;  // Indica se o acesso foi liberado (pela API)
 }
 
 // Interface para Reserva Salva no Banco de Dados
 export interface Reservation extends GuestConfig {
   id?: string;
+  shortId?: string; // Código curto para acesso (ex: LILI01)
   createdAt: string;
-  status: 'active' | 'cancelled';
+  status: 'active' | 'cancelled' | 'pending';
 }
 
 // Interface para Avaliações (Reviews)
@@ -99,8 +116,11 @@ export interface AppConfig {
   safeCode: string; // Nova senha global do cofre
   noticeActive: boolean;
   noticeText: string;
+  globalNotices?: Record<string, { active: boolean, text: string }>; // Novo: Avisos por propriedade
+  hostPhones?: Record<string, string>; // Novo: Telefones por propriedade
   aiSystemPrompt?: string; // O Cérebro da IA (Dinâmico)
-  cityCuriosities?: string[]; // Curiosidades da Cidade (Dinâmico)
+  cityCuriosities?: CityCuriosity[]; // Curiosidades da Cidade (Dinâmico)
+  checklist?: ChecklistItem[]; // Novo: Itens de Vistoria
 }
 
 // NOVA INTERFACE: Sugestões Inteligentes Dinâmicas (AGORA SÃO LISTAS)
@@ -132,4 +152,43 @@ export interface ChatMessage {
 export interface BlockedGuest {
   name: string;
   checkInDate?: string; // Se undefined ou "*", bloqueia sempre pelo nome
+}
+
+// NOVA INTERFACE: Dica do Flat (Tip)
+export interface Tip {
+  id?: string;
+  type: 'curiosity' | 'event'; // Mantendo compatibilidade com StoryItem
+  title: string;
+  subtitle: string;
+  content: string;
+  iconName: string; // Nome do ícone (ex: 'Wifi', 'Key') para mapeamento
+  image?: string;
+  order?: number; // Para ordenação personalizada
+  visible?: boolean;
+}
+
+// NOVA INTERFACE: Curiosidade da Cidade
+export interface CityCuriosity {
+  id?: string;
+  text: string;
+  image?: string; // URL da imagem personalizada
+  visible?: boolean;
+}
+
+// NOVA INTERFACE: Item de Vistoria (Checklist)
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  icon?: string; // Nome do ícone (opcional)
+  active: boolean;
+  category?: string; // Adicionado: Categoria para agrupar itens de checklist
+}
+
+// NOVA INTERFACE: Permissões de Usuário (Multi-Tenant)
+export type UserRole = 'super_admin' | 'property_manager';
+
+export interface UserPermission {
+  email: string;
+  role: UserRole;
+  allowedProperties: PropertyId[]; // Quais propriedades este usuário pode ver/editar
 }

@@ -5,6 +5,7 @@ import OptimizedImage from '../OptimizedImage';
 import WeatherWidget from '../WeatherWidget';
 import { GuestConfig } from '../../types';
 import { DEFAULT_SLIDES } from '../../constants';
+import { PROPERTIES } from '../../config/properties';
 
 interface HeroSectionProps {
   config: GuestConfig;
@@ -61,7 +62,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           key={`${img}-${index}`}
           className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
         >
-          <OptimizedImage src={img} alt="Flats Integração" className="w-full h-full object-cover opacity-100" />
+          <OptimizedImage
+            src={img}
+            alt="Flats Integração"
+            className="w-full h-full object-cover opacity-100"
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchPriority={index === 0 ? "high" : "auto"}
+          />
         </div>
       ))}
 
@@ -71,27 +78,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       {/* AJUSTE FINO: pb-32 para empurrar o texto mais para cima e não ficar atrás da barra */}
       <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-end pb-40">
         <div className="w-full max-w-5xl mx-auto px-6 sm:px-8 pointer-events-auto">
-            <div className="mb-1">
-              <p className="text-white/90 font-bold mb-2 tracking-widest uppercase text-[10px] font-heading bg-black/30 inline-block px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
-                Guia Interativo • Flat de Lili
-              </p>
-              <h1 className="text-3xl sm:text-5xl font-heading font-bold mb-2 leading-tight text-white drop-shadow-sm">
-                Olá, {config.guestName?.split(' ')[0] || 'Visitante'}!
-              </h1>
+          <div className="mb-1">
+            <p className="text-white/90 font-bold mb-2 tracking-widest uppercase text-[10px] font-heading bg-black/30 inline-block px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
+              Guia Interativo • {PROPERTIES[config.propertyId || 'lili'].name}
+            </p>
+            <h1 className="text-3xl sm:text-5xl font-heading font-bold mb-2 leading-tight text-white drop-shadow-sm">
+              Olá, {config.guestName?.split(' ')[0] || 'Visitante'}!
+            </h1>
 
-              {config.welcomeMessage ? (
-                <div className="mt-2 max-w-lg animate-fadeIn">
-                  <div className="h-0.5 w-12 bg-orange-500 mb-3 rounded-full shadow-sm shadow-orange-500/50"></div>
-                  <p className="text-white/90 text-lg sm:text-xl font-medium leading-relaxed font-sans drop-shadow-md tracking-tight">
-                    "{config.welcomeMessage}"
-                  </p>
-                </div>
-              ) : (
-                <p className="text-white/90 text-sm sm:text-lg font-medium font-sans max-w-lg leading-relaxed drop-shadow-sm tracking-tight">
-                  Sua casa longe de casa no Vale do São Francisco.
+            {config.welcomeMessage ? (
+              <div className="mt-2 max-w-lg animate-fadeIn">
+                <div className="h-0.5 w-12 bg-orange-500 mb-3 rounded-full shadow-sm shadow-orange-500/50"></div>
+                <p className="text-white/90 text-lg sm:text-xl font-medium leading-relaxed font-sans drop-shadow-md tracking-tight">
+                  "{config.welcomeMessage}"
                 </p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <p className="text-white/90 text-sm sm:text-lg font-medium font-sans max-w-lg leading-relaxed drop-shadow-sm tracking-tight">
+                Sua casa longe de casa no Vale do São Francisco.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

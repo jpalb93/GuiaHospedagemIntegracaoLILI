@@ -28,10 +28,10 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({ src, alt, className = "
         <div className="absolute inset-0 z-10 overflow-hidden bg-gray-200 dark:bg-gray-700">
           {/* O brilho que passa (Shimmer) */}
           <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/30 dark:via-white/10 to-transparent"></div>
-          
+
           {/* Ícone opcional centralizado para indicar imagem */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 dark:opacity-20">
-             <ImageIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
+            <ImageIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
           </div>
         </div>
       )}
@@ -47,7 +47,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({ src, alt, className = "
         <img
           src={src}
           alt={alt}
-          loading="lazy" // O navegador só baixa quando estiver perto da tela
           onLoad={handleLoad}
           onError={handleError}
           className={`transition-opacity duration-700 ease-in-out ${isLoading ? 'opacity-0' : 'opacity-100'} ${className}`}

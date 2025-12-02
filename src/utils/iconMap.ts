@@ -1,0 +1,73 @@
+import {
+    Zap, Tv, Wind, Key, Wifi, Fan, Bed, Lightbulb,
+    Shirt, ShowerHead, Sparkles, Coffee, Gamepad2,
+    Flame, Clock, Heart, Palette, AlertTriangle, Sofa, Droplets,
+    MapPin, CalendarHeart, ExternalLink, X, Check, Search,
+    ChevronDown, ChevronUp, Menu, LogOut, Plus, Trash2, Edit,
+    Save, User, Phone, MessageSquare, Shield, Lock, Eye, EyeOff
+} from 'lucide-react';
+import { IconType } from '../types';
+
+export const iconMap: Record<string, IconType> = {
+    Zap, Tv, Wind, Key, Wifi, Fan, Bed, Lightbulb,
+    Shirt, ShowerHead, Sparkles, Coffee, Gamepad2,
+    Flame, Clock, Heart, Palette, AlertTriangle, Sofa, Droplets,
+    MapPin, CalendarHeart, ExternalLink, X, Check, Search,
+    ChevronDown, ChevronUp, Menu, LogOut, Plus, Trash2, Edit,
+    Save, User, Phone, MessageSquare, Shield, Lock, Eye, EyeOff
+};
+
+export const getIcon = (name: string): IconType => {
+    return iconMap[name] || Sparkles; // Fallback icon
+};
+
+export const getIconName = (icon: IconType): string => {
+    // This is a bit tricky as we can't easily get the name from the component function in production builds sometimes.
+    // Ideally, we store the string name directly.
+    // This function might be useful during migration if we iterate over the map.
+    const entry = Object.entries(iconMap).find(([_, Component]) => Component === icon);
+    return entry ? entry[0] : 'Sparkles';
+};
+export const iconTranslations: Record<string, string> = {
+    Zap: 'Raio / Energia',
+    Tv: 'TV',
+    Wind: 'Ar Condicionado',
+    Key: 'Chave',
+    Wifi: 'Wi-Fi',
+    Fan: 'Ventilador',
+    Bed: 'Cama',
+    Lightbulb: 'Lâmpada',
+    Shirt: 'Roupa / Cabide',
+    ShowerHead: 'Chuveiro',
+    Sparkles: 'Brilhos / Destaque',
+    Coffee: 'Café',
+    Gamepad2: 'Videogame',
+    Flame: 'Fogo / Cozinha',
+    Clock: 'Relógio',
+    Heart: 'Coração',
+    Palette: 'Arte / Pintura',
+    AlertTriangle: 'Alerta / Atenção',
+    Sofa: 'Sofá',
+    Droplets: 'Água / Gotas',
+    MapPin: 'Localização',
+    CalendarHeart: 'Calendário',
+    ExternalLink: 'Link Externo',
+    X: 'Fechar / X',
+    Check: 'Check / Ok',
+    Search: 'Lupa',
+    ChevronDown: 'Seta Baixo',
+    ChevronUp: 'Seta Cima',
+    Menu: 'Menu',
+    LogOut: 'Sair / Logout',
+    Plus: 'Mais / Adicionar',
+    Trash2: 'Lixeira',
+    Edit: 'Editar',
+    Save: 'Salvar',
+    User: 'Usuário',
+    Phone: 'Telefone',
+    MessageSquare: 'Mensagem',
+    Shield: 'Escudo / Segurança',
+    Lock: 'Cadeado',
+    Eye: 'Olho (Ver)',
+    EyeOff: 'Olho (Ocultar)'
+};

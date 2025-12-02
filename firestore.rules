@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- FUNÇÕES AUXILIARES ---
+    
+    // Verifica se o usuário está na coleção 'admin_users' e pega seus dados
+    function getAdminUser() {
+      return get(/databases/$(database)/documents/admin_users/$(request.auth.token.email)).data;
+    }
+
+    // Verifica se é Super Admin
+    function isSuperAdmin() {
+      let user = getAdminUser();
+      return user != null && user.role == 'super_admin';
+    }
+
+    // Verifica se tem permissão para a propriedade específica
+    function hasPropertyAccess(propertyId) {
+      let user = getAdminUser();
+      return user != null && (user.role == 'super_admin' || user.allowedProperties.hasAny([propertyId]));
+    }
+
+    // --- REGRAS ---
+
+    // 1. CONFIGURAÇÕES (Leitura pública, Escrita restrita a qualquer admin)
+    match /app_config/{document} {
+      allow read: if true;
+      allow write: if request.auth != null && getAdminUser() != null;
+    }
+
+    // 2. RESERVAS (Multi-Tenant)
+    match /reservations/{document} {
+      // Hóspede pode criar (qualquer um)
+      allow create: if true;
+      
+      // Hóspede pode atualizar (ex: confirmar pagamento)
+      allow update: if true;
+      
+      // LEITURA PÚBLICA para o calendário da landing page mostrar disponibilidade
+      // Lista todas as reservas (calendário precisa disso)
+      allow list: if true;
+      
+      // Leitura de documento único também pública (para compatibilidade)
+      allow get: if true;
+      
+      // DELETE: APENAS usuários autenticados com permissão
+      allow delete: if request.auth != null && hasPropertyAccess(resource.data.propertyId);
+    }
+
+    // 3. BLOQUEIOS DE DATA
+    match /blocked_dates/{document} {
+      allow read: if true;
+      allow write: if request.auth != null; // Idealmente filtrar por propriedade também se houver campo propertyId
+    }
+    
+    // 4. USUÁRIOS ADMIN (Só Super Admin mexe)
+    match /admin_users/{email} {
+      allow read: if request.auth != null && request.auth.token.email == email;
+      allow write: if request.auth != null && isSuperAdmin();
+    }
+
+    // 5. OUTRAS COLEÇÕES (Mantendo compatibilidade)
+    match /tips/{document} { 
+      allow read: if true; 
+      allow write: if request.auth != null; 
+    }
+    match /places/{document} { 
+      allow read: if true; 
+      allow write: if request.auth != null; 
+    }
+    match /reviews/{document} { 
+      allow read: if true; 
+      allow write: if request.auth != null; 
+    }
+  }
+}

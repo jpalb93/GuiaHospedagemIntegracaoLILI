@@ -1,0 +1,182 @@
+{
+    "name": "Flat Lili - Briefing Matinal",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "cronExpression",
+                            "expression": "0 7 * * *"
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-daily",
+            "name": "Todo dia às 07:00",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                460,
+                360
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "projectId": "seu-projeto-firebase",
+                "collection": "reservations",
+                "options": {},
+                "query": "checkInDate == {{ $today.format('yyyy-MM-dd') }}"
+            },
+            "id": "get-checkins",
+            "name": "Buscar Check-ins Hoje",
+            "type": "n8n-nodes-base.googleFirestore",
+            "typeVersion": 1,
+            "position": [
+                680,
+                260
+            ],
+            "credentials": {
+                "googleFirebaseFirestoreOAuth2Api": {
+                    "id": "CRIE_SUA_CREDENTIAL_NO_N8N",
+                    "name": "Conta Firebase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "projectId": "seu-projeto-firebase",
+                "collection": "reservations",
+                "options": {},
+                "query": "checkOutDate == {{ $today.format('yyyy-MM-dd') }}"
+            },
+            "id": "get-checkouts",
+            "name": "Buscar Check-outs Hoje",
+            "type": "n8n-nodes-base.googleFirestore",
+            "typeVersion": 1,
+            "position": [
+                680,
+                460
+            ],
+            "credentials": {
+                "googleFirebaseFirestoreOAuth2Api": {
+                    "id": "CRIE_SUA_CREDENTIAL_NO_N8N",
+                    "name": "Conta Firebase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const checkins = $('Buscar Check-ins Hoje').all();\nconst checkouts = $('Buscar Check-outs Hoje').all();\n\nlet message = `☀️ *Bom dia! Resumo de Hoje (${new Date().toLocaleDateString('pt-BR')})*\\n\\n`;\n\nif (checkins.length === 0 && checkouts.length === 0) {\n  message += \"😴 *Dia tranquilo!* Nenhuma movimentação prevista.\";\n} else {\n\n  if (checkouts.length > 0) {\n    message += `🔻 *${checkouts.length} Check-out(s):*\\n`;\n    checkouts.forEach(item => {\n      const guest = item.json;\n      message += `- ${guest.guestName} (até 11h)\\n`;\n    });\n    message += '\\n';\n  }\n\n  if (checkins.length > 0) {\n    message += `🟢 *${checkins.length} Check-in(s):*\\n`;\n    checkins.forEach(item => {\n      const guest = item.json;\n      message += `- ${guest.guestName} (após 14h)\\n`;\n    });\n  }\n  \n  if (checkins.length > 0 && checkouts.length > 0) {\n      message += '\\n🧹 *Atenção Limpeza:* Janela crítica entre 11h e 14h!';\n  }\n}\n\nreturn [{ json: { message } }];"
+            },
+            "id": "format-report",
+            "name": "Formatar Relatório",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                900,
+                360
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.z-api.io/instances/SUA_INSTANCIA_AQUI/token/SEU_TOKEN_AQUI/send-text",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Client-Token",
+                            "value": "SEU_CLIENT_TOKEN_AQUI"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "phone",
+                            "value": "5592992808011"
+                        },
+                        {
+                            "name": "message",
+                            "value": "={{ $json.message }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "send-briefing",
+            "name": "Enviar para Anfitriã",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1120,
+                360
+            ]
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Todo dia às 07:00": {
+            "main": [
+                [
+                    {
+                        "node": "Buscar Check-ins Hoje",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Buscar Check-outs Hoje",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Buscar Check-ins Hoje": {
+            "main": [
+                [
+                    {
+                        "node": "Formatar Relatório",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Buscar Check-outs Hoje": {
+            "main": [
+                [
+                    {
+                        "node": "Formatar Relatório",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Formatar Relatório": {
+            "main": [
+                [
+                    {
+                        "node": "Enviar para Anfitriã",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "1",
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "unknown"
+    }
+}

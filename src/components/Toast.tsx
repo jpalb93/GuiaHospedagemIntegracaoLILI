@@ -71,7 +71,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: () => void }> = ({ to
   const currentStyle = styles[toast.type];
 
   return (
-    <div 
+    <div
       className={`
         pointer-events-auto flex items-start gap-3 p-4 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700
         ${currentStyle.bg} ${currentStyle.border}
@@ -86,9 +86,10 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: () => void }> = ({ to
       <div className={`flex-1 text-sm font-medium ${currentStyle.text}`}>
         {toast.message}
       </div>
-      <button 
+      <button
         onClick={handleClose}
         className="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        aria-label="Fechar notificação"
       >
         <X size={16} />
       </button>

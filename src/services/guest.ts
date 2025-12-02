@@ -1,0 +1,21 @@
+import { GuestConfig } from '../types';
+
+export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null> => {
+    try {
+        const response = await fetch(`/api/get-guest-config?rid=${rid}`);
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.warn("Reserva não encontrada na API.");
+                return null;
+            }
+            throw new Error(`Erro na API: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data as GuestConfig;
+    } catch (error) {
+        console.error("Erro ao buscar configuração do hóspede:", error);
+        return null;
+    }
+};

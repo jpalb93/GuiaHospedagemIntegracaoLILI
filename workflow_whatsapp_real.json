@@ -1,0 +1,119 @@
+{
+    "name": "Flat Lili - Boas Vindas (Real)",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "cronExpression",
+                            "expression": "0 8 * * *"
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-node",
+            "name": "Todo dia às 08:00",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                820,
+                360
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "projectId": "seu-projeto-firebase",
+                "collection": "reservations",
+                "options": {},
+                "query": "checkInDate == {{ $today.format('yyyy-MM-dd') }}"
+            },
+            "id": "firestore-node",
+            "name": "Buscar Reservas de Hoje",
+            "type": "n8n-nodes-base.googleFirestore",
+            "typeVersion": 1,
+            "position": [
+                1040,
+                360
+            ],
+            "credentials": {
+                "googleFirebaseFirestoreOAuth2Api": {
+                    "id": "CRIE_SUA_CREDENTIAL_NO_N8N",
+                    "name": "Conta Firebase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.z-api.io/instances/SUA_INSTANCIA_AQUI/token/SEU_TOKEN_AQUI/send-text",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Client-Token",
+                            "value": "SEU_CLIENT_TOKEN_AQUI"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "phone",
+                            "value": "5592992808011"
+                        },
+                        {
+                            "name": "message",
+                            "value": "=Olá {{ $json.guestName }}! 👋\n\nSeu flat está pronto! Acesse seu Guia Digital aqui:\nhttps://www.flatsintegracao.com.br/?rid={{ $json.shortId }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "zapi-node",
+            "name": "Enviar WhatsApp",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1260,
+                360
+            ]
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Todo dia às 08:00": {
+            "main": [
+                [
+                    {
+                        "node": "Buscar Reservas de Hoje",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Buscar Reservas de Hoje": {
+            "main": [
+                [
+                    {
+                        "node": "Enviar WhatsApp",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "1",
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "unknown"
+    }
+}

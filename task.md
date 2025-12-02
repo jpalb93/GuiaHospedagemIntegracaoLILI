@@ -1,0 +1,25 @@
+# Tarefas - Melhorias Landing Page Lili
+
+- [x] Implementar Conteúdo Dinâmico
+- [x] Melhorar Interatividade do Calendário
+- [x] UI Polish (Banho de Loja)
+- [x] Remove zoom effect from stories images
+- [x] Fix reservation deletion UI update
+- [x] Fix tips manager modal on mobile
+- [x] Fix permission error toast on login
+- [x] Add debug details to ErrorBoundary
+- [x] Improve auto-reload logic for network errors
+- [x] Improve text visibility for 'Localização' and other labels
+- [x] Add toast notifications for Admin actions (Tips/Curiosities)
+- [x] Translate Admin icons to Portuguese
+- [x] Add Image Upload to Tips & Curiosities (keeping URL field)
+- [x] Debug and improve Image Upload robustness (timeouts/logs)
+- [x] Validate Firebase Config (alert on missing keys)
+- [x] Add Upload Progress Bar (diagnose CORS vs Network)
+- [x] Migrate to Cloudinary (Free Tier, No Credit Card)
+- [x] Update Categories & Accordions (Services, Leisure, New Subcategories)
+- [x] Implement Real-Time Places Sync (Fix Mobile Latency)
+- [x] Add WhatsApp Support to Places (Button & Admin Input)
+- [x] Make Smart Suggestion Dynamic (Pull from Places Database)
+- [x] Add Salads Category to Restaurants
+- [x] Implement Super Smart Suggestion System <!-- id: 6 -->

@@ -1,0 +1,385 @@
+import React from 'react';
+import { Search, CalendarDays, History, StickyNote, MessageSquare, Pencil, Trash2, BellRing, LogOut, Check, Link as LinkIcon, Share2, Loader2, ChevronDown, ChevronUp, Building2, KeyRound, ClipboardCheck } from 'lucide-react';
+import { Reservation, PropertyId, UserPermission } from '../../types';
+import { PROPERTIES } from '../../config/properties';
+import InspectionModal from './InspectionModal';
+import { useAdminSettings } from '../../hooks/useAdminSettings';
+
+interface ReservationListProps {
+    data: {
+        activeReservations: Reservation[];
+        historyReservations: Reservation[];
+        loadMoreHistory: () => void;
+        hasMoreHistory: boolean;
+        loadingHistory: boolean;
+    };
+    ui: {
+        searchTerm: string;
+        setSearchTerm: (term: string) => void;
+        showToast: (msg: string, type: 'success' | 'error') => void;
+    };
+    form: {
+        handleStartEdit: (res: Reservation) => void;
+        handleDeleteReservation: (id: string) => void;
+    };
+    userPermission: UserPermission | null;
+}
+
+const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userPermission }) => {
+    const { activeReservations, historyReservations, loadMoreHistory, hasMoreHistory, loadingHistory } = data;
+    const { searchTerm, setSearchTerm, showToast } = ui;
+    const { handleStartEdit, handleDeleteReservation } = form;
+    const { settings } = useAdminSettings(); // To get checklist items
+
+    const [listCopiedId, setListCopiedId] = React.useState<string | null>(null);
+    const [openHistoryGroups, setOpenHistoryGroups] = React.useState<number[]>([0]);
+    const [propertyFilter, setPropertyFilter] = React.useState<PropertyId | 'all'>('all');
+
+    // Inspection Modal State
+    const [inspectionModalOpen, setInspectionModalOpen] = React.useState(false);
+    const [inspectionReservation, setInspectionReservation] = React.useState<Reservation | null>(null);
+
+    // Helper logic for filtering and grouping
+    const getFilteredAndSplitReservations = () => {
+        const allReservations = [...activeReservations, ...historyReservations];
+        const uniqueReservations = Array.from(new Map(allReservations.map((item: Reservation) => [item.id, item])).values());
+
+        const today = new Date();
+        const todayStr = today.toLocaleDateString('en-CA');
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
+
+        const filteredList = uniqueReservations.filter((res: Reservation) => {
+            const term = searchTerm.toLowerCase();
+            const nameMatch = res.guestName.toLowerCase().includes(term);
+            const notesMatch = res.adminNotes?.toLowerCase().includes(term);
+
+            const propertyMatch = propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
+
+            return (nameMatch || notesMatch) && propertyMatch;
+        });
+
+        const leavingToday: Reservation[] = [];
+        const staying: Reservation[] = [];
+        const upcoming: Reservation[] = [];
+        const historyList: Reservation[] = [];
+
+        filteredList.forEach((res: Reservation) => {
+            if (!res.checkoutDate || !res.checkInDate) return;
+
+            if (res.checkoutDate < todayStr) {
+                historyList.push(res);
+            } else if (res.checkoutDate === todayStr) {
+                leavingToday.push(res);
+            } else if (res.checkInDate > todayStr) {
+                upcoming.push(res);
+            } else {
+                staying.push(res);
+            }
+        });
+
+        leavingToday.sort((a: Reservation, b: Reservation) => a.guestName.localeCompare(b.guestName));
+        staying.sort((a: Reservation, b: Reservation) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
+        upcoming.sort((a: Reservation, b: Reservation) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
+        historyList.sort((a: Reservation, b: Reservation) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
+
+        return { leavingToday, staying, upcoming, historyList, tomorrowStr };
+    };
+
+    const { leavingToday, staying, upcoming, historyList, tomorrowStr } = getFilteredAndSplitReservations();
+
+    interface HistoryGroup { label: string; items: Reservation[]; }
+    const groupedHistory = historyList.reduce((groups: HistoryGroup[], res: Reservation) => {
+        if (!res.checkoutDate) return groups;
+        const [y, m] = res.checkoutDate.split('-');
+        const date = new Date(parseInt(y), parseInt(m) - 1, 1);
+        const labelRaw = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup && lastGroup.label === label) { lastGroup.items.push(res); } else { groups.push({ label, items: [res] }); }
+        return groups;
+    }, []);
+
+    const getLinkForReservation = (res: Reservation) => {
+        const baseUrl = window.location.origin + '/';
+        if (res.shortId) return `${baseUrl}${res.shortId}`;
+        if (res.id) return `${baseUrl}?rid=${res.id}`;
+        return '';
+    };
+
+    const handleCopyListLink = (res: Reservation) => {
+        const link = getLinkForReservation(res);
+        if (!link) return;
+        navigator.clipboard.writeText(link);
+        setListCopiedId(res.id || null);
+        showToast("Link copiado!", "success");
+        setTimeout(() => setListCopiedId(null), 2000);
+    };
+
+    const handleShareListWhatsApp = (res: Reservation) => {
+        if (!res.id) return;
+        const link = getLinkForReservation(res);
+        const message = `Olá, ${res.guestName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${link}`;
+        const phone = res.guestPhone ? res.guestPhone : '';
+        const whatsappUrl = phone
+            ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+            : `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
+    const sendReminder = (res: Reservation, type: 'checkin' | 'checkout') => {
+        if (!res.id) return;
+        const link = getLinkForReservation(res);
+        const phone = res.guestPhone || '';
+        let message = '';
+
+        if (type === 'checkin') {
+            message = `Olá, ${res.guestName}! Tudo pronto para sua chegada amanhã? ✈️\n\nJá deixei tudo preparado no seu Guia Digital (Senha da porta, Wi-Fi e Localização).\n\nAcesse aqui: ${link}\n\nQualquer dúvida, estou por aqui!`;
+        } else {
+            message = `Oi, ${res.guestName}! Espero que a estadia esteja sendo ótima. 🌵\n\nComo seu check-out é amanhã, deixei as instruções de saída facilitadas aqui no guia: ${link}\n\nBoa viagem de volta!`;
+        }
+
+        const whatsappUrl = phone
+            ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+            : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, '_blank');
+    };
+
+    const toggleHistoryGroup = (index: number) => {
+        setOpenHistoryGroups(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
+    };
+
+    const handleOpenInspection = (res: Reservation) => {
+        setInspectionReservation(res);
+        setInspectionModalOpen(true);
+    };
+
+    const renderReservationListItem = (res: Reservation, statusColor: string, statusLabel?: string) => {
+        const isCheckinTomorrow = res.checkInDate === tomorrowStr;
+        const isCheckoutTomorrow = res.checkoutDate === tomorrowStr;
+        const property = PROPERTIES[res.propertyId || 'lili'];
+        const isIntegracao = res.propertyId === 'integracao';
+        const isCheckoutOrHistory = statusLabel === 'Checkout Hoje' || statusColor === 'border-gray-300';
+
+        return (
+            <div
+                key={res.id}
+                className={`bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-3 group relative hover:shadow-md transition-all mb-3`}
+            >
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            {res.guestName}
+                            {res.status === 'pending' && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                    Pré-Reserva
+                                </span>
+                            )}
+                            {statusLabel && <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${statusColor.replace('border-', 'bg-').replace('500', '100')} text-gray-700 dark:text-gray-900`}>{statusLabel}</span>}
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold border ${property.id === 'lili' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                                {property.name}
+                            </span>
+                        </h3>
+                        <div className="flex flex-col mt-1.5 gap-1">
+                            <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} /> In: {res.checkInDate?.split('-').reverse().join('/')}</span>
+                            <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} /> Out: {res.checkoutDate?.split('-').reverse().join('/')}</span>
+                            {res.flatNumber && <span className="text-xs text-gray-500 flex items-center gap-1"><KeyRound size={12} /> Flat: {res.flatNumber}</span>}
+                        </div>
+                        {res.adminNotes && (
+                            <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
+                                <StickyNote size={10} /> Nota
+                            </div>
+                        )}
+                        {res.guestAlertActive && (
+                            <div className="mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
+                                <MessageSquare size={10} /> Recado para {res.guestName}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }}
+                            className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
+                            title="Editar"
+                        >
+                            <Pencil size={16} />
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); if (res.id) handleDeleteReservation(res.id); }}
+                            className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                            title="Excluir"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                </div>
+
+                {isCheckinTomorrow && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkin'); }}
+                        className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm animate-pulse"
+                    >
+                        <BellRing size={14} /> Enviar Lembrete de Chegada
+                    </button>
+                )}
+
+                {isCheckoutTomorrow && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkout'); }}
+                        className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
+                    >
+                        <LogOut size={14} /> Enviar Instruções de Saída
+                    </button>
+                )}
+
+                {/* VISTORIA BUTTON (Only for Integração & Checkout/History) */}
+                {isIntegracao && isCheckoutOrHistory && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleOpenInspection(res); }}
+                        className="w-full py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
+                    >
+                        <ClipboardCheck size={14} /> Fazer Vistoria
+                    </button>
+                )}
+
+                <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleCopyListLink(res); }}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
+                    >
+                        {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
+                        {listCopiedId === res.id ? 'Copiado' : 'Copiar'}
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
+                        className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
+                    >
+                        <Share2 size={12} /> Convite
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900/50 min-h-[400px]">
+            <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar por nome ou nota..."
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500"
+                />
+
+            </div>
+
+            {/* FILTRO DE PROPRIEDADE (Apenas se tiver acesso a mais de uma) */}
+            {(!userPermission || userPermission.role === 'super_admin' || userPermission.allowedProperties.length > 1) && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                    <button
+                        onClick={() => setPropertyFilter('all')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${propertyFilter === 'all' ? 'bg-gray-800 text-white border-gray-800 dark:bg-white dark:text-gray-900' : 'bg-white text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'}`}
+                    >
+                        Todos
+                    </button>
+                    {Object.values(PROPERTIES).map(prop => {
+                        // Show property button only if user has access to it
+                        if (userPermission && userPermission.role !== 'super_admin' && !userPermission.allowedProperties.includes(prop.id)) {
+                            return null;
+                        }
+                        return (
+                            <button
+                                key={prop.id}
+                                onClick={() => setPropertyFilter(prop.id)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border flex items-center gap-1 ${propertyFilter === prop.id
+                                    ? (prop.id === 'lili' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-blue-100 text-blue-700 border-blue-200')
+                                    : 'bg-white text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                    }`}
+                            >
+                                <Building2 size={12} /> {prop.name}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
+            <div className="space-y-6">
+                {leavingToday.length > 0 && (
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Saindo Hoje</h3>
+                        {leavingToday.map((res: Reservation) => renderReservationListItem(res, 'border-orange-500', 'Checkout Hoje'))}
+                    </div>
+                )}
+
+                {staying.length > 0 && (
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Hospedados</h3>
+                        {staying.map((res: Reservation) => renderReservationListItem(res, 'border-green-500', 'Hospedado'))}
+                    </div>
+                )}
+
+                {upcoming.length > 0 && (
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Próximas Chegadas</h3>
+                        {upcoming.map((res: Reservation) => renderReservationListItem(res, 'border-blue-500'))}
+                    </div>
+                )}
+
+                {historyList.length > 0 && (
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1 mt-8">Histórico</h3>
+                        <div className="space-y-3">
+                            {groupedHistory.map((group: HistoryGroup, index: number) => (
+                                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden bg-white dark:bg-gray-800">
+                                    <button
+                                        onClick={() => toggleHistoryGroup(index)}
+                                        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        <span className="font-bold text-sm text-gray-700 dark:text-gray-300">{group.label}</span>
+                                        {openHistoryGroups.includes(index) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                    </button>
+                                    {openHistoryGroups.includes(index) && (
+                                        <div className="p-3 bg-gray-50/50 dark:bg-gray-900/20 border-t border-gray-100 dark:border-gray-700">
+                                            {group.items.map((res: Reservation) => renderReservationListItem(res, 'border-gray-300'))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {hasMoreHistory && (
+                            <button
+                                onClick={() => loadMoreHistory()}
+                                disabled={loadingHistory}
+                                className="w-full py-3 mt-4 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center justify-center gap-2"
+                            >
+                                {loadingHistory ? <Loader2 className="animate-spin" size={14} /> : 'Carregar Mais Antigos'}
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {activeReservations.length === 0 && historyReservations.length === 0 && (
+                    <div className="text-center py-10 text-gray-400">
+                        <p>Nenhuma reserva encontrada.</p>
+                    </div>
+                )}
+            </div>
+
+            <InspectionModal
+                isOpen={inspectionModalOpen}
+                onClose={() => setInspectionModalOpen(false)}
+                reservationName={inspectionReservation?.guestName || ''}
+                unitNumber={inspectionReservation?.flatNumber}
+                checklistItems={settings.data.checklist || []}
+            />
+        </div>
+    );
+};
+
+export default ReservationList;

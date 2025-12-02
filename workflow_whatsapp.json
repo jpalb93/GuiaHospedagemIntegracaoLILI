@@ -1,0 +1,115 @@
+{
+    "name": "Demo Flat Lili - Boas Vindas (Z-API)",
+    "nodes": [
+        {
+            "parameters": {},
+            "id": "d8e3b1a2-4f5c-4b3a-8d1e-9f0a2b3c4d5e",
+            "name": "Ao clicar em Executar",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                820,
+                360
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Simula dados que viriam do Firebase/Firestore\nreturn [\n  {\n    json: {\n      \"guestName\": \"Você (Teste)\",\n      \"guestPhone\": \"5592992808011\",\n      \"checkInDate\": \"2025-11-30\",\n      \"shortId\": \"TESTE01\"\n    }\n  }\n];"
+            },
+            "id": "a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d",
+            "name": "Simular Banco de Dados",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1040,
+                360
+            ]
+        },
+        {
+            "parameters": {
+                "content": "=Olá {{ $json.guestName }}! 👋\n\nSeu flat está pronto! Acesse seu Guia Digital aqui:\nhttps://www.flatsintegracao.com.br/?rid={{ $json.shortId }}\n\n(Simulação de envio para {{ $json.guestPhone }})",
+                "height": 266.25,
+                "width": 386.25
+            },
+            "id": "f5e4d3c2-b1a0-49e8-8d7c-6b5a4f3e2d1c",
+            "name": "Simular WhatsApp",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                1260,
+                360
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.z-api.io/instances/SUA_INSTANCIA_AQUI/token/SEU_TOKEN_AQUI/send-text",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Client-Token",
+                            "value": "SEU_CLIENT_TOKEN_AQUI"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "phone",
+                            "value": "={{ $json.guestPhone }}"
+                        },
+                        {
+                            "name": "message",
+                            "value": "=Olá {{ $json.guestName }}! 👋\n\nSeu flat está pronto! Acesse seu Guia Digital aqui:\nhttps://www.flatsintegracao.com.br/?rid={{ $json.shortId }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+            "name": "Enviar Z-API (Real)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1480,
+                540
+            ]
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Ao clicar em Executar": {
+            "main": [
+                [
+                    {
+                        "node": "Simular Banco de Dados",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Simular Banco de Dados": {
+            "main": [
+                [
+                    {
+                        "node": "Enviar Z-API (Real)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "12345678-1234-1234-1234-1234567890ab",
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "unknown"
+    }
+}
