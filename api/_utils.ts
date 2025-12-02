@@ -63,16 +63,44 @@ export async function applyRateLimit(
 }
 
 export function applyCors(req: VercelRequest, res: VercelResponse) {
-    // HOTFIX: Allow all origins to prevent production outage
-    // In the future, we should dynamically allow all *.vercel.app subdomains or use a strict list
+    // Whitelist de origens permitidas
+    const allowedOrigins = [
+        'https://guia-digital-flatlili.vercel.app',
+        'https://www.flatsintegracao.com.br',
+        'https://flatsintegracao.com.br',
+        // Ambientes Vercel (para preview deployments)
+        /https:\/\/guia-digital-flatlili-.*\.vercel\.app$/,
+        // Desenvolvimento local
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+    ];
+
     const origin = req.headers.origin;
-    if (origin) {
+
+    // Verifica se a origem está na whitelist
+    const isAllowed = origin && allowedOrigins.some(allowed => {
+        if (typeof allowed === 'string') {
+            return allowed === origin;
+        } else {
+            // RegExp para preview deployments
+            return allowed.test(origin);
+        }
+    });
+
+    if (isAllowed) {
         res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    } else if (!origin) {
+        // Se não há header Origin (requisições diretas), permitir por compatibilidade
+        // mas sem credentials
         res.setHeader('Access-Control-Allow-Origin', '*');
+    } else {
+        // Origem não autorizada - não adiciona headers CORS
+        // A requisição será bloqueada pelo browser
+        console.warn(`CORS: Origem não autorizada tentou acessar API: ${origin}`);
     }
 
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
     res.setHeader(
         'Access-Control-Allow-Headers',
