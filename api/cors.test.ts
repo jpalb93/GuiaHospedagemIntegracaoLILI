@@ -1,4 +1,5 @@
 // Teste simples para validar a lógica CORS
+import { describe, test, expect, beforeEach, vi, type Mock } from 'vitest';
 import { applyCors } from './_utils';
 
 describe('CORS Whitelist', () => {
@@ -11,9 +12,9 @@ describe('CORS Whitelist', () => {
             method: 'GET'
         };
         mockRes = {
-            setHeader: jest.fn(),
-            status: jest.fn().mockReturnThis(),
-            end: jest.fn(),
+            setHeader: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            end: vi.fn(),
         };
     });
 
@@ -60,7 +61,7 @@ describe('CORS Whitelist', () => {
 
     test('should NOT allow unauthorized origin', () => {
         mockReq.headers.origin = 'https://malicious-site.com';
-        const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
         applyCors(mockReq, mockRes);
 

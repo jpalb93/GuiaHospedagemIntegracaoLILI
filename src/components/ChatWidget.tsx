@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Loader2, Mic, MicOff } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
+import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 
 interface ChatWidgetProps {
   guestName: string;
@@ -16,6 +17,16 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction, l
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Hook de Reconhecimento de Voz
+  const { isListening, transcript, startListening, stopListening, isSupported } = useSpeechRecognition();
+
+  // Atualiza o input com o texto falado
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript]);
 
   // Mensagem inicial dinâmica baseada no idioma
   useEffect(() => {
@@ -177,23 +188,44 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction, l
         </div>
 
         <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
-          <div className="relative flex items-center gap-3">
+          <div className="relative flex items-center gap-2">
             <input
               ref={inputRef}
               type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // Se o usuário digitar, limpamos o transcript para não sobrescrever
+                if (isListening) stopListening();
+              }}
               onKeyDown={handleKeyDown}
-              placeholder={language === 'pt' ? "Pergunte sobre o flat ou a cidade..." : "Ask about the flat or the city..."}
-              className="w-full bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white rounded-full py-3.5 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:bg-white dark:focus:bg-gray-700 transition-all text-sm font-medium placeholder:text-gray-400"
+              placeholder={isListening ? (language === 'pt' ? "Ouvindo..." : "Listening...") : (language === 'pt' ? "Pergunte sobre o flat ou a cidade..." : "Ask about the flat or the city...")}
+              className={`w-full bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white rounded-full py-3.5 pl-5 pr-24 focus:outline-none focus:ring-2 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:bg-white dark:focus:bg-gray-700 transition-all text-sm font-medium placeholder:text-gray-400 ${isListening ? 'ring-2 ring-red-400 bg-red-50 dark:bg-red-900/10 placeholder:text-red-500' : ''}`}
             />
-            <button
-              onClick={handleSend}
-              disabled={isLoading || !input.trim()}
-              className="absolute right-1.5 p-2.5 bg-orange-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-md shadow-orange-500/20"
-            >
-              <Send size={18} />
-            </button>
+
+            <div className="absolute right-1.5 flex items-center gap-1">
+              {/* Botão de Microfone (Só aparece se suportado) */}
+              {isSupported && (
+                <button
+                  onClick={isListening ? stopListening : startListening}
+                  className={`p-2.5 rounded-full transition-all duration-300 ${isListening
+                    ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/30'
+                    : 'text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-700'
+                    }`}
+                  title={language === 'pt' ? "Falar" : "Speak"}
+                >
+                  {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                </button>
+              )}
+
+              <button
+                onClick={handleSend}
+                disabled={isLoading || !input.trim()}
+                className="p-2.5 bg-orange-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-md shadow-orange-500/20"
+              >
+                <Send size={18} />
+              </button>
+            </div>
           </div>
         </div>
       </div>

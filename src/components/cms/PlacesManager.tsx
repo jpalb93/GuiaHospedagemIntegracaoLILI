@@ -28,6 +28,7 @@ const CATEGORIES: { id: PlaceCategory; label: string }[] = [
     { id: 'souvenirs', label: 'Lembrancinhas' },
     { id: 'events', label: 'Eventos & Shows' },
     { id: 'emergency', label: 'Emergência' },
+    { id: 'pharmacies', label: 'Farmácias' },
 ];
 
 const PlacesManager: React.FC = () => {

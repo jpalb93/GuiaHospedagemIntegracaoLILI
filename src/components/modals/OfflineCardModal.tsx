@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Wifi, MapPin, Camera, User, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Wifi, Camera, User, Lock, Copy, Check, QrCode, MapPin } from 'lucide-react';
 import { GuestConfig } from '../../types';
 import { PROPERTIES } from '../../config/properties';
 
@@ -17,96 +17,185 @@ interface OfflineCardModalProps {
 const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
   isOpen, onClose, config, wifiSSID, wifiPass, safeCode, isPasswordReleased, address
 }) => {
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showQrCode, setShowQrCode] = useState(false);
+
   if (!isOpen) return null;
 
   const property = PROPERTIES[config.propertyId || 'lili'];
   const isIntegracao = config.propertyId === 'integracao';
 
-  return (
-    <div className="fixed inset-0 bg-gray-900/95 z-[70] flex flex-col items-center justify-center p-6 animate-fadeIn backdrop-blur-sm">
+  const handleCopy = (text: string, field: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
+  const wifiQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=WIFI:S:${wifiSSID};T:WPA;P:${wifiPass};;`;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-[70] flex flex-col items-center justify-center p-4 animate-fadeIn backdrop-blur-sm">
+
+      {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-6 right-6 z-50 p-2 rounded-full backdrop-blur-md transition-colors bg-white/10 hover:bg-white/20 text-white dark:bg-black/20 dark:hover:bg-black/40"
+        className="absolute top-6 right-6 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all border border-white/10 shadow-lg group"
       >
-        <X size={24} />
+        <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
       </button>
 
-      <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-[28px] p-6 shadow-2xl relative overflow-hidden border border-white/10">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 to-amber-500"></div>
+      {/* Main Card Container */}
+      <div className="relative w-full max-w-sm group perspective-1000">
 
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-heading font-bold text-gray-900 dark:text-white">Cartão de Acesso</h2>
-          <p className="text-orange-600 dark:text-orange-400 text-xs font-bold mt-0.5 font-sans uppercase tracking-wide">{property.name}</p>
-          <div className="flex items-center justify-center gap-1.5 mt-2 text-gray-500 dark:text-gray-400">
-            <User size={12} />
-            <span className="text-xs font-medium">{config.guestName || 'Visitante'}</span>
+        {/* Glow Effects */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 rounded-[35px] blur opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+
+        <div className="relative bg-gray-900/90 backdrop-blur-xl w-full rounded-[32px] p-6 shadow-2xl border border-white/10 overflow-hidden">
+
+          {/* Holographic Shine */}
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl"></div>
+
+          {/* Header */}
+          <div className="text-center mb-8 relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1 rounded-full mb-3 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Cartão de Acesso</span>
+            </div>
+            <h2 className="text-2xl font-heading font-bold text-white tracking-tight mb-1">
+              {property.name}
+            </h2>
+            <div className="flex items-center justify-center gap-2 text-white/50 text-xs font-medium">
+              <User size={12} />
+              <span>{config.guestName || 'Visitante VIP'}</span>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-5">
-          <div className="flex justify-center mb-2">
-            <div className="bg-gray-900 dark:bg-black text-white px-5 py-2 rounded-xl shadow-xl border border-gray-700 flex flex-col items-center min-w-[100px]">
-              <span className="text-[8px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-0.5">
+          {/* Main Access Code (Redesigned as "Placa") */}
+          <div className="mb-6 relative z-10 flex justify-center">
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg px-8 py-4 text-center border border-white/10 shadow-xl relative overflow-hidden min-w-[180px]">
+              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-500 to-rose-500"></div>
+
+              <p className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1">
                 {isIntegracao ? 'Unidade' : (config.propertyId === 'lili' ? 'Flat' : 'Senha Porta')}
-              </span>
-              <span className="text-2xl font-heading font-bold text-orange-400 tracking-widest">
+              </p>
+
+              <span className="text-3xl font-mono font-bold text-white tracking-widest drop-shadow-md">
                 {isIntegracao ? config.flatNumber : (config.propertyId === 'lili' ? '304' : (isPasswordReleased ? config.lockCode : '****'))}
               </span>
             </div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-700/30 p-1 rounded-2xl border border-gray-100 dark:border-gray-600 mb-5">
-            {isPasswordReleased ? (
-              <div className={`grid ${isIntegracao ? 'grid-cols-1' : 'grid-cols-2 divide-x divide-gray-200 dark:divide-gray-600'}`}>
-                {!isIntegracao && (
-                  <div className="p-3 flex flex-col items-center">
-                    <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold mb-1">Porta</span>
-                    <span className="text-xl font-mono font-bold text-gray-900 dark:text-white tracking-wider notranslate">{config.lockCode}</span>
-                  </div>
-                )}
-                <div className="p-3 flex flex-col items-center">
-                  <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold mb-1">Cofre</span>
-                  <span className="text-xl font-mono font-bold text-gray-900 dark:text-white tracking-wider notranslate">{safeCode}</span>
+          {/* Secondary Codes Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
+            {/* Door Code (if applicable) */}
+            {!isIntegracao && (
+              <button
+                onClick={() => isPasswordReleased && handleCopy(config.lockCode || '', 'door')}
+                disabled={!isPasswordReleased}
+                className="bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl p-3 flex flex-col items-center transition-all group/item"
+              >
+                <div className="flex items-center gap-2 mb-1 text-gray-400 group-hover/item:text-white transition-colors">
+                  <Lock size={14} />
+                  <span className="text-[9px] uppercase tracking-widest font-bold">Porta</span>
                 </div>
-              </div>
-            ) : (
-              <div className="py-4 flex flex-col items-center justify-center gap-1">
-                <Lock size={20} className="text-gray-300 dark:text-gray-600" />
-                <span className="text-[10px] text-gray-400 font-medium">Senhas disponíveis no check-in</span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-mono font-bold text-white">
+                    {isPasswordReleased ? config.lockCode : '****'}
+                  </span>
+                  {isPasswordReleased && copiedField === 'door' && <Check size={12} className="text-green-400" />}
+                </div>
+              </button>
             )}
-          </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-left p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
-              <div className="bg-blue-50 dark:bg-blue-900/30 p-2.5 rounded-xl text-blue-600 dark:text-blue-400"><Wifi size={18} strokeWidth={2.5} /></div>
-              <div>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide mb-0.5">WiFi</p>
-                <p className="font-bold text-gray-900 dark:text-white text-xs notranslate">{wifiSSID}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5 notranslate">Senha: {wifiPass}</p>
+            {/* Safe Code */}
+            <button
+              onClick={() => isPasswordReleased && handleCopy(safeCode, 'safe')}
+              disabled={!isPasswordReleased}
+              className={`bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl p-3 flex flex-col items-center transition-all group/item ${isIntegracao ? 'col-span-2' : ''}`}
+            >
+              <div className="flex items-center gap-2 mb-1 text-gray-400 group-hover/item:text-white transition-colors">
+                <Lock size={14} />
+                <span className="text-[9px] uppercase tracking-widest font-bold">Cofre</span>
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-left p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
-              <div className="bg-purple-50 dark:bg-purple-900/30 p-2.5 rounded-xl text-purple-600 dark:text-purple-400"><MapPin size={18} strokeWidth={2.5} /></div>
-              <div>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide mb-0.5">Endereço</p>
-                <p className="font-bold text-gray-900 dark:text-white text-xs leading-tight notranslate">{address}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Centro, Petrolina</p>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-mono font-bold text-white">
+                  {isPasswordReleased ? safeCode : '****'}
+                </span>
+                {isPasswordReleased && copiedField === 'safe' && <Check size={12} className="text-green-400" />}
               </div>
+            </button>
+          </div>
+
+          {/* WiFi Section with QR Code Toggle */}
+          <div className="bg-white/5 rounded-2xl p-1 border border-white/5 relative z-10 overflow-hidden mb-4">
+            <div className="bg-black/20 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400">
+                    <Wifi size={18} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] text-gray-400 uppercase font-bold">Rede Wi-Fi</p>
+                    <p className="text-white font-bold text-sm tracking-wide">{wifiSSID}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowQrCode(!showQrCode)}
+                  className={`p-2 rounded-lg transition-all ${showQrCode ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                >
+                  <QrCode size={18} />
+                </button>
+              </div>
+
+              {showQrCode ? (
+                <div className="flex flex-col items-center justify-center py-2 animate-fadeIn">
+                  <div className="bg-white p-2 rounded-xl shadow-lg mb-2">
+                    <img src={wifiQrUrl} alt="WiFi QR Code" className="w-32 h-32" />
+                  </div>
+                  <p className="text-[10px] text-gray-400">Escaneie para conectar</p>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleCopy(wifiPass, 'wifi')}
+                  className="w-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-lg py-2 flex items-center justify-center gap-2 transition-all group/wifi"
+                >
+                  <span className="text-xs text-gray-400 group-hover/wifi:text-white">Senha:</span>
+                  <span className="text-sm font-mono font-bold text-white">{wifiPass}</span>
+                  {copiedField === 'wifi' ? <Check size={14} className="text-green-400" /> : <Copy size={14} className="text-white/30 group-hover/wifi:text-white" />}
+                </button>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 text-center">
-          <div className="flex items-center justify-center gap-1.5 text-gray-400 dark:text-gray-500 text-[10px] uppercase tracking-wide font-bold animate-pulse">
-            <Camera size={12} />
-            <span>Tire um print agora</span>
+          {/* Address Section (New) */}
+          <div className="bg-white/5 rounded-2xl p-4 border border-white/5 relative z-10 flex items-center gap-3">
+            <div className="bg-white/10 p-2.5 rounded-xl text-gray-300">
+              <MapPin size={18} />
+            </div>
+            <div>
+              <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Endereço</p>
+              <p className="text-xs font-bold text-white leading-tight">{address}</p>
+
+            </div>
           </div>
+
+          {/* Footer Actions */}
+          <div className="mt-6 flex justify-center gap-4 relative z-10">
+            <div className="flex items-center gap-1.5 text-white/40 text-[10px] uppercase tracking-wide font-bold">
+              <Camera size={12} />
+              <span>Print Screen</span>
+            </div>
+          </div>
+
         </div>
       </div>
-      <p className="text-white/50 text-xs mt-6 text-center max-w-xs font-medium leading-relaxed">Salve esta tela para acessar o flat caso fique sem internet.</p>
+
+      <p className="text-white/30 text-xs mt-8 text-center max-w-xs font-medium">
+        Salve este card para acesso offline.
+      </p>
     </div>
   );
 };

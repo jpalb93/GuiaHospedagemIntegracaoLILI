@@ -7,7 +7,7 @@ export const LoadingScreen = () => (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-400 text-sm font-medium">Carregando...</p>
+            <p className="text-gray-400 text-sm font-medium">Carregando seu guia...</p>
         </div>
     </div>
 );
@@ -16,7 +16,8 @@ export const LoadingScreen = () => (
  * GuestSkeleton - skeleton específico para a visão do hóspede
  */
 export const GuestSkeleton = () => (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 animate-pulse">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 animate-pulse relative overflow-hidden">
+        <div className="absolute inset-0 animate-shimmer z-10 pointer-events-none"></div>
         {/* Header Skeleton */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>

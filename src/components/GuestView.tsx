@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useMemo } from 'react';
+import { triggerConfetti } from '../utils/confetti';
 import { GuestConfig } from '../types';
 import { useGuestStay } from '../hooks/useGuestStay';
 import { useGuestData } from '../hooks/useGuestData';
@@ -25,7 +26,7 @@ import {
   CURIOSITY_STORY_IMAGES, DRONE_VIDEO_URL
 } from '../constants';
 import { PROPERTIES } from '../config/properties';
-import { CalendarHeart, Sparkles, MapPin, ExternalLink, Video, Siren, Star, Maximize2 } from 'lucide-react';
+import { CalendarHeart, Sparkles, MapPin, ExternalLink, Video, Star, Maximize2 } from 'lucide-react';
 import { getIcon } from '../utils/iconMap';
 import SmartSuggestion from './SmartSuggestion';
 import ChatWidget from './ChatWidget';
@@ -182,12 +183,14 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
   return (
     <div className={`min-h-screen pb-20 bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 selection:bg-orange-100 selection:text-orange-900 transition-colors duration-300 text-sm relative`}>
 
-      <GuestHeader
-        appSettings={appSettings}
-        config={config}
-        dismissedAlerts={dismissedAlerts}
-        onDismissAlert={dismissAlert}
-      />
+      <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
+        <GuestHeader
+          appSettings={appSettings}
+          config={config}
+          dismissedAlerts={dismissedAlerts}
+          onDismissAlert={dismissAlert}
+        />
+      </div>
 
       {/* MODAIS */}
       {/* ... (modals remain the same) ... */}
@@ -246,21 +249,25 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       />
 
       {/* HERO SECTION */}
-      <HeroSection
-        config={config}
-        heroSlides={property.assets.heroSlides}
-        theme={theme}
-        toggleTheme={toggleTheme}
-        currentLang={currentLang}
-        toggleLanguage={toggleLanguage}
-      />
+      <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>
+        <HeroSection
+          config={config}
+          heroSlides={property.assets.heroSlides}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          currentLang={currentLang}
+          toggleLanguage={toggleLanguage}
+        />
+      </div>
 
       {/* STORIES BAR */}
-      <StoriesBar
-        activeEvents={activeEvents}
-        onOpenStory={handleOpenStories}
-        showTips={tips.length > 0}
-      />
+      <div className="animate-fade-up" style={{ animationDelay: '200ms' }}>
+        <StoriesBar
+          activeEvents={activeEvents}
+          onOpenStory={handleOpenStories}
+          showTips={tips.length > 0}
+        />
+      </div>
 
       {/* --- LAYOUT PRINCIPAL (GRID + MASONRY) --- */}
       <div className="max-w-5xl mx-auto px-4 sm:px-5 relative z-30 mt-2">
@@ -268,55 +275,33 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         {/* GRID SUPERIOR: ACESSO RÁPIDO + SMART SUGGESTION + LOCALIZAÇÃO */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-          {/* COLUNA 1: ACESSO RÁPIDO */}
-          <div className="h-full">
-            <div className="p-0.5 rounded-[22px] bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 shadow-2xl shadow-orange-500/20 dark:shadow-black/50 h-full">
-              <div className="bg-white dark:bg-gray-800 rounded-[20px] p-5 flex flex-col gap-4 h-full">
-                <div className="flex justify-between items-center px-1">
-                  <h2 className="text-[10px] font-heading font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-[0.15em]">Acesso Rápido</h2>
-                  <div className="flex gap-2">
-                    {stayStage !== 'pre_checkin' && (
-                      <button onClick={handleEmergencyClick} aria-label="Acionar emergência" className="text-[10px] font-bold text-red-500 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-3 py-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-sans shadow-sm min-h-[32px]">
-                        <Siren size={12} /> SOS
-                      </button>
-                    )}
-                    <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); modals.setShowOfflineCard(true); }} className="text-[10px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-sans shadow-sm min-h-[32px]">
-                      Salvar Acesso
-                    </button>
-                  </div>
-                </div>
-
-                {/* CARD DINÂMICO (CHECKIN/WIFI/ADDRESS) */}
-                <div className="flex flex-col gap-4 flex-1">
-                  <div className="bg-orange-50/80 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800/30 flex flex-col w-full overflow-hidden transition-all duration-500 min-h-[160px] justify-center flex-1">
-                    <GuestStatusCard
-                      stayStage={stayStage}
-                      isTimeVerified={isTimeVerified}
-                      isPasswordReleased={isPasswordReleased}
-                      config={config}
-                      wifiCopied={clipboard.wifiCopied}
-                      addressCopied={clipboard.addressCopied}
-                      currentWifiSSID={currentWifiSSID}
-                      currentWifiPass={currentWifiPass}
-                      onOpenCheckin={() => modals.setIsCheckinModalOpen(true)}
-                      onOpenCheckout={() => modals.setIsCheckoutModalOpen(true)}
-                      onCopyWifi={() => clipboard.copyToClipboard(currentWifiPass, 'wifi')}
-
-                      onCopyAddress={() => clipboard.copyToClipboard(flatAddress, 'address')}
-                      onOpenDriverMode={() => modals.setShowDriverMode(true)}
-                      formatFriendlyDate={formatFriendlyDate}
-                      isSingleNight={isSingleNight}
-                      isCheckoutToday={isCheckoutToday}
-                      onOpenSupport={() => modals.setIsSupportModalOpen(true)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="h-full animate-fade-up" style={{ animationDelay: '300ms' }}>
+            <GuestStatusCard
+              stayStage={stayStage}
+              isTimeVerified={isTimeVerified}
+              isPasswordReleased={isPasswordReleased}
+              config={config}
+              wifiCopied={clipboard.wifiCopied}
+              addressCopied={clipboard.addressCopied}
+              currentWifiSSID={currentWifiSSID}
+              currentWifiPass={currentWifiPass}
+              onOpenCheckin={() => modals.setIsCheckinModalOpen(true)}
+              onOpenCheckout={() => modals.setIsCheckoutModalOpen(true)}
+              onCopyWifi={() => clipboard.copyToClipboard(currentWifiPass, 'wifi')}
+              onCopyAddress={() => clipboard.copyToClipboard(flatAddress, 'address')}
+              onOpenDriverMode={() => modals.setShowDriverMode(true)}
+              formatFriendlyDate={formatFriendlyDate}
+              isSingleNight={isSingleNight}
+              isCheckoutToday={isCheckoutToday}
+              onOpenSupport={() => modals.setIsSupportModalOpen(true)}
+              onEmergency={handleEmergencyClick}
+              onSaveAccess={() => modals.setShowOfflineCard(true)}
+            />
           </div>
 
+
           {/* COLUNA 2: SMART SUGGESTION + LOCALIZAÇÃO */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 animate-fade-up" style={{ animationDelay: '400ms' }}>
             <SmartSuggestion
               stayStage={stayStage}
               onCheckoutClick={() => modals.setIsCheckoutModalOpen(true)}
@@ -327,7 +312,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
             />
 
             {/* CARD DE LOCALIZAÇÃO */}
-            <div className="bg-white dark:bg-gray-800 rounded-[24px] p-1 shadow-sm border border-gray-100 dark:border-gray-700/50 flex-1 min-h-[140px] flex flex-col">
+            <div className={`${stayStage === 'pre_checkin' ? 'flex' : 'hidden lg:flex'} bg-white dark:bg-gray-800 rounded-[24px] p-1 shadow-sm border border-gray-100 dark:border-gray-700/50 flex-1 min-h-[140px] flex-col`}>
               <div className="flex-1 rounded-[20px] bg-purple-50/50 dark:bg-gray-700/30 border border-purple-100 dark:border-gray-600/30 p-5 flex flex-col items-center justify-center text-center relative overflow-hidden group">
                 <button
                   onClick={() => modals.setShowDriverMode(true)}
@@ -340,15 +325,15 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                 <h3 className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Localização</h3>
                 <p className="text-sm font-bold text-gray-800 dark:text-gray-200 max-w-[280px] leading-snug mb-3">{flatAddress}</p>
 
-                <button onClick={() => clipboard.copyToClipboard(flatAddress, 'address')} aria-label="Copiar endereço" className="mb-4 px-4 py-1.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-full border border-purple-100 dark:border-purple-900/30 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors shadow-sm">
+                <button onClick={(e) => { triggerConfetti(e.currentTarget as HTMLElement); clipboard.copyToClipboard(flatAddress, 'address'); }} aria-label="Copiar endereço" className="mb-4 px-4 py-1.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-full border border-purple-100 dark:border-purple-900/30 hover:bg-purple-50 dark:hover:bg-purple-900/20 active:scale-95 transition-all shadow-sm">
                   {clipboard.addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}
                 </button>
 
                 <div className="flex gap-3 w-full justify-center">
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(flatAddress)}`} target="_blank" rel="noopener noreferrer" className="flex-1 py-2.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(flatAddress)}`} target="_blank" rel="noopener noreferrer" className="flex-1 py-2.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
                     <ExternalLink size={14} /> Abrir Mapa
                   </a>
-                  <button onClick={() => video.openVideoModal(DRONE_VIDEO_URL, false)} className="flex-1 py-2.5 bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wide rounded-xl shadow-md shadow-purple-200 dark:shadow-none hover:bg-purple-700 transition-colors flex items-center justify-center gap-2">
+                  <button onClick={() => video.openVideoModal(DRONE_VIDEO_URL, false)} className="flex-1 py-2.5 bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wide rounded-xl shadow-md shadow-purple-200 dark:shadow-none hover:bg-purple-700 active:scale-95 transition-all flex items-center justify-center gap-2">
                     <Video size={14} /> Ver do Alto
                   </button>
                 </div>
@@ -358,27 +343,31 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         </div>
 
         {/* RECOMENDAÇÕES (ACCORDIONS) */}
-        <GuestRecommendations
-          mergePlaces={mergePlaces}
-          hasContent={hasContent}
-          activeEvents={activeEvents}
-          openEmergency={openEmergency}
-          emergencyRef={emergencyRef}
-        />
+        <div className="animate-fade-up" style={{ animationDelay: '500ms' }}>
+          <GuestRecommendations
+            mergePlaces={mergePlaces}
+            hasContent={hasContent}
+            activeEvents={activeEvents}
+            openEmergency={openEmergency}
+            emergencyRef={emergencyRef}
+          />
+        </div>
 
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[24px] p-6 text-white shadow-2xl shadow-blue-900/20 mb-8 relative overflow-hidden border border-white/10">
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[24px] p-6 text-white shadow-2xl shadow-blue-900/20 mb-8 relative overflow-hidden border border-white/10 animate-fade-up" style={{ animationDelay: '600ms' }}>
           <div className="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4"><Star size={120} /></div>
           {property.features.hasReviews && (
             <>
               <h3 className="text-xl font-heading font-bold mb-2">Sua opinião vale ouro! ⭐</h3>
               <p className="text-blue-50 text-sm mb-6 leading-relaxed font-medium opacity-90">Olá, {config.guestName}! Espero que tenha amado a estadia. Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!</p>
-              <a href={property.googleReviewLink || GOOGLE_REVIEW_LINK} target="_blank" rel="noreferrer" className="bg-white text-blue-700 font-bold py-3.5 px-6 rounded-xl inline-flex items-center gap-2.5 hover:bg-blue-50 transition-colors shadow-lg w-full justify-center sm:w-auto font-sans text-sm active:scale-[0.98]"><Star size={18} className="fill-yellow-400 text-yellow-400" /> Avaliar no Google</a>
+              <a href={property.googleReviewLink || GOOGLE_REVIEW_LINK} target="_blank" rel="noreferrer" className="bg-white text-blue-700 font-bold py-3.5 px-6 rounded-xl inline-flex items-center gap-2.5 hover:bg-blue-50 transition-all shadow-lg w-full justify-center sm:w-auto font-sans text-sm active:scale-95"><Star size={18} className="fill-yellow-400 text-yellow-400" /> Avaliar no Google</a>
             </>
           )}
         </div>
       </div>
 
-      <ChatWidget guestName={config.guestName} systemInstruction={appSettings?.aiSystemPrompt || property.ai.systemPrompt} />
+      <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
+        <ChatWidget guestName={config.guestName} systemInstruction={appSettings?.aiSystemPrompt || property.ai.systemPrompt} />
+      </div>
 
       <SupportModal
         isOpen={modals.isSupportModalOpen}
@@ -386,7 +375,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         guestName={config.guestName}
         hostPhone={appSettings?.hostPhones?.[config.propertyId || 'lili'] || property.hostPhone}
       />
-    </div>
+    </div >
   );
 };
 

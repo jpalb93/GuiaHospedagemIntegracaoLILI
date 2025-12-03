@@ -21,12 +21,16 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
 
           {/* --- AGENDA --- */}
           {activeEvents.length > 0 && (
-            <button onClick={() => onOpenStory('agenda')} className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
+            <button
+              onClick={() => onOpenStory('agenda')}
+              className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95 animate-pop-in"
+              style={{ animationDelay: '0ms' }}
+            >
               {/* Anel de Gradiente */}
               <div className="w-[58px] h-[58px] rounded-full p-[2px] bg-gradient-to-tr from-pink-500 via-red-500 to-orange-500 shadow-md shadow-pink-500/20 group-hover:shadow-pink-500/40 transition-shadow">
                 {/* Círculo Interno */}
                 <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full border-[2px] border-transparent bg-clip-padding flex items-center justify-center relative overflow-hidden">
-                  <CalendarHeart size={22} className="text-pink-600 dark:text-pink-400 relative z-10" strokeWidth={2} />
+                  <CalendarHeart size={22} className="text-pink-600 dark:text-pink-400 relative z-10 animate-breathing" strokeWidth={2} />
 
                   {/* Badge de Contador */}
                   <div className="absolute bottom-0.5 right-0.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-[1.5px] border-white dark:border-gray-800 z-20">
@@ -42,10 +46,14 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
           )}
 
           {/* --- CURIOSIDADES --- */}
-          <button onClick={() => onOpenStory('curiosities')} className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
+          <button
+            onClick={() => onOpenStory('curiosities')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95 animate-pop-in"
+            style={{ animationDelay: activeEvents.length > 0 ? '150ms' : '0ms' }}
+          >
             <div className="w-[58px] h-[58px] rounded-full p-[2px] bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-500 shadow-md shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-shadow">
               <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full border-[2px] border-transparent bg-clip-padding flex items-center justify-center relative overflow-hidden">
-                <Sparkles size={22} className="text-indigo-600 dark:text-indigo-300 relative z-10" strokeWidth={2} />
+                <Sparkles size={22} className="text-indigo-600 dark:text-indigo-300 relative z-10 animate-breathing" strokeWidth={2} />
               </div>
             </div>
             <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 tracking-wide group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -55,10 +63,14 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
 
           {/* --- DICAS DO FLAT --- */}
           {showTips && (
-            <button onClick={() => onOpenStory('tips')} className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95">
+            <button
+              onClick={() => onOpenStory('tips')}
+              className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95 animate-pop-in"
+              style={{ animationDelay: activeEvents.length > 0 ? '300ms' : '150ms' }}
+            >
               <div className="w-[58px] h-[58px] rounded-full p-[2px] bg-gradient-to-tr from-amber-400 via-yellow-500 to-orange-500 shadow-md shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-shadow">
                 <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full border-[2px] border-transparent bg-clip-padding flex items-center justify-center relative overflow-hidden">
-                  <Lightbulb size={22} className="text-amber-600 dark:text-yellow-300 relative z-10" strokeWidth={2} />
+                  <Lightbulb size={22} className="text-amber-600 dark:text-yellow-300 relative z-10 animate-breathing" strokeWidth={2} />
                 </div>
               </div>
               <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 tracking-wide group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">

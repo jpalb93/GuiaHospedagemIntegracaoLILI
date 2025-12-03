@@ -35,7 +35,8 @@ const CATEGORIES: { id: PlaceCategory | 'all'; label: string }[] = [
     { id: 'gym', label: 'Academia' },
     { id: 'bikes', label: 'Aluguel de Bicicletas' },
     { id: 'souvenirs', label: 'Lembrancinhas' },
-    { id: 'emergency', label: 'Hospitais & Clínicas' }
+    { id: 'emergency', label: 'Hospitais & Clínicas' },
+    { id: 'pharmacies', label: 'Farmácias' }
 ];
 
 const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {

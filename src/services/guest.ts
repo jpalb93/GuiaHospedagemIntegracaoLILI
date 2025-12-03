@@ -16,6 +16,6 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
         return data as GuestConfig;
     } catch (error) {
         console.error("Erro ao buscar configuração do hóspede:", error);
-        return null;
+        throw error; // Re-throw to allow retry logic in App.tsx
     }
 };

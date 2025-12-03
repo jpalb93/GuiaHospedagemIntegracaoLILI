@@ -19,7 +19,7 @@ import { fetchOfficialTime } from '../constants';
 export const useGuestStay = (config: GuestConfig) => {
   const [isTimeVerified, setIsTimeVerified] = useState(false);
 
-  const [stayStage, setStayStage] = useState<'pre_checkin' | 'checkin' | 'middle' | 'pre_checkout' | 'checkout'>(() => {
+  const [stayStage, setStayStage] = useState<'pre_checkin' | 'checkin' | 'middle' | 'pre_checkout' | 'checkout' | 'post_checkout'>(() => {
     // Cálculo inicial síncrono (baseado na hora local) para evitar flash
     if (!config.checkInDate) return 'checkin';
     const now = new Date();
@@ -40,6 +40,7 @@ export const useGuestStay = (config: GuestConfig) => {
       const preCheckoutDate = new Date(checkOut);
       preCheckoutDate.setDate(preCheckoutDate.getDate() - 1);
 
+      if (now.getTime() > checkOut.getTime()) return 'post_checkout';
       if (now.getTime() === checkOut.getTime()) return 'checkout';
       if (now.getTime() === preCheckoutDate.getTime()) return 'pre_checkout';
     }
@@ -75,7 +76,9 @@ export const useGuestStay = (config: GuestConfig) => {
             const preCheckoutDate = new Date(checkOut);
             preCheckoutDate.setDate(preCheckoutDate.getDate() - 1);
 
-            if (today.getTime() === checkOut.getTime()) {
+            if (today.getTime() > checkOut.getTime()) {
+              setStayStage('post_checkout');
+            } else if (today.getTime() === checkOut.getTime()) {
               setStayStage('checkout');
             } else if (today.getTime() === preCheckoutDate.getTime()) {
               setStayStage('pre_checkout');

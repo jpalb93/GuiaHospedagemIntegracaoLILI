@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 
 import { AppMode, GuestConfig } from './types';
 // Importação otimizada de ícones - Lucide React já faz tree-shaking automaticamente
-import { Lock, MapPin, CalendarX, MessageCircle, AlertTriangle, LogOut, KeyRound, ArrowRight, RefreshCw } from 'lucide-react';
+import { Lock, MapPin, CalendarX, MessageCircle, AlertTriangle, LogOut, KeyRound, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
 
 import { HERO_IMAGE_URL, HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } from './constants';
 import { fetchGuestConfig } from './services/guest';
@@ -56,7 +56,7 @@ const App: React.FC = () => {
   };
 
   // --- ESTADO DO APP ---
-  const [appState, setAppState] = useState<{ mode: AppMode | 'LANDING' | 'LILI_LANDING' | 'EXPIRED' | 'BLOCKED' | 'LOADING'; config: GuestConfig }>(() => {
+  const [appState, setAppState] = useState<{ mode: AppMode | 'LANDING' | 'LILI_LANDING' | 'EXPIRED' | 'BLOCKED' | 'LOADING' | 'RECONNECTING'; config: GuestConfig }>(() => {
     return { mode: 'LOADING', config: { guestName: '', lockCode: '' } };
   });
 
@@ -111,48 +111,57 @@ const App: React.FC = () => {
       }
 
       if (reservationId) {
-        try {
-          // NOVA LÓGICA: Busca via API Segura
-          const safeConfig = await fetchGuestConfig(reservationId);
+        const fetchWithRetry = async () => {
+          try {
+            // Tenta buscar a configuração
+            const safeConfig = await fetchGuestConfig(reservationId!);
 
-          if (!safeConfig) {
-            localStorage.removeItem('flat_lili_last_rid');
-            setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
-            return;
-          }
-
-          // Verificação de Expiração (UX apenas, dados já estão seguros)
-          if (safeConfig.checkoutDate) {
-            let now = new Date();
-            if (USE_OFFICIAL_TIME) {
-              try { now = await fetchOfficialTime(); } catch (_e) { }
-            }
-            const [year, month, day] = safeConfig.checkoutDate.split('-').map(Number);
-            const expirationDate = new Date(year, month - 1, day);
-            expirationDate.setHours(23, 59, 59, 999);
-
-            if (now > expirationDate) {
+            if (!safeConfig) {
+              // 404 - Não encontrado (Definitivo)
               localStorage.removeItem('flat_lili_last_rid');
-              setAppState({ mode: 'EXPIRED', config: { guestName: '', lockCode: '' } });
+              setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
               return;
             }
+
+            // Verificação de Expiração
+            if (safeConfig.checkoutDate) {
+              let now = new Date();
+              if (USE_OFFICIAL_TIME) {
+                try { now = await fetchOfficialTime(); } catch (_e) { }
+              }
+              const [year, month, day] = safeConfig.checkoutDate.split('-').map(Number);
+              const expirationDate = new Date(year, month - 1, day);
+              expirationDate.setDate(expirationDate.getDate() + 1); // Allow access for 1 day after checkout
+              expirationDate.setHours(23, 59, 59, 999);
+
+              if (now > expirationDate) {
+                localStorage.removeItem('flat_lili_last_rid');
+                setAppState({ mode: 'EXPIRED', config: { guestName: '', lockCode: '' } });
+                return;
+              }
+            }
+
+            // Sucesso!
+            setAppState({ mode: AppMode.GUEST, config: safeConfig });
+
+            // Limpeza de URL
+            if (reservationId && window.history.replaceState) {
+              const newUrl = window.location.pathname;
+              window.history.replaceState({}, '', newUrl);
+            }
+
+          } catch (error) {
+            // Erro de Rede (Temporário)
+            console.warn("Erro de conexão. Entrando em modo de reconexão...", error);
+            setAppState({ mode: 'RECONNECTING', config: { guestName: '', lockCode: '' } });
+
+            // Tenta novamente em 2 segundos (loop recursivo via setTimeout para não travar)
+            setTimeout(fetchWithRetry, 2000);
           }
+        };
 
-          setAppState({ mode: AppMode.GUEST, config: safeConfig });
-
-          // LIMPEZA DE URL (UX): Remove o ID da barra de endereço para ficar "bonito"
-          // O ID já está salvo no localStorage, então o refresh funciona.
-          if (reservationId && window.history.replaceState) {
-            const newUrl = window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-          }
-          return;
-
-        } catch (error) {
-          console.error("Erro ao buscar reserva", error);
-          setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
-          return;
-        }
+        fetchWithRetry();
+        return;
       }
 
       setAppState({ mode: 'LANDING', config: { guestName: '', lockCode: '' } });
@@ -185,6 +194,24 @@ const App: React.FC = () => {
   // 1. Tela de Carregamento (Enquanto decide a rota)
   if (appState.mode === 'LOADING') {
     return <LoadingScreen />;
+  }
+
+  // 1.5 Tela de Reconexão (NOVO)
+  if (appState.mode === 'RECONNECTING') {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto">
+            <RefreshCw className="text-orange-500 animate-spin" size={32} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white mb-2 font-heading flex items-center justify-center gap-2">
+              Abrindo seu guia... <Sparkles className="text-orange-400 animate-pulse" size={20} />
+            </h1>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // 2. Modo CMS (Admin de Conteúdo)

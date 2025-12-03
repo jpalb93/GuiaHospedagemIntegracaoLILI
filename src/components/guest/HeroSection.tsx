@@ -34,6 +34,36 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     return () => clearInterval(timer);
   }, [heroSlides]);
 
+  const parallaxRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (parallaxRef.current) {
+        const scrolled = window.scrollY;
+        parallaxRef.current.style.transform = `translateY(${scrolled * 0.5}px)`;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Helper para saudação (Brasília Time)
+  const getGreeting = () => {
+    const now = new Date();
+    // Ajuste manual para UTC-3 (Brasília) para garantir consistência
+    // Obtém o deslocamento atual em milissegundos e ajusta para -3h
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const brasiliaTime = new Date(utc - (3 * 60 * 60 * 1000));
+    const hour = brasiliaTime.getHours();
+
+    if (hour >= 5 && hour < 12) return 'Bom dia';
+    if (hour >= 12 && hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
+  const greeting = getGreeting();
+
   return (
     <div className="relative h-[26rem] sm:h-[30rem] bg-gray-900 overflow-hidden shadow-xl group">
       {/* Controles Superiores */}
@@ -57,20 +87,22 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <WeatherWidget />
       </div>
 
-      {heroSlides.map((img, index) => (
-        <div
-          key={`${img}-${index}`}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-        >
-          <OptimizedImage
-            src={img}
-            alt="Flats Integração"
-            className="w-full h-full object-cover opacity-100"
-            loading={index === 0 ? "eager" : "lazy"}
-            fetchPriority={index === 0 ? "high" : "auto"}
-          />
-        </div>
-      ))}
+      <div ref={parallaxRef} className="absolute inset-0 w-full h-full will-change-transform">
+        {heroSlides.map((img, index) => (
+          <div
+            key={`${img}-${index}`}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+          >
+            <OptimizedImage
+              src={img}
+              alt="Flats Integração"
+              className="w-full h-full object-cover opacity-100"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchPriority={index === 0 ? "high" : "auto"}
+            />
+          </div>
+        ))}
+      </div>
 
       <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-20" />
 
@@ -83,7 +115,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               Guia Interativo • {PROPERTIES[config.propertyId || 'lili'].name}
             </p>
             <h1 className="text-3xl sm:text-5xl font-heading font-bold mb-2 leading-tight text-white drop-shadow-sm">
-              Olá, {config.guestName?.split(' ')[0] || 'Visitante'}!
+              {greeting}, {config.guestName?.split(' ')[0] || 'Visitante'}!
             </h1>
 
             {config.welcomeMessage ? (

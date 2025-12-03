@@ -30,7 +30,7 @@ const DEFAULT_TIME_CONTENT = {
     iconBg: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300'
   },
   sunset: {
-    icon: Sunset, label: 'Fim de Tarde', title: 'Pôr do Sol na Orla', desc: 'Corra para a Orla ou Ilha do Fogo.',
+    icon: Sunset, label: 'Fim de Tarde', title: 'Pôr do Sol na Orla', desc: 'Corra para a Orla e veja um pôr do sol deslumbrante!',
     color: 'from-indigo-400 to-purple-400',
     textColor: 'text-indigo-900 dark:text-indigo-100',
     iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300'
@@ -59,7 +59,7 @@ const PRE_CHECKOUT_CONTENT = {
 };
 
 interface SmartSuggestionProps {
-  stayStage: 'pre_checkin' | 'checkin' | 'middle' | 'pre_checkout' | 'checkout';
+  stayStage: 'pre_checkin' | 'checkin' | 'middle' | 'pre_checkout' | 'checkout' | 'post_checkout';
   onCheckoutClick: () => void;
   isTimeVerified: boolean;
   customSuggestions?: SmartSuggestionsConfig | null;
@@ -143,17 +143,45 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckout
       const now = new Date();
       const isWeekend = now.getDay() === 5 || now.getDay() === 6;
 
-      const scoredPlaces = places.map(place => {
+      // 1. FILTRO RÍGIDO: Apenas categorias que fazem sentido para o horário
+      // Isso evita que Pizza/Hambúrguer (Jantar) apareçam no Almoço só porque têm delivery
+      const validCategoriesForTime = {
+        morning: ['cafes', 'essentials', 'snacks'], // Adicionado snacks para cobrir padarias/lanchonetes
+        lunch: ['selfservice', 'alacarte', 'oriental', 'pasta', 'salads'],
+        sunset: ['attractions', 'bikes', 'snacks', 'cafes'],
+        night: ['burgers', 'pizza', 'skewers', 'oriental', 'snacks', 'bars', 'pasta', 'alacarte']
+      };
+
+      const allowedCategories = validCategoriesForTime[timeOfDay] || [];
+
+      // Filtra os lugares elegíveis primeiro
+      const eligiblePlaces = places.filter(place => {
+        // 1. Categoria deve bater
+        if (!place.category || !allowedCategories.includes(place.category)) return false;
+
+        // 2. Regra Simplificada: Delivery = Só a noite
+        // Se tiver link de pedido ou whatsapp (e não for atração), só pode aparecer a noite.
+        const hasDelivery = place.orderLink || place.whatsapp;
+        const isAttraction = ['attractions', 'passeios', 'events', 'eventos'].includes((place.category || '').toLowerCase());
+
+        if (hasDelivery && !isAttraction && timeOfDay !== 'night') {
+          return false;
+        }
+
+        return true;
+      });
+
+      if (eligiblePlaces.length === 0) {
+        setDynamicPlace(null);
+        return;
+      }
+
+      // 2. PONTUAÇÃO: Define o melhor entre os elegíveis
+      const scoredPlaces = eligiblePlaces.map(place => {
         let score = 0;
 
-        // 🟡 +100 pontos: Match de horário
-        const hourMatch = (
-          (timeOfDay === 'morning' && (place.category === 'cafes' || place.category === 'essentials')) ||
-          (timeOfDay === 'lunch' && place.category && ['selfservice', 'alacarte', 'oriental', 'pasta', 'salads'].includes(place.category)) ||
-          (timeOfDay === 'sunset' && place.category && ['attractions', 'bikes', 'snacks'].includes(place.category)) ||
-          (timeOfDay === 'night' && place.category && ['burgers', 'pizza', 'skewers', 'oriental', 'snacks', 'bars'].includes(place.category))
-        );
-        if (hourMatch) score += 100;
+        // Base score por ser elegível (todos aqui já são)
+        score += 100;
 
         // 🟢 +50 pontos: Fim de semana bonus (bars/events)
         if (isWeekend && place.category && ['bars', 'events'].includes(place.category)) {
@@ -165,14 +193,31 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckout
           score += 30;
         }
 
+        // 🌅 +500 pontos: Pôr do Sol na Orla (Sunset)
+        if (timeOfDay === 'sunset') {
+          const name = (place.name || '').toLowerCase();
+          const desc = (place.description || '').toLowerCase();
+          if (name.includes('orla') || desc.includes('orla') || name.includes('ilha do fogo') || desc.includes('ilha do fogo')) {
+            score += 500;
+          }
+        }
+
         return { place, score };
       });
 
-      // Ordena por score e pega o primeiro
+      // Ordena por score
       scoredPlaces.sort((a, b) => b.score - a.score);
 
-      if (scoredPlaces.length > 0 && scoredPlaces[0].score > 0) {
-        setDynamicPlace(scoredPlaces[0].place);
+      // 3. ROTAÇÃO: Pega os top 3 e rotaciona a cada 15 minutos
+      const topCandidates = scoredPlaces.slice(0, 3); // Pega os 3 melhores
+
+      if (topCandidates.length > 0) {
+        // Usa os minutos atuais para escolher um índice (0, 1 ou 2)
+        // Muda a cada 15 minutos (0-14: index 0, 15-29: index 1, etc)
+        const currentMinute = new Date().getMinutes();
+        const rotationIndex = Math.floor(currentMinute / 15) % topCandidates.length;
+
+        setDynamicPlace(topCandidates[rotationIndex].place);
       } else {
         setDynamicPlace(null);
       }
@@ -191,7 +236,7 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckout
     activeContent.desc = dynamicPlace.description;
   }
 
-  if (stayStage === 'checkout') activeContent = CHECKOUT_CONTENT;
+  if (stayStage === 'checkout' || stayStage === 'post_checkout') activeContent = CHECKOUT_CONTENT;
   if (stayStage === 'pre_checkout') activeContent = PRE_CHECKOUT_CONTENT;
 
   if (stayStage === 'pre_checkin') {
@@ -209,7 +254,7 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({ stayStage, onCheckout
   return (
     <div
       onClick={stayStage === 'checkout' ? onCheckoutClick : undefined}
-      className={`w-full shrink-0 rounded-[24px] p-[2px] bg-gradient-to-br ${activeContent.color} shadow-lg shadow-gray-200/50 dark:shadow-none relative overflow-hidden transition-all duration-300 ${stayStage === 'checkout' ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : 'shrink-0'}`}
+      className={`w-full shrink-0 rounded-[24px] p-[2px] bg-gradient-to-br ${activeContent.color} shadow-lg shadow-gray-200/50 dark:shadow-none relative overflow-hidden transition-all duration-300 animate-pulse-subtle ${stayStage === 'checkout' ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : 'shrink-0'}`}
     >
       <div className="bg-white/90 dark:bg-gray-800/95 backdrop-blur-xl p-5 rounded-[22px] flex items-start gap-4 relative">
         {/* Badge HOJE para eventos */}

@@ -120,7 +120,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const handleShareListWhatsApp = (res: Reservation) => {
         if (!res.id) return;
         const link = getLinkForReservation(res);
-        const message = `Olá, ${res.guestName}!\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat.\n\nAqui você encontra a senha da porta, wi-fi e dicas de Petrolina:\n${link}`;
+        const firstName = res.guestName.split(' ')[0];
+        const message = `Olá, ${firstName}! 👋\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat. 📲\n\nAqui você encontra instruções e um passo a passo (com vídeos 🎥) de como entrar no flat sem dificuldade e ter uma estadia maravilhosa. ✨\n\nAlém disso, em caso de dúvidas, você pode clicar no ícone laranja 🟠 e conversar com uma Inteligência Artificial totalmente personalizada que sabe tudo (ou quase! 🤖) do nosso flat e Petrolina em geral.\n\n👇 Acesse aqui:\n${link}`;
         const phone = res.guestPhone ? res.guestPhone : '';
         const whatsappUrl = phone
             ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`

@@ -34,7 +34,8 @@ export type PlaceCategory =
   | 'salon'
   | 'gym'
   | 'bikes'
-  | 'souvenirs';
+  | 'souvenirs'
+  | 'pharmacies';
 
 export interface PlaceRecommendation {
   id?: string; // ID do Firebase (opcional para os hardcoded)
