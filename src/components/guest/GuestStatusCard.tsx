@@ -279,7 +279,9 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                                             {config.lockCode}
                                         </p>
                                     </div>
-                                    <p className="text-[8px] text-gray-500 font-medium">Toque a campainha após digitar</p>
+                                    <p className="text-[8px] text-gray-500 font-medium flex items-center justify-center gap-1">
+                                        Digite a senha e toque no <Bell size={8} className="text-amber-500" />
+                                    </p>
                                 </div>
                             )}
                         </HolographicCard>
@@ -363,18 +365,10 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                             </p>
                         </div>
 
-                        {/* CHECKOUT ALERT */}
-                        <div className="mb-4 bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 flex items-center justify-between relative z-10">
-                            <div>
-                                <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide flex items-center gap-1">
-                                    <CalendarHeart size={12} /> Check-out Amanhã
-                                </p>
-                                <p className="text-xs text-orange-200 font-bold">Até às {config.checkOutTime || '11:00'}</p>
-                            </div>
-                            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onOpenCheckout(); }} className="px-3 py-1.5 bg-orange-500/20 text-orange-300 text-[9px] font-bold uppercase rounded-lg shadow-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors">
-                                Ver Regras
-                            </button>
-                        </div>
+                        {/* CHECK-IN BUTTON (New Position) */}
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onOpenCheckin(); }} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wide transition-all rounded-xl shadow-lg shadow-purple-900/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-4 relative z-10 border border-white/10">
+                            Como fazer Check-in
+                        </button>
 
                         {/* GRID: DOOR & WI-FI */}
                         <div className="grid grid-cols-2 gap-3 mb-4 relative z-10">
@@ -401,7 +395,9 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                                             </p>
                                             <Bell size={12} className="text-amber-400 animate-pulse-subtle" />
                                         </div>
-                                        <p className="text-[8px] text-gray-500 font-medium">Toque a campainha</p>
+                                        <p className="text-[8px] text-gray-500 font-medium flex items-center justify-center gap-1">
+                                            Digite a senha e toque no <Bell size={8} className="text-amber-500" />
+                                        </p>
                                     </div>
                                 )}
                             </HolographicCard>
@@ -448,6 +444,19 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                                 </div>
                             </div>
                         </HolographicCard>
+
+                        {/* CHECKOUT ALERT (Moved Here) */}
+                        <div className="mb-4 bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 flex items-center justify-between relative z-10">
+                            <div>
+                                <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide flex items-center gap-1">
+                                    <CalendarHeart size={12} /> Check-out Amanhã
+                                </p>
+                                <p className="text-xs text-orange-200 font-bold">Até às {config.checkOutTime || '11:00'}</p>
+                            </div>
+                            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onOpenCheckout(); }} className="px-3 py-1.5 bg-orange-500/20 text-orange-300 text-[9px] font-bold uppercase rounded-lg shadow-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors">
+                                Ver Regras
+                            </button>
+                        </div>
 
                         <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onOpenSupport(); }} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-emerald-900/20 active:scale-[0.98] relative z-10">
                             <MessageCircle size={16} className="text-white" /> {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
@@ -618,7 +627,9 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                                                 </p>
                                                 <Bell size={20} className="text-orange-500 animate-pulse" />
                                             </div>
-                                            <p className="text-[10px] text-gray-500 font-medium">Toque a campainha após digitar</p>
+                                            <p className="text-[10px] text-gray-500 font-medium flex items-center justify-center gap-1">
+                                                Digite a senha e toque no <Bell size={10} className="text-amber-500" />
+                                            </p>
                                         </div>
                                     )}
                                 </HolographicCard>

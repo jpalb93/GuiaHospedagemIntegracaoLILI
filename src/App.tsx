@@ -7,7 +7,8 @@ import { Lock, MapPin, CalendarX, MessageCircle, AlertTriangle, LogOut, KeyRound
 import { HERO_IMAGE_URL, HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } from './constants';
 import { fetchGuestConfig } from './services/guest';
 import ErrorBoundary from './components/ErrorBoundary';
-import { LoadingScreen, GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/LoadingSkeletons';
+import { GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/LoadingSkeletons';
+import ModernLoadingScreen from './components/ModernLoadingScreen';
 
 // --- LAZY LOADING (CODE SPLITTING) ---
 // Carrega os componentes pesados apenas quando necessários
@@ -66,6 +67,9 @@ const App: React.FC = () => {
   // --- MONITORAMENTO (AGORA VIA API) ---
   useEffect(() => {
     const initApp = async () => {
+      // Inicia o timer de delay mínimo (2 segundos) para a animação de loading
+      const minLoadingTime = new Promise(resolve => setTimeout(resolve, 2000));
+
       const path = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
       let reservationId = params.get('rid');
@@ -75,6 +79,7 @@ const App: React.FC = () => {
       const isLiliPage = path === '/lili' || path === '/flat-lili';
 
       if (isCMS) {
+        await minLoadingTime;
         setAppState({ mode: AppMode.CMS, config: { guestName: '', lockCode: '' } });
         return;
       }
@@ -84,11 +89,13 @@ const App: React.FC = () => {
       // The AdminView component itself handles authentication (Firebase Auth),
       // so we just need to route correctly here.
       if (path === '/admin') {
+        await minLoadingTime;
         setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
         return;
       }
 
       if (isLiliPage) {
+        await minLoadingTime;
         setAppState({ mode: 'LILI_LANDING', config: { guestName: '', lockCode: '' } });
         return;
       }
@@ -113,8 +120,12 @@ const App: React.FC = () => {
       if (reservationId) {
         const fetchWithRetry = async () => {
           try {
-            // Tenta buscar a configuração
-            const safeConfig = await fetchGuestConfig(reservationId!);
+            // Executa o fetch e o timer em paralelo
+            // O Promise.all aguarda AMBOS terminarem. Se o fetch for rápido, espera o timer.
+            const [safeConfig] = await Promise.all([
+              fetchGuestConfig(reservationId!),
+              minLoadingTime
+            ]);
 
             if (!safeConfig) {
               // 404 - Não encontrado (Definitivo)
@@ -164,6 +175,7 @@ const App: React.FC = () => {
         return;
       }
 
+      await minLoadingTime;
       setAppState({ mode: 'LANDING', config: { guestName: '', lockCode: '' } });
     };
 
@@ -193,7 +205,18 @@ const App: React.FC = () => {
 
   // 1. Tela de Carregamento (Enquanto decide a rota)
   if (appState.mode === 'LOADING') {
-    return <LoadingScreen />;
+    // Determina a variante do loading baseada na URL atual (antes do estado ser definido)
+    let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
+    const path = window.location.pathname;
+    const params = new URLSearchParams(window.location.search);
+
+    if (path === '/admin') {
+      loadingVariant = 'admin';
+    } else if (params.get('rid') || (path.length > 1 && !['/cms', '/lili', '/flat-lili'].includes(path))) {
+      loadingVariant = 'guest';
+    }
+
+    return <ModernLoadingScreen variant={loadingVariant} />;
   }
 
   // 1.5 Tela de Reconexão (NOVO)

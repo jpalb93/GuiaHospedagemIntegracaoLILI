@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Wifi, Camera, User, Lock, Copy, Check, QrCode, MapPin } from 'lucide-react';
+import { X, Wifi, Camera, User, Lock, Copy, Check, QrCode, MapPin, Bell } from 'lucide-react';
 import { GuestConfig } from '../../types';
 import { PROPERTIES } from '../../config/properties';
 
@@ -82,9 +82,20 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                 {isIntegracao ? 'Unidade' : (config.propertyId === 'lili' ? 'Flat' : 'Senha Porta')}
               </p>
 
-              <span className="text-3xl font-mono font-bold text-white tracking-widest drop-shadow-md">
-                {isIntegracao ? config.flatNumber : (config.propertyId === 'lili' ? '304' : (isPasswordReleased ? config.lockCode : '****'))}
-              </span>
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-3xl font-mono font-bold text-white tracking-widest drop-shadow-md">
+                  {isIntegracao ? config.flatNumber : (config.propertyId === 'lili' ? '304' : (isPasswordReleased ? config.lockCode : '****'))}
+                </span>
+                {!isIntegracao && config.propertyId !== 'lili' && (
+                  <Bell size={24} className="text-amber-500 animate-pulse" />
+                )}
+              </div>
+
+              {!isIntegracao && config.propertyId !== 'lili' && (
+                <p className="text-[9px] text-gray-500 font-medium mt-2 flex items-center justify-center gap-1">
+                  Toque no <Bell size={10} className="text-amber-500" /> após digitar a senha
+                </p>
+              )}
             </div>
           </div>
 

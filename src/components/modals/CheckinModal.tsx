@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Video, Lock } from 'lucide-react';
+import { X, Video, Lock, Bell } from 'lucide-react';
 import { SAFE_VIDEO_URL, LOCK_VIDEO_URL } from '../../constants';
 
 interface CheckinModalProps {
@@ -92,7 +92,13 @@ const CheckinModal: React.FC<CheckinModalProps> = ({ isOpen, onClose, safeCode, 
               {isPasswordReleased ? (
                 <div className="py-4 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
                   {/* NOTRANSLATE ADDED */}
-                  <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-widest font-mono notranslate">{lockCode || '----'}</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-widest font-mono notranslate">{lockCode || '----'}</p>
+                    <Bell size={28} className="text-amber-500 animate-pulse" />
+                  </div>
+                  <p className="text-[10px] text-gray-500 font-medium mt-2 flex items-center justify-center gap-1">
+                    Toque no <Bell size={10} className="text-amber-500" /> após digitar a senha
+                  </p>
                 </div>
               ) : (
                 <div className="py-4 text-center bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 flex flex-col items-center justify-center">

@@ -1,6 +1,21 @@
 import React, { ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, MessageCircle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, MessageCircle, RefreshCw, Sparkles } from 'lucide-react';
 import { HOST_PHONE } from '../constants';
+
+// --- WAKE UP GUARD ---
+// Rastreia quando o app "acordou" (ficou visível novamente).
+// Erros que acontecem logo após acordar geralmente são glitches de rede/estado.
+let lastVisibleTime = Date.now();
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      lastVisibleTime = Date.now();
+      // Opcional: Limpar cache de reload se o usuário voltou a usar o app com sucesso
+      // sessionStorage.removeItem('flat_lili_chunk_reload'); 
+    }
+  });
+}
 
 interface Props {
   children: ReactNode;
@@ -10,45 +25,78 @@ interface State {
   hasError: boolean;
   error?: Error;
   showDetails?: boolean;
+  shouldReload?: boolean;
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
-    showDetails: false
+    showDetails: false,
+    shouldReload: false
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    // Atualiza o state para que a próxima renderização mostre a UI alternativa.
-    return { hasError: true, error };
-  }
-
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-
-    // --- AUTO-RELOAD ON CHUNK LOAD ERROR ---
-    // Isso acontece quando uma nova versão é deployada e o navegador tenta carregar um chunk antigo (404)
-    // ou quando a rede falha ao carregar um lazy component.
+    // 1. Verifica se é um erro de chunk/rede que justifica um reload automático
     const isChunkError = error.message.includes('Loading chunk') ||
       error.message.includes('Importing a module script failed') ||
       error.message.includes('Failed to fetch') ||
       error.message.includes('NetworkError') ||
       error.name === 'ChunkLoadError';
 
-    if (isChunkError) {
+    // 2. Verifica se o erro aconteceu logo após o app "acordar" (10 segundos de tolerância)
+    const isWakeUpError = (Date.now() - lastVisibleTime) < 10000;
+
+    // Se for erro de chunk OU um erro logo após acordar, tentamos o reload silencioso
+    if (isChunkError || isWakeUpError) {
+      return { hasError: true, error, shouldReload: true };
+    }
+
+    // Erro comum, mostra a UI de erro
+    return { hasError: true, error, shouldReload: false };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+
+    // Se já identificamos que deve recarregar em getDerivedStateFromError,
+    // executamos a lógica de reload aqui.
+    if (this.state.shouldReload) {
       const lastReload = sessionStorage.getItem('flat_lili_chunk_reload');
       const now = Date.now();
 
-      // Se não recarregou nos últimos 10 segundos, recarrega
+      // Proteção contra Loop Infinito:
+      // Só recarrega se a última vez foi há mais de 10 segundos.
+      // Isso evita que, se o erro for persistente (bug real), o app fique piscando para sempre.
       if (!lastReload || now - parseInt(lastReload) > 10000) {
         sessionStorage.setItem('flat_lili_chunk_reload', now.toString());
         window.location.reload();
         return;
+      } else {
+        // Se caiu no loop (erro persiste mesmo após reload), mostramos o erro real
+        this.setState({ shouldReload: false });
       }
     }
   }
 
   public render() {
+    // Se estiver aguardando reload, mostra tela de carregamento (evita o flash de erro)
+    if (this.state.shouldReload) {
+      return (
+        <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
+          <div className="flex flex-col items-center gap-6 animate-pulse">
+            <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto">
+              <RefreshCw className="text-orange-500 animate-spin" size={32} />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white mb-2 font-heading flex items-center justify-center gap-2">
+                Atualizando o guia... <Sparkles className="text-orange-400 animate-pulse" size={20} />
+              </h1>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6 text-center font-sans text-white">
