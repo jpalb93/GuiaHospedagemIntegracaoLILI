@@ -61,6 +61,7 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
     const navItems = [
         { id: 'home', label: 'Início', icon: Home, mobile: true },
         { id: 'list', label: 'Reservas', icon: Calendar, mobile: true },
+        { id: 'calendar', label: 'Calendário', icon: Calendar, mobile: false },
         { id: 'create', label: 'Nova', icon: PlusCircle, mobile: true, highlight: true },
         { id: 'blocks', label: 'Bloqueios', icon: CalendarOff, mobile: false },
         { id: 'places', label: 'Lugares', icon: MapPin, mobile: false },

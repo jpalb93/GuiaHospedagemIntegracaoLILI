@@ -10,7 +10,7 @@ import {
 } from '../services/firebase';
 import { fetchOfficialTime } from '../constants';
 import { isApiConfigured } from '../services/geminiService';
-import { Reservation, BlockedDateRange, PropertyId } from '../types';
+import { Reservation, BlockedDateRange, PropertyId, PaymentMethod } from '../types';
 import { PROPERTIES } from '../config/properties';
 import { ToastMessage, ToastType } from '../components/Toast';
 import { getUserPermission } from '../services/userManagement';
@@ -48,7 +48,7 @@ export const useAdminDashboard = () => {
     const [checkInTime, setCheckInTime] = useState('14:00');
     const [checkOutTime, setCheckOutTime] = useState('11:00');
     const [guestCount, setGuestCount] = useState<number>(1);
-    const [paymentMethod, setPaymentMethod] = useState<'pix' | 'money' | 'card' | ''>('');
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
     const [shortId, setShortId] = useState('');
 
     // Blocked Dates Form State
@@ -58,7 +58,7 @@ export const useAdminDashboard = () => {
     const [isBlocking, setIsBlocking] = useState(false);
 
     // UI State
-    const [activeTab, setActiveTab] = useState<'home' | 'create' | 'list' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings'>('home');
+    const [activeTab, setActiveTab] = useState<'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings'>('home');
     const [searchTerm, setSearchTerm] = useState('');
     const [generatedLink, setGeneratedLink] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -115,14 +115,7 @@ export const useAdminDashboard = () => {
             setLastHistoryDoc(lastVisible);
             setHasMoreHistory(hasMore);
 
-            // AUTO-REPAIR HISTORY (Super Admin Only)
-            if (userPermission?.role === 'super_admin') {
-                data.forEach(r => {
-                    if (!r.propertyId) {
-                        updateReservation(r.id!, { propertyId: 'lili' });
-                    }
-                });
-            }
+
 
         } catch (e) {
             logger.error("Erro ao carregar histórico", e);
@@ -202,15 +195,7 @@ export const useAdminDashboard = () => {
                 );
                 setActiveReservations(filtered);
 
-                // AUTO-REPAIR LEGACY DATA (Super Admin Only)
-                if (userPermission.role === 'super_admin') {
-                    data.forEach(r => {
-                        if (!r.propertyId) {
-                            console.log(`Reparando reserva legada ${r.id} -> propertyId: lili`);
-                            updateReservation(r.id!, { propertyId: 'lili' });
-                        }
-                    });
-                }
+
             }, filterProps);
 
             loadMoreHistory(true);

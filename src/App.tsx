@@ -237,7 +237,16 @@ const App: React.FC = () => {
     );
   }
 
-  // 2. Modo CMS (Admin de Conteúdo)
+  // 2. Modo Admin (Protegido)
+  if (appState.mode === (AppMode.ADMIN as any)) {
+    return (
+      <Suspense fallback={<ModernLoadingScreen variant="admin" />}>
+        <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
+      </Suspense>
+    );
+  }
+
+  // 3. Modo CMS (Admin de Conteúdo)
   if (appState.mode === AppMode.CMS) {
     return (
       <ErrorBoundary>
@@ -248,7 +257,7 @@ const App: React.FC = () => {
     );
   }
 
-  // 3. Modo Landing Page Pública (Lili)
+  // 4. Modo Landing Page Pública (Lili)
   if (appState.mode === 'LILI_LANDING') {
     return (
       <ErrorBoundary>

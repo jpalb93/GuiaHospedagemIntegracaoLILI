@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Phone, Lock, CalendarDays, Clock, MessageSquare, StickyNote, Save, Sparkles, Loader2, X, Eraser, CheckCircle2, AlertCircle, Copy, Send, Building2, KeyRound, Users, CreditCard, Banknote } from 'lucide-react';
 import { PROPERTIES } from '../../config/properties';
-import { PropertyId, UserPermission } from '../../types';
+import { PropertyId, UserPermission, PaymentMethod, Reservation } from '../../types';
 
 interface ReservationFormProps {
     form: {
@@ -19,7 +19,7 @@ interface ReservationFormProps {
         checkInTime: string; setCheckInTime: (v: string) => void;
         checkOutTime: string; setCheckOutTime: (v: string) => void;
         guestCount: number; setGuestCount: (v: number) => void;
-        paymentMethod: string; setPaymentMethod: (v: string) => void;
+        paymentMethod: PaymentMethod | ''; setPaymentMethod: (v: PaymentMethod | '') => void;
         editingId: string | null;
         handleSaveReservation: () => void;
         resetForm: () => void;
@@ -31,9 +31,10 @@ interface ReservationFormProps {
         showToast: (msg: string, type: 'success' | 'error') => void;
     };
     userPermission?: UserPermission | null;
+    previousGuests?: Reservation[];
 }
 
-const ReservationForm: React.FC<ReservationFormProps> = ({ form, ui, userPermission }) => {
+const ReservationForm: React.FC<ReservationFormProps> = ({ form, ui, userPermission, previousGuests = [] }) => {
     const {
         guestName, setGuestName, guestPhone, setGuestPhone, lockCode, setLockCode,
         propertyId, setPropertyId, flatNumber, setFlatNumber,
@@ -52,8 +53,52 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ form, ui, userPermiss
 
     const showPropertySelector = !userPermission || userPermission.role === 'super_admin' || userPermission.allowedProperties.length > 1;
 
+    const [showSuggestions, setShowSuggestions] = React.useState(false);
+    const [filteredGuests, setFilteredGuests] = React.useState<Reservation[]>([]);
+
+    const handleGuestNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setGuestName(value);
+
+        if (value.length > 2) {
+            const uniqueGuests = new Map();
+            previousGuests.forEach(g => {
+                if (g.guestName.toLowerCase().includes(value.toLowerCase())) {
+                    uniqueGuests.set(g.guestName, g);
+                }
+            });
+            setFilteredGuests(Array.from(uniqueGuests.values()).slice(0, 5));
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+
+    const selectGuest = (guest: Reservation) => {
+        setGuestName(guest.guestName);
+        if (guest.guestPhone) setGuestPhone(guest.guestPhone);
+        setShowSuggestions(false);
+    };
+
     const handleNumericInput = (setter: (value: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
         setter(e.target.value.replace(/\D/g, ''));
+    };
+
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
+
+        if (value.length > 10) {
+            value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        } else if (value.length > 0) {
+            value = value.replace(/^(\d{0,2})/, '($1');
+        }
+
+        setGuestPhone(value);
     };
 
     const copyToClipboard = () => {
@@ -113,7 +158,28 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ form, ui, userPermiss
                     <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
                     <div className="relative group">
                         <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500" size={20} />
-                        <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={() => setGuestName((prev: string) => prev.trim())} className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nome Completo" />
+                        <input
+                            type="text"
+                            value={guestName}
+                            onChange={handleGuestNameChange}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500"
+                            placeholder="Nome Completo"
+                        />
+                        {showSuggestions && filteredGuests.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 overflow-hidden">
+                                {filteredGuests.map((guest, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => selectGuest(guest)}
+                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex justify-between items-center transition-colors"
+                                    >
+                                        <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{guest.guestName}</span>
+                                        {guest.guestPhone && <span className="text-xs text-gray-400">{guest.guestPhone}</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -124,9 +190,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ form, ui, userPermiss
                         <input
                             type="tel"
                             value={guestPhone}
-                            onChange={handleNumericInput(setGuestPhone)}
+                            onChange={handlePhoneChange}
                             className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-green-500"
-                            placeholder="87999998888"
+                            placeholder="(87) 99999-8888"
                         />
                     </div>
                 </div>

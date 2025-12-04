@@ -1,9 +1,13 @@
-import React from 'react';
-import { Search, CalendarDays, History, StickyNote, MessageSquare, Pencil, Trash2, BellRing, LogOut, Check, Link as LinkIcon, Share2, Loader2, ChevronDown, ChevronUp, Building2, KeyRound, ClipboardCheck } from 'lucide-react';
-import { Reservation, PropertyId, UserPermission } from '../../types';
-import { PROPERTIES } from '../../config/properties';
-import InspectionModal from './InspectionModal';
+import React, { useMemo } from 'react';
+import { Reservation, UserPermission, PropertyId } from '../../types';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
+import { PROPERTIES } from '../../config/properties';
+import {
+    CalendarDays, History, KeyRound, StickyNote, MessageSquare, Pencil, Trash2,
+    BellRing, LogOut, ClipboardCheck, Check, Link as LinkIcon, Share2, Search,
+    Building2, ChevronUp, ChevronDown, Loader2
+} from 'lucide-react';
+import InspectionModal from './InspectionModal';
 
 interface ReservationListProps {
     data: {
@@ -39,8 +43,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const [inspectionModalOpen, setInspectionModalOpen] = React.useState(false);
     const [inspectionReservation, setInspectionReservation] = React.useState<Reservation | null>(null);
 
-    // Helper logic for filtering and grouping
-    const getFilteredAndSplitReservations = () => {
+    // Optimized filtering and grouping with useMemo
+    const { leavingToday, staying, upcoming, historyList, tomorrowStr, groupedHistory } = useMemo(() => {
         const allReservations = [...activeReservations, ...historyReservations];
         const uniqueReservations = Array.from(new Map(allReservations.map((item: Reservation) => [item.id, item])).values());
 
@@ -48,7 +52,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         const todayStr = today.toLocaleDateString('en-CA');
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
+        const tomorrowStrVal = tomorrow.toLocaleDateString('en-CA');
 
         const filteredList = uniqueReservations.filter((res: Reservation) => {
             const term = searchTerm.toLowerCase();
@@ -60,52 +64,66 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             return (nameMatch || notesMatch) && propertyMatch;
         });
 
-        const leavingToday: Reservation[] = [];
-        const staying: Reservation[] = [];
-        const upcoming: Reservation[] = [];
-        const historyList: Reservation[] = [];
+        const leavingTodayArr: Reservation[] = [];
+        const stayingArr: Reservation[] = [];
+        const upcomingArr: Reservation[] = [];
+        const historyListArr: Reservation[] = [];
 
         filteredList.forEach((res: Reservation) => {
             if (!res.checkoutDate || !res.checkInDate) return;
 
             if (res.checkoutDate < todayStr) {
-                historyList.push(res);
+                historyListArr.push(res);
             } else if (res.checkoutDate === todayStr) {
-                leavingToday.push(res);
+                leavingTodayArr.push(res);
             } else if (res.checkInDate > todayStr) {
-                upcoming.push(res);
+                upcomingArr.push(res);
             } else {
-                staying.push(res);
+                stayingArr.push(res);
             }
         });
 
-        leavingToday.sort((a: Reservation, b: Reservation) => a.guestName.localeCompare(b.guestName));
-        staying.sort((a: Reservation, b: Reservation) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
-        upcoming.sort((a: Reservation, b: Reservation) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
-        historyList.sort((a: Reservation, b: Reservation) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
+        leavingTodayArr.sort((a: Reservation, b: Reservation) => a.guestName.localeCompare(b.guestName));
+        stayingArr.sort((a: Reservation, b: Reservation) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
+        upcomingArr.sort((a: Reservation, b: Reservation) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
+        historyListArr.sort((a: Reservation, b: Reservation) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
 
-        return { leavingToday, staying, upcoming, historyList, tomorrowStr };
-    };
+        interface HistoryGroup { label: string; items: Reservation[]; }
+        const groupedHistoryArr = historyListArr.reduce((groups: HistoryGroup[], res: Reservation) => {
+            if (!res.checkoutDate) return groups;
+            const [y, m] = res.checkoutDate.split('-');
+            const date = new Date(parseInt(y), parseInt(m) - 1, 1);
+            const labelRaw = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
+            const lastGroup = groups[groups.length - 1];
+            if (lastGroup && lastGroup.label === label) { lastGroup.items.push(res); } else { groups.push({ label, items: [res] }); }
+            return groups;
+        }, []);
 
-    const { leavingToday, staying, upcoming, historyList, tomorrowStr } = getFilteredAndSplitReservations();
-
-    interface HistoryGroup { label: string; items: Reservation[]; }
-    const groupedHistory = historyList.reduce((groups: HistoryGroup[], res: Reservation) => {
-        if (!res.checkoutDate) return groups;
-        const [y, m] = res.checkoutDate.split('-');
-        const date = new Date(parseInt(y), parseInt(m) - 1, 1);
-        const labelRaw = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-        const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
-        const lastGroup = groups[groups.length - 1];
-        if (lastGroup && lastGroup.label === label) { lastGroup.items.push(res); } else { groups.push({ label, items: [res] }); }
-        return groups;
-    }, []);
+        return {
+            leavingToday: leavingTodayArr,
+            staying: stayingArr,
+            upcoming: upcomingArr,
+            historyList: historyListArr,
+            tomorrowStr: tomorrowStrVal,
+            groupedHistory: groupedHistoryArr
+        };
+    }, [activeReservations, historyReservations, searchTerm, propertyFilter]);
 
     const getLinkForReservation = (res: Reservation) => {
         const baseUrl = window.location.origin + '/';
         if (res.shortId) return `${baseUrl}${res.shortId}`;
         if (res.id) return `${baseUrl}?rid=${res.id}`;
         return '';
+    };
+
+    const formatMessage = (template: string, res: Reservation, link: string) => {
+        const firstName = res.guestName.split(' ')[0];
+        const password = res.lockCode || res.safeCode || '----';
+        return template
+            .replace(/{guestName}/g, firstName)
+            .replace(/{link}/g, link)
+            .replace(/{password}/g, password);
     };
 
     const handleCopyListLink = (res: Reservation) => {
@@ -120,8 +138,12 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const handleShareListWhatsApp = (res: Reservation) => {
         if (!res.id) return;
         const link = getLinkForReservation(res);
-        const firstName = res.guestName.split(' ')[0];
-        const message = `Olá, ${firstName}! 👋\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat. 📲\n\nAqui você encontra instruções e um passo a passo (com vídeos 🎥) de como entrar no flat sem dificuldade e ter uma estadia maravilhosa. ✨\n\nAlém disso, em caso de dúvidas, você pode clicar no ícone laranja 🟠 e conversar com uma Inteligência Artificial totalmente personalizada que sabe tudo (ou quase! 🤖) do nosso flat e Petrolina em geral.\n\n👇 Acesse aqui:\n${link}`;
+
+        const defaultTemplate = `Olá, {guestName}! 👋\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat. 📲\n\nAqui você encontra instruções e um passo a passo (com vídeos 🎥) de como entrar no flat sem dificuldade e ter uma estadia maravilhosa. ✨\n\nAlém disso, em caso de dúvidas, você pode clicar no ícone laranja 🟠 e conversar com uma Inteligência Artificial totalmente personalizada que sabe tudo (ou quase! 🤖) do nosso flat e Petrolina em geral.\n\n👇 Acesse aqui:\n{link}`;
+
+        const template = settings.data.messageTemplates?.invite || defaultTemplate;
+        const message = formatMessage(template, res, link);
+
         const phone = res.guestPhone ? res.guestPhone : '';
         const whatsappUrl = phone
             ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
@@ -136,9 +158,13 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         let message = '';
 
         if (type === 'checkin') {
-            message = `Olá, ${res.guestName}! Tudo pronto para sua chegada amanhã? ✈️\n\nJá deixei tudo preparado no seu Guia Digital (Senha da porta, Wi-Fi e Localização).\n\nAcesse aqui: ${link}\n\nQualquer dúvida, estou por aqui!`;
+            const defaultTemplate = `Olá, {guestName}! Tudo pronto para sua chegada amanhã? ✈️\n\nJá deixei tudo preparado no seu Guia Digital (Senha da porta, Wi-Fi e Localização).\n\nAcesse aqui: {link}\n\nQualquer dúvida, estou por aqui!`;
+            const template = settings.data.messageTemplates?.checkin || defaultTemplate;
+            message = formatMessage(template, res, link);
         } else {
-            message = `Oi, ${res.guestName}! Espero que a estadia esteja sendo ótima. 🌵\n\nComo seu check-out é amanhã, deixei as instruções de saída facilitadas aqui no guia: ${link}\n\nBoa viagem de volta!`;
+            const defaultTemplate = `Oi, {guestName}! Espero que a estadia esteja sendo ótima. 🌵\n\nComo seu check-out é amanhã, deixei as instruções de saída facilitadas aqui no guia: {link}\n\nBoa viagem de volta!`;
+            const template = settings.data.messageTemplates?.checkout || defaultTemplate;
+            message = formatMessage(template, res, link);
         }
 
         const whatsappUrl = phone
@@ -335,7 +361,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     <div>
                         <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1 mt-8">Histórico</h3>
                         <div className="space-y-3">
-                            {groupedHistory.map((group: HistoryGroup, index: number) => (
+                            {groupedHistory.map((group: { label: string; items: Reservation[] }, index: number) => (
                                 <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden bg-white dark:bg-gray-800">
                                     <button
                                         onClick={() => toggleHistoryGroup(index)}

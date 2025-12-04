@@ -15,6 +15,7 @@ import SettingsManager from './SettingsManager';
 import AdminNavigation from './AdminNavigation';
 import DashboardHome from './DashboardHome';
 import ConfirmModal from './ConfirmModal';
+import ReservationCalendar from './ReservationCalendar';
 
 interface AdminDashboardProps {
     theme: 'light' | 'dark';
@@ -65,7 +66,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
             <AdminNavigation
                 activeTab={activeTab}
-                setActiveTab={(tab) => setActiveTab(tab as 'home' | 'create' | 'list' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings')}
+                setActiveTab={(tab) => setActiveTab(tab as 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings')}
                 isMobileMenuOpen={isMobileMenuOpen}
                 setIsMobileMenuOpen={setIsMobileMenuOpen}
                 theme={theme}
@@ -117,7 +118,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                         {activeTab === 'home' && (
                             <DashboardHome
                                 reservations={data.activeReservations}
-                                onNavigate={(tab) => setActiveTab(tab as 'home' | 'create' | 'list' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings')}
+                                onNavigate={(tab) => setActiveTab(tab as 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings')}
                                 userPermission={auth.userPermission}
                             />
                         )}
@@ -127,16 +128,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                                 <ReservationForm
                                     form={{
                                         ...form,
-                                        setPaymentMethod: form.setPaymentMethod as (v: string) => void
+                                        setPaymentMethod: form.setPaymentMethod
                                     }}
                                     ui={ui}
                                     userPermission={auth.userPermission}
+                                    previousGuests={[...data.activeReservations, ...data.historyReservations]}
                                 />
                             </div>
                         )}
 
                         {activeTab === 'list' && (
                             <ReservationList data={data} ui={ui} form={form} userPermission={auth.userPermission} />
+                        )}
+
+                        {activeTab === 'calendar' && (
+                            <ReservationCalendar
+                                reservations={[...data.activeReservations, ...data.historyReservations]}
+                                onEditReservation={(res) => {
+                                    form.handleStartEdit(res);
+                                    setActiveTab('create');
+                                }}
+                            />
                         )}
 
                         {activeTab === 'blocks' && (

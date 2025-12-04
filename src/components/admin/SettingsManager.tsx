@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { AppConfig, CityCuriosity } from '../../types';
+import { AppConfig } from '../../types';
 import OptimizedImage from '../OptimizedImage';
 import ImageUpload from './ImageUpload';
-import { ImageIcon, Trash2, Settings, Wifi, Box, Lock, Megaphone, Sparkles, Lightbulb, Save, Check, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import { ImageIcon, Trash2, Settings, Wifi, Box, Lock, Megaphone, Sparkles, Save, Check, Loader2, ChevronDown, ChevronRight, Eye, EyeOff, MessageSquare } from 'lucide-react';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../../constants';
 
 interface SettingsManagerProps {
@@ -18,8 +18,8 @@ interface SettingsManagerProps {
 
 const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings }) => {
     const [localSettings, setLocalSettings] = useState<AppConfig>(settings.data);
-    const [curiosityForm, setCuriosityForm] = useState({ text: '', image: '' });
     const [isSaving, setIsSaving] = useState(false);
+    const [showSafeCode, setShowSafeCode] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [checklistForm, setChecklistForm] = useState('');
     const [checklistCategory, setChecklistCategory] = useState('');
@@ -58,30 +58,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         }
     };
 
-    const handleAddCuriosity = () => {
-        if (!curiosityForm.text.trim()) return;
-        const currentList = localSettings.cityCuriosities || [];
 
-        const newItem: CityCuriosity = {
-            text: curiosityForm.text.trim(),
-            image: curiosityForm.image.trim() || undefined,
-            visible: true
-        };
-
-        setLocalSettings({
-            ...localSettings,
-            cityCuriosities: [...currentList, newItem]
-        });
-        setCuriosityForm({ text: '', image: '' });
-    };
-
-    const handleRemoveCuriosity = (index: number) => {
-        const currentList = localSettings.cityCuriosities || [];
-        setLocalSettings({
-            ...localSettings,
-            cityCuriosities: currentList.filter((_, i) => i !== index)
-        });
-    };
 
     const handleAddChecklistItem = () => {
         if (!checklistForm.trim()) return;
@@ -203,7 +180,18 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Senha Atual</label>
                             <div className="relative">
                                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input value={localSettings.safeCode} onChange={(e) => setLocalSettings({ ...localSettings, safeCode: e.target.value.replace(/\D/g, '') })} className="w-full p-2 pl-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-mono tracking-widest" />
+                                <input
+                                    type={showSafeCode ? "text" : "password"}
+                                    value={localSettings.safeCode}
+                                    onChange={(e) => setLocalSettings({ ...localSettings, safeCode: e.target.value.replace(/\D/g, '') })}
+                                    className="w-full p-2 pl-10 pr-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-mono tracking-widest"
+                                />
+                                <button
+                                    onClick={() => setShowSafeCode(!showSafeCode)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                >
+                                    {showSafeCode ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
                             </div>
                             <p className="text-[10px] text-gray-400 mt-1">Visível para todos os hóspedes ativos.</p>
                         </div>
@@ -350,6 +338,50 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                     </div>
                 </div>
 
+                {/* MESSAGE TEMPLATES */}
+                <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                    <h3 className="text-sm font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2 mb-3"><MessageSquare size={16} /> Templates de Mensagem (WhatsApp)</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Convite (Boas-vindas)</label>
+                            <textarea
+                                value={localSettings.messageTemplates?.invite || ''}
+                                onChange={(e) => setLocalSettings({
+                                    ...localSettings,
+                                    messageTemplates: { ...localSettings.messageTemplates || { checkin: '', checkout: '', invite: '' }, invite: e.target.value }
+                                })}
+                                placeholder="Mensagem de convite..."
+                                className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Lembrete de Check-in (Véspera)</label>
+                            <textarea
+                                value={localSettings.messageTemplates?.checkin || ''}
+                                onChange={(e) => setLocalSettings({
+                                    ...localSettings,
+                                    messageTemplates: { ...localSettings.messageTemplates || { checkin: '', checkout: '', invite: '' }, checkin: e.target.value }
+                                })}
+                                placeholder="Mensagem de check-in..."
+                                className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Lembrete de Checkout (Véspera)</label>
+                            <textarea
+                                value={localSettings.messageTemplates?.checkout || ''}
+                                onChange={(e) => setLocalSettings({
+                                    ...localSettings,
+                                    messageTemplates: { ...localSettings.messageTemplates || { checkin: '', checkout: '', invite: '' }, checkout: e.target.value }
+                                })}
+                                placeholder="Mensagem de checkout..."
+                                className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                            />
+                        </div>
+                        <p className="text-[10px] text-gray-400">Variáveis disponíveis: {'{guestName}'}, {'{link}'}, {'{password}'}</p>
+                    </div>
+                </div>
+
                 {/* AI BRAIN */}
                 <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
                     <h3 className="text-sm font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2 mb-3"><Sparkles size={16} /> Cérebro da IA (Mandacaru)</h3>
@@ -357,42 +389,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                 </div>
 
                 {/* CITY CURIOSITIES */}
-                <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                    <h3 className="text-sm font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2 mb-3"><Lightbulb size={16} /> Curiosidades da Cidade</h3>
-                    <div className="space-y-2 mb-4">
-                        {localSettings.cityCuriosities?.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-300">
-                                <div className="flex items-center gap-2">
-                                    {item.image && (
-                                        <img src={item.image} alt="" className="w-8 h-8 rounded object-cover bg-gray-200" />
-                                    )}
-                                    <span>{item.text}</span>
-                                </div>
-                                <button onClick={() => handleRemoveCuriosity(idx)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 size={14} /></button>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <input
-                            value={curiosityForm.text}
-                            onChange={(e) => setCuriosityForm({ ...curiosityForm, text: e.target.value })}
-                            placeholder="Nova curiosidade..."
-                            className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-xs outline-none focus:ring-1 focus:ring-blue-500"
-                        />
-                        <div className="mt-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Imagem (Opcional)</label>
-                            <ImageUpload
-                                onUpload={(url) => setCuriosityForm({ ...curiosityForm, image: url })}
-                                initialUrl={curiosityForm.image}
-                                folder="curiosities"
-                                placeholder="Imagem da Curiosidade"
-                            />
-                        </div>
-                        <div className="flex justify-end mt-2">
-                            <button onClick={handleAddCuriosity} disabled={!curiosityForm.text.trim()} className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-blue-600 disabled:opacity-50 transition-colors">Adicionar Curiosidade</button>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* SAVE BUTTON */}
                 <button onClick={handleSaveSettings} disabled={isSaving} className={`w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all shadow-lg ${saveSuccess ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600'}`}>

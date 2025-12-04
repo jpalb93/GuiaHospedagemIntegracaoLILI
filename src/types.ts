@@ -60,6 +60,8 @@ export interface PlaceRecommendation {
   eventEndTime?: string; // Hora de fim (HH:MM) - Opcional
 }
 
+export type PaymentMethod = 'pix' | 'money' | 'card';
+
 export interface GuestConfig {
   guestName: string;
   email?: string; // NOVO: Email do hóspede
@@ -73,7 +75,7 @@ export interface GuestConfig {
   wifiSSID?: string; // Novo
   wifiPass?: string; // Novo
   guestCount?: number; // Novo: Quantidade de hóspedes
-  paymentMethod?: 'pix' | 'money' | 'card'; // Novo: Forma de pagamento
+  paymentMethod?: PaymentMethod; // Novo: Forma de pagamento
   // NOVOS CAMPOS DE ALERTA ESPECÍFICO
   guestAlertActive?: boolean;
   guestAlertText?: string;
@@ -110,6 +112,12 @@ export interface BlockedDateRange {
   reason?: string;   // Motivo (ex: Manutenção, Férias)
 }
 
+export interface MessageTemplates {
+  checkin: string;
+  checkout: string;
+  invite: string;
+}
+
 // NOVA INTERFACE: Configurações Globais do App (Wi-Fi, Avisos e COFRE)
 export interface AppConfig {
   wifiSSID: string;
@@ -122,6 +130,7 @@ export interface AppConfig {
   aiSystemPrompt?: string; // O Cérebro da IA (Dinâmico)
   cityCuriosities?: CityCuriosity[]; // Curiosidades da Cidade (Dinâmico)
   checklist?: ChecklistItem[]; // Novo: Itens de Vistoria
+  messageTemplates?: MessageTemplates; // Novo: Templates de mensagem
 }
 
 // NOVA INTERFACE: Sugestões Inteligentes Dinâmicas (AGORA SÃO LISTAS)
