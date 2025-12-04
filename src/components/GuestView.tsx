@@ -52,6 +52,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
     mergePlaces,
     hasContent,
     smartSuggestions,
+    heroImages,
     tips,
     curiosities
   } = useGuestData(config);
@@ -252,7 +253,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>
         <HeroSection
           config={config}
-          heroSlides={property.assets.heroSlides}
+          heroSlides={heroImages.length > 0 ? heroImages : property.assets.heroSlides}
           theme={theme}
           toggleTheme={toggleTheme}
           currentLang={currentLang}
@@ -350,6 +351,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
             activeEvents={activeEvents}
             openEmergency={openEmergency}
             emergencyRef={emergencyRef}
+            propertyId={config.propertyId || 'lili'}
           />
         </div>
 
@@ -366,7 +368,8 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       </div>
 
       <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
-        <ChatWidget guestName={config.guestName} systemInstruction={appSettings?.aiSystemPrompt || property.ai.systemPrompt} />
+        <ChatWidget guestName={config.guestName} systemInstruction={appSettings?.aiSystemPrompts?.[config.propertyId || 'lili'] || appSettings?.aiSystemPrompt || property.ai.systemPrompt} />
+
       </div>
 
       <SupportModal

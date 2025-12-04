@@ -3,7 +3,7 @@ import { logger } from '../utils/logger';
 import { PlaceRecommendation, Tip, CityCuriosity } from '../types';
 import {
     getDynamicPlaces, addDynamicPlace, updateDynamicPlace, deleteDynamicPlace,
-    getTips, addTip, updateTip, deleteTip,
+    getTips, addTip, updateTip, deleteTip, saveTipsOrder,
     getCuriosities, saveCuriosities
 } from '../services/firebase';
 
@@ -170,6 +170,21 @@ export const useAdminContent = () => {
         }
     };
 
+    const handleReorderTips = async (newTips: Tip[]) => {
+        // Optimistic Update
+        setTips(newTips);
+
+        try {
+            await saveTipsOrder(newTips);
+            return true;
+        } catch (error) {
+            logger.error("Error reordering tips:", error);
+            // Revert on error (optional, but good practice would be to reload)
+            await loadTips();
+            return false;
+        }
+    };
+
     // --- CURIOSITIES ---
     const loadCuriosities = async () => {
         setLoadingCuriosities(true);
@@ -219,6 +234,7 @@ export const useAdminContent = () => {
             add: handleAddTip,
             update: handleUpdateTip,
             delete: handleDeleteTip,
+            reorder: handleReorderTips,
             refresh: loadTips
         },
         curiosities: {

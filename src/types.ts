@@ -127,7 +127,8 @@ export interface AppConfig {
   noticeText: string;
   globalNotices?: Record<string, { active: boolean, text: string }>; // Novo: Avisos por propriedade
   hostPhones?: Record<string, string>; // Novo: Telefones por propriedade
-  aiSystemPrompt?: string; // O Cérebro da IA (Dinâmico)
+  aiSystemPrompt?: string; // O Cérebro da IA (Dinâmico - Default/Lili)
+  aiSystemPrompts?: Record<string, string>; // Novo: Prompts por propriedade (ex: { integracao: "..." })
   cityCuriosities?: CityCuriosity[]; // Curiosidades da Cidade (Dinâmico)
   checklist?: ChecklistItem[]; // Novo: Itens de Vistoria
   messageTemplates?: MessageTemplates; // Novo: Templates de mensagem

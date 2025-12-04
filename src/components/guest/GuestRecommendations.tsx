@@ -18,6 +18,7 @@ interface GuestRecommendationsProps {
     activeEvents: PlaceRecommendation[];
     openEmergency?: boolean;
     emergencyRef?: React.RefObject<HTMLDivElement>;
+    propertyId?: string;
 }
 
 const ExpandablePlaceList: React.FC<{ places: PlaceRecommendation[] }> = ({ places }) => {
@@ -68,7 +69,8 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     hasContent,
     activeEvents,
     openEmergency,
-    emergencyRef
+    emergencyRef,
+    propertyId = 'lili'
 }) => {
     const [activeSheet, setActiveSheet] = useState<string | null>(null);
 
@@ -188,7 +190,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                         </p>
                     </div>
 
-                    {/* SOBRE A LOCALIZAÇÃO */}
+                    {/* SOBRE A LOCALIZAÇÃO (Comum a ambos) */}
                     <div>
                         <div className="flex items-center gap-2 mb-3">
                             <div className="bg-orange-100 dark:bg-orange-900/30 p-1.5 rounded-lg text-orange-600 dark:text-orange-400">
@@ -223,121 +225,181 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                         </div>
                     </div>
 
-                    {/* SALA DE ESTAR */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600 dark:text-blue-400">
-                                <Tv size={16} />
-                            </div>
-                            <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Sala de Estar</h4>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">TV de 50"</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Cafeteira</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Jogos de Tabuleiro</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Livros</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* COZINHA COMPLETA */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="bg-green-100 dark:bg-green-900/30 p-1.5 rounded-lg text-green-600 dark:text-green-400">
-                                <Utensils size={16} />
-                            </div>
-                            <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Cozinha Completa</h4>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Geladeira Inverter</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Microondas</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Air Fryer</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Liquidificador</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Sanduicheira</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Mini Processador</span>
-                            </div>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-1">+ Panelas, louça e talheres.</p>
-                    </div>
-
-                    {/* QUARTO ACOLHEDOR */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg text-purple-600 dark:text-purple-400">
-                                <Wind size={16} />
-                            </div>
-                            <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Quarto Acolhedor</h4>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Ar-condicionado</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Ventilador</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Roupas de Cama</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">TV</span>
-                            </div>
-                            <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm col-span-1">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Escrivaninha</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* BANHEIRO & HOME OFFICE */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <div className="bg-cyan-100 dark:bg-cyan-900/30 p-1.5 rounded-lg text-cyan-600 dark:text-cyan-400">
-                                    <ShowerHead size={16} />
+                    {propertyId === 'integracao' ? (
+                        /* CONTEÚDO ESPECÍFICO FLATS INTEGRAÇÃO */
+                        <>
+                            {/* COZINHA PRIVATIVA */}
+                            <div>
+                                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">Na sua cozinha privativa:</h4>
+                                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                                    {['Produtos de limpeza', 'Micro-ondas', 'Utensílios de cozinha', 'Fogão', 'Mesa de jantar'].map((item, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                            <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                                            <span>{item}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Banheiro</h4>
                             </div>
-                            <ul className="space-y-1.5">
-                                <li className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                    <span className="w-1 h-1 rounded-full bg-cyan-500"></span> Chuveiro Elétrico
-                                </li>
-                                <li className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                    <span className="w-1 h-1 rounded-full bg-cyan-500"></span> Secador de Cabelo
-                                </li>
-                                <li className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                    <span className="w-1 h-1 rounded-full bg-cyan-500"></span> Toalhas e Sabonete
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-lg text-indigo-600 dark:text-indigo-400">
-                                    <Briefcase size={16} />
+
+                            {/* BANHEIRO PRIVATIVO */}
+                            <div>
+                                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">No seu banheiro privativo:</h4>
+                                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                                    {['Vaso sanitário', 'Banheira ou chuveiro', 'Toalhas', 'Papel higiênico'].map((item, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                            <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                                            <span>{item}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Home Office</h4>
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Espaço com iluminação confortável e conexão rápida. Ideal para reuniões e estudos.
-                            </p>
-                        </div>
-                    </div>
+
+                            {/* COMODIDADES DO APARTAMENTO */}
+                            <div>
+                                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">Comodidades do apartamento:</h4>
+                                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                                    {[
+                                        'Ar-condicionado', 'Cozinha', 'Sofá', 'Roupa de cama', 'Tomada perto da cama',
+                                        'Produtos de limpeza', 'Mesa de trabalho', 'Área de estar', 'TV', 'Chaleira/cafeteira',
+                                        'Ferro de passar roupa', 'Micro-ondas', 'TV de tela plana', 'Utensílios de cozinha',
+                                        'Cozinha compacta', 'Ventilador', 'Frigobar', 'Guarda-roupa ou armário', 'Fogão',
+                                        'Área para refeições', 'Mesa de jantar', 'Andares superiores acessíveis somente por escada',
+                                        'Independente', 'Flat particular em prédio', 'Arara para roupas', 'Varal para secar roupas'
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                            <CheckCircle2 size={12} className="text-green-500 shrink-0 mt-0.5" />
+                                            <span>{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* FUMANTES */}
+                            <div className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-gray-200 mt-2">
+                                <span>Fumantes:</span>
+                                <span className="font-normal text-gray-600 dark:text-gray-400">Não é permitido fumar</span>
+                            </div>
+                        </>
+                    ) : (
+                        /* CONTEÚDO ORIGINAL (FLAT DA LILI) */
+                        <>
+                            {/* SALA DE ESTAR */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600 dark:text-blue-400">
+                                        <Tv size={16} />
+                                    </div>
+                                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Sala de Estar</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">TV de 50"</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Cafeteira</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Jogos de Tabuleiro</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Livros</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* COZINHA COMPLETA */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="bg-green-100 dark:bg-green-900/30 p-1.5 rounded-lg text-green-600 dark:text-green-400">
+                                        <Utensils size={16} />
+                                    </div>
+                                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Cozinha Completa</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Geladeira Inverter</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Microondas</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Air Fryer</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Liquidificador</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Sanduicheira</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Mini Processador</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-1">+ Panelas, louça e talheres.</p>
+                            </div>
+
+                            {/* QUARTO ACOLHEDOR */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg text-purple-600 dark:text-purple-400">
+                                        <Wind size={16} />
+                                    </div>
+                                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Quarto Acolhedor</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Ar-condicionado</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Ventilador</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Roupas de Cama</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">TV</span>
+                                    </div>
+                                    <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm col-span-1">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Escrivaninha</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* BANHEIRO & HOME OFFICE */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="bg-cyan-100 dark:bg-cyan-900/30 p-1.5 rounded-lg text-cyan-600 dark:text-cyan-400">
+                                            <ShowerHead size={16} />
+                                        </div>
+                                        <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Banheiro</h4>
+                                    </div>
+                                    <ul className="space-y-1.5">
+                                        <li className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-cyan-500"></span> Chuveiro Elétrico
+                                        </li>
+                                        <li className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-cyan-500"></span> Secador de Cabelo
+                                        </li>
+                                        <li className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-cyan-500"></span> Toalhas e Sabonete
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-lg text-indigo-600 dark:text-indigo-400">
+                                            <Briefcase size={16} />
+                                        </div>
+                                        <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">Home Office</h4>
+                                    </div>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        Espaço com iluminação confortável e conexão rápida. Ideal para reuniões e estudos.
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </BottomSheet>
 

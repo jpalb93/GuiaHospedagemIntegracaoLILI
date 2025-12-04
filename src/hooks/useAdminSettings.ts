@@ -11,11 +11,11 @@ import {
 export const useAdminSettings = () => {
     // --- STATE ---
     const [loading, setLoading] = useState(false);
-    const [heroImages, setHeroImages] = useState<string[]>([]);
+    const [heroImages, setHeroImages] = useState<Record<string, string[]>>({ lili: [], integracao: [] });
     const [appSettings, setAppSettings] = useState<AppConfig>({
         wifiSSID: '', wifiPass: '', safeCode: '',
         noticeActive: false, noticeText: '',
-        aiSystemPrompt: '', cityCuriosities: [],
+        aiSystemPrompt: '', aiSystemPrompts: {}, cityCuriosities: [],
         checklist: []
     });
     const [suggestions, setSuggestions] = useState<SmartSuggestionsConfig>({
@@ -27,14 +27,15 @@ export const useAdminSettings = () => {
     const loadAllSettings = async () => {
         setLoading(true);
         try {
-            const [imgs, settings, suggs, revs] = await Promise.all([
-                getHeroImages(true),
+            const [liliImgs, integracaoImgs, settings, suggs, revs] = await Promise.all([
+                getHeroImages(true, 'lili'),
+                getHeroImages(true, 'integracao'),
                 getAppSettings(),
                 getSmartSuggestions(),
                 getGuestReviews(50)
             ]);
 
-            setHeroImages(imgs);
+            setHeroImages({ lili: liliImgs, integracao: integracaoImgs });
             if (settings) {
                 setAppSettings({
                     wifiSSID: settings.wifiSSID || '',
@@ -43,6 +44,7 @@ export const useAdminSettings = () => {
                     noticeActive: settings.noticeActive || false,
                     noticeText: settings.noticeText || '',
                     aiSystemPrompt: settings.aiSystemPrompt || '',
+                    aiSystemPrompts: settings.aiSystemPrompts || {},
                     cityCuriosities: settings.cityCuriosities || [],
                     checklist: settings.checklist || [],
                     globalNotices: settings.globalNotices || {},
@@ -70,9 +72,9 @@ export const useAdminSettings = () => {
     }, []);
 
     // --- ACTIONS: HERO IMAGES ---
-    const updateImages = async (newImages: string[]) => {
-        setHeroImages(newImages);
-        await updateHeroImages(newImages);
+    const updateImages = async (newImages: string[], propertyId: 'lili' | 'integracao' = 'lili') => {
+        setHeroImages(prev => ({ ...prev, [propertyId]: newImages }));
+        await updateHeroImages(newImages, propertyId);
     };
 
     // --- ACTIONS: APP SETTINGS ---

@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { AppConfig } from '../../types';
 import OptimizedImage from '../OptimizedImage';
 import ImageUpload from './ImageUpload';
-import { ImageIcon, Trash2, Settings, Wifi, Box, Lock, Megaphone, Sparkles, Save, Check, Loader2, ChevronDown, ChevronRight, Eye, EyeOff, MessageSquare } from 'lucide-react';
+import { ImageIcon, Trash2, Settings, Wifi, Box, Lock, Megaphone, Sparkles, Save, Check, Loader2, ChevronDown, ChevronRight, Eye, EyeOff, MessageSquare, Building, Home } from 'lucide-react';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../../constants';
 
 interface SettingsManagerProps {
     heroImages: {
-        data: string[];
-        update: (images: string[]) => Promise<void>;
+        data: Record<string, string[]>;
+        update: (images: string[], propertyId: 'lili' | 'integracao') => Promise<void>;
     };
     settings: {
         data: AppConfig;
@@ -24,6 +24,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
     const [checklistForm, setChecklistForm] = useState('');
     const [checklistCategory, setChecklistCategory] = useState('');
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+    const [activeProperty, setActiveProperty] = useState<'lili' | 'integracao'>('lili');
 
     const toggleCategory = (category: string) => {
         setExpandedCategories(prev =>
@@ -34,12 +35,12 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
     };
 
     // --- HERO IMAGES ---
-
+    const currentHeroImages = heroImages.data[activeProperty] || [];
 
     const handleRemoveHeroImage = async (index: number) => {
         if (confirm("Remover esta imagem?")) {
-            const updatedList = heroImages.data.filter((_, i) => i !== index);
-            await heroImages.update(updatedList);
+            const updatedList = currentHeroImages.filter((_, i) => i !== index);
+            await heroImages.update(updatedList, activeProperty);
         }
     };
 
@@ -58,8 +59,6 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         }
     };
 
-
-
     const handleAddChecklistItem = () => {
         if (!checklistForm.trim()) return;
         const currentList = localSettings.checklist || [];
@@ -74,7 +73,6 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
             checklist: [...currentList, newItem]
         });
         setChecklistForm('');
-        // Mantém a categoria para facilitar adição em massa
     };
 
     const handleRemoveChecklistItem = (id: string) => {
@@ -113,17 +111,55 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         });
     };
 
+    // Helper for AI Prompt
+    const getAiPrompt = () => {
+        if (activeProperty === 'lili') {
+            return localSettings.aiSystemPrompt || '';
+        }
+        return localSettings.aiSystemPrompts?.[activeProperty] || '';
+    };
+
+    const setAiPrompt = (val: string) => {
+        if (activeProperty === 'lili') {
+            setLocalSettings({ ...localSettings, aiSystemPrompt: val });
+        } else {
+            setLocalSettings({
+                ...localSettings,
+                aiSystemPrompts: {
+                    ...localSettings.aiSystemPrompts,
+                    [activeProperty]: val
+                }
+            });
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
+
+            {/* PROPERTY SELECTOR */}
+            <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                <button
+                    onClick={() => setActiveProperty('lili')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeProperty === 'lili' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                >
+                    <Home size={16} /> Flat da Lili
+                </button>
+                <button
+                    onClick={() => setActiveProperty('integracao')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeProperty === 'integracao' ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                >
+                    <Building size={16} /> Flats Integração
+                </button>
+            </div>
 
             {/* HERO IMAGES */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-bold font-heading mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
-                    <ImageIcon size={20} className="text-orange-500" />
-                    Imagens do Carrossel (Hero)
+                    <ImageIcon size={20} className={activeProperty === 'lili' ? "text-orange-500" : "text-blue-500"} />
+                    Imagens do Carrossel ({activeProperty === 'lili' ? 'Flat da Lili' : 'Flats Integração'})
                 </h2>
                 <div className="space-y-4 mb-6">
-                    {heroImages.data.map((url, idx) => (
+                    {currentHeroImages.map((url, idx) => (
                         <div key={idx} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
                             <div className="w-16 h-10 rounded-lg bg-gray-200 overflow-hidden shrink-0">
                                 <OptimizedImage src={url} className="w-full h-full object-cover" alt="Capa" />
@@ -134,17 +170,20 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                             <button onClick={() => handleRemoveHeroImage(idx)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                         </div>
                     ))}
+                    {currentHeroImages.length === 0 && (
+                        <p className="text-sm text-gray-400 italic text-center py-4">Nenhuma imagem definida. Usando padrão do sistema.</p>
+                    )}
                 </div>
                 <div className="mt-4">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Adicionar Nova Imagem de Capa</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Adicionar Nova Imagem</label>
                     <ImageUpload
                         onUpload={async (url) => {
                             if (url) {
-                                const updatedList = [...heroImages.data, url];
-                                await heroImages.update(updatedList);
+                                const updatedList = [...currentHeroImages, url];
+                                await heroImages.update(updatedList, activeProperty);
                             }
                         }}
-                        folder="hero"
+                        folder={`hero_${activeProperty}`}
                         placeholder="Nova Imagem de Capa (1920x1080)"
                         maxDimension={1920}
                         quality={0.9}
@@ -152,10 +191,26 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                 </div>
             </div>
 
+            {/* AI BRAIN */}
+            <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                <h3 className="text-sm font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2 mb-3">
+                    <Sparkles size={16} /> Cérebro da IA ({activeProperty === 'lili' ? 'Mandacaru' : 'Concierge Integração'})
+                </h3>
+                <textarea
+                    value={getAiPrompt()}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder={DEFAULT_SYSTEM_INSTRUCTION}
+                    className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-purple-500 min-h-[150px] font-mono leading-relaxed"
+                />
+                <p className="text-[10px] text-gray-400 mt-2">
+                    Este prompt define a personalidade e o conhecimento da IA para <strong>{activeProperty === 'lili' ? 'o Flat da Lili' : 'os Flats Integração'}</strong>.
+                </p>
+            </div>
+
             {/* GENERAL SETTINGS */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
                 <h2 className="text-lg font-bold font-heading mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
-                    <Settings size={20} className="text-orange-500" />
+                    <Settings size={20} className="text-gray-500" />
                     Geral, Acesso & Avisos
                 </h2>
 
@@ -381,15 +436,6 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                         <p className="text-[10px] text-gray-400">Variáveis disponíveis: {'{guestName}'}, {'{link}'}, {'{password}'}</p>
                     </div>
                 </div>
-
-                {/* AI BRAIN */}
-                <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
-                    <h3 className="text-sm font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2 mb-3"><Sparkles size={16} /> Cérebro da IA (Mandacaru)</h3>
-                    <textarea value={localSettings.aiSystemPrompt || ''} onChange={(e) => setLocalSettings({ ...localSettings, aiSystemPrompt: e.target.value })} placeholder={DEFAULT_SYSTEM_INSTRUCTION} className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-purple-500 min-h-[150px] font-mono leading-relaxed" />
-                </div>
-
-                {/* CITY CURIOSITIES */}
-
 
                 {/* SAVE BUTTON */}
                 <button onClick={handleSaveSettings} disabled={isSaving} className={`w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all shadow-lg ${saveSuccess ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600'}`}>

@@ -83,6 +83,7 @@ Se não souber, peça para falar com a Lili (Anfitriã).
         name: 'Flats Integração',
         address: "R. São José, 475 - Centro, Petrolina - PE, 56302-270",
         hostPhone: "5587988342138", // Placeholder
+        googleReviewLink: "https://www.google.com/travel/search?q=flats%20integra%C3%A7%C3%A3o&g2lb=4965990%2C72317059%2C72414906%2C72471280%2C72485658%2C72560029%2C72573224%2C72647020%2C72686036%2C72803964%2C72880339%2C72882230%2C72958624%2C73059275%2C73064764%2C73107089%2C73157411%2C73192290%2C73198317%2C73201205&hl=pt-BR&gl=br&cs=1&ssta=1&ts=CAEaRgooEiYyJDB4NzczNzE0MDJlNzFlOWM3OjB4YzA5NTM0M2FmNzJmNzA3MBIaEhQKBwjpDxAMGAUSBwjpDxAMGAYYATICEAA&qs=CAEyFENnc0k4T0M5dWEtSHpjckFBUkFCOAJCCQlwcC_3OjSVwEIJCXBwL_c6NJXA&ap=ugEHcmV2aWV3cw&ictx=111&ved=0CAAQ5JsGahcKEwig666d76ORAxUAAAAAHQAAAAAQBA",
         theme: {
             primaryColor: 'blue',
             secondaryColor: 'gray',
@@ -91,7 +92,7 @@ Se não souber, peça para falar com a Lili (Anfitriã).
             hasDigitalLock: false, // Chave na portaria
             hasSafe: true,
             hasTipsStories: false, // Não mostra dicas do flat por enquanto
-            hasReviews: false,
+            hasReviews: true,
             hasReception: true,    // Tem portaria
             hasBlockedDates: false,
         },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tip, CityCuriosity } from '../../types';
-import { Plus, Edit, Trash2, Save, X, Loader2, Sparkles, Image as ImageIcon, Link } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Loader2, Sparkles, Image as ImageIcon, Link, GripVertical } from 'lucide-react';
 import ImageUpload from './ImageUpload';
 import { iconMap, getIcon, iconTranslations } from '../../utils/iconMap';
 import ConfirmModal from './ConfirmModal';
@@ -13,6 +13,7 @@ interface TipsManagerProps {
         add: (tip: Tip) => Promise<boolean>;
         update: (id: string, tip: Partial<Tip>) => Promise<boolean>;
         delete: (id: string) => Promise<boolean>;
+        reorder: (tips: Tip[]) => Promise<boolean>;
         refresh: () => void;
     };
     curiosities: {
@@ -209,11 +210,60 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 {tips.loading ? (
                     <div className="flex justify-center py-12"><Loader2 className="animate-spin text-yellow-500" size={32} /></div>
                 ) : (
-                    <div className="space-y-4">
-                        {visibleTips.map((tip) => {
+                    <div
+                        className="space-y-4"
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            const SCROLL_THRESHOLD = 150;
+                            const SCROLL_SPEED = 20;
+
+                            if (e.clientY < SCROLL_THRESHOLD) {
+                                window.scrollBy(0, -SCROLL_SPEED);
+                            } else if (e.clientY > window.innerHeight - SCROLL_THRESHOLD) {
+                                window.scrollBy(0, SCROLL_SPEED);
+                            }
+                        }}
+                    >
+                        {visibleTips.map((tip, index) => {
                             const Icon = getIcon(tip.iconName);
                             return (
-                                <div key={tip.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex gap-4 group hover:border-yellow-200 dark:hover:border-yellow-900/50 transition-colors">
+                                <div
+                                    key={tip.id}
+                                    draggable
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData('text/plain', index.toString());
+                                        e.dataTransfer.effectAllowed = 'move';
+                                        // Add a ghost class or style if needed
+                                        (e.target as HTMLElement).style.opacity = '0.5';
+                                    }}
+                                    onDragEnd={(e) => {
+                                        (e.target as HTMLElement).style.opacity = '1';
+                                    }}
+                                    onDragOver={(e) => {
+                                        e.preventDefault(); // Necessary to allow dropping
+                                        e.dataTransfer.dropEffect = 'move';
+                                    }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        const draggedIndexStr = e.dataTransfer.getData('text/plain');
+                                        const draggedIndex = parseInt(draggedIndexStr, 10);
+                                        const targetIndex = index;
+
+                                        if (draggedIndex !== targetIndex) {
+                                            const newTips = [...sortedTips];
+                                            const [removed] = newTips.splice(draggedIndex, 1);
+                                            newTips.splice(targetIndex, 0, removed);
+
+                                            // Update order property for all items
+                                            const reorderedTips = newTips.map((t, i) => ({ ...t, order: i }));
+                                            tips.reorder(reorderedTips);
+                                        }
+                                    }}
+                                    className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex gap-4 group hover:border-yellow-200 dark:hover:border-yellow-900/50 transition-all cursor-move active:cursor-grabbing"
+                                >
+                                    <div className="flex items-center justify-center text-gray-300 cursor-grab active:cursor-grabbing">
+                                        <GripVertical size={20} />
+                                    </div>
                                     <div className="w-12 h-12 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-yellow-600 dark:text-yellow-400 flex-shrink-0">
                                         <Icon size={24} />
                                     </div>

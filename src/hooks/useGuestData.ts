@@ -32,7 +32,7 @@ export const useGuestData = (config: GuestConfig) => {
         // 1. Carrega dados estáticos (que mudam pouco)
         const loadStaticData = async () => {
             try {
-                const images = await getHeroImages();
+                const images = await getHeroImages(false, config.propertyId || 'lili');
                 if (images && images.length > 0) {
                     setHeroSlides(images);
                 }

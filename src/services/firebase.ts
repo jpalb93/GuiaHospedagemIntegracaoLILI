@@ -169,9 +169,10 @@ export const cleanupExpiredEvents = async () => {
 // 2. SERVIÇOS DE CONFIGURAÇÃO (IMAGENS DE CAPA)
 // ============================================================================
 
-export const getHeroImages = async (forceRefresh = false): Promise<string[]> => {
+export const getHeroImages = async (forceRefresh = false, propertyId: 'lili' | 'integracao' = 'lili'): Promise<string[]> => {
+  const cacheKey = `cached_hero_images_${propertyId}`;
   if (!forceRefresh && !import.meta.env.DEV) {
-    const cachedData = getFromCache<string[]>('cached_hero_images');
+    const cachedData = getFromCache<string[]>(cacheKey);
     if (cachedData) return cachedData;
   }
 
@@ -179,17 +180,19 @@ export const getHeroImages = async (forceRefresh = false): Promise<string[]> => 
     const docSnap = await getDoc(doc(db, 'app_config', 'hero_images'));
     let data: string[] = [];
     if (docSnap.exists()) {
-      data = docSnap.data()?.urls || [];
+      const field = propertyId === 'integracao' ? 'integracao_urls' : 'urls';
+      data = docSnap.data()?.[field] || [];
     }
-    saveToCache('cached_hero_images', data);
+    saveToCache(cacheKey, data);
     return data;
   } catch (_error) {
     return [];
   }
 };
 
-export const updateHeroImages = async (urls: string[]) => {
-  await setDoc(doc(db, 'app_config', 'hero_images'), { urls });
+export const updateHeroImages = async (urls: string[], propertyId: 'lili' | 'integracao' = 'lili') => {
+  const field = propertyId === 'integracao' ? 'integracao_urls' : 'urls';
+  await setDoc(doc(db, 'app_config', 'hero_images'), { [field]: urls }, { merge: true });
 };
 
 // ============================================================================
@@ -578,6 +581,17 @@ export const deleteTip = async (id: string) => {
 export const updateTip = async (id: string, tip: Partial<Tip>) => {
   const { id: _discard, ...dataToUpdate } = tip as Record<string, unknown>;
   await updateDoc(doc(db, 'tips', id), cleanData(dataToUpdate));
+};
+
+export const saveTipsOrder = async (tips: Tip[]) => {
+  const batch = writeBatch(db);
+  tips.forEach((tip) => {
+    if (tip.id) {
+      const ref = doc(db, 'tips', tip.id);
+      batch.update(ref, { order: tip.order });
+    }
+  });
+  await batch.commit();
 };
 
 // --- CURIOSIDADES (CURIOSITIES) ---
