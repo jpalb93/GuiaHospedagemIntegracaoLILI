@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { PlaceRecommendation, Tip, CityCuriosity } from '../types';
 import {
@@ -24,7 +24,7 @@ export const useAdminContent = () => {
     const [operationLoading, setOperationLoading] = useState(false);
 
     // --- PLACES ---
-    const loadPlaces = async () => {
+    const loadPlaces = useCallback(async () => {
         setLoadingPlaces(true);
         try {
             const data = await getDynamicPlaces(true); // Force refresh
@@ -69,53 +69,64 @@ export const useAdminContent = () => {
         } finally {
             setLoadingPlaces(false);
         }
-    };
+    }, []);
 
-    const handleAddPlace = async (place: Omit<PlaceRecommendation, 'id'>) => {
-        setOperationLoading(true);
-        try {
-            await addDynamicPlace(place);
-            await loadPlaces();
-            return true;
-        } catch (error) {
+    const handleAddPlace = useCallback(async (place: Omit<PlaceRecommendation, 'id'>) => {
+        // Optimistic Update: Add to UI immediately with a temp ID
+        const tempId = 'temp_' + Date.now();
+        const tempPlace = { ...place, id: tempId };
+        setPlaces(prev => [tempPlace, ...prev]);
+
+        // Background Sync
+        addDynamicPlace(place).then(() => {
+            // Silent refresh to get real ID
+            loadPlaces();
+        }).catch(error => {
             logger.error("Error adding place:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    };
+            // Revert on error (could be improved with toast)
+            setPlaces(prev => prev.filter(p => p.id !== tempId));
+        });
 
-    const handleUpdatePlace = async (id: string, place: Partial<PlaceRecommendation>) => {
-        setOperationLoading(true);
-        try {
-            await updateDynamicPlace(id, place);
-            await loadPlaces();
-            return true;
-        } catch (error) {
+        return true; // Return success immediately
+    }, [loadPlaces]);
+
+    const handleUpdatePlace = useCallback(async (id: string, place: Partial<PlaceRecommendation>) => {
+        // Optimistic Update: Update UI immediately
+        setPlaces(prev => prev.map(p => p.id === id ? { ...p, ...place } : p));
+
+        // Background Sync
+        updateDynamicPlace(id, place).then(() => {
+            // Silent refresh to ensure consistency
+            // loadPlaces(); // Optional: might not be needed if we trust the optimistic update
+        }).catch(error => {
             logger.error("Error updating place:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    };
+            // Revert would require fetching old state, skipping for now as rare
+            loadPlaces();
+        });
 
-    const handleDeletePlace = async (id: string) => {
+        return true; // Return success immediately
+    }, [loadPlaces]);
+
+    const handleDeletePlace = useCallback(async (id: string) => {
         if (!window.confirm("Tem certeza que deseja excluir este local?")) return false;
-        setOperationLoading(true);
-        try {
-            await deleteDynamicPlace(id);
-            await loadPlaces();
-            return true;
-        } catch (error) {
+
+        // Optimistic Update: Remove from UI immediately
+        setPlaces(prev => prev.filter(p => p.id !== id));
+
+        // Background Sync
+        deleteDynamicPlace(id).then(() => {
+            // Success
+        }).catch(error => {
             logger.error("Error deleting place:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    };
+            // Revert
+            loadPlaces();
+        });
+
+        return true; // Return success immediately
+    }, [loadPlaces]);
 
     // --- TIPS ---
-    const loadTips = async () => {
+    const loadTips = useCallback(async () => {
         setLoadingTips(true);
         try {
             const data = await getTips();
@@ -125,9 +136,9 @@ export const useAdminContent = () => {
         } finally {
             setLoadingTips(false);
         }
-    };
+    }, []);
 
-    const handleAddTip = async (tip: Tip) => {
+    const handleAddTip = useCallback(async (tip: Tip) => {
         setOperationLoading(true);
         try {
             await addTip(tip);
@@ -139,9 +150,9 @@ export const useAdminContent = () => {
         } finally {
             setOperationLoading(false);
         }
-    };
+    }, [loadTips]);
 
-    const handleUpdateTip = async (id: string, tip: Partial<Tip>) => {
+    const handleUpdateTip = useCallback(async (id: string, tip: Partial<Tip>) => {
         setOperationLoading(true);
         try {
             await updateTip(id, tip);
@@ -153,9 +164,9 @@ export const useAdminContent = () => {
         } finally {
             setOperationLoading(false);
         }
-    };
+    }, [loadTips]);
 
-    const handleDeleteTip = async (id: string) => {
+    const handleDeleteTip = useCallback(async (id: string) => {
         if (!window.confirm("Tem certeza que deseja excluir esta dica?")) return false;
         setOperationLoading(true);
         try {
@@ -168,9 +179,9 @@ export const useAdminContent = () => {
         } finally {
             setOperationLoading(false);
         }
-    };
+    }, [loadTips]);
 
-    const handleReorderTips = async (newTips: Tip[]) => {
+    const handleReorderTips = useCallback(async (newTips: Tip[]) => {
         // Optimistic Update
         setTips(newTips);
 
@@ -183,10 +194,10 @@ export const useAdminContent = () => {
             await loadTips();
             return false;
         }
-    };
+    }, [loadTips]);
 
     // --- CURIOSITIES ---
-    const loadCuriosities = async () => {
+    const loadCuriosities = useCallback(async () => {
         setLoadingCuriosities(true);
         try {
             const data = await getCuriosities();
@@ -196,9 +207,9 @@ export const useAdminContent = () => {
         } finally {
             setLoadingCuriosities(false);
         }
-    };
+    }, []);
 
-    const handleSaveCuriosities = async (items: CityCuriosity[]) => {
+    const handleSaveCuriosities = useCallback(async (items: CityCuriosity[]) => {
         setOperationLoading(true);
         try {
             await saveCuriosities(items);
@@ -210,16 +221,10 @@ export const useAdminContent = () => {
         } finally {
             setOperationLoading(false);
         }
-    };
+    }, []);
 
-    // Initial Load removed to allow lazy loading by components
-    // useEffect(() => {
-    //     loadPlaces();
-    //     loadTips();
-    //     loadCuriosities();
-    // }, []);
-
-    return {
+    // Memoize the return object to prevent unnecessary re-renders in consumers
+    return useMemo(() => ({
         places: {
             data: places,
             loading: loadingPlaces,
@@ -244,5 +249,10 @@ export const useAdminContent = () => {
             refresh: loadCuriosities
         },
         operationLoading
-    };
+    }), [
+        places, loadingPlaces, handleAddPlace, handleUpdatePlace, handleDeletePlace, loadPlaces,
+        tips, loadingTips, handleAddTip, handleUpdateTip, handleDeleteTip, handleReorderTips, loadTips,
+        curiosities, loadingCuriosities, handleSaveCuriosities, loadCuriosities,
+        operationLoading
+    ]);
 };

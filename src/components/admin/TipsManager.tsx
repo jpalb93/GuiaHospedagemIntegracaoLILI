@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tip, CityCuriosity } from '../../types';
-import { Plus, Edit, Trash2, Save, X, Loader2, Sparkles, Image as ImageIcon, Link, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Loader2, Sparkles, Image as ImageIcon, Link, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import ImageUpload from './ImageUpload';
 import { iconMap, getIcon, iconTranslations } from '../../utils/iconMap';
 import ConfirmModal from './ConfirmModal';
@@ -63,9 +63,9 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
     };
 
     useEffect(() => {
-        if (tips.data.length === 0) tips.refresh();
-        if (curiosities.data.length === 0) curiosities.refresh();
-    }, [tips, curiosities]);
+        if (tips.data.length === 0 && !tips.loading) tips.refresh();
+        if (curiosities.data.length === 0 && !curiosities.loading) curiosities.refresh();
+    }, [tips.data.length, tips.loading, tips.refresh, curiosities.data.length, curiosities.loading, curiosities.refresh]);
 
     // --- TIPS HANDLERS ---
     const handleOpenModal = (tip?: Tip) => {
@@ -113,6 +113,30 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
 
     const handleLoadMoreTips = () => {
         setVisibleTipsCount(prev => prev + 10);
+    };
+
+    const handleMoveUp = (index: number) => {
+        if (index === 0) return;
+        const newTips = [...sortedTips];
+        const temp = newTips[index];
+        newTips[index] = newTips[index - 1];
+        newTips[index - 1] = temp;
+
+        // Update order property
+        const reorderedTips = newTips.map((t, i) => ({ ...t, order: i }));
+        tips.reorder(reorderedTips);
+    };
+
+    const handleMoveDown = (index: number) => {
+        if (index === sortedTips.length - 1) return;
+        const newTips = [...sortedTips];
+        const temp = newTips[index];
+        newTips[index] = newTips[index + 1];
+        newTips[index + 1] = temp;
+
+        // Update order property
+        const reorderedTips = newTips.map((t, i) => ({ ...t, order: i }));
+        tips.reorder(reorderedTips);
     };
 
     // --- CURIOSITIES HANDLERS ---
@@ -259,10 +283,24 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                                             tips.reorder(reorderedTips);
                                         }
                                     }}
-                                    className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex gap-4 group hover:border-yellow-200 dark:hover:border-yellow-900/50 transition-all cursor-move active:cursor-grabbing"
+                                    className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex gap-4 group hover:border-yellow-200 dark:hover:border-yellow-900/50 transition-all select-none"
                                 >
-                                    <div className="flex items-center justify-center text-gray-300 cursor-grab active:cursor-grabbing">
-                                        <GripVertical size={20} />
+                                    <div className="flex flex-col items-center justify-center gap-1 text-gray-300">
+                                        <button
+                                            onClick={() => handleMoveUp(index)}
+                                            disabled={index === 0}
+                                            className="p-1 hover:text-yellow-500 disabled:opacity-30 disabled:hover:text-gray-300 transition-colors"
+                                        >
+                                            <ChevronUp size={16} />
+                                        </button>
+                                        <GripVertical size={16} className="cursor-grab active:cursor-grabbing opacity-50" />
+                                        <button
+                                            onClick={() => handleMoveDown(index)}
+                                            disabled={index === sortedTips.length - 1}
+                                            className="p-1 hover:text-yellow-500 disabled:opacity-30 disabled:hover:text-gray-300 transition-colors"
+                                        >
+                                            <ChevronDown size={16} />
+                                        </button>
                                     </div>
                                     <div className="w-12 h-12 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-yellow-600 dark:text-yellow-400 flex-shrink-0">
                                         <Icon size={24} />

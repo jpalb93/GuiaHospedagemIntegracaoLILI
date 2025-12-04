@@ -82,7 +82,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         if (places.data.length === 0) {
             places.refresh();
         }
-    }, [places]);
+    }, [places.data.length, places.refresh]);
 
     const handleOpenModal = (place?: PlaceRecommendation) => {
         if (place) {

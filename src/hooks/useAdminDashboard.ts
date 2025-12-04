@@ -58,7 +58,15 @@ export const useAdminDashboard = () => {
     const [isBlocking, setIsBlocking] = useState(false);
 
     // UI State
-    const [activeTab, setActiveTab] = useState<'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings'>('home');
+    const [activeTab, setActiveTab] = useState<'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings'>(() => {
+        const saved = localStorage.getItem('admin_active_tab');
+        return (saved as any) || 'home';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('admin_active_tab', activeTab);
+    }, [activeTab]);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [generatedLink, setGeneratedLink] = useState('');
     const [isSaving, setIsSaving] = useState(false);
