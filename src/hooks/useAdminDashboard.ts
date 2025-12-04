@@ -192,6 +192,11 @@ export const useAdminDashboard = () => {
                 return;
             }
 
+            // AUTO-SELECT PROPERTY FOR RESTRICTED USERS
+            if (userPermission.role !== 'super_admin' && userPermission.allowedProperties.length === 1) {
+                setPropertyId(userPermission.allowedProperties[0]);
+            }
+
             // Determine filters based on role
             const filterProps = userPermission.role === 'super_admin' ? undefined : userPermission.allowedProperties;
 
