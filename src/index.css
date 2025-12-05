@@ -380,3 +380,5 @@ body {
 .animate-gold-pulse {
   animation: gold-pulse 2.5s ease-in-out infinite;
 }
+/* Modal overlay rule: hide mobile nav when modal is open */
+body:has(.modal-overlay) .mobile-bottom-nav { display: none !important; }

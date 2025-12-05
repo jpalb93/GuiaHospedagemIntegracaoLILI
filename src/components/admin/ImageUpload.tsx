@@ -91,14 +91,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         setLoading(true);
         setProgress(0);
-        console.log('Starting upload process for:', file.name);
+
 
         try {
-            // 1. Compress
-            console.log('Compressing...');
+            // Compress image
             const compressedBlob = await compressImage(file);
             const compressedFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
-            console.log('Compression done. Original:', file.size, 'Compressed:', compressedFile.size);
+
 
             // Race upload with timeout
             const uploadPromise = uploadImageToCloudinary(compressedFile, (p) => setProgress(p));
@@ -107,7 +106,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             );
 
             const url = await Promise.race([uploadPromise, timeoutPromise]) as string;
-            console.log('Upload done:', url);
+
 
             setPreview(url);
             onUpload(url);

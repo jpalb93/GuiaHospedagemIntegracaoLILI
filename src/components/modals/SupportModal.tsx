@@ -8,14 +8,17 @@ interface SupportModalProps {
     onClose: () => void;
     guestName: string;
     hostPhone?: string;
+    propertyId?: 'lili' | 'integracao';
 }
 
-const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName, hostPhone }) => {
+const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName, hostPhone, propertyId }) => {
     if (!isOpen) return null;
+
+    const propertyName = propertyId === 'integracao' ? 'Flats Integração' : 'Flat da Lili';
 
     const openWhatsApp = (subject: string, text: string) => {
         if (navigator.vibrate) navigator.vibrate(50);
-        const message = `Olá Lili! Sou ${guestName} (Flat Integração). \n\n*Assunto: ${subject}*\n${text}`;
+        const message = `Olá! Sou ${guestName} (${propertyName}). \n\n*Assunto: ${subject}*\n${text}`;
         const phone = hostPhone || HOST_PHONE;
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');

@@ -85,4 +85,4 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
   );
 };
 
-export default StoriesBar;
+export default React.memo(StoriesBar);

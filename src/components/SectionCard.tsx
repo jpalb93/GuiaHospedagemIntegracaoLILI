@@ -91,4 +91,4 @@ const SectionCard: React.FC<SectionCardProps> = ({
   );
 };
 
-export default SectionCard;
+export default React.memo(SectionCard);

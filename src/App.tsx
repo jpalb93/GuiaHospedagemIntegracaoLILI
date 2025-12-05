@@ -14,7 +14,7 @@ import ModernLoadingScreen from './components/ModernLoadingScreen';
 // Carrega os componentes pesados apenas quando necessários
 const AdminDashboard = lazy(() => import(/* webpackChunkName: "admin" */ './components/admin/AdminDashboard'));
 const GuestView = lazy(() => import(/* webpackChunkName: "guest" */ './components/GuestView'));
-const ContentManager = lazy(() => import(/* webpackChunkName: "cms" */ './components/ContentManager'));
+
 const LandingPageLili = lazy(() => import(/* webpackChunkName: "landing-lili" */ './components/LandingLili'));
 
 // --- FUNÇÃO DE SEGURANÇA: REMOVIDA (Agora é Server-Side) ---
@@ -246,12 +246,12 @@ const App: React.FC = () => {
     );
   }
 
-  // 3. Modo CMS (Admin de Conteúdo)
+  // 3. Modo CMS (Redirecionado para Admin)
   if (appState.mode === AppMode.CMS) {
     return (
       <ErrorBoundary>
         <Suspense fallback={<AdminSkeleton />}>
-          <ContentManager />
+          <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
         </Suspense>
       </ErrorBoundary>
     );

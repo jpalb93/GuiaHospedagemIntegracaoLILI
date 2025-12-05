@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { X, Check, AlertTriangle, Camera, FileText, Share2, Printer, User, Calendar, MapPin, Trash2, Image as ImageIcon } from 'lucide-react';
+import { X, Check, AlertTriangle, Camera, FileText, Share2, Printer, User, Calendar, MapPin, Trash2, Image as ImageIcon, FileSignature } from 'lucide-react';
 import { ChecklistItem } from '../../types';
+
+// Constantes do Flats Integração
+const COMPANY_INFO = {
+    name: 'Flats Integração',
+    address: 'Rua São José, 475 - Centro, Petrolina - PE, 56302-270',
+    logo: 'https://i.postimg.cc/3xRGwtvg/Whats-App-Image-2025-12-04-at-16-45-58.jpg'
+};
 
 interface InspectionModalProps {
     isOpen: boolean;
@@ -14,7 +21,7 @@ interface ChecklistState {
     [key: string]: {
         status: 'ok' | 'issue';
         note?: string;
-        image?: string; // Base64 image
+        image?: string;
     };
 }
 
@@ -80,7 +87,7 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
         const date = new Date().toLocaleDateString('pt-BR');
         const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        let report = `*RELATÓRIO DE VISTORIA - FLATS INTEGRAÇÃO*\n`;
+        let report = `*RELATÓRIO DE VISTORIA - ${COMPANY_INFO.name.toUpperCase()}*\n`;
         report += `--------------------------------\n`;
         report += `🏠 *Unidade:* ${unitNumber || 'N/A'}\n`;
         report += `👤 *Hóspede:* ${reservationName}\n`;
@@ -106,6 +113,8 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
             report += `✅ *ITENS OK:* ${okItems.map(i => i.label).join(', ')}\n`;
         }
 
+        report += `\n📍 ${COMPANY_INFO.address}`;
+
         return report;
     };
 
@@ -126,7 +135,6 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
         onClose();
     };
 
-    // Helper to group items
     const groupedItems = checklistItems.reduce((acc, item) => {
         const cat = item.category || 'Outros';
         if (!acc[cat]) acc[cat] = [];
@@ -134,8 +142,13 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
         return acc;
     }, {} as Record<string, ChecklistItem[]>);
 
+    const issueItems = checklistItems.filter(i => checklistState[i.id]?.status === 'issue');
+    const okItems = checklistItems.filter(i => checklistState[i.id]?.status === 'ok');
+    const totalChecked = issueItems.length + okItems.length;
+    const progress = checklistItems.length > 0 ? Math.round((totalChecked / checklistItems.length) * 100) : 0;
+
     return (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm print:p-0 print:bg-white print:block print:absolute print:top-0 print:left-0 print:w-full print:min-h-screen print:z-[9999]">
+        <div className="modal-overlay fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm print:p-0 print:bg-white print:block print:absolute print:top-0 print:left-0 print:w-full print:min-h-screen print:z-[9999]">
             <div className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] print:max-h-none print:shadow-none print:rounded-none print:w-full print:max-w-none print:h-auto print:block">
 
                 {/* HEADER */}
@@ -144,19 +157,33 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                         {step === 'inspection' ? <Camera className="text-orange-500" /> : <FileText className="text-blue-500" />}
                         {step === 'inspection' ? 'Nova Vistoria' : 'Relatório Final'}
                     </h2>
-                    <button onClick={resetAndClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-                        <X size={20} className="text-gray-500" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {step === 'inspection' && (
+                            <div className="text-xs text-gray-500 font-medium">
+                                {progress}% concluído
+                            </div>
+                        )}
+                        <button onClick={resetAndClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+                            <X size={20} className="text-gray-500" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* CONTENT */}
-                <div className="flex-1 overflow-y-auto p-4 print:overflow-visible print:p-8">
+                <div className="flex-1 overflow-y-auto p-4 print:overflow-visible print:p-0">
                     {step === 'inspection' ? (
                         <div className="space-y-6">
                             <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800/30">
                                 <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
                                     Vistoria do Flat <strong>{unitNumber}</strong> - {reservationName}
                                 </p>
+                                {/* Progress bar */}
+                                <div className="mt-3 h-2 bg-orange-100 dark:bg-orange-900/30 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-orange-500 transition-all duration-300"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-8">
@@ -202,7 +229,6 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                                                                 rows={2}
                                                             />
 
-                                                            {/* IMAGE UPLOAD */}
                                                             <div className="flex items-center gap-3">
                                                                 {checklistState[item.id]?.image ? (
                                                                     <div className="relative group">
@@ -237,74 +263,119 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-6 text-gray-800 dark:text-gray-200 font-sans">
-                            {/* FORMAL REPORT HEADER */}
-                            <div className="border-b-2 border-gray-800 dark:border-gray-200 pb-6 mb-6">
-                                <div className="flex justify-between items-start mb-4">
+                        /* ============================================
+                           RELATÓRIO PROFISSIONAL - VERSÃO IMPRESSÃO
+                           ============================================ */
+                        <div className="print:p-8 print:pt-0">
+                            {/* CABEÇALHO COM LOGO */}
+                            <div className="flex items-center justify-between border-b-2 border-gray-300 pb-6 mb-6 print:border-black">
+                                <div className="flex items-center gap-4">
+                                    <img
+                                        src={COMPANY_INFO.logo}
+                                        alt={COMPANY_INFO.name}
+                                        className="w-20 h-20 object-contain rounded-lg print:w-24 print:h-24"
+                                    />
                                     <div>
-                                        <h1 className="text-2xl font-bold uppercase tracking-wide mb-1">Relatório de Vistoria</h1>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Flats Integração - Check-out</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded text-xs font-mono font-bold">
-                                            {new Date().toLocaleDateString('pt-BR')}
-                                        </div>
+                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                                            {COMPANY_INFO.name}
+                                        </h1>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {COMPANY_INFO.address}
+                                        </p>
                                     </div>
                                 </div>
+                                <div className="text-right">
+                                    <div className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold print:bg-blue-600">
+                                        RELATÓRIO DE VISTORIA
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2 font-mono">
+                                        {new Date().toLocaleDateString('pt-BR')}
+                                    </p>
+                                </div>
+                            </div>
 
-                                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl text-justify">
-                                    Este documento registra o estado de conservação e conferência dos itens do imóvel após a saída do hóspede, garantindo a transparência e qualidade dos serviços prestados.
+                            {/* DESCRIÇÃO */}
+                            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6 print:bg-gray-100">
+                                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    Este documento registra o estado de conservação e conferência dos itens do imóvel
+                                    após a saída do hóspede, garantindo a transparência e qualidade dos serviços prestados.
                                 </p>
                             </div>
 
-                            {/* INFO GRID */}
-                            <div className="grid grid-cols-2 gap-4 mb-8 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-0.5">Unidade</p>
-                                    <p className="font-bold text-lg flex items-center gap-2"><MapPin size={16} className="text-orange-500" /> {unitNumber || 'N/A'}</p>
+                            {/* INFORMAÇÕES DA VISTORIA */}
+                            <div className="grid grid-cols-2 gap-4 mb-8 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden print:border-gray-400">
+                                <div className="p-4 bg-white dark:bg-gray-900">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-1">Unidade</p>
+                                    <p className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                        <MapPin size={16} className="text-blue-500" /> {unitNumber || 'N/A'}
+                                    </p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-0.5">Hóspede</p>
-                                    <p className="font-bold text-lg flex items-center gap-2"><User size={16} className="text-blue-500" /> {reservationName}</p>
+                                <div className="p-4 bg-white dark:bg-gray-900">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-1">Hóspede</p>
+                                    <p className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                        <User size={16} className="text-orange-500" /> {reservationName}
+                                    </p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-0.5">Data/Hora</p>
-                                    <p className="font-bold text-sm flex items-center gap-2"><Calendar size={14} className="text-gray-400" /> {new Date().toLocaleString('pt-BR')}</p>
+                                <div className="p-4 bg-white dark:bg-gray-900">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-1">Data/Hora da Vistoria</p>
+                                    <p className="font-medium text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                        <Calendar size={14} className="text-gray-400" /> {new Date().toLocaleString('pt-BR')}
+                                    </p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-0.5">Vistoriador</p>
+                                <div className="p-4 bg-white dark:bg-gray-900">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-1">Responsável pela Vistoria</p>
                                     <input
                                         type="text"
                                         placeholder="Digite seu nome..."
                                         value={inspectorName}
                                         onChange={(e) => setInspectorName(e.target.value)}
-                                        className="bg-transparent border-b border-gray-300 dark:border-gray-600 w-full focus:outline-none focus:border-orange-500 text-sm font-medium placeholder-gray-400 print:border-none print:placeholder-transparent"
+                                        className="bg-transparent border-b-2 border-gray-300 dark:border-gray-600 w-full focus:outline-none focus:border-blue-500 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-400 print:border-gray-900"
                                     />
                                 </div>
                             </div>
 
-                            {/* ISSUES SECTION */}
-                            <div className="mb-8">
-                                <h3 className="text-sm font-bold uppercase border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2 text-red-600 dark:text-red-400">
-                                    <AlertTriangle size={16} /> Itens com Atenção
-                                </h3>
-                                {checklistItems.filter(i => checklistState[i.id]?.status === 'issue').length > 0 ? (
-                                    <div className="space-y-6">
-                                        {checklistItems.filter(i => checklistState[i.id]?.status === 'issue').map(item => (
-                                            <div key={item.id} className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border border-red-100 dark:border-red-800/30 break-inside-avoid">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="mt-1"><X size={18} className="text-red-500" /></div>
-                                                    <div className="flex-1">
-                                                        <p className="font-bold text-red-800 dark:text-red-200 mb-1">{item.label} <span className="text-xs font-normal text-gray-500">({item.category || 'Geral'})</span></p>
-                                                        <p className="text-sm text-red-700 dark:text-red-300 italic mb-3">"{checklistState[item.id]?.note || 'Sem observações'}"</p>
+                            {/* RESUMO */}
+                            <div className="flex gap-4 mb-8">
+                                <div className="flex-1 bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-200 dark:border-green-800 text-center">
+                                    <p className="text-3xl font-bold text-green-600">{okItems.length}</p>
+                                    <p className="text-xs text-green-700 dark:text-green-400 font-medium uppercase">Itens OK</p>
+                                </div>
+                                <div className="flex-1 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800 text-center">
+                                    <p className="text-3xl font-bold text-red-600">{issueItems.length}</p>
+                                    <p className="text-xs text-red-700 dark:text-red-400 font-medium uppercase">Com Atenção</p>
+                                </div>
+                            </div>
 
+                            {/* ITENS COM PROBLEMA */}
+                            {issueItems.length > 0 && (
+                                <div className="mb-8 break-inside-avoid">
+                                    <h3 className="text-sm font-bold uppercase border-b-2 border-red-500 pb-2 mb-4 flex items-center gap-2 text-red-600">
+                                        <AlertTriangle size={16} /> Itens que Requerem Atenção
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {issueItems.map(item => (
+                                            <div key={item.id} className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border-l-4 border-red-500 break-inside-avoid print:bg-red-50">
+                                                <div className="flex items-start gap-3">
+                                                    <X size={20} className="text-red-500 mt-0.5 flex-shrink-0" />
+                                                    <div className="flex-1">
+                                                        <p className="font-bold text-gray-900 dark:text-white">
+                                                            {item.label}
+                                                            <span className="text-xs font-normal text-gray-500 ml-2">({item.category || 'Geral'})</span>
+                                                        </p>
+                                                        {checklistState[item.id]?.note && (
+                                                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 italic border-l-2 border-gray-300 pl-2">
+                                                                "{checklistState[item.id]?.note}"
+                                                            </p>
+                                                        )}
                                                         {checklistState[item.id]?.image && (
                                                             <div className="mt-3">
-                                                                <p className="text-[10px] font-bold uppercase text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10} /> Evidência Fotográfica:</p>
+                                                                <p className="text-[10px] font-bold uppercase text-gray-400 mb-1 flex items-center gap-1">
+                                                                    <ImageIcon size={10} /> Evidência Fotográfica:
+                                                                </p>
                                                                 <img
                                                                     src={checklistState[item.id]?.image}
                                                                     alt={`Problema em ${item.label}`}
-                                                                    className="max-w-full h-auto max-h-[300px] rounded-lg border border-gray-200 shadow-sm"
+                                                                    className="max-w-full h-auto max-h-[250px] rounded-lg border border-gray-200 shadow-sm"
                                                                 />
                                                             </div>
                                                         )}
@@ -313,44 +384,65 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                                             </div>
                                         ))}
                                     </div>
-                                ) : (
-                                    <p className="text-sm text-gray-500 italic">Nenhum problema identificado.</p>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
-                            {/* OK ITEMS SECTION - CATEGORIZED */}
-                            <div>
-                                <h3 className="text-sm font-bold uppercase border-b border-gray-200 dark:border-gray-700 pb-2 mb-4 flex items-center gap-2 text-green-600 dark:text-green-400">
-                                    <Check size={16} /> Itens Verificados (OK)
-                                </h3>
-                                <div className="space-y-4">
-                                    {Object.entries(checklistItems
-                                        .filter(i => checklistState[i.id]?.status === 'ok')
-                                        .reduce((acc, item) => {
-                                            const cat = item.category || 'Outros';
-                                            if (!acc[cat]) acc[cat] = [];
-                                            acc[cat].push(item);
-                                            return acc;
-                                        }, {} as Record<string, ChecklistItem[]>))
-                                        .map(([category, items]) => (
+                            {/* ITENS OK - AGRUPADOS */}
+                            {okItems.length > 0 && (
+                                <div className="mb-8">
+                                    <h3 className="text-sm font-bold uppercase border-b-2 border-green-500 pb-2 mb-4 flex items-center gap-2 text-green-600">
+                                        <Check size={16} /> Itens Verificados e Aprovados
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {Object.entries(
+                                            okItems.reduce((acc, item) => {
+                                                const cat = item.category || 'Outros';
+                                                if (!acc[cat]) acc[cat] = [];
+                                                acc[cat].push(item);
+                                                return acc;
+                                            }, {} as Record<string, ChecklistItem[]>)
+                                        ).map(([category, items]) => (
                                             <div key={category} className="break-inside-avoid">
-                                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{category}</h4>
+                                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{category}</h4>
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                                     {items.map(item => (
-                                                        <div key={item.id} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                                            <Check size={12} className="text-green-500" />
+                                                        <div key={item.id} className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 bg-green-50 dark:bg-green-900/10 px-2 py-1 rounded print:bg-green-50">
+                                                            <Check size={12} className="text-green-500 flex-shrink-0" />
                                                             {item.label}
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SEÇÃO DE ASSINATURA */}
+                            <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-700 print:border-gray-900">
+                                <div className="grid grid-cols-2 gap-12">
+                                    <div className="text-center">
+                                        <div className="border-b-2 border-gray-400 dark:border-gray-500 mb-2 h-12 print:border-gray-900"></div>
+                                        <p className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">Assinatura do Responsável</p>
+                                        <p className="text-[10px] text-gray-400">{inspectorName || 'Nome do Vistoriador'}</p>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="border-b-2 border-gray-400 dark:border-gray-500 mb-2 h-12 print:border-gray-900"></div>
+                                        <p className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">Assinatura do Hóspede</p>
+                                        <p className="text-[10px] text-gray-400">(Opcional)</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* FOOTER */}
-                            <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-                                <p className="text-[10px] text-gray-400 uppercase tracking-widest">Gerado via Sistema Flats Integração</p>
+                            {/* RODAPÉ */}
+                            <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                    <FileSignature size={14} className="text-gray-400" />
+                                    <p className="text-[10px] text-gray-400 font-medium">Documento gerado eletronicamente</p>
+                                </div>
+                                <p className="text-[10px] text-gray-400">
+                                    {COMPANY_INFO.name} • {COMPANY_INFO.address}
+                                </p>
                             </div>
                         </div>
                     )}
@@ -361,9 +453,10 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                     {step === 'inspection' ? (
                         <button
                             onClick={() => setStep('report')}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]"
+                            disabled={totalChecked === 0}
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Gerar Relatório
+                            Gerar Relatório ({totalChecked} itens verificados)
                         </button>
                     ) : (
                         <div className="flex gap-3">
@@ -395,7 +488,7 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                     ref={fileInputRef}
                     className="hidden"
                     accept="image/*"
-                    capture="environment" // Opens camera on mobile
+                    capture="environment"
                     onChange={handleImageUpload}
                 />
             </div>

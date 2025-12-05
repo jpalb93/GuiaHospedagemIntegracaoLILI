@@ -201,14 +201,8 @@ export const useAdminDashboard = () => {
             const filterProps = userPermission.role === 'super_admin' ? undefined : userPermission.allowedProperties;
 
             const unsubActive = subscribeToActiveReservations((data) => {
-                // Client-side filter
-                const filtered = data.filter(r =>
-                    userPermission.role === 'super_admin' ||
-                    userPermission.allowedProperties.includes(r.propertyId || 'lili')
-                );
-                setActiveReservations(filtered);
-
-
+                // O filtro por propriedade já é feito no serviço Firebase
+                setActiveReservations(data);
             }, filterProps);
 
             loadMoreHistory(true);
@@ -221,6 +215,55 @@ export const useAdminDashboard = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, userPermission, authLoading]);
+
+    // --- VISIBILITY CHANGE HANDLER (RECONEXÃO QUANDO ABA VOLTA) ---
+    useEffect(() => {
+        let reloadTimeout: ReturnType<typeof setTimeout> | null = null;
+        let lastVisibleTime = Date.now();
+        const STALE_THRESHOLD_MS = 30000; // 30 segundos em background = dados podem estar stale
+
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible') {
+                const timeInBackground = Date.now() - lastVisibleTime;
+
+                // Se ficou mais de 30s em background, os dados podem estar stale
+                if (timeInBackground > STALE_THRESHOLD_MS && user && userPermission) {
+                    logger.info(`[AdminDashboard] Tab visible after ${Math.round(timeInBackground / 1000)}s - refreshing data`);
+
+                    if (reloadTimeout) clearTimeout(reloadTimeout);
+
+                    reloadTimeout = setTimeout(() => {
+                        // Força reload do histórico
+                        loadMoreHistory(true);
+
+                        // Mostra feedback ao usuário
+                        showToast("Dados atualizados", "info");
+                    }, 300);
+                }
+            } else {
+                // Aba ficou invisível - marca o tempo
+                lastVisibleTime = Date.now();
+            }
+        };
+
+        // Também detecta quando a página foi restaurada do cache (bfcache)
+        const handlePageShow = (e: PageTransitionEvent) => {
+            if (e.persisted && user && userPermission) {
+                logger.info('[AdminDashboard] Page restored from bfcache - refreshing');
+                loadMoreHistory(true);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pageshow', handlePageShow);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('pageshow', handlePageShow);
+            if (reloadTimeout) clearTimeout(reloadTimeout);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, userPermission]);
 
     // --- API KEY CHECK ---
     useEffect(() => {

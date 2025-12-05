@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, Lock, LogIn } from 'lucide-react';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 import { useAdminContent } from '../../hooks/useAdminContent';
@@ -28,7 +28,50 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
     const settings = useAdminSettings();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    // Counter para forçar re-render quando necessário
+    const [refreshKey, setRefreshKey] = useState(0);
+
     const { activeTab, setActiveTab, toasts, removeToast } = ui;
+
+    // AUTO-REFRESH: Quando aba volta após longo período, força reload da página
+    useEffect(() => {
+        let lastVisibleTime = Date.now();
+        const STALE_THRESHOLD = 120000; // 2 minutos em background = página pode estar morta
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                const timeAway = Date.now() - lastVisibleTime;
+
+                // Se ficou muito tempo fora, força reload completo
+                if (timeAway > STALE_THRESHOLD) {
+                    window.location.reload();
+                    return;
+                }
+
+                // Se ficou menos tempo, apenas força re-render dos componentes
+                if (timeAway > 30000) { // 30 segundos
+                    setRefreshKey(prev => prev + 1);
+                }
+            } else {
+                lastVisibleTime = Date.now();
+            }
+        };
+
+        // Também trata página restaurada do cache do browser
+        const handlePageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) {
+                window.location.reload();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pageshow', handlePageShow);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('pageshow', handlePageShow);
+        };
+    }, []);
 
     if (auth.authLoading) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"><Loader2 className="animate-spin text-orange-500" size={48} /></div>;
@@ -63,7 +106,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
+        <div key={refreshKey} className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
             <AdminNavigation
                 activeTab={activeTab}
                 setActiveTab={(tab) => setActiveTab(tab as 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings')}

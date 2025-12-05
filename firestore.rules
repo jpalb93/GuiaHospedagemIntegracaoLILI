@@ -29,19 +29,27 @@ service cloud.firestore {
       allow write: if request.auth != null && getAdminUser() != null;
     }
 
-    // 2. RESERVAS (Multi-Tenant)
+    // 2. RESERVAS (Multi-Tenant) - COM VALIDAÇÃO ANTI-SPAM
     match /reservations/{document} {
-      // Hóspede pode criar (qualquer um)
-      allow create: if true;
+      // Função para validar dados mínimos de uma reserva (previne spam)
+      function isValidReservation() {
+        let data = request.resource.data;
+        return data.guestName is string && data.guestName.size() >= 2
+            && data.guestPhone is string && data.guestPhone.size() >= 8
+            && data.checkInDate is string && data.checkInDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && data.checkoutDate is string && data.checkoutDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && data.propertyId in ['lili', 'integracao'];
+      }
+
+      // Hóspede pode criar (com validação de campos obrigatórios)
+      allow create: if isValidReservation();
       
-      // Hóspede pode atualizar (ex: confirmar pagamento)
-      allow update: if true;
+      // Atualização: Admin autenticado OU atualização com dados válidos
+      allow update: if request.auth != null && hasPropertyAccess(resource.data.propertyId)
+                    || isValidReservation();
       
       // LEITURA PÚBLICA para o calendário da landing page mostrar disponibilidade
-      // Lista todas as reservas (calendário precisa disso)
       allow list: if true;
-      
-      // Leitura de documento único também pública (para compatibilidade)
       allow get: if true;
       
       // DELETE: APENAS usuários autenticados com permissão
@@ -51,7 +59,7 @@ service cloud.firestore {
     // 3. BLOQUEIOS DE DATA
     match /blocked_dates/{document} {
       allow read: if true;
-      allow write: if request.auth != null; // Idealmente filtrar por propriedade também se houver campo propertyId
+      allow write: if request.auth != null;
     }
     
     // 4. USUÁRIOS ADMIN (Só Super Admin mexe)

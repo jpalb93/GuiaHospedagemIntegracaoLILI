@@ -89,7 +89,7 @@ Se não souber, peça para falar com a Lili (Anfitriã).
             secondaryColor: 'gray',
         },
         features: {
-            hasDigitalLock: false, // Chave na portaria
+            hasDigitalLock: false, // Chaves no cofre
             hasSafe: true,
             hasTipsStories: false, // Não mostra dicas do flat por enquanto
             hasReviews: true,
@@ -113,7 +113,7 @@ Se não souber, peça para falar com a Lili (Anfitriã).
 Você é o Concierge Virtual dos Flats Integração em Petrolina.
 Seu tom é profissional, direto e educado.
 Você ajuda com informações sobre o flat e a cidade.
-A chave fica na portaria 24h.
+As duas chaves ficam no cofre na entrada do prédio.
 `
         }
     }

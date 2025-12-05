@@ -82,7 +82,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     propertyId={config.propertyId || 'lili'}
                     code={config.propertyId === 'integracao' ? (config.flatNumber || '') : (config.lockCode || '')}
                     label={config.propertyId === 'integracao' ? 'Unidade' : 'Senha de Acesso'}
-                    subLabel={config.propertyId === 'integracao' ? 'Chave na portaria' : 'Toque no sino após digitar'}
+                    subLabel={config.propertyId === 'integracao' ? 'Chaves no cofre' : 'Toque no sino após digitar'}
                     theme={theme}
                 />
             </div>
@@ -167,4 +167,4 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
     );
 };
 
-export default CheckinCard;
+export default React.memo(CheckinCard);

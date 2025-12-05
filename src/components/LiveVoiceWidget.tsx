@@ -64,7 +64,7 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
             wsRef.current = ws;
 
             ws.onopen = () => {
-                console.log('✅ Connected to Gemini Live WebSocket');
+                // Connected to Gemini
                 // setIsConnected(true);
                 setIsConnecting(false);
 
@@ -87,7 +87,7 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                         }
                     }
                 };
-                console.log('Sending setup message:', setupMessage);
+
                 ws.send(JSON.stringify(setupMessage));
 
                 // Start Audio Recording immediately after connection
@@ -95,8 +95,7 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
             };
 
             ws.onmessage = async (event) => {
-                console.log('📩 Received message from Gemini:', event.data.substring(0, 100) + '...');
-                const data = JSON.parse(event.data); // Gemini sends text/json messages, audio is base64 inside
+                const data = JSON.parse(event.data);
 
                 if (data.serverContent) {
                     if (data.serverContent.modelTurn) {
@@ -123,8 +122,8 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                 stopRecording();
             };
 
-            ws.onclose = (event) => {
-                console.log('🔌 Disconnected:', event.code, event.reason);
+            ws.onclose = () => {
+                // Disconnected
                 // setIsConnected(false);
                 setIsConnecting(false);
                 stopRecording();

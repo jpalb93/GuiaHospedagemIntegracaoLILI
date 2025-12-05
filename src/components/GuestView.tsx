@@ -202,6 +202,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         lockCode={config.lockCode}
         isPasswordReleased={isPasswordReleased}
         onOpenVideo={video.openVideoModal}
+        propertyId={config.propertyId}
       />
 
       <CheckoutModal
@@ -240,6 +241,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         onClose={() => modals.setIsSupportModalOpen(false)}
         guestName={config.guestName}
         hostPhone={appSettings?.hostPhones?.[config.propertyId || 'lili'] || property.hostPhone}
+        propertyId={config.propertyId}
       />
 
       <StoryViewer
@@ -377,6 +379,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
         onClose={() => modals.setIsSupportModalOpen(false)}
         guestName={config.guestName}
         hostPhone={appSettings?.hostPhones?.[config.propertyId || 'lili'] || property.hostPhone}
+        propertyId={config.propertyId}
       />
     </div >
   );

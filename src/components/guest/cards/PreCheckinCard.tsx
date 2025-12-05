@@ -55,7 +55,7 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                             propertyId={config.propertyId || 'lili'}
                             code={config.propertyId === 'integracao' ? (config.flatNumber || '') : (config.lockCode || '')}
                             label={config.propertyId === 'integracao' ? 'Unidade' : 'Senha de Acesso'}
-                            subLabel={config.propertyId === 'integracao' ? 'Chave na portaria' : 'Toque no sino após digitar'}
+                            subLabel={config.propertyId === 'integracao' ? 'Chaves no cofre' : 'Toque no sino após digitar'}
                             theme={theme}
                         />
                         <p className="text-[10px] text-center text-gray-500 mt-2">Toque para salvar o cartão de acesso</p>

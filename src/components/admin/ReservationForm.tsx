@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Phone, Lock, CalendarDays, Clock, MessageSquare, StickyNote, Save, Sparkles, Loader2, X, Eraser, CheckCircle2, AlertCircle, Copy, Send, Building2, KeyRound, Users, CreditCard, Banknote } from 'lucide-react';
+import { User, Phone, Lock, CalendarDays, Clock, MessageSquare, StickyNote, Save, Sparkles, Loader2, X, Eraser, CheckCircle2, AlertCircle, Copy, Send, Building2, KeyRound, CreditCard, Banknote } from 'lucide-react';
 import { PROPERTIES } from '../../config/properties';
 import { PropertyId, UserPermission, PaymentMethod, Reservation } from '../../types';
 
@@ -202,15 +202,16 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ form, ui, userPermiss
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="text-xs font-bold text-gray-400 uppercase ml-1">Qtd. Hóspedes</label>
-                        <div className="relative group">
-                            <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500" size={20} />
-                            <input
-                                type="number"
-                                min="1"
-                                value={guestCount}
-                                onChange={(e) => setGuestCount(parseInt(e.target.value) || 1)}
-                                className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                        <div className="flex bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl p-1 mt-1">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                                <button
+                                    key={num}
+                                    onClick={() => setGuestCount(num)}
+                                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1 transition-all ${guestCount === num ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    {num}
+                                </button>
+                            ))}
                         </div>
                     </div>
 

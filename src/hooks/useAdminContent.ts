@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { logger } from '../utils/logger';
 import { PlaceRecommendation, Tip, CityCuriosity } from '../types';
 import {
@@ -209,7 +209,13 @@ export const useAdminContent = () => {
         }
     }, []);
 
-    const handleSaveCuriosities = useCallback(async (items: CityCuriosity[]) => {
+    const handleSaveCuriosities = useCallback(async (items: CityCuriosity[], forceOverwrite = false) => {
+        // PROTEÇÃO: Nunca sobrescrever dados existentes com array vazio sem confirmação
+        if (items.length === 0 && curiosities.length > 0 && !forceOverwrite) {
+            logger.warn("Tentativa de salvar curiosidades vazias bloqueada. Use forceOverwrite=true para confirmar.");
+            return false;
+        }
+
         setOperationLoading(true);
         try {
             await saveCuriosities(items);
@@ -221,7 +227,12 @@ export const useAdminContent = () => {
         } finally {
             setOperationLoading(false);
         }
-    }, []);
+    }, [curiosities.length]);
+
+    // Auto-load curiosities when hook is mounted
+    useEffect(() => {
+        loadCuriosities();
+    }, [loadCuriosities]);
 
     // Memoize the return object to prevent unnecessary re-renders in consumers
     return useMemo(() => ({
