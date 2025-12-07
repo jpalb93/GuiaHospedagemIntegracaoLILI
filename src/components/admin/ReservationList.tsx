@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Reservation, UserPermission, PropertyId } from '../../types';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
 import { PROPERTIES } from '../../config/properties';
+import { Badge, Input } from '../ui';
 import {
     CalendarDays,
     History,
@@ -241,22 +242,24 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                         </h3>
                         <div className="flex flex-wrap gap-2 mt-2">
                             {res.status === 'pending' && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                    Pré-Reserva
-                                </span>
+                                <Badge variant="yellow">Pré-Reserva</Badge>
                             )}
                             {statusLabel && (
-                                <span
-                                    className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${statusColor.replace('border-', 'bg-').replace('500', '100')} text-gray-800 dark:text-gray-900`}
+                                <Badge
+                                    variant={
+                                        statusLabel === 'Checkout Hoje'
+                                            ? 'orange'
+                                            : statusLabel === 'Hospedado'
+                                                ? 'green'
+                                                : 'gray'
+                                    }
                                 >
                                     {statusLabel}
-                                </span>
+                                </Badge>
                             )}
-                            <span
-                                className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold border ${property.id === 'lili' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}
-                            >
+                            <Badge variant={property.id === 'lili' ? 'orange' : 'blue'}>
                                 {property.name}
-                            </span>
+                            </Badge>
                         </div>
                         <div className="flex flex-col mt-3 gap-1.5">
                             <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium">
@@ -374,11 +377,6 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         const isCheckoutTomorrow = res.checkoutDate === tomorrowStr;
         const property = PROPERTIES[(res.propertyId || 'lili') as PropertyId];
 
-        let badgeClass = 'bg-gray-100 text-gray-600';
-        if (statusLabel === 'Checkout Hoje') badgeClass = 'bg-orange-100 text-orange-700';
-        if (statusLabel === 'Hospedado') badgeClass = 'bg-green-100 text-green-700';
-        if (res.status === 'pending') badgeClass = 'bg-yellow-100 text-yellow-800';
-
         return (
             <tr
                 key={res.id}
@@ -401,17 +399,23 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 </td>
                 <td className="py-4 px-4 align-top">
                     <div className="flex flex-col items-start gap-1">
-                        <span
-                            className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${property.id === 'lili' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}
-                        >
+                        <Badge variant={property.id === 'lili' ? 'orange' : 'blue'}>
                             {property.name}
-                        </span>
+                        </Badge>
                         {statusLabel && (
-                            <span
-                                className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${badgeClass}`}
+                            <Badge
+                                variant={
+                                    statusLabel === 'Checkout Hoje'
+                                        ? 'orange'
+                                        : statusLabel === 'Hospedado'
+                                            ? 'green'
+                                            : res.status === 'pending'
+                                                ? 'yellow'
+                                                : 'gray'
+                                }
                             >
                                 {statusLabel}
-                            </span>
+                            </Badge>
                         )}
                     </div>
                 </td>
@@ -550,49 +554,42 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     return (
         <div className="p-6 space-y-6 min-h-[400px]">
             {/* SEARCH & FILTERS */}
-            <div className="relative">
-                <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={20}
-                />
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Buscar por nome ou nota..."
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-shadow"
-                />
-            </div>
+            <Input
+                variant="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nome ou nota..."
+            />
 
             {(!userPermission ||
                 userPermission.role === 'super_admin' ||
                 userPermission.allowedProperties.length > 1) && (
-                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                    <button
-                        onClick={() => setPropertyFilter('all')}
-                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${propertyFilter === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
-                    >
-                        Todos
-                    </button>
-                    {Object.values(PROPERTIES).map((prop) => {
-                        if (
-                            userPermission &&
-                            userPermission.role !== 'super_admin' &&
-                            !userPermission.allowedProperties.includes(prop.id)
-                        )
-                            return null;
-                        return (
-                            <button
-                                key={prop.id}
-                                onClick={() => setPropertyFilter(prop.id)}
-                                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${propertyFilter === prop.id ? (prop.id === 'lili' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/30') : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
-                            >
-                                <Building2 size={12} /> {prop.name}
-                            </button>
-                        );
-                    })}
-                </div>
-            )}
+                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                        <button
+                            onClick={() => setPropertyFilter('all')}
+                            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${propertyFilter === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
+                        >
+                            Todos
+                        </button>
+                        {Object.values(PROPERTIES).map((prop) => {
+                            if (
+                                userPermission &&
+                                userPermission.role !== 'super_admin' &&
+                                !userPermission.allowedProperties.includes(prop.id)
+                            )
+                                return null;
+                            return (
+                                <button
+                                    key={prop.id}
+                                    onClick={() => setPropertyFilter(prop.id)}
+                                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${propertyFilter === prop.id ? (prop.id === 'lili' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/30') : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
+                                >
+                                    <Building2 size={12} /> {prop.name}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
 
             <div className="space-y-2">
                 {renderSection('Saindo Hoje', leavingToday, 'border-orange-500', 'Checkout Hoje')}

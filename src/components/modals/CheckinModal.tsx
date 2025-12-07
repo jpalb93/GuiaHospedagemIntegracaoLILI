@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Video, Lock, Key } from 'lucide-react';
 import { SAFE_VIDEO_URL } from '../../constants';
+import { Button } from '../ui';
 
 interface CheckinModalProps {
     isOpen: boolean;
@@ -94,12 +95,15 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
                                 </div>
                             )}
 
-                            <button
+                            <Button
+                                variant="secondary"
                                 onClick={() => onOpenVideo(SAFE_VIDEO_URL, true)}
-                                className="w-full py-3 px-4 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-600 dark:text-gray-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-500 hover:border-orange-200 transition-all shadow-sm"
+                                fullWidth
+                                size="sm"
+                                leftIcon={<Video size={16} />}
                             >
-                                <Video size={16} /> Ver Vídeo do Cofre
-                            </button>
+                                Ver Vídeo do Cofre
+                            </Button>
                         </div>
                     </div>
 
@@ -144,12 +148,15 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
                                     </div>
                                 )}
 
-                                <button
+                                <Button
                                     onClick={() => onOpenVideo(SAFE_VIDEO_URL, true)}
-                                    className="w-full py-3 px-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-all"
+                                    fullWidth
+                                    size="sm"
+                                    leftIcon={<Video size={16} />}
+                                    className="bg-orange-50 dark:bg-orange-900/30 border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/50"
                                 >
-                                    <Video size={16} /> Ver Vídeo da Fechadura
-                                </button>
+                                    Ver Vídeo da Fechadura
+                                </Button>
                             </div>
                         </div>
                     )}

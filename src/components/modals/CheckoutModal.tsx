@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, ArrowLeft, Key, Info, AlertTriangle } from 'lucide-react';
 import { GuestConfig } from '../../types';
+import { Button } from '../ui';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -127,13 +128,15 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     Deve ser devolvida na caixinha "Self Checkout".
                                 </p>
 
-                                <button
+                                <Button
                                     onClick={() => setShowKeyDetails(true)}
-                                    className="w-full py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold uppercase tracking-wide rounded-lg border border-orange-200 dark:border-orange-800/50 flex items-center justify-center gap-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors"
+                                    fullWidth
+                                    size="sm"
+                                    leftIcon={<Info size={12} />}
+                                    className="bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 dark:hover:bg-orange-900/50 text-[10px] uppercase tracking-wide"
                                 >
-                                    <Info size={12} />
                                     Ver foto e onde deixar
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -152,13 +155,14 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 {showKeyDetails && (
                     <div className="absolute inset-0 z-20 bg-white dark:bg-gray-800 animate-slideUp flex flex-col">
                         <div className="p-4 bg-gray-100 dark:bg-gray-700 flex items-center gap-3 border-b border-gray-200 dark:border-gray-600 pr-12">
-                            <button
+                            <Button
+                                variant="icon"
                                 onClick={() => setShowKeyDetails(false)}
-                                className="p-1.5 bg-white dark:bg-gray-600 rounded-full shadow-sm text-gray-600 dark:text-white hover:bg-gray-50 transition-colors"
+                                className="bg-white dark:bg-gray-600 shadow-sm text-gray-600 dark:text-white hover:bg-gray-50"
                                 aria-label="Voltar"
                             >
                                 <ArrowLeft size={18} />
-                            </button>
+                            </Button>
                             <h3 className="font-heading font-bold text-gray-800 dark:text-white truncate">
                                 Devolução da Chave
                             </h3>

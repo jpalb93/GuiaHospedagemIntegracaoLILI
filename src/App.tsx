@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { AppMode, GuestConfig } from './types';
+import { Button, Input } from './components/ui';
 // Importação otimizada de ícones - Lucide React já faz tree-shaking automaticamente
 import {
     CalendarX,
@@ -109,13 +110,13 @@ const App: React.FC = () => {
     // --- ESTADO DO APP ---
     const [appState, setAppState] = useState<{
         mode:
-            | AppMode
-            | 'LANDING'
-            | 'LILI_LANDING'
-            | 'EXPIRED'
-            | 'BLOCKED'
-            | 'LOADING'
-            | 'RECONNECTING';
+        | AppMode
+        | 'LANDING'
+        | 'LILI_LANDING'
+        | 'EXPIRED'
+        | 'BLOCKED'
+        | 'LOADING'
+        | 'RECONNECTING';
         config: GuestConfig;
     }>(() => {
         // SE FOR APP NATIVO -> JÁ INICIA COMO ADMIN
@@ -215,7 +216,7 @@ const App: React.FC = () => {
                             if (USE_OFFICIAL_TIME) {
                                 try {
                                     now = await fetchOfficialTime();
-                                } catch (_e) {}
+                                } catch (_e) { }
                             }
                             const [year, month, day] = safeConfig.checkoutDate
                                 .split('-')
@@ -414,25 +415,27 @@ const App: React.FC = () => {
                                     : 'Este link não está mais disponível ou a reserva foi cancelada.'}
                             </p>
                             <div className="flex flex-col gap-3">
-                                <button
+                                <Button
                                     onClick={() => setShowManualLogin(true)}
-                                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-heading shadow-md"
+                                    fullWidth
+                                    leftIcon={<RefreshCw size={16} />}
                                 >
-                                    <RefreshCw size={16} />{' '}
                                     {isExpired ? 'Inserir Novo Código' : 'Tenho um novo código'}
-                                </button>
+                                </Button>
                                 <a
                                     href={`https://wa.me/${HOST_PHONE}`}
                                     className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-heading"
                                 >
                                     <MessageCircle size={18} /> Falar com a Anfitriã
                                 </a>
-                                <button
+                                <Button
+                                    variant="ghost"
                                     onClick={handleResetApp}
-                                    className="text-xs text-gray-400 hover:text-white underline mt-2 flex items-center justify-center gap-1"
+                                    className="text-xs text-gray-400 hover:text-white underline"
+                                    leftIcon={<LogOut size={12} />}
                                 >
-                                    <LogOut size={12} /> Voltar ao Início
-                                </button>
+                                    Voltar ao Início
+                                </Button>
                             </div>
                         </>
                     ) : (
@@ -440,27 +443,28 @@ const App: React.FC = () => {
                             <p className="text-sm text-gray-300 mb-3 font-medium">
                                 Cole o novo link abaixo:
                             </p>
-                            <input
-                                type="text"
+                            <Input
                                 value={manualInput}
                                 onChange={(e) => setManualInput(e.target.value)}
                                 placeholder="Cole aqui (ex: ?rid=...)"
-                                className="w-full p-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder:text-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 mb-4 text-sm transition-all"
+                                className="bg-black/50 border-white/20 text-white placeholder:text-gray-500 mb-4"
                             />
                             <div className="flex gap-3">
-                                <button
+                                <Button
+                                    variant="secondary"
                                     onClick={() => setShowManualLogin(false)}
-                                    className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 text-sm font-bold transition-colors"
+                                    className="flex-1 bg-white/10 hover:bg-white/20 text-gray-300 border-0"
                                 >
                                     Cancelar
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={handleManualSubmit}
                                     disabled={!manualInput.trim()}
-                                    className="flex-1 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1"
+                                    rightIcon={<ArrowRight size={16} />}
                                 >
-                                    Acessar <ArrowRight size={16} />
-                                </button>
+                                    Acessar
+                                </Button>
                             </div>
                         </div>
                     )}
