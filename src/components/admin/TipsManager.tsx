@@ -31,7 +31,7 @@ const DEFAULT_TIP_FORM: Partial<Tip> = {
     type: 'curiosity',
     visible: true,
     order: 0,
-    image: ''
+    image: '',
 };
 
 const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
@@ -53,21 +53,31 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => { },
-        isDestructive: false
+        onConfirm: () => {},
+        isDestructive: false,
     });
 
     // --- HELPERS ---
-    const showToast = useCallback((message: string, type: 'success' | 'error' | 'warning' = 'success') => {
-        const id = Date.now().toString();
-        setToasts(prev => [...prev, { id, message, type }]);
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
-    }, []);
+    const showToast = useCallback(
+        (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+            const id = Date.now().toString();
+            setToasts((prev) => [...prev, { id, message, type }]);
+            setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
+        },
+        []
+    );
 
     useEffect(() => {
         if (tips.data.length === 0 && !tips.loading) tips.refresh();
         if (curiosities.data.length === 0 && !curiosities.loading) curiosities.refresh();
-    }, [tips.data.length, tips.loading, tips.refresh, curiosities.data.length, curiosities.loading, curiosities.refresh]);
+    }, [
+        tips.data.length,
+        tips.loading,
+        tips.refresh,
+        curiosities.data.length,
+        curiosities.loading,
+        curiosities.refresh,
+    ]);
 
     // --- TIPS HANDLERS ---
     const handleOpenModal = (tip?: Tip) => {
@@ -83,7 +93,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
 
     const handleSaveTip = async () => {
         if (!formData.title || !formData.content) {
-            showToast("Título e Conteúdo são obrigatórios!", "warning");
+            showToast('Título e Conteúdo são obrigatórios!', 'warning');
             return;
         }
 
@@ -94,17 +104,20 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
 
         setIsSavingTip(false);
         if (success) {
-            showToast(editingId ? "Dica atualizada!" : "Dica criada!", "success");
+            showToast(editingId ? 'Dica atualizada!' : 'Dica criada!', 'success');
             setIsModalOpen(false);
         } else {
-            showToast("Erro ao salvar dica.", "error");
+            showToast('Erro ao salvar dica.', 'error');
         }
     };
 
     const handleDeleteTip = async (id: string) => {
-        if (window.confirm("Tem certeza que deseja excluir esta dica?")) {
+        if (window.confirm('Tem certeza que deseja excluir esta dica?')) {
             const success = await tips.delete(id);
-            showToast(success ? "Dica removida." : "Erro ao remover dica.", success ? "success" : "error");
+            showToast(
+                success ? 'Dica removida.' : 'Erro ao remover dica.',
+                success ? 'success' : 'error'
+            );
         }
     };
 
@@ -155,20 +168,20 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
     const handleDeleteCuriosity = (index: number) => {
         setConfirmModal({
             isOpen: true,
-            title: "Remover Curiosidade",
-            message: "Tem certeza que deseja remover esta curiosidade?",
+            title: 'Remover Curiosidade',
+            message: 'Tem certeza que deseja remover esta curiosidade?',
             isDestructive: true,
             onConfirm: async () => {
                 const newItems = curiosities.data.filter((_, i) => i !== index);
                 setIsSavingCuriosities(true);
                 await curiosities.save(newItems);
                 setIsSavingCuriosities(false);
-                showToast("Curiosidade removida.", "success");
+                showToast('Curiosidade removida.', 'success');
                 if (editingCuriosityIndex === index) {
                     setCuriosityForm({ text: '', image: '' });
                     setEditingCuriosityIndex(null);
                 }
-            }
+            },
         });
     };
 
@@ -211,7 +224,9 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 </div>
 
                 {tips.loading ? (
-                    <div className="flex justify-center py-12"><Loader2 className="animate-spin text-yellow-500" size={32} /></div>
+                    <div className="flex justify-center py-12">
+                        <Loader2 className="animate-spin text-yellow-500" size={32} />
+                    </div>
                 ) : (
                     <div className="space-y-4">
                         {visibleTips.map((tip, index) => (
@@ -233,15 +248,18 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
 
                         {sortedTips.length > visibleTipsCount && (
                             <button
-                                onClick={() => setVisibleTipsCount(prev => prev + 10)}
+                                onClick={() => setVisibleTipsCount((prev) => prev + 10)}
                                 className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                             >
-                                Carregar mais dicas ({sortedTips.length - visibleTipsCount} restantes)
+                                Carregar mais dicas ({sortedTips.length - visibleTipsCount}{' '}
+                                restantes)
                             </button>
                         )}
 
                         {sortedTips.length === 0 && (
-                            <div className="text-center py-8 text-gray-400 text-sm">Nenhuma dica cadastrada.</div>
+                            <div className="text-center py-8 text-gray-400 text-sm">
+                                Nenhuma dica cadastrada.
+                            </div>
                         )}
                     </div>
                 )}
@@ -280,7 +298,10 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 isDestructive={confirmModal.isDestructive}
             />
 
-            <ToastContainer toasts={toasts} removeToast={(id) => setToasts(prev => prev.filter(t => t.id !== id))} />
+            <ToastContainer
+                toasts={toasts}
+                removeToast={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
+            />
         </div>
     );
 };

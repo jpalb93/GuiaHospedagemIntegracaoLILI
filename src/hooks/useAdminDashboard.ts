@@ -4,10 +4,17 @@ import { generateShortId } from '../utils/helpers';
 import { User } from 'firebase/auth';
 import { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import {
-    subscribeToAuth, loginCMS, logoutCMS,
-    subscribeToActiveReservations, fetchHistoryReservations,
-    subscribeToFutureBlockedDates, saveReservation, updateReservation,
-    deleteReservation, addBlockedDate, deleteBlockedDate
+    subscribeToAuth,
+    loginCMS,
+    logoutCMS,
+    subscribeToActiveReservations,
+    fetchHistoryReservations,
+    subscribeToFutureBlockedDates,
+    saveReservation,
+    updateReservation,
+    deleteReservation,
+    addBlockedDate,
+    deleteBlockedDate,
 } from '../services/firebase';
 import { fetchOfficialTime } from '../constants';
 import { isApiConfigured } from '../services/geminiService';
@@ -59,7 +66,18 @@ export const useAdminDashboard = () => {
     const [isBlocking, setIsBlocking] = useState(false);
 
     // UI State
-    const [activeTab, setActiveTab] = useState<'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings'>(() => {
+    const [activeTab, setActiveTab] = useState<
+        | 'home'
+        | 'create'
+        | 'list'
+        | 'calendar'
+        | 'blocks'
+        | 'places'
+        | 'tips'
+        | 'reviews'
+        | 'suggestions'
+        | 'settings'
+    >(() => {
         const saved = localStorage.getItem('admin_active_tab');
         return (saved as any) || 'home';
     });
@@ -79,8 +97,8 @@ export const useAdminDashboard = () => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => { },
-        isDestructive: false
+        onConfirm: () => {},
+        isDestructive: false,
     });
 
     // --- HELPERS ---
@@ -98,28 +116,35 @@ export const useAdminDashboard = () => {
         if (loadingHistory) return;
         setLoadingHistory(true);
         try {
-            const lastDoc = reset ? null : (lastHistoryDoc as QueryDocumentSnapshot<unknown, DocumentData> | null);
+            const lastDoc = reset
+                ? null
+                : (lastHistoryDoc as QueryDocumentSnapshot<unknown, DocumentData> | null);
 
-            const filterProps = userPermission?.role === 'super_admin' ? undefined : userPermission?.allowedProperties;
+            const filterProps =
+                userPermission?.role === 'super_admin'
+                    ? undefined
+                    : userPermission?.allowedProperties;
 
-            const { data, lastVisible, hasMore } = await fetchHistoryReservations(lastDoc, 20, filterProps);
-
-            // FILTER HISTORY BY PERMISSION (Double check)
-            const filteredData = data.filter(r =>
-                !userPermission ||
-                userPermission.role === 'super_admin' ||
-                userPermission.allowedProperties.includes(r.propertyId || 'lili')
+            const { data, lastVisible, hasMore } = await fetchHistoryReservations(
+                lastDoc,
+                20,
+                filterProps
             );
 
-            setHistoryReservations(prev => reset ? filteredData : [...prev, ...filteredData]);
+            // FILTER HISTORY BY PERMISSION (Double check)
+            const filteredData = data.filter(
+                (r) =>
+                    !userPermission ||
+                    userPermission.role === 'super_admin' ||
+                    userPermission.allowedProperties.includes(r.propertyId || 'lili')
+            );
+
+            setHistoryReservations((prev) => (reset ? filteredData : [...prev, ...filteredData]));
             setLastHistoryDoc(lastVisible);
             setHasMoreHistory(hasMore);
-
-
-
         } catch (e) {
-            logger.error("Erro ao carregar histórico", e);
-            showToast("Erro ao carregar histórico", "error");
+            logger.error('Erro ao carregar histórico', e);
+            showToast('Erro ao carregar histórico', 'error');
         } finally {
             setLoadingHistory(false);
         }
@@ -185,12 +210,18 @@ export const useAdminDashboard = () => {
             }
 
             // AUTO-SELECT PROPERTY FOR RESTRICTED USERS
-            if (userPermission.role !== 'super_admin' && userPermission.allowedProperties.length === 1) {
+            if (
+                userPermission.role !== 'super_admin' &&
+                userPermission.allowedProperties.length === 1
+            ) {
                 setPropertyId(userPermission.allowedProperties[0]);
             }
 
             // Determine filters based on role
-            const filterProps = userPermission.role === 'super_admin' ? undefined : userPermission.allowedProperties;
+            const filterProps =
+                userPermission.role === 'super_admin'
+                    ? undefined
+                    : userPermission.allowedProperties;
 
             const unsubActive = subscribeToActiveReservations((data) => {
                 // O filtro por propriedade já é feito no serviço Firebase
@@ -220,7 +251,9 @@ export const useAdminDashboard = () => {
 
                 // Se ficou mais de 30s em background, os dados podem estar stale
                 if (timeInBackground > STALE_THRESHOLD_MS && user && userPermission) {
-                    logger.info(`[AdminDashboard] Tab visible after ${Math.round(timeInBackground / 1000)}s - refreshing data`);
+                    logger.info(
+                        `[AdminDashboard] Tab visible after ${Math.round(timeInBackground / 1000)}s - refreshing data`
+                    );
 
                     if (reloadTimeout) clearTimeout(reloadTimeout);
 
@@ -229,7 +262,7 @@ export const useAdminDashboard = () => {
                         loadMoreHistory(true);
 
                         // Mostra feedback ao usuário
-                        showToast("Dados atualizados", "info");
+                        showToast('Dados atualizados', 'info');
                     }, 300);
                 }
             } else {
@@ -274,45 +307,61 @@ export const useAdminDashboard = () => {
         e.preventDefault();
         try {
             await loginCMS(email, pass);
-            showToast("Bem-vindo de volta!", "success");
+            showToast('Bem-vindo de volta!', 'success');
         } catch (_e) {
-            showToast("Erro ao entrar. Verifique email e senha.", "error");
+            showToast('Erro ao entrar. Verifique email e senha.', 'error');
         }
     };
 
     const handleSaveReservation = async () => {
-        if (!guestName.trim()) { showToast("Preencha o nome do hóspede.", "warning"); return; }
+        if (!guestName.trim()) {
+            showToast('Preencha o nome do hóspede.', 'warning');
+            return;
+        }
 
         // PERMISSION CHECK
-        if (userPermission && userPermission.role !== 'super_admin' && !userPermission.allowedProperties.includes(propertyId)) {
-            showToast("Você não tem permissão para criar reservas nesta propriedade.", "error");
+        if (
+            userPermission &&
+            userPermission.role !== 'super_admin' &&
+            !userPermission.allowedProperties.includes(propertyId)
+        ) {
+            showToast('Você não tem permissão para criar reservas nesta propriedade.', 'error');
             return;
         }
 
         // Validação condicional baseada na propriedade
         if (propertyId === 'lili' && !lockCode.trim()) {
-            showToast("Defina a senha da porta.", "warning"); return;
+            showToast('Defina a senha da porta.', 'warning');
+            return;
         }
         if (propertyId === 'integracao' && !flatNumber.trim()) {
-            showToast("Defina o número do flat.", "warning"); return;
+            showToast('Defina o número do flat.', 'warning');
+            return;
         }
 
-        if (!checkInDate || !checkoutDate) { showToast("Verifique as datas de entrada e saída.", "warning"); return; }
-        if (!checkInTime.includes(':') || !checkOutTime.includes(':')) { showToast("Verifique os horários.", "warning"); return; }
+        if (!checkInDate || !checkoutDate) {
+            showToast('Verifique as datas de entrada e saída.', 'warning');
+            return;
+        }
+        if (!checkInTime.includes(':') || !checkOutTime.includes(':')) {
+            showToast('Verifique os horários.', 'warning');
+            return;
+        }
 
         const start = new Date(checkInDate);
         const end = new Date(checkoutDate);
-        start.setHours(0, 0, 0, 0); end.setHours(0, 0, 0, 0);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
 
         if (end <= start) {
-            showToast("O Check-out deve ser DEPOIS do Check-in.", "error");
+            showToast('O Check-out deve ser DEPOIS do Check-in.', 'error');
             return;
         }
 
         setIsSaving(true);
         try {
             // Use existing shortId if editing, otherwise generate new one
-            const finalShortId = (editingId && shortId) ? shortId : generateShortId();
+            const finalShortId = editingId && shortId ? shortId : generateShortId();
 
             const payload: Reservation = {
                 guestName: guestName.trim(),
@@ -320,20 +369,24 @@ export const useAdminDashboard = () => {
                 propertyId,
                 flatNumber: flatNumber.trim(),
                 lockCode: lockCode.trim(),
-                welcomeMessage: welcomeMessage.trim(), adminNotes: adminNotes.trim(),
+                welcomeMessage: welcomeMessage.trim(),
+                adminNotes: adminNotes.trim(),
                 guestAlertActive: guestAlertActive,
                 guestAlertText: guestAlertText.trim(),
-                checkInDate: checkInDate, checkoutDate: checkoutDate,
-                checkInTime: checkInTime, checkOutTime: checkOutTime,
-                status: 'active', createdAt: '',
+                checkInDate: checkInDate,
+                checkoutDate: checkoutDate,
+                checkInTime: checkInTime,
+                checkOutTime: checkOutTime,
+                status: 'active',
+                createdAt: '',
                 shortId: finalShortId, // Passando o ID curto gerado
                 guestCount,
-                paymentMethod: paymentMethod as 'pix' | 'money' | 'card' | undefined
+                paymentMethod: paymentMethod as 'pix' | 'money' | 'card' | undefined,
             };
 
             if (editingId) {
                 await updateReservation(editingId, payload);
-                showToast("Reserva atualizada com sucesso!", "success");
+                showToast('Reserva atualizada com sucesso!', 'success');
                 resetForm();
             } else {
                 await saveReservation(payload);
@@ -341,10 +394,10 @@ export const useAdminDashboard = () => {
                 // LINK BONITO: domain.com/ABC1234
                 const link = `${baseUrl}${finalShortId}`;
                 setGeneratedLink(link);
-                showToast("Reserva criada! Link curto gerado.", "success");
+                showToast('Reserva criada! Link curto gerado.', 'success');
             }
         } catch (e) {
-            showToast("Erro ao salvar reserva.", "error");
+            showToast('Erro ao salvar reserva.', 'error');
             logger.error(e);
         } finally {
             setIsSaving(false);
@@ -355,15 +408,16 @@ export const useAdminDashboard = () => {
         if (!id) return;
         setConfirmModal({
             isOpen: true,
-            title: "Excluir Reserva",
-            message: "Tem certeza que deseja excluir esta reserva permanentemente? Esta ação não pode ser desfeita.",
+            title: 'Excluir Reserva',
+            message:
+                'Tem certeza que deseja excluir esta reserva permanentemente? Esta ação não pode ser desfeita.',
             isDestructive: true,
             onConfirm: async () => {
                 await deleteReservation(id);
-                setHistoryReservations(prev => prev.filter(r => r.id !== id));
-                setActiveReservations(prev => prev.filter(r => r.id !== id));
-                showToast("Reserva excluída.", "success");
-            }
+                setHistoryReservations((prev) => prev.filter((r) => r.id !== id));
+                setActiveReservations((prev) => prev.filter((r) => r.id !== id));
+                showToast('Reserva excluída.', 'success');
+            },
         });
     };
 
@@ -389,16 +443,16 @@ export const useAdminDashboard = () => {
         setActiveTab('create');
         setGeneratedLink('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        showToast("Editando reserva de " + res.guestName, "info");
+        showToast('Editando reserva de ' + res.guestName, 'info');
     };
 
     const handleAddBlock = async () => {
         if (!blockedStartDate || !blockedEndDate) {
-            showToast("Selecione as datas de início e fim.", "warning");
+            showToast('Selecione as datas de início e fim.', 'warning');
             return;
         }
         if (blockedEndDate < blockedStartDate) {
-            showToast("A data final deve ser depois da data inicial.", "warning");
+            showToast('A data final deve ser depois da data inicial.', 'warning');
             return;
         }
 
@@ -407,12 +461,12 @@ export const useAdminDashboard = () => {
             await addBlockedDate({
                 startDate: blockedStartDate,
                 endDate: blockedEndDate,
-                reason: blockedReason
+                reason: blockedReason,
             });
             setBlockedReason('');
-            showToast("Datas bloqueadas com sucesso!", "success");
+            showToast('Datas bloqueadas com sucesso!', 'success');
         } catch (_e) {
-            showToast("Erro ao bloquear datas.", "error");
+            showToast('Erro ao bloquear datas.', 'error');
         } finally {
             setIsBlocking(false);
         }
@@ -422,38 +476,88 @@ export const useAdminDashboard = () => {
         if (!id) return;
         setConfirmModal({
             isOpen: true,
-            title: "Desbloquear Datas",
-            message: "Tem certeza que deseja remover este bloqueio de datas?",
+            title: 'Desbloquear Datas',
+            message: 'Tem certeza que deseja remover este bloqueio de datas?',
             isDestructive: false,
             onConfirm: async () => {
                 await deleteBlockedDate(id);
-                showToast("Datas desbloqueadas.", "success");
-            }
+                showToast('Datas desbloqueadas.', 'success');
+            },
         });
     };
 
     return {
         auth: { user, authLoading, handleLogin, logoutCMS, userPermission },
-        data: { activeReservations, historyReservations, blockedDates, loadMoreHistory, hasMoreHistory, loadingHistory },
+        data: {
+            activeReservations,
+            historyReservations,
+            blockedDates,
+            loadMoreHistory,
+            hasMoreHistory,
+            loadingHistory,
+        },
         form: {
-            guestName, setGuestName, guestPhone, setGuestPhone, lockCode, setLockCode,
-            propertyId, setPropertyId, flatNumber, setFlatNumber,
-            welcomeMessage, setWelcomeMessage, adminNotes, setAdminNotes,
-            guestAlertActive, setGuestAlertActive, guestAlertText, setGuestAlertText,
-            checkInDate, setCheckInDate, checkoutDate, setCheckoutDate,
-            checkInTime, setCheckInTime, checkOutTime, setCheckOutTime,
-            guestCount, setGuestCount, paymentMethod, setPaymentMethod,
-            editingId, handleSaveReservation, handleDeleteReservation, handleStartEdit, resetForm, isSaving
+            guestName,
+            setGuestName,
+            guestPhone,
+            setGuestPhone,
+            lockCode,
+            setLockCode,
+            propertyId,
+            setPropertyId,
+            flatNumber,
+            setFlatNumber,
+            welcomeMessage,
+            setWelcomeMessage,
+            adminNotes,
+            setAdminNotes,
+            guestAlertActive,
+            setGuestAlertActive,
+            guestAlertText,
+            setGuestAlertText,
+            checkInDate,
+            setCheckInDate,
+            checkoutDate,
+            setCheckoutDate,
+            checkInTime,
+            setCheckInTime,
+            checkOutTime,
+            setCheckOutTime,
+            guestCount,
+            setGuestCount,
+            paymentMethod,
+            setPaymentMethod,
+            editingId,
+            handleSaveReservation,
+            handleDeleteReservation,
+            handleStartEdit,
+            resetForm,
+            isSaving,
         },
         blocks: {
-            blockedStartDate, setBlockedStartDate, blockedEndDate, setBlockedEndDate,
-            blockedReason, setBlockedReason, isBlocking, handleAddBlock, handleDeleteBlock
+            blockedStartDate,
+            setBlockedStartDate,
+            blockedEndDate,
+            setBlockedEndDate,
+            blockedReason,
+            setBlockedReason,
+            isBlocking,
+            handleAddBlock,
+            handleDeleteBlock,
         },
         ui: {
-            activeTab, setActiveTab, searchTerm, setSearchTerm,
-            generatedLink, setGeneratedLink,
-            apiKeyStatus, toasts, showToast, removeToast,
-            confirmModal, setConfirmModal
-        }
-    }
+            activeTab,
+            setActiveTab,
+            searchTerm,
+            setSearchTerm,
+            generatedLink,
+            setGeneratedLink,
+            apiKeyStatus,
+            toasts,
+            showToast,
+            removeToast,
+            confirmModal,
+            setConfirmModal,
+        },
+    };
 };

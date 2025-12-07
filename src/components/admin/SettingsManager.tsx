@@ -8,7 +8,7 @@ import {
     WifiSafeSection,
     NoticesSection,
     ChecklistSection,
-    MessageTemplatesSection
+    MessageTemplatesSection,
 } from './settings';
 
 interface SettingsManagerProps {
@@ -33,7 +33,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
     const currentHeroImages = heroImages.data[activeProperty] || [];
 
     const handleRemoveHeroImage = async (index: number) => {
-        if (confirm("Remover esta imagem?")) {
+        if (confirm('Remover esta imagem?')) {
             const updatedList = currentHeroImages.filter((_, i) => i !== index);
             await heroImages.update(updatedList, activeProperty);
         }
@@ -53,7 +53,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (_error) {
-            alert("Erro ao salvar configurações.");
+            alert('Erro ao salvar configurações.');
         } finally {
             setIsSaving(false);
         }
@@ -64,7 +64,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         const backupData = {
             settings: localSettings,
             heroImages: heroImages.data,
-            exportedAt: new Date().toISOString()
+            exportedAt: new Date().toISOString(),
         };
         const dataStr = JSON.stringify(backupData, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
@@ -93,15 +93,14 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                 ...localSettings,
                 aiSystemPrompts: {
                     ...localSettings.aiSystemPrompts,
-                    [activeProperty]: val
-                }
+                    [activeProperty]: val,
+                },
             });
         }
     };
 
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
-
             {/* PROPERTY SELECTOR */}
             <PropertySelector
                 activeProperty={activeProperty}
@@ -119,7 +118,8 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
             {/* AI BRAIN */}
             <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
                 <h3 className="text-sm font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2 mb-3">
-                    <Sparkles size={16} /> Cérebro da IA ({activeProperty === 'lili' ? 'Mandacaru' : 'Concierge Integração'})
+                    <Sparkles size={16} /> Cérebro da IA (
+                    {activeProperty === 'lili' ? 'Mandacaru' : 'Concierge Integração'})
                 </h3>
                 <textarea
                     value={getAiPrompt()}
@@ -128,7 +128,11 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                     className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-purple-500 min-h-[150px] font-mono leading-relaxed"
                 />
                 <p className="text-[10px] text-gray-400 mt-2">
-                    Este prompt define a personalidade e o conhecimento da IA para <strong>{activeProperty === 'lili' ? 'o Flat da Lili' : 'os Flats Integração'}</strong>.
+                    Este prompt define a personalidade e o conhecimento da IA para{' '}
+                    <strong>
+                        {activeProperty === 'lili' ? 'o Flat da Lili' : 'os Flats Integração'}
+                    </strong>
+                    .
                 </p>
             </div>
 
@@ -148,10 +152,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                 />
 
                 {/* NOTICES & PHONES */}
-                <NoticesSection
-                    localSettings={localSettings}
-                    setLocalSettings={setLocalSettings}
-                />
+                <NoticesSection localSettings={localSettings} setLocalSettings={setLocalSettings} />
 
                 {/* CHECKLIST */}
                 <ChecklistSection
@@ -179,7 +180,17 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                         disabled={isSaving}
                         className={`flex-1 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all shadow-lg ${saveSuccess ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600'}`}
                     >
-                        {isSaving ? <Loader2 className="animate-spin" size={18} /> : saveSuccess ? <><Check size={18} /> Salvo!</> : <><Save size={18} /> Salvar Configurações</>}
+                        {isSaving ? (
+                            <Loader2 className="animate-spin" size={18} />
+                        ) : saveSuccess ? (
+                            <>
+                                <Check size={18} /> Salvo!
+                            </>
+                        ) : (
+                            <>
+                                <Save size={18} /> Salvar Configurações
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

@@ -13,7 +13,7 @@ export {
     addDynamicPlace,
     updateDynamicPlace,
     deleteDynamicPlace,
-    cleanupExpiredEvents
+    cleanupExpiredEvents,
 } from './places';
 
 // Reservations (Reservas)
@@ -26,7 +26,7 @@ export {
     subscribeToActiveReservations,
     subscribeToFutureReservations,
     fetchHistoryReservations,
-    subscribeToReservations
+    subscribeToReservations,
 } from './reservations';
 
 // App Settings (Configurações, Hero Images, Sugestões)
@@ -38,7 +38,7 @@ export {
     updateHeroImages,
     getSmartSuggestions,
     saveSmartSuggestions,
-    subscribeToSmartSuggestions
+    subscribeToSmartSuggestions,
 } from './appSettings';
 
 // Content (Dicas, Curiosidades, Reviews)
@@ -52,7 +52,7 @@ export {
     saveCuriosities,
     getGuestReviews,
     addGuestReview,
-    deleteGuestReview
+    deleteGuestReview,
 } from './content';
 
 // Blocked Dates (Datas Bloqueadas)
@@ -60,7 +60,7 @@ export {
     addBlockedDate,
     deleteBlockedDate,
     subscribeToBlockedDates,
-    subscribeToFutureBlockedDates
+    subscribeToFutureBlockedDates,
 } from './blockedDates';
 
 // Storage (Upload de Imagens)

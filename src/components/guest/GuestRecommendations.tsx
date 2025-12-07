@@ -1,7 +1,7 @@
 /**
  * Re-export do GuestRecommendations refatorado
  * O componente foi dividido em subcomponentes menores na pasta ./recommendations/
- * 
+ *
  * Estrutura:
  * - GuestRecommendations.tsx - Componente principal com grid e sheets
  * - ExpandablePlaceList.tsx - Lista expansível de lugares

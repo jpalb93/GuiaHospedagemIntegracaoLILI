@@ -16,10 +16,7 @@
             "name": "Todo dia às 07:00",
             "type": "n8n-nodes-base.scheduleTrigger",
             "typeVersion": 1.1,
-            "position": [
-                460,
-                360
-            ]
+            "position": [460, 360]
         },
         {
             "parameters": {
@@ -33,10 +30,7 @@
             "name": "Buscar Check-ins Hoje",
             "type": "n8n-nodes-base.googleFirestore",
             "typeVersion": 1,
-            "position": [
-                680,
-                260
-            ],
+            "position": [680, 260],
             "credentials": {
                 "googleFirebaseFirestoreOAuth2Api": {
                     "id": "CRIE_SUA_CREDENTIAL_NO_N8N",
@@ -56,10 +50,7 @@
             "name": "Buscar Check-outs Hoje",
             "type": "n8n-nodes-base.googleFirestore",
             "typeVersion": 1,
-            "position": [
-                680,
-                460
-            ],
+            "position": [680, 460],
             "credentials": {
                 "googleFirebaseFirestoreOAuth2Api": {
                     "id": "CRIE_SUA_CREDENTIAL_NO_N8N",
@@ -75,10 +66,7 @@
             "name": "Formatar Relatório",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
-            "position": [
-                900,
-                360
-            ]
+            "position": [900, 360]
         },
         {
             "parameters": {
@@ -112,10 +100,7 @@
             "name": "Enviar para Anfitriã",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.1,
-            "position": [
-                1120,
-                360
-            ]
+            "position": [1120, 360]
         }
     ],
     "pinData": {},

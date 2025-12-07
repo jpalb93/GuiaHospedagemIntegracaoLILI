@@ -21,12 +21,14 @@ vi.mock('firebase-admin/firestore', () => {
 
 // Importar o handler (precisamos ajustar para testar a lógica interna ou mockar req/res)
 // Como é uma serverless function, vamos simular a lógica de sanitização isoladamente
-// ou mockar o handler se ele for exportável. 
+// ou mockar o handler se ele for exportável.
 // Para simplificar e não depender de ambiente node real, vamos replicar a lógica de sanitização aqui para teste unitário
 // garantindo que a regra de negócio (24h antes) esteja correta.
 
 function sanitizeConfig(reservationData: any, globalConfig: any, serverTime: Date) {
-    const brazilTime = new Date(serverTime.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+    const brazilTime = new Date(
+        serverTime.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' })
+    );
     brazilTime.setHours(0, 0, 0, 0);
 
     let isReleased = false;
@@ -47,8 +49,8 @@ function sanitizeConfig(reservationData: any, globalConfig: any, serverTime: Dat
 
     return {
         lockCode: isReleased ? reservationData.lockCode : '****',
-        wifiPass: isReleased ? (globalConfig.wifiPass || 'visitante123') : 'Disponível no Check-in',
-        isReleased
+        wifiPass: isReleased ? globalConfig.wifiPass || 'visitante123' : 'Disponível no Check-in',
+        isReleased,
     };
 }
 

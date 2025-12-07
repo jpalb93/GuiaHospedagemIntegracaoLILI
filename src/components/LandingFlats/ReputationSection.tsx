@@ -6,7 +6,6 @@ const ReputationSection: React.FC = () => {
         <section className="py-24 bg-gray-50 overflow-hidden">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-6xl mx-auto">
-
                     {/* Left: Score Highlight */}
                     <div className="flex-1 text-center md:text-left">
                         <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-bold text-sm mb-6 animate-fadeIn">
@@ -22,14 +21,17 @@ const ReputationSection: React.FC = () => {
                         </h2>
 
                         <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
-                            Nossa dedicação ao conforto e a qualidade do serviço reflete na satisfação de quem passa por aqui.
+                            Nossa dedicação ao conforto e a qualidade do serviço reflete na
+                            satisfação de quem passa por aqui.
                         </p>
 
                         <div className="flex flex-wrap justify-center md:justify-start gap-4">
                             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
                                 <MapPin className="text-blue-500" size={24} />
                                 <div className="text-left">
-                                    <span className="block font-bold text-gray-900">Localização</span>
+                                    <span className="block font-bold text-gray-900">
+                                        Localização
+                                    </span>
                                     <span className="text-xs text-gray-500">Privilegiada</span>
                                 </div>
                             </div>
@@ -76,7 +78,6 @@ const ReputationSection: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>

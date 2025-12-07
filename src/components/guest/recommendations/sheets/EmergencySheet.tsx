@@ -68,7 +68,7 @@ const EmergencyButton: React.FC<EmergencyButtonProps> = ({
     label,
     icon: Icon,
     colorClass,
-    shadowClass
+    shadowClass,
 }) => (
     <a
         href={`tel:${number}`}

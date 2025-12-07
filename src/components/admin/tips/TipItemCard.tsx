@@ -28,7 +28,7 @@ const TipItemCard: React.FC<TipItemCardProps> = ({
     onDragStart,
     onDragEnd,
     onDragOver,
-    onDrop
+    onDrop,
 }) => {
     const Icon = getIcon(tip.iconName);
 
@@ -68,10 +68,16 @@ const TipItemCard: React.FC<TipItemCardProps> = ({
             {/* Conteúdo */}
             <div className="flex-1 min-w-0 flex flex-col">
                 <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-gray-900 dark:text-white truncate">{tip.title}</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-white truncate">
+                        {tip.title}
+                    </h3>
                 </div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">{tip.subtitle}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">{tip.content}</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">
+                    {tip.subtitle}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+                    {tip.content}
+                </p>
 
                 {/* Ações */}
                 <div className="flex justify-end gap-2 mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">

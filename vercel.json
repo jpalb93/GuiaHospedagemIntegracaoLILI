@@ -1,12 +1,12 @@
 {
-  "rewrites": [
-    {
-      "source": "/lili",
-      "destination": "/lili.html"
-    },
-    {
-      "source": "/((?!api/.*).*)",
-      "destination": "/index.html"
-    }
-  ]
+    "rewrites": [
+        {
+            "source": "/lili",
+            "destination": "/lili.html"
+        },
+        {
+            "source": "/((?!api/.*).*)",
+            "destination": "/index.html"
+        }
+    ]
 }

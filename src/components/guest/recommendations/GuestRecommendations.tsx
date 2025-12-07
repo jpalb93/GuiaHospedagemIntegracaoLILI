@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Utensils, Coffee, ShoppingBasket, Map,
-    Flame, Pizza, CalendarHeart, Home, AlertTriangle,
-    HeartPulse, Salad, Pill
+    Utensils,
+    Coffee,
+    ShoppingBasket,
+    Map,
+    Flame,
+    Pizza,
+    CalendarHeart,
+    Home,
+    AlertTriangle,
+    HeartPulse,
+    Salad,
+    Pill,
 } from 'lucide-react';
 import SectionCard from '../../SectionCard';
 import BottomSheet from '../../ui/BottomSheet';
@@ -34,7 +43,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     activeEvents,
     openEmergency,
     emergencyRef,
-    propertyId = 'lili'
+    propertyId = 'lili',
 }) => {
     const [activeSheet, setActiveSheet] = useState<string | null>(null);
 
@@ -162,19 +171,31 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 />
                 <PlacesCategory
                     title="Lavanderia"
-                    icon={<span role="img" aria-label="laundry">🧺</span>}
+                    icon={
+                        <span role="img" aria-label="laundry">
+                            🧺
+                        </span>
+                    }
                     places={mergePlaces([], 'laundry')}
                     visible={hasContent([], 'laundry')}
                 />
                 <PlacesCategory
                     title="Salão de Beleza"
-                    icon={<span role="img" aria-label="salon">💇‍♀️</span>}
+                    icon={
+                        <span role="img" aria-label="salon">
+                            💇‍♀️
+                        </span>
+                    }
                     places={mergePlaces([], 'salon')}
                     visible={hasContent([], 'salon')}
                 />
                 <PlacesCategory
                     title="Academia"
-                    icon={<span role="img" aria-label="gym">💪</span>}
+                    icon={
+                        <span role="img" aria-label="gym">
+                            💪
+                        </span>
+                    }
                     places={mergePlaces([], 'gym')}
                     visible={hasContent([], 'gym')}
                 />
@@ -189,13 +210,21 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             >
                 <PlacesCategory
                     title="Bares & Pubs"
-                    icon={<span role="img" aria-label="beer">🍺</span>}
+                    icon={
+                        <span role="img" aria-label="beer">
+                            🍺
+                        </span>
+                    }
                     places={mergePlaces([], 'bars')}
                     visible={hasContent([], 'bars')}
                 />
                 <PlacesCategory
                     title="Hambúrguer & Sanduíches"
-                    icon={<span role="img" aria-label="burger">🍔</span>}
+                    icon={
+                        <span role="img" aria-label="burger">
+                            🍔
+                        </span>
+                    }
                     places={mergePlaces([], 'burgers')}
                     visible={hasContent([], 'burgers')}
                 />
@@ -219,7 +248,11 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 />
                 <PlacesCategory
                     title="Oriental & Sushi"
-                    icon={<span role="img" aria-label="sushi">🍣</span>}
+                    icon={
+                        <span role="img" aria-label="sushi">
+                            🍣
+                        </span>
+                    }
                     places={mergePlaces([], 'oriental')}
                     visible={hasContent([], 'oriental')}
                 />
@@ -237,7 +270,11 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 />
                 <PlacesCategory
                     title="Lanches Rápidos"
-                    icon={<span role="img" aria-label="hotdog">🌭</span>}
+                    icon={
+                        <span role="img" aria-label="hotdog">
+                            🌭
+                        </span>
+                    }
                     places={mergePlaces([], 'snacks')}
                     visible={hasContent([], 'snacks')}
                 />
@@ -273,13 +310,21 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 />
                 <PlacesCategory
                     title="Aluguel de Bicicletas"
-                    icon={<span role="img" aria-label="bike">🚲</span>}
+                    icon={
+                        <span role="img" aria-label="bike">
+                            🚲
+                        </span>
+                    }
                     places={mergePlaces([], 'bikes')}
                     visible={hasContent([], 'bikes')}
                 />
                 <PlacesCategory
                     title="Lembrancinhas"
-                    icon={<span role="img" aria-label="gift">🎁</span>}
+                    icon={
+                        <span role="img" aria-label="gift">
+                            🎁
+                        </span>
+                    }
                     places={mergePlaces([], 'souvenirs')}
                     visible={hasContent([], 'souvenirs')}
                 />

@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { PlaceRecommendation, PlaceCategory } from '../../../types';
-import { X, Save, Loader2, Link as LinkIcon, Phone, Tag, MapPin, MessageCircle } from 'lucide-react';
+import {
+    X,
+    Save,
+    Loader2,
+    Link as LinkIcon,
+    Phone,
+    Tag,
+    MapPin,
+    MessageCircle,
+} from 'lucide-react';
 import ImageUpload from '../ImageUpload';
 import { CATEGORIES, DEFAULT_FORM_DATA } from './constants';
 
@@ -20,7 +29,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
     onClose,
     onSave,
     editingPlace,
-    isSaving
+    isSaving,
 }) => {
     const [formData, setFormData] = useState<Partial<PlaceRecommendation>>(DEFAULT_FORM_DATA);
     const [tagInput, setTagInput] = useState('');
@@ -75,24 +84,35 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                     {/* Nome e Categoria */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Nome</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                Nome
+                            </label>
                             <input
                                 type="text"
                                 value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Ex: Burger King"
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Categoria</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                Categoria
+                            </label>
                             <select
                                 value={formData.category}
-                                onChange={e => setFormData({ ...formData, category: e.target.value as PlaceCategory })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        category: e.target.value as PlaceCategory,
+                                    })
+                                }
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                             >
-                                {CATEGORIES.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                                {CATEGORIES.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.label}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -100,10 +120,14 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
 
                     {/* Descrição */}
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Descrição</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Descrição
+                        </label>
                         <textarea
                             value={formData.description}
-                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, description: e.target.value })
+                            }
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500 min-h-[80px]"
                             placeholder="Descreva o local..."
                         />
@@ -118,17 +142,23 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             <input
                                 type="text"
                                 value={formData.address}
-                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, address: e.target.value })
+                                }
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Rua Exemplo, 123"
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Distância (Opcional)</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                Distância (Opcional)
+                            </label>
                             <input
                                 type="text"
                                 value={formData.distance}
-                                onChange={e => setFormData({ ...formData, distance: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, distance: e.target.value })
+                                }
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Ex: 500m"
                             />
@@ -144,7 +174,9 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             <input
                                 type="text"
                                 value={formData.orderLink}
-                                onChange={e => setFormData({ ...formData, orderLink: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, orderLink: e.target.value })
+                                }
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="https://..."
                             />
@@ -156,7 +188,9 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             <input
                                 type="text"
                                 value={formData.phoneNumber}
-                                onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, phoneNumber: e.target.value })
+                                }
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="55879..."
                             />
@@ -172,7 +206,9 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             <input
                                 type="text"
                                 value={formData.whatsapp || ''}
-                                onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, whatsapp: e.target.value })
+                                }
                                 className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="55879..."
                             />
@@ -189,8 +225,8 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Adicione tags (Enter)"
                                 value={tagInput}
-                                onChange={e => setTagInput(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && addTag()}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && addTag()}
                             />
                             <button
                                 onClick={addTag}
@@ -206,7 +242,10 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                     className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1"
                                 >
                                     {tag}
-                                    <button onClick={() => removeTag(i)} className="hover:text-red-500">
+                                    <button
+                                        onClick={() => removeTag(i)}
+                                        className="hover:text-red-500"
+                                    >
                                         <X size={12} />
                                     </button>
                                 </span>
@@ -216,11 +255,13 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
 
                     {/* Link do Maps */}
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Link do Maps</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Link do Maps
+                        </label>
                         <input
                             type="text"
                             value={formData.mapsLink}
-                            onChange={e => setFormData({ ...formData, mapsLink: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, mapsLink: e.target.value })}
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                             placeholder="https://maps.google.com/..."
                         />
@@ -228,7 +269,9 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
 
                     {/* Imagem */}
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Imagem do Local</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Imagem do Local
+                        </label>
                         <ImageUpload
                             onUpload={(url) => setFormData({ ...formData, imageUrl: url })}
                             initialUrl={formData.imageUrl}
@@ -245,40 +288,59 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase ml-1">Data Início</label>
+                                    <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                        Data Início
+                                    </label>
                                     <input
                                         type="date"
                                         value={formData.eventDate}
-                                        onChange={e => setFormData({ ...formData, eventDate: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, eventDate: e.target.value })
+                                        }
                                         className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase ml-1">Data Fim (Opcional)</label>
+                                    <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                        Data Fim (Opcional)
+                                    </label>
                                     <input
                                         type="date"
                                         value={formData.eventEndDate}
-                                        onChange={e => setFormData({ ...formData, eventEndDate: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                eventEndDate: e.target.value,
+                                            })
+                                        }
                                         className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Horário</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                    Horário
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.eventTime}
-                                    onChange={e => setFormData({ ...formData, eventTime: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, eventTime: e.target.value })
+                                    }
                                     className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     placeholder="Ex: 20:00"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Link de Ingressos/Info</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                                    Link de Ingressos/Info
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.orderLink}
-                                    onChange={e => setFormData({ ...formData, orderLink: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, orderLink: e.target.value })
+                                    }
                                     className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     placeholder="https://..."
                                 />

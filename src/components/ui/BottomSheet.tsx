@@ -15,7 +15,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     onClose,
     title,
     icon: Icon,
-    children
+    children,
 }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -68,7 +68,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
                                 <Icon size={20} />
                             </div>
                         )}
-                        <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-white">{title}</h3>
+                        <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-white">
+                            {title}
+                        </h3>
                     </div>
                     <button
                         onClick={onClose}
@@ -79,9 +81,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto overscroll-contain">
-                    {children}
-                </div>
+                <div className="p-6 overflow-y-auto overscroll-contain">{children}</div>
             </div>
         </div>
     );

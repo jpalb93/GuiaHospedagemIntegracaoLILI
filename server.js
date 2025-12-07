@@ -53,12 +53,11 @@ app.post('/api/create-payment', async (req, res) => {
             qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64,
             ticket_url: response.point_of_interaction?.transaction_data?.ticket_url,
         });
-
     } catch (error) {
         console.error('Mercado Pago Error:', error);
         res.status(500).json({
             error: 'Payment creation failed',
-            details: error.message
+            details: error.message,
         });
     }
 });

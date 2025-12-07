@@ -3,8 +3,21 @@
  * Dicas (Tips), Curiosidades e Reviews
  */
 import {
-    collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc,
-    query, orderBy, limit, writeBatch, Query, DocumentData, QueryDocumentSnapshot
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    setDoc,
+    query,
+    orderBy,
+    limit,
+    writeBatch,
+    Query,
+    DocumentData,
+    QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db, cleanData } from './config';
 import { Tip, CityCuriosity, GuestReview } from '../../types';
@@ -15,12 +28,15 @@ export const getTips = async (): Promise<Tip[]> => {
     try {
         const q = query(collection(db, 'tips'), orderBy('order', 'asc'));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...(doc.data() as Record<string, unknown>)
-        } as Tip));
+        return snapshot.docs.map(
+            (doc) =>
+                ({
+                    id: doc.id,
+                    ...(doc.data() as Record<string, unknown>),
+                }) as Tip
+        );
     } catch (error) {
-        logger.error("Erro ao buscar dicas:", error);
+        logger.error('Erro ao buscar dicas:', error);
         return [];
     }
 };
@@ -81,10 +97,13 @@ export const getGuestReviews = async (limitCount?: number): Promise<GuestReview[
             q = query(collection(db, 'reviews'), limit(limitCount));
         }
         const snapshot = await getDocs(q);
-        return snapshot.docs.map((doc: QueryDocumentSnapshot<unknown, DocumentData>) => ({
-            id: doc.id,
-            ...(doc.data() as Record<string, unknown>)
-        } as GuestReview));
+        return snapshot.docs.map(
+            (doc: QueryDocumentSnapshot<unknown, DocumentData>) =>
+                ({
+                    id: doc.id,
+                    ...(doc.data() as Record<string, unknown>),
+                }) as GuestReview
+        );
     } catch (_error) {
         return [];
     }

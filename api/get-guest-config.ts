@@ -47,10 +47,9 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 function handleCors(req: VercelRequest, res: VercelResponse): boolean {
     const origin = req.headers.origin;
-    const isAllowed = origin && (
-        ALLOWED_ORIGINS.includes(origin) ||
-        ALLOWED_PATTERNS.some(p => p.test(origin))
-    );
+    const isAllowed =
+        origin &&
+        (ALLOWED_ORIGINS.includes(origin) || ALLOWED_PATTERNS.some((p) => p.test(origin)));
 
     if (isAllowed) {
         res.setHeader('Access-Control-Allow-Origin', origin);
@@ -74,7 +73,12 @@ function handleCors(req: VercelRequest, res: VercelResponse): boolean {
 
 function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): boolean {
     try {
-        const ip = (Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for']) || req.socket.remoteAddress || 'unknown';
+        const ip =
+            (Array.isArray(req.headers['x-forwarded-for'])
+                ? req.headers['x-forwarded-for'][0]
+                : req.headers['x-forwarded-for']) ||
+            req.socket.remoteAddress ||
+            'unknown';
         const now = Date.now();
         const windowMs = 60 * 1000;
 
@@ -99,7 +103,7 @@ function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): bo
 
 // Schema de Validação
 const QuerySchema = z.object({
-    rid: z.string().min(1, "Missing reservation ID (rid)")
+    rid: z.string().min(1, 'Missing reservation ID (rid)'),
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -149,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // 3. Time Validation (Server Time)
         // Using Sao Paulo time for consistency with the business location
         const now = new Date();
-        const brazilTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+        const brazilTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
         brazilTime.setHours(0, 0, 0, 0);
 
         let isReleased = false;
@@ -181,18 +185,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Always include these, but value depends on release
             lockCode: isReleased ? reservationData.lockCode : '****',
             wifiSSID: globalConfig.wifiSSID || 'Flat_Petrolina_5G',
-            wifiPass: isReleased ? (globalConfig.wifiPass || 'visitante123') : 'Disponível no Check-in',
-            safeCode: isReleased ? (globalConfig.safeCode || '----') : '****',
+            wifiPass: isReleased
+                ? globalConfig.wifiPass || 'visitante123'
+                : 'Disponível no Check-in',
+            safeCode: isReleased ? globalConfig.safeCode || '----' : '****',
             isReleased: isReleased, // Helper for frontend UI
             propertyId: reservationData.propertyId || 'lili',
-            flatNumber: reservationData.flatNumber
+            flatNumber: reservationData.flatNumber,
         };
 
         return res.status(200).json(safeConfig);
-
     } catch (error) {
         if (error instanceof z.ZodError) {
-            return res.status(400).json({ error: "Parâmetros inválidos", details: error.issues });
+            return res.status(400).json({ error: 'Parâmetros inválidos', details: error.issues });
         }
         console.error('Error fetching guest config:', error);
         return res.status(500).json({ error: 'Internal Server Error' });

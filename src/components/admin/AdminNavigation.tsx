@@ -12,7 +12,7 @@ import {
     CalendarOff,
     LogOut,
     Moon,
-    Sun
+    Sun,
 } from 'lucide-react';
 
 import { UserPermission } from '../../types';
@@ -38,9 +38,8 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
     toggleTheme,
     onLogout,
     userEmail,
-    userPermission
+    userPermission,
 }) => {
-
     // --- BRANDING LOGIC ---
     const getBrandTitle = () => {
         if (!userPermission) return 'Painel Admin';
@@ -71,14 +70,15 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
         { id: 'settings', label: 'Config', icon: Settings, mobile: false },
     ];
 
-    const mobileItems = navItems.filter(item => item.mobile);
+    const mobileItems = navItems.filter((item) => item.mobile);
 
     return (
         <>
             {/* DESKTOP SIDEBAR - GLASSMOPHISM & PREMIUM UI */}
-            <div className="hidden md:flex flex-col w-72 h-screen fixed left-0 top-0 z-40 transition-all duration-300
-                bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-r border-gray-200/50 dark:border-white/5 supports-[backdrop-filter]:bg-opacity-60 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-
+            <div
+                className="hidden md:flex flex-col w-72 h-screen fixed left-0 top-0 z-40 transition-all duration-300
+                bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-r border-gray-200/50 dark:border-white/5 supports-[backdrop-filter]:bg-opacity-60 shadow-[4px_0_24px_rgba(0,0,0,0.02)]"
+            >
                 {/* BRANDING HEADER */}
                 <div className="p-8 pb-6">
                     <div className="flex items-center gap-4 mb-2">
@@ -86,11 +86,17 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                             <Sparkles size={24} fill="currentColor" className="opacity-90" />
                         </div>
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 dark:text-white font-heading leading-none tracking-tight mb-1">{brandTitle}</h1>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-white font-heading leading-none tracking-tight mb-1">
+                                {brandTitle}
+                            </h1>
                             {userPermission?.role === 'super_admin' ? (
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-full w-fit">Super Admin</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-full w-fit">
+                                    Super Admin
+                                </span>
                             ) : (
-                                <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">Gestão</span>
+                                <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    Gestão
+                                </span>
                             )}
                         </div>
                     </div>
@@ -102,17 +108,22 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
-                            className={`group w-full flex items-center gap-3.5 px-5 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${activeTab === item.id
-                                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25 ring-1 ring-white/20 translate-x-1'
-                                : 'text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:shadow-sm dark:hover:shadow-none hover:translate-x-1'
-                                }`}
+                            className={`group w-full flex items-center gap-3.5 px-5 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${
+                                activeTab === item.id
+                                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25 ring-1 ring-white/20 translate-x-1'
+                                    : 'text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:shadow-sm dark:hover:shadow-none hover:translate-x-1'
+                            }`}
                         >
                             <item.icon
                                 size={22}
                                 strokeWidth={activeTab === item.id ? 2.5 : 2}
                                 className={`transition-transform duration-300 ${activeTab === item.id ? 'text-white scale-110' : 'group-hover:text-orange-500 dark:group-hover:text-orange-400 group-hover:scale-110'}`}
                             />
-                            <span className={`relative z-10 tracking-wide ${activeTab === item.id ? 'font-bold' : ''}`}>{item.label}</span>
+                            <span
+                                className={`relative z-10 tracking-wide ${activeTab === item.id ? 'font-bold' : ''}`}
+                            >
+                                {item.label}
+                            </span>
 
                             {/* Active Glow Effect */}
                             {activeTab === item.id && (
@@ -132,10 +143,16 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                             <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:text-orange-500 transition-colors">
                                 {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
                             </div>
-                            <span className="font-semibold">{theme === 'light' ? 'Escuro' : 'Claro'}</span>
+                            <span className="font-semibold">
+                                {theme === 'light' ? 'Escuro' : 'Claro'}
+                            </span>
                         </div>
-                        <div className={`w-9 h-5 rounded-full relative transition-colors duration-300 border-2 ${theme === 'dark' ? 'bg-orange-500 border-orange-500' : 'bg-gray-200 border-gray-200'}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${theme === 'dark' ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                        <div
+                            className={`w-9 h-5 rounded-full relative transition-colors duration-300 border-2 ${theme === 'dark' ? 'bg-orange-500 border-orange-500' : 'bg-gray-200 border-gray-200'}`}
+                        >
+                            <div
+                                className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${theme === 'dark' ? 'translate-x-4' : 'translate-x-0.5'}`}
+                            />
                         </div>
                     </button>
 
@@ -164,11 +181,19 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
-                            className={`relative flex flex-col items-center justify-center p-2 transition-all duration-500 ${activeTab === item.id ? 'text-white -translate-y-4' : 'text-gray-500 hover:text-gray-300'
-                                }`}
+                            className={`relative flex flex-col items-center justify-center p-2 transition-all duration-500 ${
+                                activeTab === item.id
+                                    ? 'text-white -translate-y-4'
+                                    : 'text-gray-500 hover:text-gray-300'
+                            }`}
                         >
-                            <div className={`transition-all duration-500 relative z-10 ${activeTab === item.id ? 'bg-orange-500 p-3.5 rounded-full shadow-lg shadow-orange-500/50 ring-4 ring-gray-50 dark:ring-gray-900 scale-110' : ''}`}>
-                                <item.icon size={activeTab === item.id ? 24 : 24} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+                            <div
+                                className={`transition-all duration-500 relative z-10 ${activeTab === item.id ? 'bg-orange-500 p-3.5 rounded-full shadow-lg shadow-orange-500/50 ring-4 ring-gray-50 dark:ring-gray-900 scale-110' : ''}`}
+                            >
+                                <item.icon
+                                    size={activeTab === item.id ? 24 : 24}
+                                    strokeWidth={activeTab === item.id ? 2.5 : 2}
+                                />
                             </div>
 
                             {activeTab === item.id && (
@@ -198,35 +223,54 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
                     <div className="relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-3xl rounded-t-[2.5rem] p-6 pb-24 animate-slideUp shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/20 ring-1 ring-black/5">
-                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8 cursor-pointer active:scale-95 transition-transform opacity-50" onClick={() => setIsMobileMenuOpen(false)} />
+                        <div
+                            className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8 cursor-pointer active:scale-95 transition-transform opacity-50"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        />
 
                         <div className="flex items-center justify-between mb-8 px-2">
                             <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <Sparkles size={20} className="text-orange-500" />
                                 Menu Completo
                             </h3>
-                            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-3 py-1 rounded-full">{userEmail?.split('@')[0]}</span>
+                            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-3 py-1 rounded-full">
+                                {userEmail?.split('@')[0]}
+                            </span>
                         </div>
 
                         <div className="grid grid-cols-4 gap-y-8 gap-x-2 mb-8">
-                            {navItems.filter(i => !i.mobile).map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
-                                    className={`flex flex-col items-center gap-3 p-1 rounded-2xl transition-all active:scale-95 group ${activeTab === item.id
-                                        ? 'text-orange-600 dark:text-orange-400'
-                                        : 'text-gray-600 dark:text-gray-400'
+                            {navItems
+                                .filter((i) => !i.mobile)
+                                .map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => {
+                                            setActiveTab(item.id);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className={`flex flex-col items-center gap-3 p-1 rounded-2xl transition-all active:scale-95 group ${
+                                            activeTab === item.id
+                                                ? 'text-orange-600 dark:text-orange-400'
+                                                : 'text-gray-600 dark:text-gray-400'
                                         }`}
-                                >
-                                    <div className={`p-4 rounded-[1.2rem] shadow-sm transition-all duration-300 group-hover:scale-110 ${activeTab === item.id
-                                        ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-orange-500/30'
-                                        : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'
-                                        }`}>
-                                        <item.icon size={24} strokeWidth={activeTab === item.id ? 2.5 : 1.5} />
-                                    </div>
-                                    <span className="text-[10px] font-bold text-center leading-tight tracking-wide group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{item.label}</span>
-                                </button>
-                            ))}
+                                    >
+                                        <div
+                                            className={`p-4 rounded-[1.2rem] shadow-sm transition-all duration-300 group-hover:scale-110 ${
+                                                activeTab === item.id
+                                                    ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-orange-500/30'
+                                                    : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'
+                                            }`}
+                                        >
+                                            <item.icon
+                                                size={24}
+                                                strokeWidth={activeTab === item.id ? 2.5 : 1.5}
+                                            />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-center leading-tight tracking-wide group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                            {item.label}
+                                        </span>
+                                    </button>
+                                ))}
                         </div>
 
                         {/* ACTION BUTTONS */}
@@ -246,7 +290,9 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                                 className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 active:scale-95 transition-all text-red-600 dark:text-red-400"
                             >
                                 <LogOut size={20} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Sair</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">
+                                    Sair
+                                </span>
                             </button>
                         </div>
                     </div>

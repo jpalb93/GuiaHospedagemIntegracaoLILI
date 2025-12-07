@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Camera, X } from 'lucide-react';
 
 const PHOTOS = [
-    "https://i.postimg.cc/W4TFSxSR/305095874.jpg",
-    "https://i.postimg.cc/5tbYpDp1/305095888.jpg",
-    "https://i.postimg.cc/1zsnMbBJ/334290310.jpg",
-    "https://i.postimg.cc/9QGwdcP3/334290394.jpg",
-    "https://i.postimg.cc/tgpZD8kK/334291651.jpg",
-    "https://i.postimg.cc/YSMG8TRP/334291852.jpg",
-    "https://i.postimg.cc/wBgyFn2w/334715657.jpg"
+    'https://i.postimg.cc/W4TFSxSR/305095874.jpg',
+    'https://i.postimg.cc/5tbYpDp1/305095888.jpg',
+    'https://i.postimg.cc/1zsnMbBJ/334290310.jpg',
+    'https://i.postimg.cc/9QGwdcP3/334290394.jpg',
+    'https://i.postimg.cc/tgpZD8kK/334291651.jpg',
+    'https://i.postimg.cc/YSMG8TRP/334291852.jpg',
+    'https://i.postimg.cc/wBgyFn2w/334715657.jpg',
 ];
 
 const GallerySection: React.FC = () => {
@@ -21,7 +21,9 @@ const GallerySection: React.FC = () => {
         <section id="galeria" className="py-24 bg-white">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block animate-fadeIn">Conheça por dentro</span>
+                    <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block animate-fadeIn">
+                        Conheça por dentro
+                    </span>
                     <h2 className="text-4xl sm:text-5xl font-heading font-bold text-gray-900 mb-4 text-balance">
                         Nossos Ambientes
                     </h2>
@@ -54,8 +56,14 @@ const GallerySection: React.FC = () => {
 
             {/* Lightbox Overlay */}
             {selectedImage && (
-                <div className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn" onClick={closeLightbox}>
-                    <button onClick={closeLightbox} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+                <div
+                    className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
+                    onClick={closeLightbox}
+                >
+                    <button
+                        onClick={closeLightbox}
+                        className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+                    >
                         <X size={32} />
                     </button>
                     <img

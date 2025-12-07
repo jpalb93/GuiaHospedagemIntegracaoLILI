@@ -38,10 +38,10 @@ interface SpeechRecognition extends EventTarget {
 declare global {
     interface Window {
         SpeechRecognition: {
-            new(): SpeechRecognition;
+            new (): SpeechRecognition;
         };
         webkitSpeechRecognition: {
-            new(): SpeechRecognition;
+            new (): SpeechRecognition;
         };
     }
 }
@@ -91,7 +91,7 @@ export const useSpeechRecognition = () => {
                 recognition.start();
                 setIsListening(true);
             } catch (error) {
-                console.error("Erro ao iniciar reconhecimento:", error);
+                console.error('Erro ao iniciar reconhecimento:', error);
             }
         }
     }, [recognition, isListening]);
@@ -109,6 +109,6 @@ export const useSpeechRecognition = () => {
         startListening,
         stopListening,
         isSupported,
-        setTranscript // Exportado para permitir limpar o texto externamente
+        setTranscript, // Exportado para permitir limpar o texto externamente
     };
 };

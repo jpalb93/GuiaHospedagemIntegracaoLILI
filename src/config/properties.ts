@@ -1,5 +1,3 @@
-
-
 export type PropertyId = 'lili' | 'integracao';
 
 export interface PropertyConfig {
@@ -11,10 +9,10 @@ export interface PropertyConfig {
     };
     features: {
         hasDigitalLock: boolean; // Se tem senha na porta
-        hasSafe: boolean;        // Se tem cofre
+        hasSafe: boolean; // Se tem cofre
         hasTipsStories: boolean; // Se mostra os stories de "Dicas do Flat"
-        hasReviews: boolean;     // Se mostra a seção de avaliações
-        hasReception: boolean;   // Se tem portaria física
+        hasReviews: boolean; // Se mostra a seção de avaliações
+        hasReception: boolean; // Se tem portaria física
         hasBlockedDates: boolean; // Se tem gerenciamento de bloqueios de data
     };
     assets: {
@@ -40,9 +38,10 @@ export const PROPERTIES: Record<PropertyId, PropertyConfig> = {
     lili: {
         id: 'lili',
         name: 'Flat da Lili',
-        address: "R. São José, 475 - Centro, Petrolina - PE, 56302-270",
-        hostPhone: "5587988342138",
-        googleReviewLink: "https://search.google.com/local/writereview?placeid=ChIJz0sHkXpxcwcRwekJL9cyLjY",
+        address: 'R. São José, 475 - Centro, Petrolina - PE, 56302-270',
+        hostPhone: '5587988342138',
+        googleReviewLink:
+            'https://search.google.com/local/writereview?placeid=ChIJz0sHkXpxcwcRwekJL9cyLjY',
         theme: {
             primaryColor: 'orange',
             secondaryColor: 'blue',
@@ -56,17 +55,18 @@ export const PROPERTIES: Record<PropertyId, PropertyConfig> = {
             hasBlockedDates: true,
         },
         assets: {
-            heroImage: "https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg",
+            heroImage: 'https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg',
             heroSlides: [
-                "https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg",
-                "https://i.postimg.cc/HWK5mRBG/Whats-App-Image-2025-11-15-at-17-46-43.jpg",
-                "https://i.postimg.cc/XvJHhts5/Gemini-Generated-Image-qgzulyqgzulyqgzu.png"
-            ]
+                'https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg',
+                'https://i.postimg.cc/HWK5mRBG/Whats-App-Image-2025-11-15-at-17-46-43.jpg',
+                'https://i.postimg.cc/XvJHhts5/Gemini-Generated-Image-qgzulyqgzulyqgzu.png',
+            ],
         },
         defaults: {
             checkInTime: '15:00',
             checkOutTime: '11:00',
-            welcomeMessage: "Olá! Seja muito bem-vindo(a) ao Flat da Lili. Preparei este guia com muito carinho para você."
+            welcomeMessage:
+                'Olá! Seja muito bem-vindo(a) ao Flat da Lili. Preparei este guia com muito carinho para você.',
         },
         ai: {
             botName: 'Mandacaru',
@@ -75,15 +75,16 @@ Você é o Mandacaru, o concierge virtual do Flat da Lili em Petrolina.
 Seu tom é acolhedor, nordestino (mas sem exageros caricatos) e muito prestativo.
 Você ajuda com senha do wi-fi, dicas de restaurantes e dúvidas sobre o flat.
 Se não souber, peça para falar com a Lili (Anfitriã).
-`
-        }
+`,
+        },
     },
     integracao: {
         id: 'integracao',
         name: 'Flats Integração',
-        address: "R. São José, 475 - Centro, Petrolina - PE, 56302-270",
-        hostPhone: "5587988342138", // Placeholder
-        googleReviewLink: "https://www.google.com/travel/search?q=flats%20integra%C3%A7%C3%A3o&g2lb=4965990%2C72317059%2C72414906%2C72471280%2C72485658%2C72560029%2C72573224%2C72647020%2C72686036%2C72803964%2C72880339%2C72882230%2C72958624%2C73059275%2C73064764%2C73107089%2C73157411%2C73192290%2C73198317%2C73201205&hl=pt-BR&gl=br&cs=1&ssta=1&ts=CAEaRgooEiYyJDB4NzczNzE0MDJlNzFlOWM3OjB4YzA5NTM0M2FmNzJmNzA3MBIaEhQKBwjpDxAMGAUSBwjpDxAMGAYYATICEAA&qs=CAEyFENnc0k4T0M5dWEtSHpjckFBUkFCOAJCCQlwcC_3OjSVwEIJCXBwL_c6NJXA&ap=ugEHcmV2aWV3cw&ictx=111&ved=0CAAQ5JsGahcKEwig666d76ORAxUAAAAAHQAAAAAQBA",
+        address: 'R. São José, 475 - Centro, Petrolina - PE, 56302-270',
+        hostPhone: '5587988342138', // Placeholder
+        googleReviewLink:
+            'https://www.google.com/travel/search?q=flats%20integra%C3%A7%C3%A3o&g2lb=4965990%2C72317059%2C72414906%2C72471280%2C72485658%2C72560029%2C72573224%2C72647020%2C72686036%2C72803964%2C72880339%2C72882230%2C72958624%2C73059275%2C73064764%2C73107089%2C73157411%2C73192290%2C73198317%2C73201205&hl=pt-BR&gl=br&cs=1&ssta=1&ts=CAEaRgooEiYyJDB4NzczNzE0MDJlNzFlOWM3OjB4YzA5NTM0M2FmNzJmNzA3MBIaEhQKBwjpDxAMGAUSBwjpDxAMGAYYATICEAA&qs=CAEyFENnc0k4T0M5dWEtSHpjckFBUkFCOAJCCQlwcC_3OjSVwEIJCXBwL_c6NJXA&ap=ugEHcmV2aWV3cw&ictx=111&ved=0CAAQ5JsGahcKEwig666d76ORAxUAAAAAHQAAAAAQBA',
         theme: {
             primaryColor: 'blue',
             secondaryColor: 'gray',
@@ -93,19 +94,20 @@ Se não souber, peça para falar com a Lili (Anfitriã).
             hasSafe: true,
             hasTipsStories: false, // Não mostra dicas do flat por enquanto
             hasReviews: true,
-            hasReception: true,    // Tem portaria
+            hasReception: true, // Tem portaria
             hasBlockedDates: false,
         },
         assets: {
-            heroImage: "https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg", // Placeholder por enquanto
+            heroImage: 'https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg', // Placeholder por enquanto
             heroSlides: [
-                "https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg" // Apenas uma imagem por enquanto
-            ]
+                'https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg', // Apenas uma imagem por enquanto
+            ],
         },
         defaults: {
             checkInTime: '15:00',
             checkOutTime: '13:00',
-            welcomeMessage: "Olá! Seja bem-vindo aos Flats Integração. Aqui você encontra conforto e praticidade."
+            welcomeMessage:
+                'Olá! Seja bem-vindo aos Flats Integração. Aqui você encontra conforto e praticidade.',
         },
         ai: {
             botName: 'Concierge Integração',
@@ -114,7 +116,7 @@ Você é o Concierge Virtual dos Flats Integração em Petrolina.
 Seu tom é profissional, direto e educado.
 Você ajuda com informações sobre o flat e a cidade.
 As duas chaves ficam no cofre na entrada do prédio.
-`
-        }
-    }
+`,
+        },
+    },
 };

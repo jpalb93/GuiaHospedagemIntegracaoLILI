@@ -20,7 +20,7 @@ describe('useGuestStay Hook', () => {
         checkoutDate: '2024-01-15',
         checkInTime: '14:00',
         checkOutTime: '11:00',
-        isReleased: true
+        isReleased: true,
     };
 
     beforeEach(() => {

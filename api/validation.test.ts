@@ -8,24 +8,24 @@ import { z } from 'zod';
 
 // Schema de validação do get-guest-config API
 const QuerySchema = z.object({
-    rid: z.string().min(1, "Missing reservation ID (rid)")
+    rid: z.string().min(1, 'Missing reservation ID (rid)'),
 });
 
 // Schema de validação para reserva (usado em APIs de admin)
 const ReservationSchema = z.object({
-    guestName: z.string().min(1, "Nome do hóspede obrigatório"),
+    guestName: z.string().min(1, 'Nome do hóspede obrigatório'),
     guestPhone: z.string().optional(),
-    checkInDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido (YYYY-MM-DD)"),
-    checkoutDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido (YYYY-MM-DD)"),
+    checkInDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de data inválido (YYYY-MM-DD)'),
+    checkoutDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de data inválido (YYYY-MM-DD)'),
     propertyId: z.enum(['lili', 'integracao']).optional().default('lili'),
     flatNumber: z.string().optional(),
-    notes: z.string().optional()
+    notes: z.string().optional(),
 });
 
 // Schema de validação para mensagem do AI Chat
 const ChatMessageSchema = z.object({
-    message: z.string().min(1, "Mensagem não pode ser vazia").max(500, "Mensagem muito longa"),
-    propertyId: z.string().optional()
+    message: z.string().min(1, 'Mensagem não pode ser vazia').max(500, 'Mensagem muito longa'),
+    propertyId: z.string().optional(),
 });
 
 describe('QuerySchema (get-guest-config)', () => {
@@ -59,7 +59,7 @@ describe('ReservationSchema', () => {
     const validReservation = {
         guestName: 'João Silva',
         checkInDate: '2024-01-10',
-        checkoutDate: '2024-01-15'
+        checkoutDate: '2024-01-15',
     };
 
     it('should validate complete reservation', () => {
@@ -70,7 +70,7 @@ describe('ReservationSchema', () => {
     it('should reject empty guest name', () => {
         const result = ReservationSchema.safeParse({
             ...validReservation,
-            guestName: ''
+            guestName: '',
         });
         expect(result.success).toBe(false);
     });
@@ -78,7 +78,7 @@ describe('ReservationSchema', () => {
     it('should reject invalid date format', () => {
         const result = ReservationSchema.safeParse({
             ...validReservation,
-            checkInDate: '10/01/2024' // Formato errado
+            checkInDate: '10/01/2024', // Formato errado
         });
         expect(result.success).toBe(false);
     });
@@ -87,7 +87,7 @@ describe('ReservationSchema', () => {
         const result = ReservationSchema.safeParse({
             ...validReservation,
             guestPhone: '87999999999',
-            notes: 'Hóspede VIP'
+            notes: 'Hóspede VIP',
         });
         expect(result.success).toBe(true);
     });
@@ -103,7 +103,7 @@ describe('ReservationSchema', () => {
     it('should accept integracao propertyId', () => {
         const result = ReservationSchema.safeParse({
             ...validReservation,
-            propertyId: 'integracao'
+            propertyId: 'integracao',
         });
         expect(result.success).toBe(true);
     });
@@ -111,7 +111,7 @@ describe('ReservationSchema', () => {
     it('should reject invalid propertyId', () => {
         const result = ReservationSchema.safeParse({
             ...validReservation,
-            propertyId: 'invalid'
+            propertyId: 'invalid',
         });
         expect(result.success).toBe(false);
     });
@@ -137,7 +137,7 @@ describe('ChatMessageSchema', () => {
     it('should accept message with propertyId', () => {
         const result = ChatMessageSchema.safeParse({
             message: 'Qual o código do Wi-Fi?',
-            propertyId: 'lili'
+            propertyId: 'lili',
         });
         expect(result.success).toBe(true);
     });

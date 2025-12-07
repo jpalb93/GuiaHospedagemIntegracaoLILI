@@ -1,7 +1,6 @@
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { GuestConfig } from '../types';
 
-
 export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null> => {
     try {
         const isNative = Capacitor.isNativePlatform();
@@ -14,7 +13,7 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
             });
 
             if (response.status === 404) {
-                console.warn("Reserva não encontrada na API (Native).");
+                console.warn('Reserva não encontrada na API (Native).');
                 return null;
             }
 
@@ -30,7 +29,7 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
 
         if (!response.ok) {
             if (response.status === 404) {
-                console.warn("Reserva não encontrada na API.");
+                console.warn('Reserva não encontrada na API.');
                 return null;
             }
             throw new Error(`Erro na API: ${response.statusText}`);
@@ -39,7 +38,7 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
         const data = await response.json();
         return data as GuestConfig;
     } catch (error) {
-        console.error("Erro ao buscar configuração do hóspede:", error);
+        console.error('Erro ao buscar configuração do hóspede:', error);
         throw error; // Re-throw to allow retry logic in App.tsx
     }
 };

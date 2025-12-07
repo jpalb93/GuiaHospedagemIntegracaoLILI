@@ -1,9 +1,9 @@
 /**
  * Firebase Services - Re-export
- * 
+ *
  * Este arquivo foi modularizado em arquivos menores.
  * Veja: src/services/firebase/
- * 
+ *
  * Estrutura:
  * - config.ts: Inicialização e helpers de cache
  * - places.ts: CRUD de lugares/locais

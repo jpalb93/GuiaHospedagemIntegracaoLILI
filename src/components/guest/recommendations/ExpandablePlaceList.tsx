@@ -11,10 +11,7 @@ interface ExpandablePlaceListProps {
  * Lista expansível de locais/estabelecimentos
  * Mostra um limite inicial e permite expandir para ver todos
  */
-const ExpandablePlaceList: React.FC<ExpandablePlaceListProps> = ({
-    places,
-    initialLimit = 3
-}) => {
+const ExpandablePlaceList: React.FC<ExpandablePlaceListProps> = ({ places, initialLimit = 3 }) => {
     const [showAll, setShowAll] = useState(false);
     const visiblePlaces = showAll ? places : places.slice(0, initialLimit);
     const hiddenCount = places.length - initialLimit;

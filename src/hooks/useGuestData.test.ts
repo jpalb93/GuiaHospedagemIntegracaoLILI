@@ -15,15 +15,15 @@ vi.mock('../services/firebase', () => ({
     subscribeToPlaces: vi.fn((callback) => {
         // Chama o callback com dados mock imediatamente
         setTimeout(() => callback([]), 0);
-        return () => { }; // Função de unsubscribe
+        return () => {}; // Função de unsubscribe
     }),
     subscribeToAppSettings: vi.fn((callback) => {
         setTimeout(() => callback(null), 0);
-        return () => { };
+        return () => {};
     }),
     subscribeToSmartSuggestions: vi.fn((callback) => {
         setTimeout(() => callback(null), 0);
-        return () => { };
+        return () => {};
     }),
 }));
 
@@ -32,8 +32,12 @@ const localStorageMock = (() => {
     let store: Record<string, string> = {};
     return {
         getItem: vi.fn((key: string) => store[key] || null),
-        setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-        clear: () => { store = {}; }
+        setItem: vi.fn((key: string, value: string) => {
+            store[key] = value;
+        }),
+        clear: () => {
+            store = {};
+        },
     };
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
@@ -54,7 +58,7 @@ describe('useGuestData Hook', () => {
         safeCode: '0000',
         isReleased: true,
         propertyId: 'lili',
-        flatNumber: '101'
+        flatNumber: '101',
     };
 
     beforeEach(() => {
@@ -80,10 +84,10 @@ describe('useGuestData Hook', () => {
         (firebaseService.getHeroImages as any).mockResolvedValue(['img1.jpg', 'img2.jpg']);
         (firebaseService.getTips as any).mockResolvedValue([
             { id: '1', text: 'Dica 1', visible: true },
-            { id: '2', text: 'Dica 2', visible: true }
+            { id: '2', text: 'Dica 2', visible: true },
         ]);
         (firebaseService.getCuriosities as any).mockResolvedValue([
-            { text: 'Curiosidade 1', visible: true }
+            { text: 'Curiosidade 1', visible: true },
         ]);
 
         const { result } = renderHook(() => useGuestData(mockConfig));
@@ -117,14 +121,16 @@ describe('useGuestData Hook', () => {
     it('should receive places from subscription', async () => {
         const mockPlaces: PlaceRecommendation[] = [
             { id: '1', name: 'Bar do Zé', category: 'bars', visible: true },
-            { id: '2', name: 'Café Central', category: 'cafes', visible: true }
+            { id: '2', name: 'Café Central', category: 'cafes', visible: true },
         ];
 
         // Mock subscribeToPlaces para chamar callback com dados
-        (firebaseService.subscribeToPlaces as any).mockImplementation((callback: (places: PlaceRecommendation[]) => void) => {
-            setTimeout(() => callback(mockPlaces), 10);
-            return () => { };
-        });
+        (firebaseService.subscribeToPlaces as any).mockImplementation(
+            (callback: (places: PlaceRecommendation[]) => void) => {
+                setTimeout(() => callback(mockPlaces), 10);
+                return () => {};
+            }
+        );
 
         const { result } = renderHook(() => useGuestData(mockConfig));
 
@@ -136,7 +142,7 @@ describe('useGuestData Hook', () => {
 
     it('should filter tips for "integracao" property', async () => {
         (firebaseService.getTips as any).mockResolvedValue([
-            { id: '1', text: 'Dica 1', visible: true }
+            { id: '1', text: 'Dica 1', visible: true },
         ]);
 
         const integracaoConfig = { ...mockConfig, propertyId: 'integracao' as const };
@@ -150,13 +156,15 @@ describe('useGuestData Hook', () => {
 
     it('should provide mergePlaces helper that combines dynamic and static places', async () => {
         const mockPlaces: PlaceRecommendation[] = [
-            { id: '1', name: 'Dynamic Bar', category: 'bars', visible: true }
+            { id: '1', name: 'Dynamic Bar', category: 'bars', visible: true },
         ];
 
-        (firebaseService.subscribeToPlaces as any).mockImplementation((callback: (places: PlaceRecommendation[]) => void) => {
-            setTimeout(() => callback(mockPlaces), 10);
-            return () => { };
-        });
+        (firebaseService.subscribeToPlaces as any).mockImplementation(
+            (callback: (places: PlaceRecommendation[]) => void) => {
+                setTimeout(() => callback(mockPlaces), 10);
+                return () => {};
+            }
+        );
 
         const { result } = renderHook(() => useGuestData(mockConfig));
 
@@ -166,24 +174,26 @@ describe('useGuestData Hook', () => {
 
         // Testa mergePlaces
         const staticPlaces: PlaceRecommendation[] = [
-            { id: '2', name: 'Static Bar', category: 'bars', visible: true }
+            { id: '2', name: 'Static Bar', category: 'bars', visible: true },
         ];
         const merged = result.current.mergePlaces(staticPlaces, 'bars');
 
         expect(merged).toHaveLength(2);
-        expect(merged.some(p => p.name === 'Dynamic Bar')).toBe(true);
-        expect(merged.some(p => p.name === 'Static Bar')).toBe(true);
+        expect(merged.some((p) => p.name === 'Dynamic Bar')).toBe(true);
+        expect(merged.some((p) => p.name === 'Static Bar')).toBe(true);
     });
 
     it('should provide hasContent helper', async () => {
         const mockPlaces: PlaceRecommendation[] = [
-            { id: '1', name: 'Test Bar', category: 'bars', visible: true }
+            { id: '1', name: 'Test Bar', category: 'bars', visible: true },
         ];
 
-        (firebaseService.subscribeToPlaces as any).mockImplementation((callback: (places: PlaceRecommendation[]) => void) => {
-            setTimeout(() => callback(mockPlaces), 10);
-            return () => { };
-        });
+        (firebaseService.subscribeToPlaces as any).mockImplementation(
+            (callback: (places: PlaceRecommendation[]) => void) => {
+                setTimeout(() => callback(mockPlaces), 10);
+                return () => {};
+            }
+        );
 
         const { result } = renderHook(() => useGuestData(mockConfig));
 

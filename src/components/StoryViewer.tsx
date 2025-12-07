@@ -94,7 +94,6 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
             onTouchEnd={() => setIsPaused(false)}
             onMouseLeave={() => setIsPaused(false)}
         >
-
             {/* Barra de Progresso */}
             <div className="pt-4 pb-2 px-2 flex gap-1 z-50 relative pointer-events-none">
                 {items.map((_, idx) => (
@@ -102,7 +101,12 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                         <div
                             className="h-full bg-white transition-all duration-100 ease-linear"
                             style={{
-                                width: idx < currentIndex ? '100%' : idx === currentIndex ? `${progress}%` : '0%'
+                                width:
+                                    idx < currentIndex
+                                        ? '100%'
+                                        : idx === currentIndex
+                                          ? `${progress}%`
+                                          : '0%',
                             }}
                         />
                     </div>
@@ -115,11 +119,20 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                         {Icon && <Icon size={14} className="text-white" />}
                     </div>
                     <div>
-                        <span className="font-bold text-sm font-heading block leading-none drop-shadow-md">{currentStory.title}</span>
-                        {currentStory.subtitle && <span className="text-xs opacity-90 font-medium drop-shadow-sm">{currentStory.subtitle}</span>}
+                        <span className="font-bold text-sm font-heading block leading-none drop-shadow-md">
+                            {currentStory.title}
+                        </span>
+                        {currentStory.subtitle && (
+                            <span className="text-xs opacity-90 font-medium drop-shadow-sm">
+                                {currentStory.subtitle}
+                            </span>
+                        )}
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors pointer-events-auto cursor-pointer">
+                <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-white/20 rounded-full transition-colors pointer-events-auto cursor-pointer"
+                >
                     <X size={24} />
                 </button>
             </div>
@@ -135,45 +148,67 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                     />
                 </div>
             ) : (
-                <div className={`absolute inset-0 z-0 bg-gradient-to-br ${currentStory.color || 'from-gray-800 to-black'}`} />
+                <div
+                    className={`absolute inset-0 z-0 bg-gradient-to-br ${currentStory.color || 'from-gray-800 to-black'}`}
+                />
             )}
 
             {!currentStory.image && Icon && (
-                <Icon size={300} className="absolute text-white opacity-5 rotate-12 -right-20 -bottom-20 z-0 pointer-events-none" />
+                <Icon
+                    size={300}
+                    className="absolute text-white opacity-5 rotate-12 -right-20 -bottom-20 z-0 pointer-events-none"
+                />
             )}
 
             <div className="absolute inset-0 z-10 flex">
                 <div
                     className="w-1/3 h-full cursor-pointer"
-                    onClick={() => { if (!isPaused) handlePrev(); }}
+                    onClick={() => {
+                        if (!isPaused) handlePrev();
+                    }}
                     role="button"
                     tabIndex={0}
                     aria-label="Story anterior"
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePrev(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') handlePrev();
+                    }}
                 ></div>
                 <div
                     className="w-1/3 h-full cursor-pointer"
-                    onClick={() => { if (!isPaused) handleNext(); }}
+                    onClick={() => {
+                        if (!isPaused) handleNext();
+                    }}
                     role="button"
                     tabIndex={0}
                     aria-label="Próximo story"
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNext(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') handleNext();
+                    }}
                 ></div>
                 <div
                     className="w-1/3 h-full cursor-pointer"
-                    onClick={() => { if (!isPaused) handleNext(); }}
+                    onClick={() => {
+                        if (!isPaused) handleNext();
+                    }}
                     role="button"
                     tabIndex={0}
                     aria-label="Próximo story"
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNext(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') handleNext();
+                    }}
                 ></div>
             </div>
 
-            <div className={`absolute inset-0 z-20 flex flex-col items-center p-6 text-center pointer-events-none ${currentStory.type === 'event' ? 'justify-center' : 'justify-end pb-40'
-                }`}>
-                <div className={`flex flex-col items-center w-full max-w-md animate-scaleIn ${currentStory.type === 'event' ? 'justify-center h-full' : ''
-                    }`}>
-
+            <div
+                className={`absolute inset-0 z-20 flex flex-col items-center p-6 text-center pointer-events-none ${
+                    currentStory.type === 'event' ? 'justify-center' : 'justify-end pb-40'
+                }`}
+            >
+                <div
+                    className={`flex flex-col items-center w-full max-w-md animate-scaleIn ${
+                        currentStory.type === 'event' ? 'justify-center h-full' : ''
+                    }`}
+                >
                     {currentStory.type === 'event' ? (
                         <>
                             <div className="mb-3 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm">
@@ -207,7 +242,9 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                                     onClick={(e) => e.stopPropagation()}
                                     className="pointer-events-auto relative z-50 px-8 py-4 bg-white text-pink-600 font-bold rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-2 animate-bounce-slow uppercase tracking-wide text-sm cursor-pointer hover:bg-gray-100"
                                 >
-                                    {currentStory.link.includes('instagram') ? 'Ver no Instagram' : 'Garantir Ingresso / Info'}
+                                    {currentStory.link.includes('instagram')
+                                        ? 'Ver no Instagram'
+                                        : 'Garantir Ingresso / Info'}
                                     <ExternalLink size={16} />
                                 </a>
                             )}
@@ -232,7 +269,6 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                     )}
                 </div>
             </div>
-
         </div>
     );
 };

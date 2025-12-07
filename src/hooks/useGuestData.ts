@@ -1,7 +1,21 @@
 import { useState, useEffect } from 'react';
 import { logger } from '../utils/logger';
-import { PlaceRecommendation, AppConfig, SmartSuggestionsConfig, GuestConfig, Tip, CityCuriosity } from '../types';
-import { getHeroImages, subscribeToAppSettings, subscribeToSmartSuggestions, getTips, getCuriosities, subscribeToPlaces } from '../services/firebase';
+import {
+    PlaceRecommendation,
+    AppConfig,
+    SmartSuggestionsConfig,
+    GuestConfig,
+    Tip,
+    CityCuriosity,
+} from '../types';
+import {
+    getHeroImages,
+    subscribeToAppSettings,
+    subscribeToSmartSuggestions,
+    getTips,
+    getCuriosities,
+    subscribeToPlaces,
+} from '../services/firebase';
 import { DEFAULT_SLIDES, DEFAULT_CITY_CURIOSITIES } from '../constants';
 
 export const useGuestData = (config: GuestConfig) => {
@@ -25,7 +39,7 @@ export const useGuestData = (config: GuestConfig) => {
     // Content State
     const [tips, setTips] = useState<Tip[]>([]);
     const [curiosities, setCuriosities] = useState<CityCuriosity[]>(
-        DEFAULT_CITY_CURIOSITIES.map(text => ({ text, visible: true }))
+        DEFAULT_CITY_CURIOSITIES.map((text) => ({ text, visible: true }))
     );
 
     useEffect(() => {
@@ -42,7 +56,7 @@ export const useGuestData = (config: GuestConfig) => {
                     if (config.propertyId === 'integracao') {
                         setTips([]);
                     } else {
-                        setTips(fetchedTips.filter(t => t.visible !== false));
+                        setTips(fetchedTips.filter((t) => t.visible !== false));
                     }
                 }
 
@@ -51,14 +65,14 @@ export const useGuestData = (config: GuestConfig) => {
                     setCuriosities(fetchedCuriosities);
                 }
             } catch (error) {
-                logger.error("Error loading static guest data:", error);
+                logger.error('Error loading static guest data:', error);
             }
         };
         loadStaticData();
 
         // 2. Assinaturas em Tempo Real (Real-time)
         const unsubscribePlaces = subscribeToPlaces((places) => {
-            setDynamicPlaces(places.filter(p => p.visible !== false));
+            setDynamicPlaces(places.filter((p) => p.visible !== false));
         });
 
         const unsubscribeSettings = subscribeToAppSettings((settings) => {
@@ -92,12 +106,12 @@ export const useGuestData = (config: GuestConfig) => {
     };
 
     const mergePlaces = (staticList: PlaceRecommendation[], category: string) => {
-        const dynamic = dynamicPlaces.filter(p => p.category === category);
+        const dynamic = dynamicPlaces.filter((p) => p.category === category);
         return [...dynamic, ...staticList];
     };
 
     const hasContent = (list: PlaceRecommendation[], category: string) => {
-        return list.length > 0 || dynamicPlaces.some(p => p.category === category);
+        return list.length > 0 || dynamicPlaces.some((p) => p.category === category);
     };
 
     return {
@@ -109,11 +123,10 @@ export const useGuestData = (config: GuestConfig) => {
         curiosities,
         dismissedAlerts: {
             global: dismissedGlobalText,
-            personal: dismissedPersonalText
+            personal: dismissedPersonalText,
         },
         dismissAlert,
         mergePlaces,
-        hasContent
+        hasContent,
     };
 };
-

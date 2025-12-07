@@ -9,16 +9,32 @@ import GuestAccessSection from './GuestAccessSection';
 import { Phone, Instagram } from 'lucide-react';
 
 const LandingFlatsIntegracao: React.FC = () => {
-
     return (
         <div className="font-sans antialiased bg-white text-gray-900">
             {/* Header Transparente */}
             <nav className="absolute top-0 w-full z-50 p-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
                 <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80"></div>
                 <div>
-                    <a href="#galeria" className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block mr-6">Galeria</a>
-                    <a href="#features" className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block mr-6">Diferenciais</a>
-                    <a href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html" target="_blank" rel="noreferrer" className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block">Reservar</a>
+                    <a
+                        href="#galeria"
+                        className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block mr-6"
+                    >
+                        Galeria
+                    </a>
+                    <a
+                        href="#features"
+                        className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block mr-6"
+                    >
+                        Diferenciais
+                    </a>
+                    <a
+                        href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block"
+                    >
+                        Reservar
+                    </a>
                 </div>
             </nav>
 
@@ -45,8 +61,20 @@ const LandingFlatsIntegracao: React.FC = () => {
                     </div>
 
                     <div className="flex gap-6">
-                        <a href="https://www.instagram.com/flatintegracao/" target="_blank" rel="noreferrer" className="hover:text-orange-500 transition-colors"><Instagram size={20} /></a>
-                        <a href="https://wa.me/5587988283273" className="hover:text-orange-500 transition-colors"><Phone size={20} /></a>
+                        <a
+                            href="https://www.instagram.com/flatintegracao/"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hover:text-orange-500 transition-colors"
+                        >
+                            <Instagram size={20} />
+                        </a>
+                        <a
+                            href="https://wa.me/5587988283273"
+                            className="hover:text-orange-500 transition-colors"
+                        >
+                            <Phone size={20} />
+                        </a>
                     </div>
 
                     <div className="text-sm text-gray-600">

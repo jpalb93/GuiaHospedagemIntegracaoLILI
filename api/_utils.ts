@@ -16,7 +16,10 @@ export async function applyRateLimit(
 ): Promise<boolean> {
     try {
         const forwarded = req.headers['x-forwarded-for'];
-        const ip = (Array.isArray(forwarded) ? forwarded[0] : forwarded) || req.socket?.remoteAddress || 'unknown';
+        const ip =
+            (Array.isArray(forwarded) ? forwarded[0] : forwarded) ||
+            req.socket?.remoteAddress ||
+            'unknown';
         const now = Date.now();
         const windowMs = windowSeconds * 1000;
 
@@ -67,14 +70,16 @@ export function applyCors(req: VercelRequest, res: VercelResponse) {
     const origin = req.headers.origin;
 
     // Verifica se a origem está na whitelist
-    const isAllowed = origin && allowedOrigins.some(allowed => {
-        if (typeof allowed === 'string') {
-            return allowed === origin;
-        } else {
-            // RegExp para preview deployments
-            return allowed.test(origin);
-        }
-    });
+    const isAllowed =
+        origin &&
+        allowedOrigins.some((allowed) => {
+            if (typeof allowed === 'string') {
+                return allowed === origin;
+            } else {
+                // RegExp para preview deployments
+                return allowed.test(origin);
+            }
+        });
 
     if (isAllowed) {
         res.setHeader('Access-Control-Allow-Origin', origin);
@@ -111,7 +116,7 @@ export async function retry<T>(
         return await fn();
     } catch (error) {
         if (retries <= 0) throw error;
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
         return retry(fn, retries - 1, delayMs * 2); // Exponential backoff
     }
 }

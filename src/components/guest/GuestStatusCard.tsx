@@ -50,7 +50,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
     onOpenSupport,
     onEmergency,
     onSaveAccess,
-    onOpenReview = () => { } // Default no-op
+    onOpenReview = () => {}, // Default no-op
 }) => {
     if (!isTimeVerified) return <CardSkeleton />;
 

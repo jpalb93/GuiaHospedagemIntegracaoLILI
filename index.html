@@ -1,141 +1,163 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title>Flats Integração | Hospedagem em Petrolina - Aluguel por Temporada</title>
+        <meta
+            name="description"
+            content="Reserve sua estadia no melhor Flat de Petrolina. Studios mobiliados, piscina, Wi-Fi e localização privilegiada no centro. Ideal para turismo e viagens de negócios."
+        />
+        <meta
+            name="keywords"
+            content="Flat Petrolina, Hospedagem Petrolina, Hotel Petrolina, Aluguel por Temporada, Flats Integração, Apartamento Mobiliado, Onde ficar em Petrolina"
+        />
 
-  <title>Flats Integração | Hospedagem em Petrolina - Aluguel por Temporada</title>
-  <meta name="description"
-    content="Reserve sua estadia no melhor Flat de Petrolina. Studios mobiliados, piscina, Wi-Fi e localização privilegiada no centro. Ideal para turismo e viagens de negócios." />
-  <meta name="keywords"
-    content="Flat Petrolina, Hospedagem Petrolina, Hotel Petrolina, Aluguel por Temporada, Flats Integração, Apartamento Mobiliado, Onde ficar em Petrolina" />
+        <!-- PWA Manifest & Icons -->
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#111827" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Flat Integração" />
+        <link
+            rel="apple-touch-icon"
+            href="https://cdn-icons-png.flaticon.com/512/5988/5988479.png"
+        />
 
-  <!-- PWA Manifest & Icons -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#111827" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Flat Integração" />
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5988/5988479.png" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Flats Integração | O Melhor de Petrolina 🌵" />
+        <meta
+            property="og:description"
+            content="Conforto, praticidade e a melhor localização de Petrolina. Reserve agora seu flat mobiliado."
+        />
+        <meta property="og:url" content="https://flatsintegracao.com.br" />
 
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Flats Integração | O Melhor de Petrolina 🌵" />
-  <meta property="og:description"
-    content="Conforto, praticidade e a melhor localização de Petrolina. Reserve agora seu flat mobiliado." />
-  <meta property="og:url" content="https://flatsintegracao.com.br" />
+        <!-- Imagem de Capa para o WhatsApp -->
+        <meta
+            property="og:image"
+            content="https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
 
-  <!-- Imagem de Capa para o WhatsApp -->
-  <meta property="og:image" content="https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+        <!-- Schema.org Structured Data -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "LodgingBusiness",
+                "name": "Flats Integração",
+                "image": [
+                    "https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
+                ],
+                "@id": "https://flatsintegracao.com.br",
+                "url": "https://flatsintegracao.com.br",
+                "telephone": "+5587988283273",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "Rua do Flat",
+                    "addressLocality": "Petrolina",
+                    "addressRegion": "PE",
+                    "postalCode": "56300-000",
+                    "addressCountry": "BR"
+                },
+                "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": -9.3833,
+                    "longitude": -40.5
+                },
+                "priceRange": "$$",
+                "description": "Flats modernos e equipados no coração de Petrolina. Piscina, Wi-Fi e conforto para estadias curtas ou longas."
+            }
+        </script>
 
-  <!-- Schema.org Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "LodgingBusiness",
-      "name": "Flats Integração",
-      "image": [
-        "https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
-      ],
-      "@id": "https://flatsintegracao.com.br",
-      "url": "https://flatsintegracao.com.br",
-      "telephone": "+5587988283273",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Rua do Flat",
-        "addressLocality": "Petrolina",
-        "addressRegion": "PE",
-        "postalCode": "56300-000",
-        "addressCountry": "BR"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": -9.3833,
-        "longitude": -40.5000
-      },
-      "priceRange": "$$",
-      "description": "Flats modernos e equipados no coração de Petrolina. Piscina, Wi-Fi e conforto para estadias curtas ou longas."
-    }
-    </script>
+        <!-- Fontes Google: Inter e Montserrat -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
 
-  <!-- Fontes Google: Inter e Montserrat -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-    rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Inter', sans-serif;
+                color: #374151;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                background-color: #f9fafb;
+            }
 
+            html.dark body {
+                background-color: #111827;
+            }
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      color: #374151;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background-color: #f9fafb;
-    }
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                font-family: 'Playfair Display', 'Montserrat', serif;
+            }
 
-    html.dark body {
-      background-color: #111827;
-    }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      font-family: 'Playfair Display', 'Montserrat', serif;
-    }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
 
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
+            /* GOOGLE TRANSLATE CUSTOM STYLES */
+            .goog-te-banner-frame.skiptranslate {
+                display: none !important;
+            }
 
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+            body {
+                top: 0px !important;
+            }
 
-    /* GOOGLE TRANSLATE CUSTOM STYLES */
-    .goog-te-banner-frame.skiptranslate {
-      display: none !important;
-    }
+            #google_translate_element {
+                display: none;
+            }
 
-    body {
-      top: 0px !important;
-    }
+            .goog-tooltip {
+                display: none !important;
+            }
 
-    #google_translate_element {
-      display: none;
-    }
+            .goog-te-gadget-icon {
+                display: none !important;
+            }
+        </style>
+    </head>
 
-    .goog-tooltip {
-      display: none !important;
-    }
+    <body>
+        <div id="root"></div>
 
-    .goog-te-gadget-icon {
-      display: none !important;
-    }
-  </style>
-</head>
+        <!-- Google Translate Element (Hidden) -->
+        <div id="google_translate_element"></div>
+        <script type="text/javascript">
+            function googleTranslateElementInit() {
+                new google.translate.TranslateElement(
+                    {
+                        pageLanguage: 'pt',
+                        includedLanguages: 'en,es',
+                        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                    },
+                    'google_translate_element'
+                );
+            }
+        </script>
+        <script
+            type="text/javascript"
+            src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+        ></script>
 
-<body>
-  <div id="root"></div>
-
-  <!-- Google Translate Element (Hidden) -->
-  <div id="google_translate_element"></div>
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({ pageLanguage: 'pt', includedLanguages: 'en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript"
-    src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-  <script type="module" src="src/index.tsx"></script>
-</body>
-
+        <script type="module" src="src/index.tsx"></script>
+    </body>
 </html>

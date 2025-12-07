@@ -6,15 +6,18 @@ const LocationSection: React.FC = () => {
         <section id="localizacao" className="py-24 bg-gray-50 relative">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
                     {/* Infos */}
                     <div className="order-2 lg:order-1">
-                        <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block">Localização</span>
+                        <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block">
+                            Localização
+                        </span>
                         <h2 className="text-4xl font-heading font-bold text-gray-900 mb-6">
                             No coração de Petrolina
                         </h2>
                         <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                            Aproveite a conveniência de estar perto de tudo. Restaurantes, serviços e os principais pontos turísticos da cidade a poucos minutos de distância.
+                            Aproveite a conveniência de estar perto de tudo. Restaurantes, serviços
+                            e os principais pontos turísticos da cidade a poucos minutos de
+                            distância.
                         </p>
 
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
@@ -23,9 +26,12 @@ const LocationSection: React.FC = () => {
                                     <MapPin size={24} />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-gray-900 text-lg mb-1">Endereço</h4>
+                                    <h4 className="font-bold text-gray-900 text-lg mb-1">
+                                        Endereço
+                                    </h4>
                                     <p className="text-gray-600">
-                                        R. São José, 475 B - Centro<br />
+                                        R. São José, 475 B - Centro
+                                        <br />
                                         Petrolina - PE, 56302-270
                                     </p>
                                 </div>
@@ -56,7 +62,6 @@ const LocationSection: React.FC = () => {
                             title="Mapa Flats Integração"
                         ></iframe>
                     </div>
-
                 </div>
             </div>
         </section>

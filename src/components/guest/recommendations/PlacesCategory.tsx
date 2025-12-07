@@ -34,7 +34,7 @@ export const PlacesCategory: React.FC<PlacesCategoryProps> = ({
     title,
     icon,
     places,
-    visible = true
+    visible = true,
 }) => {
     if (!visible || places.length === 0) return null;
 

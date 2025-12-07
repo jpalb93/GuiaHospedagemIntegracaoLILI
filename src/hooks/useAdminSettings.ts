@@ -2,24 +2,40 @@ import { useState, useEffect } from 'react';
 import { logger } from '../utils/logger';
 import { AppConfig, SmartSuggestionsConfig, GuestReview } from '../types';
 import {
-    getAppSettings, saveAppSettings,
-    getHeroImages, updateHeroImages,
-    getSmartSuggestions, saveSmartSuggestions,
-    getGuestReviews, addGuestReview, deleteGuestReview
+    getAppSettings,
+    saveAppSettings,
+    getHeroImages,
+    updateHeroImages,
+    getSmartSuggestions,
+    saveSmartSuggestions,
+    getGuestReviews,
+    addGuestReview,
+    deleteGuestReview,
 } from '../services/firebase';
 
 export const useAdminSettings = () => {
     // --- STATE ---
     const [loading, setLoading] = useState(false);
-    const [heroImages, setHeroImages] = useState<Record<string, string[]>>({ lili: [], integracao: [] });
+    const [heroImages, setHeroImages] = useState<Record<string, string[]>>({
+        lili: [],
+        integracao: [],
+    });
     const [appSettings, setAppSettings] = useState<AppConfig>({
-        wifiSSID: '', wifiPass: '', safeCode: '',
-        noticeActive: false, noticeText: '',
-        aiSystemPrompt: '', aiSystemPrompts: {}, cityCuriosities: [],
-        checklist: []
+        wifiSSID: '',
+        wifiPass: '',
+        safeCode: '',
+        noticeActive: false,
+        noticeText: '',
+        aiSystemPrompt: '',
+        aiSystemPrompts: {},
+        cityCuriosities: [],
+        checklist: [],
     });
     const [suggestions, setSuggestions] = useState<SmartSuggestionsConfig>({
-        morning: [], lunch: [], sunset: [], night: []
+        morning: [],
+        lunch: [],
+        sunset: [],
+        night: [],
     });
     const [reviews, setReviews] = useState<GuestReview[]>([]);
 
@@ -32,7 +48,7 @@ export const useAdminSettings = () => {
                 getHeroImages(true, 'integracao'),
                 getAppSettings(),
                 getSmartSuggestions(),
-                getGuestReviews(50)
+                getGuestReviews(50),
             ]);
 
             setHeroImages({ lili: liliImgs, integracao: integracaoImgs });
@@ -48,7 +64,7 @@ export const useAdminSettings = () => {
                     cityCuriosities: settings.cityCuriosities || [],
                     checklist: settings.checklist || [],
                     globalNotices: settings.globalNotices || {},
-                    hostPhones: settings.hostPhones || {}
+                    hostPhones: settings.hostPhones || {},
                 });
             }
             if (suggs) {
@@ -61,7 +77,7 @@ export const useAdminSettings = () => {
             }
             setReviews(revs);
         } catch (error) {
-            logger.error("Erro ao carregar configurações:", error);
+            logger.error('Erro ao carregar configurações:', error);
         } finally {
             setLoading(false);
         }
@@ -72,8 +88,11 @@ export const useAdminSettings = () => {
     }, []);
 
     // --- ACTIONS: HERO IMAGES ---
-    const updateImages = async (newImages: string[], propertyId: 'lili' | 'integracao' = 'lili') => {
-        setHeroImages(prev => ({ ...prev, [propertyId]: newImages }));
+    const updateImages = async (
+        newImages: string[],
+        propertyId: 'lili' | 'integracao' = 'lili'
+    ) => {
+        setHeroImages((prev) => ({ ...prev, [propertyId]: newImages }));
         await updateHeroImages(newImages, propertyId);
     };
 
@@ -90,15 +109,15 @@ export const useAdminSettings = () => {
     };
 
     // --- ACTIONS: REVIEWS ---
-    const addReview = async (review: { name: string, text: string }) => {
+    const addReview = async (review: { name: string; text: string }) => {
         const id = await addGuestReview(review);
-        setReviews(prev => [...prev, { id, ...review }]);
+        setReviews((prev) => [...prev, { id, ...review }]);
         return id;
     };
 
     const deleteReview = async (id: string) => {
         await deleteGuestReview(id);
-        setReviews(prev => prev.filter(r => r.id !== id));
+        setReviews((prev) => prev.filter((r) => r.id !== id));
     };
 
     return {
@@ -107,6 +126,6 @@ export const useAdminSettings = () => {
         settings: { data: appSettings, save: saveSettings },
         suggestions: { data: suggestions, save: saveSuggestionsList },
         reviews: { data: reviews, add: addReview, delete: deleteReview },
-        refresh: loadAllSettings
+        refresh: loadAllSettings,
     };
 };

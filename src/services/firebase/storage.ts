@@ -14,7 +14,8 @@ export const uploadImage = (
         const storageRef = ref(storage, path);
         const uploadTask = uploadBytesResumable(storageRef, file);
 
-        uploadTask.on('state_changed',
+        uploadTask.on(
+            'state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 if (onProgress) onProgress(progress);

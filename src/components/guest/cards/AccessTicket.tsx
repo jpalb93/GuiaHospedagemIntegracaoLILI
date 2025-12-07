@@ -20,7 +20,7 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
     subLabel,
     theme,
     alwaysVisible = false,
-    variant = 'default'
+    variant = 'default',
 }) => {
     // Key for localStorage: access_revealed_{propertyId}_{code}
     // We use the code itself in the key so if the password changes, it resets
@@ -71,26 +71,37 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
             <div className="absolute top-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1E1E2E] transform -translate-y-1/2" />
 
             {/* Top Decoration Line */}
-            <div className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${propertyId === 'integracao'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
-                : 'bg-gradient-to-r from-orange-500 to-purple-600'
-                }`} />
+            <div
+                className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${
+                    propertyId === 'integracao'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
+                        : 'bg-gradient-to-r from-orange-500 to-purple-600'
+                }`}
+            />
 
-            <div className={`flex flex-col items-center justify-center text-center ${isSmall ? 'p-2 min-h-[auto]' : 'p-4 min-h-[120px]'} h-full`}>
-
+            <div
+                className={`flex flex-col items-center justify-center text-center ${isSmall ? 'p-2 min-h-[auto]' : 'p-4 min-h-[120px]'} h-full`}
+            >
                 {/* Header */}
-                <div className={`flex items-center justify-between w-full ${isSmall ? 'mb-1' : 'mb-2'}`}>
-                    <p className={`font-bold uppercase tracking-[0.2em] ${theme.text.secondary} ${isSmall ? 'text-[8px]' : 'text-[10px]'}`}>
+                <div
+                    className={`flex items-center justify-between w-full ${isSmall ? 'mb-1' : 'mb-2'}`}
+                >
+                    <p
+                        className={`font-bold uppercase tracking-[0.2em] ${theme.text.secondary} ${isSmall ? 'text-[8px]' : 'text-[10px]'}`}
+                    >
                         {label}
                     </p>
-                    <div className={`rounded-lg ${propertyId === 'integracao' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-white/5 text-gray-400'} ${isSmall ? 'p-1' : 'p-1.5'}`}>
+                    <div
+                        className={`rounded-lg ${propertyId === 'integracao' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-white/5 text-gray-400'} ${isSmall ? 'p-1' : 'p-1.5'}`}
+                    >
                         <Key size={isSmall ? 12 : 14} />
                     </div>
                 </div>
 
                 {/* Content Area */}
-                <div className={`relative w-full flex flex-col items-center justify-center ${isSmall ? 'py-0' : 'py-2'} flex-1`}>
-
+                <div
+                    className={`relative w-full flex flex-col items-center justify-center ${isSmall ? 'py-0' : 'py-2'} flex-1`}
+                >
                     {/* Hidden State (Lili) */}
                     {!isRevealed && !isAnimating && (
                         <div className="flex flex-col items-center animate-fade-in">
@@ -99,10 +110,11 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                             </div>
                             <button
                                 onClick={handleReveal}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${propertyId === 'integracao'
-                                    ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
-                                    }`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${
+                                    propertyId === 'integracao'
+                                        ? 'bg-cyan-600 text-white hover:bg-cyan-500'
+                                        : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                                }`}
                             >
                                 <Eye size={14} /> Revelar Senha
                             </button>
@@ -123,15 +135,22 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                     {isRevealed && (
                         <div className="flex flex-col items-center animate-pop-in w-full justify-center h-full">
                             <div className="flex items-center justify-center gap-2 mb-0.5">
-                                <p className={`font-mono font-bold tracking-[0.15em] drop-shadow-lg ${theme.text.primary} ${isSmall ? 'text-lg' : 'text-4xl'}`}>
+                                <p
+                                    className={`font-mono font-bold tracking-[0.15em] drop-shadow-lg ${theme.text.primary} ${isSmall ? 'text-lg' : 'text-4xl'}`}
+                                >
                                     {code}
                                 </p>
                                 {propertyId !== 'integracao' && (
-                                    <Bell size={isSmall ? 14 : 20} className="text-orange-500 animate-pulse" />
+                                    <Bell
+                                        size={isSmall ? 14 : 20}
+                                        className="text-orange-500 animate-pulse"
+                                    />
                                 )}
                             </div>
                             {subLabel && (
-                                <p className={`font-medium flex items-center justify-center gap-1 ${theme.text.secondary} ${isSmall ? 'text-[8px]' : 'text-[10px]'}`}>
+                                <p
+                                    className={`font-medium flex items-center justify-center gap-1 ${theme.text.secondary} ${isSmall ? 'text-[8px]' : 'text-[10px]'}`}
+                                >
                                     {subLabel}
                                 </p>
                             )}

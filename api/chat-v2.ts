@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 
@@ -6,13 +6,18 @@ const apiKey = process.env.GEMINI_API_KEY;
 
 // Schema de Validação
 const ChatSchema = z.object({
-    message: z.string().min(1, "Mensagem não pode ser vazia").max(1000, "Mensagem muito longa"),
-    history: z.array(z.object({
-        role: z.string(),
-        text: z.string()
-    })).optional().default([]),
-    guestName: z.string().optional().default("Hóspede"),
-    systemInstruction: z.string().optional().default("")
+    message: z.string().min(1, 'Mensagem não pode ser vazia').max(1000, 'Mensagem muito longa'),
+    history: z
+        .array(
+            z.object({
+                role: z.string(),
+                text: z.string(),
+            })
+        )
+        .optional()
+        .default([]),
+    guestName: z.string().optional().default('Hóspede'),
+    systemInstruction: z.string().optional().default(''),
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -35,7 +40,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!apiKey) {
-        return res.status(500).json({ error: "Erro de Configuração: API Key não encontrada no servidor." });
+        return res
+            .status(500)
+            .json({ error: 'Erro de Configuração: API Key não encontrada no servidor.' });
     }
 
     try {
@@ -45,8 +52,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Inicializa o SDK antigo (Estável)
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            systemInstruction: `${systemInstruction}\nO nome do hóspede atual é ${guestName}.`
+            model: 'gemini-1.5-flash',
+            systemInstruction: `${systemInstruction}\nO nome do hóspede atual é ${guestName}.`,
         });
 
         // Converte histórico para o formato do SDK antigo
@@ -73,12 +80,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const responseText = response.text();
 
         return res.status(200).json({ text: responseText });
-
     } catch (error: any) {
         if (error instanceof z.ZodError) {
-            return res.status(400).json({ error: "Dados inválidos", details: error.issues });
+            return res.status(400).json({ error: 'Dados inválidos', details: error.issues });
         }
-        console.error("Erro na Vercel Function:", error);
-        return res.status(500).json({ error: "Erro interno na IA", details: error.message || String(error) });
+        console.error('Erro na Vercel Function:', error);
+        return res
+            .status(500)
+            .json({ error: 'Erro interno na IA', details: error.message || String(error) });
     }
 }

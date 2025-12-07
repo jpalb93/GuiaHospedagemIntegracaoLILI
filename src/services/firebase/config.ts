@@ -4,7 +4,9 @@
  */
 import { initializeApp } from 'firebase/app';
 import {
-    initializeFirestore, persistentLocalCache, persistentMultipleTabManager
+    initializeFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
@@ -17,7 +19,7 @@ const firebaseConfig = {
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Inicialização Segura
@@ -25,7 +27,7 @@ const app = initializeApp(firebaseConfig);
 
 // Firestore com persistência (cache offline)
 export const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 });
 
 export const auth = getAuth(app);
@@ -44,7 +46,7 @@ export const validateFirebaseConfig = () => {
 
     return {
         isValid: missingKeys.length === 0,
-        missingKeys
+        missingKeys,
     };
 };
 
@@ -74,14 +76,14 @@ export const saveToCache = (key: string, data: unknown) => {
         const cacheObj = { data, timestamp: Date.now() };
         localStorage.setItem(key, JSON.stringify(cacheObj));
     } catch (e) {
-        logger.warn("Erro ao salvar cache local", e);
+        logger.warn('Erro ao salvar cache local', e);
     }
 };
 
 // --- HELPER PARA REMOVER UNDEFINED (Firestore não aceita) ---
 export const cleanData = <T extends object>(data: T): T => {
     const clean = { ...data } as Record<string, unknown>;
-    Object.keys(clean).forEach(key => {
+    Object.keys(clean).forEach((key) => {
         if (clean[key] === undefined) {
             delete clean[key];
         }

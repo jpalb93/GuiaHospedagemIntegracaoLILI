@@ -12,9 +12,15 @@ const Hero: React.FC = () => {
     }, []);
 
     return (
-        <section id="inicio" className="relative h-screen min-h-[700px] w-full overflow-hidden bg-gray-900">
+        <section
+            id="inicio"
+            className="relative h-screen min-h-[700px] w-full overflow-hidden bg-gray-900"
+        >
             {/* Background com Parallax */}
-            <div className="absolute inset-0" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
+            <div
+                className="absolute inset-0"
+                style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+            >
                 <img
                     src="https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
                     className="w-full h-full object-cover scale-110 opacity-60"
@@ -26,9 +32,12 @@ const Hero: React.FC = () => {
 
             {/* Conteúdo */}
             <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 z-10">
-
                 <div className="mb-8 animate-fadeIn relative group">
-                    <img src={flatsLogo} alt="Logo Flats Integração" className="relative z-10 h-40 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
+                    <img
+                        src={flatsLogo}
+                        alt="Logo Flats Integração"
+                        className="relative z-10 h-40 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                    />
                     <div
                         className="absolute inset-0 z-20 animate-logo-shimmer pointer-events-none"
                         style={{
@@ -39,22 +48,25 @@ const Hero: React.FC = () => {
                             maskRepeat: 'no-repeat',
                             WebkitMaskRepeat: 'no-repeat',
                             maskPosition: 'center',
-                            WebkitMaskPosition: 'center'
+                            WebkitMaskPosition: 'center',
                         }}
                     />
                 </div>
 
                 <div className="mb-6 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 shadow-xl animate-fadeIn delay-100">
                     <Award size={18} className="text-orange-400" />
-                    <h1 className="text-white/90 text-sm font-semibold tracking-wide uppercase">Hospedagem em Petrolina</h1>
+                    <h1 className="text-white/90 text-sm font-semibold tracking-wide uppercase">
+                        Hospedagem em Petrolina
+                    </h1>
                 </div>
 
                 {/* Gradient Overlay */}
 
-
-
                 <p className="text-xl sm:text-2xl md:text-3xl font-light text-white/95 mb-10 max-w-3xl drop-shadow-lg leading-relaxed">
-                    Seu lar longe de casa, com o <span className="font-semibold text-orange-300">conforto</span> e <span className="font-semibold text-orange-300">praticidade</span> que você merece.
+                    Seu lar longe de casa, com o{' '}
+                    <span className="font-semibold text-orange-300">conforto</span> e{' '}
+                    <span className="font-semibold text-orange-300">praticidade</span> que você
+                    merece.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -88,7 +100,7 @@ const Hero: React.FC = () => {
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
                 <ChevronRight className="text-white/50 rotate-90" size={32} />
             </div>
-        </section >
+        </section>
     );
 };
 

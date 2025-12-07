@@ -18,7 +18,11 @@ const PlaceItemCard: React.FC<PlaceItemCardProps> = ({ place, onEdit, onDelete }
             {/* Thumbnail */}
             <div className="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0 overflow-hidden">
                 {place.imageUrl ? (
-                    <img src={place.imageUrl} alt={place.name} className="w-full h-full object-cover" />
+                    <img
+                        src={place.imageUrl}
+                        alt={place.name}
+                        className="w-full h-full object-cover"
+                    />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                         <ImageIcon size={24} />
@@ -44,9 +48,7 @@ const PlaceItemCard: React.FC<PlaceItemCardProps> = ({ place, onEdit, onDelete }
                 </p>
 
                 {place.eventDate && (
-                    <p className="text-xs text-purple-500 font-bold mt-1">
-                        📅 {place.eventDate}
-                    </p>
+                    <p className="text-xs text-purple-500 font-bold mt-1">📅 {place.eventDate}</p>
                 )}
 
                 {/* Ações */}

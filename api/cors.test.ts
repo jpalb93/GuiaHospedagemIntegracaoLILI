@@ -9,7 +9,7 @@ describe('CORS Whitelist', () => {
     beforeEach(() => {
         mockReq = {
             headers: {},
-            method: 'GET'
+            method: 'GET',
         };
         mockRes = {
             setHeader: vi.fn(),
@@ -61,7 +61,7 @@ describe('CORS Whitelist', () => {
 
     test('should NOT allow unauthorized origin', () => {
         mockReq.headers.origin = 'https://malicious-site.com';
-        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
         applyCors(mockReq, mockRes);
 
@@ -83,9 +83,6 @@ describe('CORS Whitelist', () => {
         // Sem definir origin
         applyCors(mockReq, mockRes);
 
-        expect(mockRes.setHeader).toHaveBeenCalledWith(
-            'Access-Control-Allow-Origin',
-            '*'
-        );
+        expect(mockRes.setHeader).toHaveBeenCalledWith('Access-Control-Allow-Origin', '*');
     });
 });

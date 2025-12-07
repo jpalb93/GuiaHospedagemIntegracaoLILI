@@ -30,19 +30,26 @@ export const saveAppSettings = async (config: AppConfig) => {
 };
 
 export const subscribeToAppSettings = (callback: (config: AppConfig | null) => void) => {
-    return onSnapshot(doc(db, 'app_config', 'general'), (docSnap) => {
-        if (docSnap.exists()) {
-            callback(docSnap.data() as AppConfig);
-        } else {
-            callback(null);
+    return onSnapshot(
+        doc(db, 'app_config', 'general'),
+        (docSnap) => {
+            if (docSnap.exists()) {
+                callback(docSnap.data() as AppConfig);
+            } else {
+                callback(null);
+            }
+        },
+        (error) => {
+            logger.error('Erro no listener de configs:', error);
         }
-    }, (error) => {
-        logger.error("Erro no listener de configs:", error);
-    });
+    );
 };
 
 // --- IMAGENS DE CAPA (HERO) ---
-export const getHeroImages = async (forceRefresh = false, propertyId: 'lili' | 'integracao' = 'lili'): Promise<string[]> => {
+export const getHeroImages = async (
+    forceRefresh = false,
+    propertyId: 'lili' | 'integracao' = 'lili'
+): Promise<string[]> => {
     const cacheKey = `cached_hero_images_${propertyId}`;
     if (!forceRefresh && !import.meta.env.DEV) {
         const cachedData = getFromCache<string[]>(cacheKey);
@@ -63,7 +70,10 @@ export const getHeroImages = async (forceRefresh = false, propertyId: 'lili' | '
     }
 };
 
-export const updateHeroImages = async (urls: string[], propertyId: 'lili' | 'integracao' = 'lili') => {
+export const updateHeroImages = async (
+    urls: string[],
+    propertyId: 'lili' | 'integracao' = 'lili'
+) => {
     const field = propertyId === 'integracao' ? 'integracao_urls' : 'urls';
     await setDoc(doc(db, 'app_config', 'hero_images'), { [field]: urls }, { merge: true });
 };
@@ -85,14 +95,20 @@ export const saveSmartSuggestions = async (config: SmartSuggestionsConfig) => {
     await setDoc(doc(db, 'app_config', 'suggestions'), config);
 };
 
-export const subscribeToSmartSuggestions = (callback: (config: SmartSuggestionsConfig | null) => void) => {
-    return onSnapshot(doc(db, 'app_config', 'suggestions'), (docSnap) => {
-        if (docSnap.exists()) {
-            callback(docSnap.data() as SmartSuggestionsConfig);
-        } else {
-            callback(null);
+export const subscribeToSmartSuggestions = (
+    callback: (config: SmartSuggestionsConfig | null) => void
+) => {
+    return onSnapshot(
+        doc(db, 'app_config', 'suggestions'),
+        (docSnap) => {
+            if (docSnap.exists()) {
+                callback(docSnap.data() as SmartSuggestionsConfig);
+            } else {
+                callback(null);
+            }
+        },
+        (error) => {
+            logger.error('Erro no listener de sugestões:', error);
         }
-    }, (error) => {
-        logger.error("Erro no listener de sugestões:", error);
-    });
+    );
 };

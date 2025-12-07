@@ -42,7 +42,7 @@ const scorePlace = (
         morning: ['cafes', 'essentials'],
         lunch: ['selfservice', 'alacarte', 'burgers'],
         sunset: ['bars', 'attractions'],
-        night: ['bars', 'pasta', 'oriental', 'events']
+        night: ['bars', 'pasta', 'oriental', 'events'],
     };
 
     if (timeCategories[timeOfDay]?.includes(place.category)) {
@@ -71,7 +71,12 @@ describe('SmartSuggestion Scoring Logic', () => {
         { id: '2', name: 'Bar do Zé', category: 'bars', whatsapp: '87988888888' },
         { id: '3', name: 'Pizzaria Nápoles', category: 'pasta' },
         { id: '4', name: 'Show Especial', category: 'events', tags: ['destaque'] },
-        { id: '5', name: 'Self-Service Central', category: 'selfservice', phoneNumber: '87977777777' }
+        {
+            id: '5',
+            name: 'Self-Service Central',
+            category: 'selfservice',
+            phoneNumber: '87977777777',
+        },
     ];
 
     describe('scorePlace', () => {
@@ -88,15 +93,29 @@ describe('SmartSuggestion Scoring Logic', () => {
         });
 
         it('should add 30 points for places with phone contact', () => {
-            const withPhone: Place = { id: '1', name: 'Test', category: 'other', phoneNumber: '123' };
+            const withPhone: Place = {
+                id: '1',
+                name: 'Test',
+                category: 'other',
+                phoneNumber: '123',
+            };
             const withoutPhone: Place = { id: '2', name: 'Test', category: 'other' };
-            expect(scorePlace(withPhone, 'morning', false) - scorePlace(withoutPhone, 'morning', false)).toBe(30);
+            expect(
+                scorePlace(withPhone, 'morning', false) - scorePlace(withoutPhone, 'morning', false)
+            ).toBe(30);
         });
 
         it('should add 20 points for "destaque" tag', () => {
-            const featured: Place = { id: '1', name: 'Test', category: 'other', tags: ['destaque'] };
+            const featured: Place = {
+                id: '1',
+                name: 'Test',
+                category: 'other',
+                tags: ['destaque'],
+            };
             const normal: Place = { id: '2', name: 'Test', category: 'other' };
-            expect(scorePlace(featured, 'morning', false) - scorePlace(normal, 'morning', false)).toBe(20);
+            expect(
+                scorePlace(featured, 'morning', false) - scorePlace(normal, 'morning', false)
+            ).toBe(20);
         });
 
         it('should add 40 points for time-appropriate categories', () => {
@@ -127,7 +146,7 @@ describe('SmartSuggestion Scoring Logic', () => {
         it('should give priority to featured events', () => {
             const ranked = rankPlaces(mockPlaces, 'night', true);
             // Evento com "destaque" deve estar no top
-            const eventRank = ranked.findIndex(p => p.id === '4');
+            const eventRank = ranked.findIndex((p) => p.id === '4');
             expect(eventRank).toBeLessThanOrEqual(2);
         });
     });

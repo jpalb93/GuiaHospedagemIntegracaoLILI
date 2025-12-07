@@ -7,7 +7,12 @@ interface ScrollRevealProps {
     className?: string;
 }
 
-const ScrollReveal: React.FC<ScrollRevealProps> = ({ children, threshold = 0.1, delay = '', className = '' }) => {
+const ScrollReveal: React.FC<ScrollRevealProps> = ({
+    children,
+    threshold = 0.1,
+    delay = '',
+    className = '',
+}) => {
     const ref = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -32,8 +37,9 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({ children, threshold = 0.1, 
     return (
         <div
             ref={ref}
-            className={`transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-                } ${delay} ${className}`}
+            className={`transition-all duration-1000 ease-out transform ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            } ${delay} ${className}`}
         >
             {children}
         </div>

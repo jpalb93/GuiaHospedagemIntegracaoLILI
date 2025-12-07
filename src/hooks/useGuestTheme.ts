@@ -44,7 +44,7 @@ export const useGuestTheme = (propertyId: PropertyId) => {
                     glow: 'shadow-cyan-500/10',
                     blob1: 'bg-cyan-500/10',
                     blob2: 'bg-blue-600/10',
-                }
+                },
             };
         }
 
@@ -67,7 +67,7 @@ export const useGuestTheme = (propertyId: PropertyId) => {
                 glow: 'shadow-purple-500/20',
                 blob1: 'bg-purple-500/20',
                 blob2: 'bg-blue-500/10',
-            }
+            },
         };
     }, [propertyId]);
 

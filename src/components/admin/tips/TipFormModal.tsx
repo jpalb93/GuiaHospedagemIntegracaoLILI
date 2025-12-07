@@ -21,7 +21,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
     setFormData,
     onSave,
     isSaving,
-    isEditing
+    isEditing,
 }) => {
     if (!isOpen) return null;
 
@@ -44,55 +44,70 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                 {/* Form */}
                 <div className="p-6 space-y-4 overflow-y-auto">
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Título</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Título
+                        </label>
                         <input
                             type="text"
                             value={formData.title}
-                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                             placeholder="Ex: Wi-Fi"
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Subtítulo</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Subtítulo
+                        </label>
                         <input
                             type="text"
                             value={formData.subtitle}
-                            onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                             placeholder="Ex: Senha da Rede"
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Ícone</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Ícone
+                        </label>
                         <select
                             value={formData.iconName}
-                            onChange={e => setFormData({ ...formData, iconName: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                         >
-                            {Object.keys(iconMap).sort().map(iconName => (
-                                <option key={iconName} value={iconName}>
-                                    {iconTranslations[iconName] || iconName}
-                                </option>
-                            ))}
+                            {Object.keys(iconMap)
+                                .sort()
+                                .map((iconName) => (
+                                    <option key={iconName} value={iconName}>
+                                        {iconTranslations[iconName] || iconName}
+                                    </option>
+                                ))}
                         </select>
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Imagem</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Imagem
+                        </label>
                         <div className="space-y-2">
                             <ImageUpload
-                                onUpload={(url) => setFormData(prev => ({ ...prev, image: url }))}
+                                onUpload={(url) => setFormData((prev) => ({ ...prev, image: url }))}
                                 initialUrl={formData.image}
                                 folder="tips"
                                 placeholder="Enviar imagem da dica"
                                 maxDimension={1200}
                             />
                             <div className="relative">
-                                <Link size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Link
+                                    size={16}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
                                 <input
                                     type="text"
                                     value={formData.image || ''}
-                                    onChange={e => setFormData({ ...formData, image: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, image: e.target.value })
+                                    }
                                     className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-3 py-3 outline-none focus:ring-2 focus:ring-yellow-500 text-sm font-mono text-gray-600"
                                     placeholder="https://..."
                                 />
@@ -100,20 +115,26 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                         </div>
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Conteúdo</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Conteúdo
+                        </label>
                         <textarea
                             value={formData.content}
-                            onChange={e => setFormData({ ...formData, content: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500 min-h-[100px]"
                             placeholder="Texto da dica..."
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Ordem</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                            Ordem
+                        </label>
                         <input
                             type="number"
                             value={formData.order}
-                            onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, order: parseInt(e.target.value) })
+                            }
                             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                         />
                     </div>

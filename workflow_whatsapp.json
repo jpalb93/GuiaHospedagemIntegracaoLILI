@@ -7,10 +7,7 @@
             "name": "Ao clicar em Executar",
             "type": "n8n-nodes-base.manualTrigger",
             "typeVersion": 1,
-            "position": [
-                820,
-                360
-            ]
+            "position": [820, 360]
         },
         {
             "parameters": {
@@ -20,10 +17,7 @@
             "name": "Simular Banco de Dados",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
-            "position": [
-                1040,
-                360
-            ]
+            "position": [1040, 360]
         },
         {
             "parameters": {
@@ -35,10 +29,7 @@
             "name": "Simular WhatsApp",
             "type": "n8n-nodes-base.stickyNote",
             "typeVersion": 1,
-            "position": [
-                1260,
-                360
-            ]
+            "position": [1260, 360]
         },
         {
             "parameters": {
@@ -72,10 +63,7 @@
             "name": "Enviar Z-API (Real)",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.1,
-            "position": [
-                1480,
-                540
-            ]
+            "position": [1480, 540]
         }
     ],
     "pinData": {},

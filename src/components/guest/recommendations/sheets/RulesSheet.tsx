@@ -1,7 +1,14 @@
 import React from 'react';
 import {
-    AlertTriangle, Trash2, Droplets, CheckCircle2,
-    Ban, Lightbulb, UserCheck, AlertCircle, Tv
+    AlertTriangle,
+    Trash2,
+    Droplets,
+    CheckCircle2,
+    Ban,
+    Lightbulb,
+    UserCheck,
+    AlertCircle,
+    Tv,
 } from 'lucide-react';
 
 /**
@@ -49,7 +56,8 @@ const RulesSheet: React.FC = () => {
                     Segunda, Quarta e Sexta (06:00 – 18:00h).
                 </p>
                 <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                    Local: Na calçada entre o totem e o poste (<span className="font-bold">não colocar no vizinho</span>).
+                    Local: Na calçada entre o totem e o poste (
+                    <span className="font-bold">não colocar no vizinho</span>).
                 </p>
             </div>
 
@@ -62,7 +70,8 @@ const RulesSheet: React.FC = () => {
                     </h4>
                 </div>
                 <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-                    Danos ou manchas em lençóis e toalhas poderão gerar cobrança de taxa de reposição.
+                    Danos ou manchas em lençóis e toalhas poderão gerar cobrança de taxa de
+                    reposição.
                 </p>
             </div>
 
@@ -75,10 +84,24 @@ const RulesSheet: React.FC = () => {
                     </h4>
                 </div>
                 <ul className="space-y-2 mb-3">
-                    {['Apague luzes e desligue o AC', 'Feche as janelas', 'Chave: Devolva na caixinha "Self Checkout"'].map((item, idx) => (
-                        <li key={idx} className="text-xs text-green-700 dark:text-green-300 flex items-start gap-2">
+                    {[
+                        'Apague luzes e desligue o AC',
+                        'Feche as janelas',
+                        'Chave: Devolva na caixinha "Self Checkout"',
+                    ].map((item, idx) => (
+                        <li
+                            key={idx}
+                            className="text-xs text-green-700 dark:text-green-300 flex items-start gap-2"
+                        >
                             <span className="mt-1 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
-                            <span dangerouslySetInnerHTML={{ __html: item.replace('"Self Checkout"', '<strong class="font-bold">"Self Checkout"</strong>') }} />
+                            <span
+                                dangerouslySetInnerHTML={{
+                                    __html: item.replace(
+                                        '"Self Checkout"',
+                                        '<strong class="font-bold">"Self Checkout"</strong>'
+                                    ),
+                                }}
+                            />
                         </li>
                     ))}
                 </ul>
@@ -98,7 +121,11 @@ const RulesSheet: React.FC = () => {
                 <RuleItem icon={Ban} text="Não usar para qualquer atividade ilegal" />
                 <RuleItem icon={Ban} text="Não secar roupas na cama ou sofá" />
                 <RuleItem icon={Lightbulb} text="Usar AC com portas/janelas fechadas" positive />
-                <RuleItem icon={Lightbulb} text="Usar água e energia de forma responsável" positive />
+                <RuleItem
+                    icon={Lightbulb}
+                    text="Usar água e energia de forma responsável"
+                    positive
+                />
                 <RuleItem icon={AlertCircle} text="Avisar imediatamente sobre danos" warning />
             </div>
         </div>
@@ -116,14 +143,10 @@ const RuleItem: React.FC<RuleItemProps> = ({ icon: Icon, text, positive, warning
     const colorClass = warning
         ? 'text-red-600 dark:text-red-400'
         : positive
-            ? 'text-green-600 dark:text-green-400'
-            : 'text-gray-600 dark:text-gray-400';
+          ? 'text-green-600 dark:text-green-400'
+          : 'text-gray-600 dark:text-gray-400';
 
-    const iconColorClass = warning
-        ? 'text-red-500'
-        : positive
-            ? 'text-green-500'
-            : 'text-gray-400';
+    const iconColorClass = warning ? 'text-red-500' : positive ? 'text-green-500' : 'text-gray-400';
 
     return (
         <div className={`flex items-center gap-2 text-xs ${colorClass}`}>

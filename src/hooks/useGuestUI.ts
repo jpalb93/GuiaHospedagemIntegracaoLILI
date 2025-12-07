@@ -50,32 +50,39 @@ export const useGuestUI = () => {
 
     return {
         modals: {
-            showDriverMode, setShowDriverMode,
-            showOfflineCard, setShowOfflineCard,
-            showVideoModal, setShowVideoModal,
-            isCheckinModalOpen, setIsCheckinModalOpen,
-            isCheckoutModalOpen, setIsCheckoutModalOpen,
-            isSupportModalOpen, setIsSupportModalOpen,
-            isStoryOpen, setIsStoryOpen
+            showDriverMode,
+            setShowDriverMode,
+            showOfflineCard,
+            setShowOfflineCard,
+            showVideoModal,
+            setShowVideoModal,
+            isCheckinModalOpen,
+            setIsCheckinModalOpen,
+            isCheckoutModalOpen,
+            setIsCheckoutModalOpen,
+            isSupportModalOpen,
+            setIsSupportModalOpen,
+            isStoryOpen,
+            setIsStoryOpen,
         },
         video: {
             currentVideoUrl,
             isVideoVertical,
-            openVideoModal
+            openVideoModal,
         },
         checkout: {
             startOnKeyDetails,
             handleOpenKeyDetails,
-            handleCloseCheckout
+            handleCloseCheckout,
         },
         stories: {
             storyStartIndex,
-            setStoryStartIndex
+            setStoryStartIndex,
         },
         clipboard: {
             wifiCopied,
             addressCopied,
-            copyToClipboard
-        }
+            copyToClipboard,
+        },
     };
 };

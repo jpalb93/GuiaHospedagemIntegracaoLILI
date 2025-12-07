@@ -2,9 +2,7 @@
  * Serviços de Datas Bloqueadas
  * CRUD para bloqueio de períodos no calendário
  */
-import {
-    collection, doc, addDoc, deleteDoc, onSnapshot, query, where
-} from 'firebase/firestore';
+import { collection, doc, addDoc, deleteDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from './config';
 import { BlockedDateRange } from '../../types';
 import { logger } from '../../utils/logger';
@@ -18,15 +16,22 @@ export const deleteBlockedDate = async (id: string) => {
 };
 
 export const subscribeToBlockedDates = (callback: (blocks: BlockedDateRange[]) => void) => {
-    return onSnapshot(collection(db, 'blocked_dates'), (snapshot) => {
-        const data = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...(doc.data() as Record<string, unknown>)
-        } as BlockedDateRange));
-        callback(data);
-    }, (error) => {
-        logger.error("Erro no listener de datas bloqueadas:", error);
-    });
+    return onSnapshot(
+        collection(db, 'blocked_dates'),
+        (snapshot) => {
+            const data = snapshot.docs.map(
+                (doc) =>
+                    ({
+                        id: doc.id,
+                        ...(doc.data() as Record<string, unknown>),
+                    }) as BlockedDateRange
+            );
+            callback(data);
+        },
+        (error) => {
+            logger.error('Erro no listener de datas bloqueadas:', error);
+        }
+    );
 };
 
 export const subscribeToFutureBlockedDates = (callback: (blocks: BlockedDateRange[]) => void) => {
@@ -34,13 +39,20 @@ export const subscribeToFutureBlockedDates = (callback: (blocks: BlockedDateRang
     const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD Local
     const q = query(collection(db, 'blocked_dates'), where('endDate', '>=', today));
 
-    return onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...(doc.data() as Record<string, unknown>)
-        } as BlockedDateRange));
-        callback(data);
-    }, (error) => {
-        logger.error("Erro no listener de datas bloqueadas futuras:", error);
-    });
+    return onSnapshot(
+        q,
+        (snapshot) => {
+            const data = snapshot.docs.map(
+                (doc) =>
+                    ({
+                        id: doc.id,
+                        ...(doc.data() as Record<string, unknown>),
+                    }) as BlockedDateRange
+            );
+            callback(data);
+        },
+        (error) => {
+            logger.error('Erro no listener de datas bloqueadas futuras:', error);
+        }
+    );
 };

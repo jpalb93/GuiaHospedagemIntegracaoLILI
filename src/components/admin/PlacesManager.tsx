@@ -1,7 +1,7 @@
 /**
  * Re-export do PlacesManager refatorado
  * O componente foi dividido em subcomponentes menores na pasta ./places/
- * 
+ *
  * Estrutura:
  * - PlacesManager.tsx - Componente orquestrador
  * - PlaceFormModal.tsx - Modal de criar/editar

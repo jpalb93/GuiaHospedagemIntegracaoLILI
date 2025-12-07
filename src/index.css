@@ -4,500 +4,500 @@
 
 /* Estilos globais */
 body {
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 /* Ajustes do Google Translate para não quebrar o layout */
 .goog-te-banner-frame.skiptranslate {
-  display: none !important;
+    display: none !important;
 }
 
 body {
-  top: 0px !important;
+    top: 0px !important;
 }
 
 #google_translate_element {
-  display: none;
+    display: none;
 }
 
 .goog-tooltip {
-  display: none !important;
+    display: none !important;
 }
 
 .goog-te-gadget-icon {
-  display: none !important;
+    display: none !important;
 }
 
 /* Animações Personalizadas */
 @keyframes pop-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
 
-  70% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
+    70% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
 
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .animate-pop-in {
-  animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
 
 @keyframes fade-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
 
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-fade-up {
-  animation: fade-up 0.6s ease-out backwards;
+    animation: fade-up 0.6s ease-out backwards;
 }
 
 @keyframes pulse-subtle {
+    0%,
+    100% {
+        transform: scale(1);
+    }
 
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.02);
-  }
+    50% {
+        transform: scale(1.02);
+    }
 }
 
 .animate-pulse-subtle {
-  animation: pulse-subtle 3s ease-in-out infinite;
+    animation: pulse-subtle 3s ease-in-out infinite;
 }
 
 @keyframes jump {
-  0% {
-    transform: translateY(0);
-  }
+    0% {
+        transform: translateY(0);
+    }
 
-  50% {
-    transform: translateY(-10px);
-  }
+    50% {
+        transform: translateY(-10px);
+    }
 
-  100% {
-    transform: translateY(0);
-  }
+    100% {
+        transform: translateY(0);
+    }
 }
 
 .animate-jump {
-  animation: jump 0.5s ease-in-out;
+    animation: jump 0.5s ease-in-out;
 }
 
 @keyframes shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
 
-  0%,
-  100% {
-    transform: translateX(0);
-  }
+    25% {
+        transform: translateX(-5px);
+    }
 
-  25% {
-    transform: translateX(-5px);
-  }
-
-  75% {
-    transform: translateX(5px);
-  }
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 .animate-shake {
-  animation: shake 0.3s ease-in-out;
+    animation: shake 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
+    from {
+        opacity: 0;
+    }
 
-  to {
-    opacity: 1;
-  }
+    to {
+        opacity: 1;
+    }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes slideInUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
 
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .animate-slideInUp {
-  animation: slideInUp 0.5s ease-out forwards;
+    animation: slideInUp 0.5s ease-out forwards;
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
+    0% {
+        background-position: -200% 0;
+    }
 
-  100% {
-    background-position: 200% 0;
-  }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
 }
 
 @keyframes logo-shimmer {
-  0% {
-    mask-position: -200% 0;
-    -webkit-mask-position: -200% 0;
-  }
+    0% {
+        mask-position: -200% 0;
+        -webkit-mask-position: -200% 0;
+    }
 
-  100% {
-    mask-position: 200% 0;
-    -webkit-mask-position: 200% 0;
-  }
+    100% {
+        mask-position: 200% 0;
+        -webkit-mask-position: 200% 0;
+    }
 }
 
 .animate-logo-shimmer {
-  background: linear-gradient(110deg,
-      transparent 35%,
-      rgba(255, 255, 255, 0.8) 50%,
-      transparent 65%);
-  background-size: 200% 100%;
-  animation: logo-shimmer 3s infinite linear;
-  /* Dourado claro */
+    background: linear-gradient(
+        110deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.8) 50%,
+        transparent 65%
+    );
+    background-size: 200% 100%;
+    animation: logo-shimmer 3s infinite linear;
+    /* Dourado claro */
 }
 
 /* Nova animação de Blur-In Cinematográfico */
 @keyframes blur-in {
-  0% {
-    opacity: 0;
-    transform: scale(1.1);
-    filter: blur(10px);
-  }
+    0% {
+        opacity: 0;
+        transform: scale(1.1);
+        filter: blur(10px);
+    }
 
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: blur(0px);
-  }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0px);
+    }
 }
 
 .animate-blur-in {
-  animation: blur-in 1.5s ease-out forwards;
+    animation: blur-in 1.5s ease-out forwards;
 }
 
 /* Nova animação de Levitação (Floating) */
 
 @keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
 
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
+    50% {
+        transform: translateY(-5px);
+    }
 }
 
 .animate-float {
-  animation: float 6s ease-in-out infinite;
+    animation: float 6s ease-in-out infinite;
 }
 
 /* Sunrise Reveal Animation */
 @keyframes sunrise-sun {
-  0% {
-    opacity: 0;
-    transform: translateY(150px);
-    filter: blur(4px);
-  }
+    0% {
+        opacity: 0;
+        transform: translateY(150px);
+        filter: blur(4px);
+    }
 
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
 }
 
 @keyframes sunrise-text {
-  0% {
-    opacity: 0;
-    transform: translateY(100px);
-    filter: blur(2px);
-  }
+    0% {
+        opacity: 0;
+        transform: translateY(100px);
+        filter: blur(2px);
+    }
 
-  40% {
-    opacity: 0;
-    transform: translateY(100px);
-  }
+    40% {
+        opacity: 0;
+        transform: translateY(100px);
+    }
 
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
 }
 
 .animate-sunrise-sun {
-  animation: sunrise-sun 1.5s ease-out forwards;
+    animation: sunrise-sun 1.5s ease-out forwards;
 }
 
 .animate-sunrise-text {
-  animation: sunrise-text 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: sunrise-text 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Defined pulse checking to avoid missing dependency */
 @keyframes pulse-opacity {
+    0%,
+    100% {
+        opacity: 1;
+    }
 
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* Combined Animation: Sunrise Entry -> then Pulse Forever */
 .animate-sunrise-pulse {
-  animation:
-    sunrise-sun 1.5s ease-out forwards,
-    pulse-opacity 3s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.5s;
+    animation:
+        sunrise-sun 1.5s ease-out forwards,
+        pulse-opacity 3s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.5s;
 }
 
 /* Curtain Reveal Animation (Left to Right wipe) */
 @keyframes reveal-curtain {
-  0% {
-    mask-position: 0% 0;
-    -webkit-mask-position: 0% 0;
-  }
+    0% {
+        mask-position: 0% 0;
+        -webkit-mask-position: 0% 0;
+    }
 
-  100% {
-    mask-position: 100% 0;
-    -webkit-mask-position: 100% 0;
-  }
+    100% {
+        mask-position: 100% 0;
+        -webkit-mask-position: 100% 0;
+    }
 }
 
 .animate-reveal-curtain {
-  mask-image: linear-gradient(90deg, transparent 50%, #000 50%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 50%, #000 50%);
-  mask-size: 200% 100%;
-  -webkit-mask-size: 200% 100%;
-  animation: reveal-curtain 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 1;
-  /* Ensure visibility is controlled by mask */
+    mask-image: linear-gradient(90deg, transparent 50%, #000 50%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 50%, #000 50%);
+    mask-size: 200% 100%;
+    -webkit-mask-size: 200% 100%;
+    animation: reveal-curtain 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 1;
+    /* Ensure visibility is controlled by mask */
 }
 
 /* Utilitários Extras */
 .text-xxs {
-  font-size: 0.65rem;
-  line-height: 1rem;
+    font-size: 0.65rem;
+    line-height: 1rem;
 }
 
 .backdrop-blur-xs {
-  backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
 }
 
 /* Container do Swipeable Items */
 .swipeable-list-container {
-  overflow: hidden;
-  /* Esconde o scrollbar nativo */
+    overflow: hidden;
+    /* Esconde o scrollbar nativo */
 }
 
 /* Efeito de vidro (Glassmorphism) */
 .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* React Calendar Customization */
 .react-calendar {
-  width: 100% !important;
-  max-width: 100%;
-  background: white;
-  border: 1px solid #e5e7eb;
-  font-family: 'Inter', sans-serif;
-  line-height: 1.125em;
-  border-radius: 0.5rem;
-  overflow: hidden;
+    width: 100% !important;
+    max-width: 100%;
+    background: white;
+    border: 1px solid #e5e7eb;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.125em;
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
 
 .react-calendar--doubleView {
-  width: 700px;
+    width: 700px;
 }
 
 .react-calendar--doubleView .react-calendar__viewContainer {
-  display: flex;
-  margin: -0.5em;
+    display: flex;
+    margin: -0.5em;
 }
 
-.react-calendar--doubleView .react-calendar__viewContainer>* {
-  width: 500%;
-  margin: 0.5em;
+.react-calendar--doubleView .react-calendar__viewContainer > * {
+    width: 500%;
+    margin: 0.5em;
 }
 
 .react-calendar,
 .react-calendar *,
 .react-calendar *:before,
 .react-calendar *:after {
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .react-calendar button {
-  margin: 0;
-  border: 0;
-  outline: none;
+    margin: 0;
+    border: 0;
+    outline: none;
 }
 
 .react-calendar button:enabled:hover {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .react-calendar__navigation {
-  display: flex;
-  height: 44px;
-  margin-bottom: 1em;
+    display: flex;
+    height: 44px;
+    margin-bottom: 1em;
 }
 
 .react-calendar__navigation button {
-  min-width: 44px;
-  background: none;
+    min-width: 44px;
+    background: none;
 }
 
 .react-calendar__navigation button:disabled {
-  background-color: #f0f0f0;
+    background-color: #f0f0f0;
 }
 
 .react-calendar__navigation button:enabled:hover,
 .react-calendar__navigation button:enabled:focus {
-  background-color: #e6e6e6;
+    background-color: #e6e6e6;
 }
 
 .react-calendar__month-view__weekdays {
-  text-align: center;
-  text-transform: uppercase;
-  font-weight: bold;
-  font-size: 0.75em;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.75em;
 }
 
 .react-calendar__month-view__weekdays__weekday {
-  padding: 0.5em;
+    padding: 0.5em;
 }
 
 .react-calendar__month-view__weekNumbers .react-calendar__tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75em;
-  font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+    font-weight: bold;
 }
 
 .react-calendar__month-view__days__day--weekend {
-  color: #d10000;
+    color: #d10000;
 }
 
 .react-calendar__month-view__days__day--neighboringMonth {
-  color: #757575;
+    color: #757575;
 }
 
 .react-calendar__year-view .react-calendar__tile,
 .react-calendar__decade-view .react-calendar__tile,
 .react-calendar__century-view .react-calendar__tile {
-  padding: 2em 0.5em;
+    padding: 2em 0.5em;
 }
 
 .react-calendar__tile {
-  max-width: 100%;
-  padding: 10px 6.6667px;
-  background: none;
-  text-align: center;
-  line-height: 16px;
+    max-width: 100%;
+    padding: 10px 6.6667px;
+    background: none;
+    text-align: center;
+    line-height: 16px;
 }
 
 .react-calendar__tile:disabled {
-  background-color: #f0f0f0;
+    background-color: #f0f0f0;
 }
 
 .react-calendar__tile:enabled:hover,
 .react-calendar__tile:enabled:focus {
-  background-color: #e6e6e6;
+    background-color: #e6e6e6;
 }
 
 .react-calendar__tile--now {
-  background: #ffff76;
+    background: #ffff76;
 }
 
 .react-calendar__tile--now:enabled:hover,
 .react-calendar__tile--now:enabled:focus {
-  background: #ffffa9;
+    background: #ffffa9;
 }
 
 .react-calendar__tile--hasActive {
-  background: #76baff;
+    background: #76baff;
 }
 
 .react-calendar__tile--hasActive:enabled:hover,
 .react-calendar__tile--hasActive:enabled:focus {
-  background: #a9d4ff;
+    background: #a9d4ff;
 }
 
 .react-calendar__tile--active {
-  background: #006edc;
-  color: white;
+    background: #006edc;
+    color: white;
 }
 
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  background: #1087ff;
+    background: #1087ff;
 }
 
 .react-calendar--selectRange .react-calendar__tile--hover {
-  background-color: #e6e6e6;
+    background-color: #e6e6e6;
 }

@@ -36,16 +36,19 @@ const InfoSection: React.FC = () => {
                             </h3>
                             <ul className="space-y-3 text-gray-600 text-sm">
                                 <li className="flex items-center gap-2">
-                                    <Ban size={16} className="text-red-400" /> Proibido fumar em todas as áreas
+                                    <Ban size={16} className="text-red-400" /> Proibido fumar em
+                                    todas as áreas
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <Ban size={16} className="text-red-400" /> Festas/eventos não permitidos
+                                    <Ban size={16} className="text-red-400" /> Festas/eventos não
+                                    permitidos
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <Ban size={16} className="text-red-400" /> Pets não permitidos
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <VolumeX size={16} className="text-blue-400" /> Silêncio entre 21:00 e 07:00
+                                    <VolumeX size={16} className="text-blue-400" /> Silêncio entre
+                                    21:00 e 07:00
                                 </li>
                                 <li className="text-xs text-gray-500 mt-2">
                                     * Entrada permitida apenas para maiores de 18 anos.

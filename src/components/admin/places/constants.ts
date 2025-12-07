@@ -23,7 +23,7 @@ export const CATEGORIES: { id: PlaceCategory | 'all'; label: string }[] = [
     { id: 'bikes', label: 'Aluguel de Bicicletas' },
     { id: 'souvenirs', label: 'Lembrancinhas' },
     { id: 'emergency', label: 'Hospitais & Clínicas' },
-    { id: 'pharmacies', label: 'Farmácias' }
+    { id: 'pharmacies', label: 'Farmácias' },
 ];
 
 /**
@@ -44,7 +44,7 @@ export const DEFAULT_FORM_DATA: Partial<PlaceRecommendation> = {
     distance: '',
     phoneNumber: '',
     whatsapp: '',
-    tags: []
+    tags: [],
 };
 
 /**
@@ -52,6 +52,6 @@ export const DEFAULT_FORM_DATA: Partial<PlaceRecommendation> = {
  */
 export const getCategoryLabel = (categoryId: PlaceCategory | undefined): string => {
     if (!categoryId) return 'Sem categoria';
-    const category = CATEGORIES.find(c => c.id === categoryId);
+    const category = CATEGORIES.find((c) => c.id === categoryId);
     return category?.label || categoryId;
 };

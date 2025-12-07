@@ -44,10 +44,10 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
     };
 
     // Verifica se a origem está na whitelist (strings ou patterns)
-    const isAllowed = origin && (
-        ALLOWED_ORIGINS.includes(origin) ||
-        ALLOWED_PATTERNS.some(pattern => pattern.test(origin))
-    );
+    const isAllowed =
+        origin &&
+        (ALLOWED_ORIGINS.includes(origin) ||
+            ALLOWED_PATTERNS.some((pattern) => pattern.test(origin)));
 
     if (isAllowed) {
         headers['Access-Control-Allow-Origin'] = origin;
@@ -77,7 +77,11 @@ export default async function handler(request: Request) {
     }
 
     // Verifica origem (bloqueia requisições de origens não permitidas)
-    if (origin && !ALLOWED_ORIGINS.includes(origin) && !origin.match(/^https:\/\/guia-digital-flatlili-.*\.vercel\.app$/)) {
+    if (
+        origin &&
+        !ALLOWED_ORIGINS.includes(origin) &&
+        !origin.match(/^https:\/\/guia-digital-flatlili-.*\.vercel\.app$/)
+    ) {
         return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
             status: 403,
             headers: corsHeaders,
@@ -90,13 +94,16 @@ export default async function handler(request: Request) {
         // Validação com Zod
         const validationResult = PaymentSchema.safeParse(rawBody);
         if (!validationResult.success) {
-            return new Response(JSON.stringify({
-                error: 'Invalid payment data',
-                details: validationResult.error.issues
-            }), {
-                status: 400,
-                headers: corsHeaders,
-            });
+            return new Response(
+                JSON.stringify({
+                    error: 'Invalid payment data',
+                    details: validationResult.error.issues,
+                }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
         }
 
         const { transaction_amount, description, payer } = validationResult.data;
@@ -129,27 +136,31 @@ export default async function handler(request: Request) {
 
         const response = await payment.create({ body });
 
-        return new Response(JSON.stringify({
-            id: response.id,
-            status: response.status,
-            qr_code: response.point_of_interaction?.transaction_data?.qr_code,
-            qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64,
-            ticket_url: response.point_of_interaction?.transaction_data?.ticket_url,
-        }), {
-            status: 200,
-            headers: corsHeaders,
-        });
-
+        return new Response(
+            JSON.stringify({
+                id: response.id,
+                status: response.status,
+                qr_code: response.point_of_interaction?.transaction_data?.qr_code,
+                qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64,
+                ticket_url: response.point_of_interaction?.transaction_data?.ticket_url,
+            }),
+            {
+                status: 200,
+                headers: corsHeaders,
+            }
+        );
     } catch (error: unknown) {
         console.error('Mercado Pago Error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        return new Response(JSON.stringify({
-            error: 'Payment creation failed',
-            details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-        }), {
-            status: 500,
-            headers: corsHeaders,
-        });
+        return new Response(
+            JSON.stringify({
+                error: 'Payment creation failed',
+                details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+            }),
+            {
+                status: 500,
+                headers: corsHeaders,
+            }
+        );
     }
 }
-

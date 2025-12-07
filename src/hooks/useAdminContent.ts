@@ -2,9 +2,17 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { logger } from '../utils/logger';
 import { PlaceRecommendation, Tip, CityCuriosity } from '../types';
 import {
-    getDynamicPlaces, addDynamicPlace, updateDynamicPlace, deleteDynamicPlace,
-    getTips, addTip, updateTip, deleteTip, saveTipsOrder,
-    getCuriosities, saveCuriosities
+    getDynamicPlaces,
+    addDynamicPlace,
+    updateDynamicPlace,
+    deleteDynamicPlace,
+    getTips,
+    addTip,
+    updateTip,
+    deleteTip,
+    saveTipsOrder,
+    getCuriosities,
+    saveCuriosities,
 } from '../services/firebase';
 
 export const useAdminContent = () => {
@@ -36,7 +44,7 @@ export const useAdminContent = () => {
             const activePlaces: PlaceRecommendation[] = [];
             const expiredIds: string[] = [];
 
-            data.forEach(place => {
+            data.forEach((place) => {
                 if (place.category === 'events' && place.eventDate) {
                     // Determine expiration date (End Date OR Start Date)
                     const dateToCheckStr = place.eventEndDate || place.eventDate;
@@ -59,71 +67,85 @@ export const useAdminContent = () => {
             // Delete expired events in background (Fire & Forget)
             if (expiredIds.length > 0) {
                 logger.log(`[Auto-Cleanup] Deleting ${expiredIds.length} expired events...`);
-                Promise.all(expiredIds.map(id => deleteDynamicPlace(id)))
+                Promise.all(expiredIds.map((id) => deleteDynamicPlace(id)))
                     .then(() => logger.log('[Auto-Cleanup] Expired events deleted.'))
-                    .catch(err => logger.error('[Auto-Cleanup] Error deleting events:', err));
+                    .catch((err) => logger.error('[Auto-Cleanup] Error deleting events:', err));
             }
-
         } catch (error) {
-            logger.error("Error loading places:", error);
+            logger.error('Error loading places:', error);
         } finally {
             setLoadingPlaces(false);
         }
     }, []);
 
-    const handleAddPlace = useCallback(async (place: Omit<PlaceRecommendation, 'id'>) => {
-        // Optimistic Update: Add to UI immediately with a temp ID
-        const tempId = 'temp_' + Date.now();
-        const tempPlace = { ...place, id: tempId };
-        setPlaces(prev => [tempPlace, ...prev]);
+    const handleAddPlace = useCallback(
+        async (place: Omit<PlaceRecommendation, 'id'>) => {
+            // Optimistic Update: Add to UI immediately with a temp ID
+            const tempId = 'temp_' + Date.now();
+            const tempPlace = { ...place, id: tempId };
+            setPlaces((prev) => [tempPlace, ...prev]);
 
-        // Background Sync
-        addDynamicPlace(place).then(() => {
-            // Silent refresh to get real ID
-            loadPlaces();
-        }).catch(error => {
-            logger.error("Error adding place:", error);
-            // Revert on error (could be improved with toast)
-            setPlaces(prev => prev.filter(p => p.id !== tempId));
-        });
+            // Background Sync
+            addDynamicPlace(place)
+                .then(() => {
+                    // Silent refresh to get real ID
+                    loadPlaces();
+                })
+                .catch((error) => {
+                    logger.error('Error adding place:', error);
+                    // Revert on error (could be improved with toast)
+                    setPlaces((prev) => prev.filter((p) => p.id !== tempId));
+                });
 
-        return true; // Return success immediately
-    }, [loadPlaces]);
+            return true; // Return success immediately
+        },
+        [loadPlaces]
+    );
 
-    const handleUpdatePlace = useCallback(async (id: string, place: Partial<PlaceRecommendation>) => {
-        // Optimistic Update: Update UI immediately
-        setPlaces(prev => prev.map(p => p.id === id ? { ...p, ...place } : p));
+    const handleUpdatePlace = useCallback(
+        async (id: string, place: Partial<PlaceRecommendation>) => {
+            // Optimistic Update: Update UI immediately
+            setPlaces((prev) => prev.map((p) => (p.id === id ? { ...p, ...place } : p)));
 
-        // Background Sync
-        updateDynamicPlace(id, place).then(() => {
-            // Silent refresh to ensure consistency
-            // loadPlaces(); // Optional: might not be needed if we trust the optimistic update
-        }).catch(error => {
-            logger.error("Error updating place:", error);
-            // Revert would require fetching old state, skipping for now as rare
-            loadPlaces();
-        });
+            // Background Sync
+            updateDynamicPlace(id, place)
+                .then(() => {
+                    // Silent refresh to ensure consistency
+                    // loadPlaces(); // Optional: might not be needed if we trust the optimistic update
+                })
+                .catch((error) => {
+                    logger.error('Error updating place:', error);
+                    // Revert would require fetching old state, skipping for now as rare
+                    loadPlaces();
+                });
 
-        return true; // Return success immediately
-    }, [loadPlaces]);
+            return true; // Return success immediately
+        },
+        [loadPlaces]
+    );
 
-    const handleDeletePlace = useCallback(async (id: string) => {
-        if (!window.confirm("Tem certeza que deseja excluir este local?")) return false;
+    const handleDeletePlace = useCallback(
+        async (id: string) => {
+            if (!window.confirm('Tem certeza que deseja excluir este local?')) return false;
 
-        // Optimistic Update: Remove from UI immediately
-        setPlaces(prev => prev.filter(p => p.id !== id));
+            // Optimistic Update: Remove from UI immediately
+            setPlaces((prev) => prev.filter((p) => p.id !== id));
 
-        // Background Sync
-        deleteDynamicPlace(id).then(() => {
-            // Success
-        }).catch(error => {
-            logger.error("Error deleting place:", error);
-            // Revert
-            loadPlaces();
-        });
+            // Background Sync
+            deleteDynamicPlace(id)
+                .then(() => {
+                    // Success
+                })
+                .catch((error) => {
+                    logger.error('Error deleting place:', error);
+                    // Revert
+                    loadPlaces();
+                });
 
-        return true; // Return success immediately
-    }, [loadPlaces]);
+            return true; // Return success immediately
+        },
+        [loadPlaces]
+    );
 
     // --- TIPS ---
     const loadTips = useCallback(async () => {
@@ -132,69 +154,81 @@ export const useAdminContent = () => {
             const data = await getTips();
             setTips(data);
         } catch (error) {
-            logger.error("Error loading tips:", error);
+            logger.error('Error loading tips:', error);
         } finally {
             setLoadingTips(false);
         }
     }, []);
 
-    const handleAddTip = useCallback(async (tip: Tip) => {
-        setOperationLoading(true);
-        try {
-            await addTip(tip);
-            await loadTips();
-            return true;
-        } catch (error) {
-            logger.error("Error adding tip:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    }, [loadTips]);
+    const handleAddTip = useCallback(
+        async (tip: Tip) => {
+            setOperationLoading(true);
+            try {
+                await addTip(tip);
+                await loadTips();
+                return true;
+            } catch (error) {
+                logger.error('Error adding tip:', error);
+                return false;
+            } finally {
+                setOperationLoading(false);
+            }
+        },
+        [loadTips]
+    );
 
-    const handleUpdateTip = useCallback(async (id: string, tip: Partial<Tip>) => {
-        setOperationLoading(true);
-        try {
-            await updateTip(id, tip);
-            await loadTips();
-            return true;
-        } catch (error) {
-            logger.error("Error updating tip:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    }, [loadTips]);
+    const handleUpdateTip = useCallback(
+        async (id: string, tip: Partial<Tip>) => {
+            setOperationLoading(true);
+            try {
+                await updateTip(id, tip);
+                await loadTips();
+                return true;
+            } catch (error) {
+                logger.error('Error updating tip:', error);
+                return false;
+            } finally {
+                setOperationLoading(false);
+            }
+        },
+        [loadTips]
+    );
 
-    const handleDeleteTip = useCallback(async (id: string) => {
-        if (!window.confirm("Tem certeza que deseja excluir esta dica?")) return false;
-        setOperationLoading(true);
-        try {
-            await deleteTip(id);
-            await loadTips();
-            return true;
-        } catch (error) {
-            logger.error("Error deleting tip:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    }, [loadTips]);
+    const handleDeleteTip = useCallback(
+        async (id: string) => {
+            if (!window.confirm('Tem certeza que deseja excluir esta dica?')) return false;
+            setOperationLoading(true);
+            try {
+                await deleteTip(id);
+                await loadTips();
+                return true;
+            } catch (error) {
+                logger.error('Error deleting tip:', error);
+                return false;
+            } finally {
+                setOperationLoading(false);
+            }
+        },
+        [loadTips]
+    );
 
-    const handleReorderTips = useCallback(async (newTips: Tip[]) => {
-        // Optimistic Update
-        setTips(newTips);
+    const handleReorderTips = useCallback(
+        async (newTips: Tip[]) => {
+            // Optimistic Update
+            setTips(newTips);
 
-        try {
-            await saveTipsOrder(newTips);
-            return true;
-        } catch (error) {
-            logger.error("Error reordering tips:", error);
-            // Revert on error (optional, but good practice would be to reload)
-            await loadTips();
-            return false;
-        }
-    }, [loadTips]);
+            try {
+                await saveTipsOrder(newTips);
+                return true;
+            } catch (error) {
+                logger.error('Error reordering tips:', error);
+                // Revert on error (optional, but good practice would be to reload)
+                await loadTips();
+                return false;
+            }
+        },
+        [loadTips]
+    );
 
     // --- CURIOSITIES ---
     const loadCuriosities = useCallback(async () => {
@@ -203,31 +237,36 @@ export const useAdminContent = () => {
             const data = await getCuriosities();
             setCuriosities(data);
         } catch (error) {
-            logger.error("Error loading curiosities:", error);
+            logger.error('Error loading curiosities:', error);
         } finally {
             setLoadingCuriosities(false);
         }
     }, []);
 
-    const handleSaveCuriosities = useCallback(async (items: CityCuriosity[], forceOverwrite = false) => {
-        // PROTEÇÃO: Nunca sobrescrever dados existentes com array vazio sem confirmação
-        if (items.length === 0 && curiosities.length > 0 && !forceOverwrite) {
-            logger.warn("Tentativa de salvar curiosidades vazias bloqueada. Use forceOverwrite=true para confirmar.");
-            return false;
-        }
+    const handleSaveCuriosities = useCallback(
+        async (items: CityCuriosity[], forceOverwrite = false) => {
+            // PROTEÇÃO: Nunca sobrescrever dados existentes com array vazio sem confirmação
+            if (items.length === 0 && curiosities.length > 0 && !forceOverwrite) {
+                logger.warn(
+                    'Tentativa de salvar curiosidades vazias bloqueada. Use forceOverwrite=true para confirmar.'
+                );
+                return false;
+            }
 
-        setOperationLoading(true);
-        try {
-            await saveCuriosities(items);
-            setCuriosities(items);
-            return true;
-        } catch (error) {
-            logger.error("Error saving curiosities:", error);
-            return false;
-        } finally {
-            setOperationLoading(false);
-        }
-    }, [curiosities.length]);
+            setOperationLoading(true);
+            try {
+                await saveCuriosities(items);
+                setCuriosities(items);
+                return true;
+            } catch (error) {
+                logger.error('Error saving curiosities:', error);
+                return false;
+            } finally {
+                setOperationLoading(false);
+            }
+        },
+        [curiosities.length]
+    );
 
     // Auto-load curiosities when hook is mounted
     useEffect(() => {
@@ -235,35 +274,52 @@ export const useAdminContent = () => {
     }, [loadCuriosities]);
 
     // Memoize the return object to prevent unnecessary re-renders in consumers
-    return useMemo(() => ({
-        places: {
-            data: places,
-            loading: loadingPlaces,
-            add: handleAddPlace,
-            update: handleUpdatePlace,
-            delete: handleDeletePlace,
-            refresh: loadPlaces
-        },
-        tips: {
-            data: tips,
-            loading: loadingTips,
-            add: handleAddTip,
-            update: handleUpdateTip,
-            delete: handleDeleteTip,
-            reorder: handleReorderTips,
-            refresh: loadTips
-        },
-        curiosities: {
-            data: curiosities,
-            loading: loadingCuriosities,
-            save: handleSaveCuriosities,
-            refresh: loadCuriosities
-        },
-        operationLoading
-    }), [
-        places, loadingPlaces, handleAddPlace, handleUpdatePlace, handleDeletePlace, loadPlaces,
-        tips, loadingTips, handleAddTip, handleUpdateTip, handleDeleteTip, handleReorderTips, loadTips,
-        curiosities, loadingCuriosities, handleSaveCuriosities, loadCuriosities,
-        operationLoading
-    ]);
+    return useMemo(
+        () => ({
+            places: {
+                data: places,
+                loading: loadingPlaces,
+                add: handleAddPlace,
+                update: handleUpdatePlace,
+                delete: handleDeletePlace,
+                refresh: loadPlaces,
+            },
+            tips: {
+                data: tips,
+                loading: loadingTips,
+                add: handleAddTip,
+                update: handleUpdateTip,
+                delete: handleDeleteTip,
+                reorder: handleReorderTips,
+                refresh: loadTips,
+            },
+            curiosities: {
+                data: curiosities,
+                loading: loadingCuriosities,
+                save: handleSaveCuriosities,
+                refresh: loadCuriosities,
+            },
+            operationLoading,
+        }),
+        [
+            places,
+            loadingPlaces,
+            handleAddPlace,
+            handleUpdatePlace,
+            handleDeletePlace,
+            loadPlaces,
+            tips,
+            loadingTips,
+            handleAddTip,
+            handleUpdateTip,
+            handleDeleteTip,
+            handleReorderTips,
+            loadTips,
+            curiosities,
+            loadingCuriosities,
+            handleSaveCuriosities,
+            loadCuriosities,
+            operationLoading,
+        ]
+    );
 };

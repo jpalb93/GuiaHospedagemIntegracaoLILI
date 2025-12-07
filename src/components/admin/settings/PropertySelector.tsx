@@ -6,7 +6,10 @@ interface PropertySelectorProps {
     setActiveProperty: (property: 'lili' | 'integracao') => void;
 }
 
-const PropertySelector: React.FC<PropertySelectorProps> = ({ activeProperty, setActiveProperty }) => {
+const PropertySelector: React.FC<PropertySelectorProps> = ({
+    activeProperty,
+    setActiveProperty,
+}) => {
     return (
         <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
             <button

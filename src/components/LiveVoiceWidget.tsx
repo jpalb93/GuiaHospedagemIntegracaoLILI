@@ -71,21 +71,25 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                 // Send Setup Message
                 const setupMessage = {
                     setup: {
-                        model: "models/gemini-2.0-flash-exp",
+                        model: 'models/gemini-2.0-flash-exp',
                         generation_config: {
-                            response_modalities: ["AUDIO"],
+                            response_modalities: ['AUDIO'],
                             speech_config: {
                                 voice_config: {
                                     prebuilt_voice_config: {
-                                        voice_name: "Aoede"
-                                    }
-                                }
-                            }
+                                        voice_name: 'Aoede',
+                                    },
+                                },
+                            },
                         },
                         system_instruction: {
-                            parts: [{ text: `${systemInstruction || ''}\n\nO nome do hóspede é ${guestName}. Seja breve e simpática.` }]
-                        }
-                    }
+                            parts: [
+                                {
+                                    text: `${systemInstruction || ''}\n\nO nome do hóspede é ${guestName}. Seja breve e simpática.`,
+                                },
+                            ],
+                        },
+                    },
                 };
 
                 ws.send(JSON.stringify(setupMessage));
@@ -128,7 +132,6 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                 setIsConnecting(false);
                 stopRecording();
             };
-
         } catch (err) {
             console.error(err);
             setError('Falha ao conectar.');
@@ -141,12 +144,14 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     sampleRate: 16000,
-                    channelCount: 1
-                }
+                    channelCount: 1,
+                },
             });
             mediaStreamRef.current = stream;
 
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
+                sampleRate: 16000,
+            });
             audioContextRef.current = audioContext;
 
             const source = audioContext.createMediaStreamSource(stream);
@@ -170,22 +175,22 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                 const pcmData = new Int16Array(inputData.length);
                 for (let i = 0; i < inputData.length; i++) {
                     let s = Math.max(-1, Math.min(1, inputData[i]));
-                    pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
                 }
 
                 // Convert to Base64
-                const base64Audio = btoa(
-                    String.fromCharCode(...new Uint8Array(pcmData.buffer))
-                );
+                const base64Audio = btoa(String.fromCharCode(...new Uint8Array(pcmData.buffer)));
 
                 // Send to Gemini
                 const audioMessage = {
                     realtime_input: {
-                        media_chunks: [{
-                            mime_type: "audio/pcm",
-                            data: base64Audio
-                        }]
-                    }
+                        media_chunks: [
+                            {
+                                mime_type: 'audio/pcm',
+                                data: base64Audio,
+                            },
+                        ],
+                    },
                 };
                 wsRef.current.send(JSON.stringify(audioMessage));
             };
@@ -193,7 +198,6 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
             source.connect(processor);
             processor.connect(audioContext.destination);
             // setIsRecording(true);
-
         } catch (err) {
             console.error('Error accessing microphone:', err);
             setError('Permissão de microfone negada.');
@@ -206,7 +210,7 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
             processorRef.current = null;
         }
         if (mediaStreamRef.current) {
-            mediaStreamRef.current.getTracks().forEach(track => track.stop());
+            mediaStreamRef.current.getTracks().forEach((track) => track.stop());
             mediaStreamRef.current = null;
         }
         if (audioContextRef.current) {
@@ -245,7 +249,9 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
 
         // Ensure playback context exists
         if (!playbackContextRef.current) {
-            playbackContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+            playbackContextRef.current = new (
+                window.AudioContext || (window as any).webkitAudioContext
+            )({ sampleRate: 24000 });
         }
         const ctx = playbackContextRef.current;
 
@@ -301,15 +307,19 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                 // We can check if queue is empty AND currentTime > nextStartTime
 
                 // Simple check:
-                setTimeout(() => {
-                    if (audioQueueRef.current.length === 0 && ctx.currentTime >= nextStartTimeRef.current - 0.2) {
-                        setAssistantSpeaking(false);
-                    }
-                }, (nextStartTimeRef.current - currentTime) * 1000 + 100);
-
-
+                setTimeout(
+                    () => {
+                        if (
+                            audioQueueRef.current.length === 0 &&
+                            ctx.currentTime >= nextStartTimeRef.current - 0.2
+                        ) {
+                            setAssistantSpeaking(false);
+                        }
+                    },
+                    (nextStartTimeRef.current - currentTime) * 1000 + 100
+                );
             } catch (e) {
-                console.error("Error playing audio chunk", e);
+                console.error('Error playing audio chunk', e);
                 playNextChunk();
             }
         }
@@ -318,7 +328,10 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
     if (!isOpen) {
         return (
             <button
-                onClick={() => { setIsOpen(true); connectToGemini(); }}
+                onClick={() => {
+                    setIsOpen(true);
+                    connectToGemini();
+                }}
                 className="fixed bottom-24 right-6 z-40 p-4 rounded-full shadow-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-105 transition-all duration-300 flex items-center gap-2"
                 title="Falar com Lili (Voz)"
             >
@@ -336,14 +349,16 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                         Lili (Voz)
                     </h3>
-                    <button onClick={disconnect} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <button
+                        onClick={disconnect}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Status Display */}
                 <div className="flex flex-col items-center justify-center h-32 gap-4 relative">
-
                     {error ? (
                         <div className="text-red-500 text-center text-sm flex flex-col items-center gap-2">
                             <AlertCircle size={24} />
@@ -369,13 +384,19 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                                     style={{ transform: `scale(${1 + audioLevel * 5})` }}
                                 ></div>
 
-                                <div className={`z-10 w-16 h-16 rounded-full flex items-center justify-center transition-colors duration-300 ${assistantSpeaking ? 'bg-purple-600' : 'bg-indigo-500'}`}>
-                                    {assistantSpeaking ? <Volume2 className="text-white" size={24} /> : <Mic className="text-white" size={24} />}
+                                <div
+                                    className={`z-10 w-16 h-16 rounded-full flex items-center justify-center transition-colors duration-300 ${assistantSpeaking ? 'bg-purple-600' : 'bg-indigo-500'}`}
+                                >
+                                    {assistantSpeaking ? (
+                                        <Volume2 className="text-white" size={24} />
+                                    ) : (
+                                        <Mic className="text-white" size={24} />
+                                    )}
                                 </div>
                             </div>
 
                             <p className="text-xs text-gray-500 font-medium">
-                                {assistantSpeaking ? "Lili falando..." : "Ouvindo você..."}
+                                {assistantSpeaking ? 'Lili falando...' : 'Ouvindo você...'}
                             </p>
                         </>
                     )}

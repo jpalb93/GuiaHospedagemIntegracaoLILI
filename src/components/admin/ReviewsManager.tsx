@@ -7,7 +7,7 @@ import ToastContainer, { ToastMessage } from '../Toast';
 interface ReviewsManagerProps {
     reviews: {
         data: GuestReview[];
-        add: (review: { name: string, text: string }) => Promise<string>;
+        add: (review: { name: string; text: string }) => Promise<string>;
         delete: (id: string) => Promise<void>;
     };
 }
@@ -22,28 +22,28 @@ const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => { },
-        isDestructive: false
+        onConfirm: () => {},
+        isDestructive: false,
     });
 
     const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
         const id = Date.now().toString();
-        setToasts(prev => [...prev, { id, message, type }]);
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+        setToasts((prev) => [...prev, { id, message, type }]);
+        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
     };
 
     const handleAdd = async () => {
         if (!newReview.name || !newReview.text) {
-            showToast("Preencha nome e comentário.", "warning");
+            showToast('Preencha nome e comentário.', 'warning');
             return;
         }
         setIsAdding(true);
         try {
             await reviews.add(newReview);
             setNewReview({ name: '', text: '' });
-            showToast("Avaliação adicionada!", "success");
+            showToast('Avaliação adicionada!', 'success');
         } catch (_error) {
-            showToast("Erro ao adicionar avaliação.", "error");
+            showToast('Erro ao adicionar avaliação.', 'error');
         } finally {
             setIsAdding(false);
         }
@@ -52,13 +52,13 @@ const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
     const handleDelete = async (id: string) => {
         setConfirmModal({
             isOpen: true,
-            title: "Excluir Avaliação",
-            message: "Tem certeza que deseja excluir esta avaliação?",
+            title: 'Excluir Avaliação',
+            message: 'Tem certeza que deseja excluir esta avaliação?',
             isDestructive: true,
             onConfirm: async () => {
                 await reviews.delete(id);
-                showToast("Avaliação excluída.", "success");
-            }
+                showToast('Avaliação excluída.', 'success');
+            },
         });
     };
 
@@ -93,22 +93,41 @@ const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
                         disabled={isAdding}
                         className="w-full bg-orange-500 text-white py-2 rounded-lg font-bold text-sm hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                        {isAdding ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                        {isAdding ? (
+                            <Loader2 className="animate-spin" size={16} />
+                        ) : (
+                            <Plus size={16} />
+                        )}
                         Adicionar Avaliação
                     </button>
                 </div>
 
                 {/* List */}
                 <div className="space-y-3">
-                    {reviews.data.length === 0 && <p className="text-center text-gray-400 text-sm py-4">Nenhuma avaliação cadastrada.</p>}
-                    {reviews.data.map(review => (
-                        <div key={review.id} className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-start gap-4">
+                    {reviews.data.length === 0 && (
+                        <p className="text-center text-gray-400 text-sm py-4">
+                            Nenhuma avaliação cadastrada.
+                        </p>
+                    )}
+                    {reviews.data.map((review) => (
+                        <div
+                            key={review.id}
+                            className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-start gap-4"
+                        >
                             <div>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1">
                                     {review.name}
-                                    <span className="text-amber-500 flex"><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /></span>
+                                    <span className="text-amber-500 flex">
+                                        <Star size={10} fill="currentColor" />
+                                        <Star size={10} fill="currentColor" />
+                                        <Star size={10} fill="currentColor" />
+                                        <Star size={10} fill="currentColor" />
+                                        <Star size={10} fill="currentColor" />
+                                    </span>
                                 </p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 italic">"{review.text}"</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 italic">
+                                    "{review.text}"
+                                </p>
                             </div>
                             <button
                                 onClick={() => review.id && handleDelete(review.id)}
@@ -130,7 +149,10 @@ const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
                 isDestructive={confirmModal.isDestructive}
             />
 
-            <ToastContainer toasts={toasts} removeToast={(id) => setToasts(prev => prev.filter(t => t.id !== id))} />
+            <ToastContainer
+                toasts={toasts}
+                removeToast={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
+            />
         </div>
     );
 };

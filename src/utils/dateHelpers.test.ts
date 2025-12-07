@@ -40,7 +40,7 @@ const isDateOccupied = (
     target.setHours(0, 0, 0, 0);
     const targetTime = target.getTime();
 
-    const isReserved = reservations.some(res => {
+    const isReserved = reservations.some((res) => {
         if (!res.checkInDate || !res.checkoutDate || res.status === 'cancelled') return false;
         const [inY, inM, inD] = res.checkInDate.split('-').map(Number);
         const [outY, outM, outD] = res.checkoutDate.split('-').map(Number);
@@ -53,7 +53,7 @@ const isDateOccupied = (
 
     if (isReserved) return true;
 
-    return blockedDates.some(block => {
+    return blockedDates.some((block) => {
         if (!block.startDate || !block.endDate) return false;
         const [inY, inM, inD] = block.startDate.split('-').map(Number);
         const [outY, outM, outD] = block.endDate.split('-').map(Number);
@@ -121,7 +121,7 @@ describe('getGreeting', () => {
 describe('isDateOccupied', () => {
     const reservations: Reservation[] = [
         { checkInDate: '2024-01-10', checkoutDate: '2024-01-15' },
-        { checkInDate: '2024-02-01', checkoutDate: '2024-02-05', status: 'cancelled' }
+        { checkInDate: '2024-02-01', checkoutDate: '2024-02-05', status: 'cancelled' },
     ];
 
     it('should return true for dates within a reservation', () => {
@@ -150,9 +150,7 @@ describe('isDateOccupied', () => {
     });
 
     it('should handle blocked dates', () => {
-        const blockedDates = [
-            { startDate: '2024-03-01', endDate: '2024-03-10' }
-        ];
+        const blockedDates = [{ startDate: '2024-03-01', endDate: '2024-03-10' }];
         const blockedDate = new Date(2024, 2, 5);
         expect(isDateOccupied(blockedDate, [], blockedDates)).toBe(true);
     });

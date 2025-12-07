@@ -13,7 +13,7 @@ const WifiSafeSection: React.FC<WifiSafeSectionProps> = ({
     localSettings,
     setLocalSettings,
     showSafeCode,
-    setShowSafeCode
+    setShowSafeCode,
 }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -24,18 +24,26 @@ const WifiSafeSection: React.FC<WifiSafeSectionProps> = ({
                 </h3>
                 <div className="space-y-3">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nome (SSID)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            Nome (SSID)
+                        </label>
                         <input
                             value={localSettings.wifiSSID}
-                            onChange={(e) => setLocalSettings({ ...localSettings, wifiSSID: e.target.value })}
+                            onChange={(e) =>
+                                setLocalSettings({ ...localSettings, wifiSSID: e.target.value })
+                            }
                             className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Senha</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            Senha
+                        </label>
                         <input
                             value={localSettings.wifiPass}
-                            onChange={(e) => setLocalSettings({ ...localSettings, wifiPass: e.target.value })}
+                            onChange={(e) =>
+                                setLocalSettings({ ...localSettings, wifiPass: e.target.value })
+                            }
                             className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm"
                         />
                     </div>
@@ -48,13 +56,23 @@ const WifiSafeSection: React.FC<WifiSafeSectionProps> = ({
                     <Box size={16} className="text-orange-500" /> Senha do Cofre
                 </h3>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Senha Atual</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                        Senha Atual
+                    </label>
                     <div className="relative">
-                        <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Lock
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        />
                         <input
-                            type={showSafeCode ? "text" : "password"}
+                            type={showSafeCode ? 'text' : 'password'}
                             value={localSettings.safeCode}
-                            onChange={(e) => setLocalSettings({ ...localSettings, safeCode: e.target.value.replace(/\D/g, '') })}
+                            onChange={(e) =>
+                                setLocalSettings({
+                                    ...localSettings,
+                                    safeCode: e.target.value.replace(/\D/g, ''),
+                                })
+                            }
                             className="w-full p-2 pl-10 pr-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-mono tracking-widest"
                         />
                         <button
@@ -64,7 +82,9 @@ const WifiSafeSection: React.FC<WifiSafeSectionProps> = ({
                             {showSafeCode ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-1">Visível para todos os hóspedes ativos.</p>
+                    <p className="text-[10px] text-gray-400 mt-1">
+                        Visível para todos os hóspedes ativos.
+                    </p>
                 </div>
             </div>
         </div>

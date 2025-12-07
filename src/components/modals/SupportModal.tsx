@@ -1,6 +1,13 @@
-
 import React from 'react';
-import { X, PenTool, AlertTriangle, MessageCircle, ChevronRight, HelpCircle, Clock } from 'lucide-react';
+import {
+    X,
+    PenTool,
+    AlertTriangle,
+    MessageCircle,
+    ChevronRight,
+    HelpCircle,
+    Clock,
+} from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
 
 interface SupportModalProps {
@@ -11,7 +18,13 @@ interface SupportModalProps {
     propertyId?: 'lili' | 'integracao';
 }
 
-const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName, hostPhone, propertyId }) => {
+const SupportModal: React.FC<SupportModalProps> = ({
+    isOpen,
+    onClose,
+    guestName,
+    hostPhone,
+    propertyId,
+}) => {
     if (!isOpen) return null;
 
     const propertyName = propertyId === 'integracao' ? 'Flats Integração' : 'Flat da Lili';
@@ -27,13 +40,9 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName,
 
     return (
         <div className="fixed inset-0 bg-gray-900/95 z-[160] flex flex-col items-end justify-end sm:items-center sm:justify-center p-4 animate-fadeIn backdrop-blur-sm">
-            <div
-                className="absolute inset-0"
-                onClick={onClose}
-            ></div>
+            <div className="absolute inset-0" onClick={onClose}></div>
 
             <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl relative z-10 animate-slideUp sm:animate-scaleIn border-t border-white/20 sm:border-none">
-
                 {/* Header */}
                 <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 p-6 pb-8 text-white relative">
                     <button
@@ -45,13 +54,16 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName,
                     <h2 className="text-xl font-heading font-bold flex items-center gap-2 mb-1">
                         <HelpCircle size={24} className="text-orange-500" /> Central de Ajuda
                     </h2>
-                    <p className="text-gray-400 text-xs font-medium">Como podemos te ajudar agora?</p>
+                    <p className="text-gray-400 text-xs font-medium">
+                        Como podemos te ajudar agora?
+                    </p>
                 </div>
 
                 <div className="p-4 -mt-4 bg-white dark:bg-gray-800 rounded-t-[24px] space-y-3 relative z-20">
-
                     <button
-                        onClick={() => openWhatsApp('Manutenção / Algo Quebrou', 'Notei um problema com...')}
+                        onClick={() =>
+                            openWhatsApp('Manutenção / Algo Quebrou', 'Notei um problema com...')
+                        }
                         className="w-full p-4 rounded-2xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group border border-gray-100 dark:border-gray-700"
                     >
                         <div className="flex items-center gap-4">
@@ -59,15 +71,27 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName,
                                 <PenTool size={20} />
                             </div>
                             <div className="text-left">
-                                <p className="font-bold text-gray-900 dark:text-white text-sm">Reportar Problema</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Algo quebrou ou não funciona?</p>
+                                <p className="font-bold text-gray-900 dark:text-white text-sm">
+                                    Reportar Problema
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Algo quebrou ou não funciona?
+                                </p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-300 dark:text-gray-600 group-hover:text-orange-500 transition-colors" />
+                        <ChevronRight
+                            size={18}
+                            className="text-gray-300 dark:text-gray-600 group-hover:text-orange-500 transition-colors"
+                        />
                     </button>
 
                     <button
-                        onClick={() => openWhatsApp('Check-in / Check-out', 'Tenho uma dúvida sobre os horários ou acesso...')}
+                        onClick={() =>
+                            openWhatsApp(
+                                'Check-in / Check-out',
+                                'Tenho uma dúvida sobre os horários ou acesso...'
+                            )
+                        }
                         className="w-full p-4 rounded-2xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group border border-gray-100 dark:border-gray-700"
                     >
                         <div className="flex items-center gap-4">
@@ -75,11 +99,18 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName,
                                 <Clock size={20} />
                             </div>
                             <div className="text-left">
-                                <p className="font-bold text-gray-900 dark:text-white text-sm">Check-in & Check-out</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Ficou alguma dúvida?</p>
+                                <p className="font-bold text-gray-900 dark:text-white text-sm">
+                                    Check-in & Check-out
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Ficou alguma dúvida?
+                                </p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-300 dark:text-gray-600 group-hover:text-blue-500 transition-colors" />
+                        <ChevronRight
+                            size={18}
+                            className="text-gray-300 dark:text-gray-600 group-hover:text-blue-500 transition-colors"
+                        />
                     </button>
 
                     <button
@@ -91,11 +122,18 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName,
                                 <MessageCircle size={20} />
                             </div>
                             <div className="text-left">
-                                <p className="font-bold text-gray-900 dark:text-white text-sm">Dúvida Simples</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Sobre o flat ou a cidade</p>
+                                <p className="font-bold text-gray-900 dark:text-white text-sm">
+                                    Dúvida Simples
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Sobre o flat ou a cidade
+                                </p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-300 dark:text-gray-600 group-hover:text-green-500 transition-colors" />
+                        <ChevronRight
+                            size={18}
+                            className="text-gray-300 dark:text-gray-600 group-hover:text-green-500 transition-colors"
+                        />
                     </button>
 
                     <button
@@ -107,17 +145,25 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, guestName,
                                 <AlertTriangle size={20} />
                             </div>
                             <div className="text-left">
-                                <p className="font-bold text-red-700 dark:text-red-400 text-sm">Emergência</p>
-                                <p className="text-xs text-red-600/70 dark:text-red-400/70">Assunto urgente</p>
+                                <p className="font-bold text-red-700 dark:text-red-400 text-sm">
+                                    Emergência
+                                </p>
+                                <p className="text-xs text-red-600/70 dark:text-red-400/70">
+                                    Assunto urgente
+                                </p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-red-300 dark:text-red-800 group-hover:text-red-500 transition-colors" />
+                        <ChevronRight
+                            size={18}
+                            className="text-red-300 dark:text-red-800 group-hover:text-red-500 transition-colors"
+                        />
                     </button>
-
                 </div>
 
                 <div className="p-4 bg-gray-50 dark:bg-gray-800 text-center border-t border-gray-100 dark:border-gray-700">
-                    <p className="text-[10px] text-gray-400">Geralmente respondemos em poucos minutos.</p>
+                    <p className="text-[10px] text-gray-400">
+                        Geralmente respondemos em poucos minutos.
+                    </p>
                 </div>
             </div>
         </div>

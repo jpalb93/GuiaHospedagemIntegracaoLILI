@@ -18,10 +18,16 @@ const NoticesSection: React.FC<NoticesSectionProps> = ({ localSettings, setLocal
 
                 <div className="space-y-4">
                     {(['lili', 'integracao'] as const).map((pId) => {
-                        const notice = localSettings.globalNotices?.[pId] || { active: false, text: '' };
+                        const notice = localSettings.globalNotices?.[pId] || {
+                            active: false,
+                            text: '',
+                        };
 
                         return (
-                            <div key={pId} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-yellow-200 dark:border-yellow-800/50">
+                            <div
+                                key={pId}
+                                className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-yellow-200 dark:border-yellow-800/50"
+                            >
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="text-xs font-bold uppercase text-gray-500">
                                         {pId === 'lili' ? 'Flat da Lili' : 'Flats Integração'}
@@ -32,9 +38,17 @@ const NoticesSection: React.FC<NoticesSectionProps> = ({ localSettings, setLocal
                                             className="sr-only peer"
                                             checked={notice.active}
                                             onChange={(e) => {
-                                                const newNotices = { ...localSettings.globalNotices };
-                                                newNotices[pId] = { ...notice, active: e.target.checked };
-                                                setLocalSettings({ ...localSettings, globalNotices: newNotices });
+                                                const newNotices = {
+                                                    ...localSettings.globalNotices,
+                                                };
+                                                newNotices[pId] = {
+                                                    ...notice,
+                                                    active: e.target.checked,
+                                                };
+                                                setLocalSettings({
+                                                    ...localSettings,
+                                                    globalNotices: newNotices,
+                                                });
                                             }}
                                         />
                                         <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
@@ -45,7 +59,10 @@ const NoticesSection: React.FC<NoticesSectionProps> = ({ localSettings, setLocal
                                     onChange={(e) => {
                                         const newNotices = { ...localSettings.globalNotices };
                                         newNotices[pId] = { ...notice, text: e.target.value };
-                                        setLocalSettings({ ...localSettings, globalNotices: newNotices });
+                                        setLocalSettings({
+                                            ...localSettings,
+                                            globalNotices: newNotices,
+                                        });
                                     }}
                                     placeholder={`Aviso para ${pId === 'lili' ? 'Flat da Lili' : 'Flats Integração'}...`}
                                     className="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500 min-h-[60px]"
@@ -76,7 +93,10 @@ const NoticesSection: React.FC<NoticesSectionProps> = ({ localSettings, setLocal
                                     onChange={(e) => {
                                         const newPhones = { ...localSettings.hostPhones };
                                         newPhones[pId] = e.target.value;
-                                        setLocalSettings({ ...localSettings, hostPhones: newPhones });
+                                        setLocalSettings({
+                                            ...localSettings,
+                                            hostPhones: newPhones,
+                                        });
                                     }}
                                     placeholder="Ex: 5587999999999"
                                     className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm"

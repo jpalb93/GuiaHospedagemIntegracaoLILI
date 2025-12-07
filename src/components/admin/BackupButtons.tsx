@@ -14,7 +14,7 @@ function BackupButtons<T>({
     entityName,
     onImport,
     isLoading = false,
-    validateItem
+    validateItem,
 }: BackupButtonsProps<T>) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [importing, setImporting] = React.useState(false);
@@ -52,17 +52,19 @@ function BackupButtons<T>({
 
             // Validar cada item se uma função de validação foi fornecida
             if (validateItem) {
-                const invalidItems = importedData.filter(item => !validateItem(item));
+                const invalidItems = importedData.filter((item) => !validateItem(item));
                 if (invalidItems.length > 0) {
-                    throw new Error(`${invalidItems.length} itens inválidos encontrados no arquivo.`);
+                    throw new Error(
+                        `${invalidItems.length} itens inválidos encontrados no arquivo.`
+                    );
                 }
             }
 
             // Confirmar antes de importar
             const confirmed = window.confirm(
                 `Deseja importar ${importedData.length} ${entityName}?\n\n` +
-                `Isso irá ADICIONAR aos ${data.length} existentes.\n\n` +
-                `Total após importação: ${data.length + importedData.length}`
+                    `Isso irá ADICIONAR aos ${data.length} existentes.\n\n` +
+                    `Total após importação: ${data.length + importedData.length}`
             );
 
             if (!confirmed) {
@@ -80,7 +82,9 @@ function BackupButtons<T>({
                 alert('Erro ao salvar os dados importados.');
             }
         } catch (error) {
-            alert(`Erro ao importar: ${error instanceof Error ? error.message : 'Arquivo inválido'}`);
+            alert(
+                `Erro ao importar: ${error instanceof Error ? error.message : 'Arquivo inválido'}`
+            );
         } finally {
             setImporting(false);
             // Reset input para permitir reimportar o mesmo arquivo

@@ -14,19 +14,22 @@ export const getUserPermission = async (email: string): Promise<UserPermission |
             return {
                 email: normalizedEmail,
                 role: data.role as UserRole,
-                allowedProperties: data.allowedProperties as PropertyId[]
+                allowedProperties: data.allowedProperties as PropertyId[],
             };
         } else {
             console.warn(`Permissão não encontrada no Firestore para: ${normalizedEmail}`);
         }
     } catch (error) {
-        console.error("Error fetching user permission:", error);
+        console.error('Error fetching user permission:', error);
     }
 
     return null;
 };
 
-export const canUserAccessProperty = (permission: UserPermission, propertyId: PropertyId): boolean => {
+export const canUserAccessProperty = (
+    permission: UserPermission,
+    propertyId: PropertyId
+): boolean => {
     if (permission.role === 'super_admin') return true;
     return permission.allowedProperties.includes(propertyId);
 };

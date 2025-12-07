@@ -7,17 +7,16 @@ interface HolographicCardProps {
     title?: string;
 }
 
-const HolographicCard: React.FC<HolographicCardProps> = ({ children, className = '', onClick, title }) => {
+const HolographicCard: React.FC<HolographicCardProps> = ({
+    children,
+    className = '',
+    onClick,
+    title,
+}) => {
     return (
-        <div
-            className={`relative ${className}`}
-            onClick={onClick}
-            title={title}
-        >
+        <div className={`relative ${className}`} onClick={onClick} title={title}>
             {/* Conteúdo do Card */}
-            <div className="relative z-10">
-                {children}
-            </div>
+            <div className="relative z-10">{children}</div>
         </div>
     );
 };

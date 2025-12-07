@@ -39,14 +39,14 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => { },
-        isDestructive: false
+        onConfirm: () => {},
+        isDestructive: false,
     });
 
     const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
         const id = Date.now().toString();
-        setToasts(prev => [...prev, { id, message, type }]);
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+        setToasts((prev) => [...prev, { id, message, type }]);
+        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
     };
 
     // Carrega dados iniciais
@@ -69,7 +69,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
 
     const handleSave = async (formData: Partial<PlaceRecommendation>, isEdit: boolean) => {
         if (!formData.name || !formData.category) {
-            showToast("Nome e Categoria são obrigatórios!", "warning");
+            showToast('Nome e Categoria são obrigatórios!', 'warning');
             return;
         }
 
@@ -85,7 +85,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         setIsSaving(false);
         if (success) {
             handleCloseModal();
-            showToast(isEdit ? "Local atualizado!" : "Local adicionado!", "success");
+            showToast(isEdit ? 'Local atualizado!' : 'Local adicionado!', 'success');
         }
     };
 
@@ -93,13 +93,13 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         if (!place.id) return;
         setConfirmModal({
             isOpen: true,
-            title: "Excluir Local",
+            title: 'Excluir Local',
             message: `Tem certeza que deseja excluir "${place.name}"?`,
             isDestructive: true,
             onConfirm: async () => {
                 await places.delete(place.id!);
-                showToast("Local excluído com sucesso!", "success");
-            }
+                showToast('Local excluído com sucesso!', 'success');
+            },
         });
     };
 
@@ -117,9 +117,10 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
     };
 
     // Filtra lugares pela categoria selecionada
-    const filteredPlaces = filterCategory === 'all'
-        ? places.data
-        : places.data.filter(p => p.category === filterCategory);
+    const filteredPlaces =
+        filterCategory === 'all'
+            ? places.data
+            : places.data.filter((p) => p.category === filterCategory);
 
     return (
         <div className="space-y-6">
@@ -132,8 +133,10 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
                         className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-500"
                     >
                         <option value="all">Todas as Categorias</option>
-                        {CATEGORIES.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.label}</option>
+                        {CATEGORIES.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.label}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -201,7 +204,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
             {/* Toasts */}
             <ToastContainer
                 toasts={toasts}
-                removeToast={(id) => setToasts(prev => prev.filter(t => t.id !== id))}
+                removeToast={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
             />
         </div>
     );

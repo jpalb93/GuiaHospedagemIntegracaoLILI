@@ -10,7 +10,7 @@ interface WifiQRCodeProps {
 /**
  * Componente que gera um QR Code para conexão WiFi automática.
  * O usuário escaneia com a câmera do celular e conecta automaticamente.
- * 
+ *
  * Formato do QR Code WiFi:
  * WIFI:T:WPA;S:<SSID>;P:<PASSWORD>;;
  */
@@ -36,11 +36,11 @@ const WifiQRCode: React.FC<WifiQRCodeProps> = ({ ssid, password, size = 180 }) =
                 <Wifi className="text-blue-500" size={24} />
                 <span className="font-bold text-lg">Conectar ao WiFi</span>
             </div>
-            
+
             {/* QR Code */}
             <div className="bg-white p-3 rounded-xl shadow-inner">
-                <img 
-                    src={qrCodeUrl} 
+                <img
+                    src={qrCodeUrl}
                     alt={`QR Code para conectar ao WiFi ${ssid}`}
                     width={size}
                     height={size}
@@ -48,13 +48,13 @@ const WifiQRCode: React.FC<WifiQRCodeProps> = ({ ssid, password, size = 180 }) =
                     loading="lazy"
                 />
             </div>
-            
+
             {/* Instruções */}
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Smartphone size={16} />
                 <span>Aponte a câmera do celular</span>
             </div>
-            
+
             {/* Info da rede */}
             <div className="w-full text-center space-y-1 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="text-xs text-gray-400 uppercase tracking-wider">Rede</div>
