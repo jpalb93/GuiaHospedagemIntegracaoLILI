@@ -32,6 +32,12 @@ export default defineConfig({
     }
   },
   build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        lili: 'lili.html',
+      },
+    },
     // Vite já faz code splitting automático excelente com lazy imports
     // Deixamos ele lidar com isso automaticamente
     chunkSizeWarningLimit: 500,

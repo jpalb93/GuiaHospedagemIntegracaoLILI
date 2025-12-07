@@ -106,7 +106,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
     }
 
     return (
-        <div key={refreshKey} className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
+        <div key={refreshKey} className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-900 dark:to-black font-sans transition-colors duration-300">
             <AdminNavigation
                 activeTab={activeTab}
                 setActiveTab={(tab) => setActiveTab(tab as 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings')}
@@ -120,7 +120,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
             />
 
             {/* MAIN CONTENT AREA */}
-            <div className="md:pl-64 pb-24 md:pb-0 min-h-screen transition-all duration-300">
+            <div className="md:pl-72 pb-32 md:pb-12 min-h-screen transition-all duration-300">
                 <div className="p-4 sm:p-8 max-w-7xl mx-auto">
 
                     {/* HEADER MOBILE (Title only) */}

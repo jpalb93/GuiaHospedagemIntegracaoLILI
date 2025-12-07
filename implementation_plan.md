@@ -63,6 +63,13 @@ Modernizar o visual para transmitir uma sensação de hospedagem de alto padrão
 -   **Tipografia**: Aplicar `font-serif` (Playfair) em todos os títulos de seção (`h2`).
 -   **Espaçamento**: Ajustar paddings para dar mais respiro entre as seções.
 
+### 6. Android App Fixes
+Corrigir problema de loop de carregamento no app Android devido ao uso de caminhos relativos na API fetch.
+
+#### [MODIFY] `src/services/guest.ts`
+- Detectar se está rodando em ambiente nativo (Capacitor).
+- Usar URL completa da Vercel (https://flat-lili.vercel.app) se estiver no app, em vez de caminho relativo.
+
 ## Plano de Verificação
 
 ### Testes Manuais

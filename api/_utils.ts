@@ -1,75 +1,63 @@
-import { kv } from '@vercel/kv';
-import { RateLimiter } from "limiter";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// LEGACY: Map to store limiters for each IP (fallback se KV não estiver configurado)
-// Note: In serverless, this is in-memory and per-instance. 
-const limiters = new Map<string, RateLimiter>();
+// Simple in-memory rate limiter (no external dependencies)
+// Map: IP -> { count: number, resetTime: number }
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 /**
- * Rate limiter distribuído usando Vercel KV (Redis)
- * Falls back to in-memory limiting if KV is not configured
+ * Rate limiter simples em memória (por instância serverless)
+ * Sem dependências externas
  */
 export async function applyRateLimit(
     req: VercelRequest,
     res: VercelResponse,
-    tokensPerInterval = 10,
-    intervalSeconds = 60
+    maxRequests = 10,
+    windowSeconds = 60
 ): Promise<boolean> {
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = (Array.isArray(forwarded) ? forwarded[0] : forwarded) || req.socket.remoteAddress || 'unknown';
-
     try {
-        // Tenta usar Vercel KV (distribuído)
-        const key = `rate_limit:${ip}`;
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = (Array.isArray(forwarded) ? forwarded[0] : forwarded) || req.socket?.remoteAddress || 'unknown';
+        const now = Date.now();
+        const windowMs = windowSeconds * 1000;
 
-        // Incrementa contador
-        const current = await kv.incr(key);
+        const existing = rateLimitMap.get(ip);
 
-        if (current === 1) {
-            // Primeira requisição neste período, define expiração
-            await kv.expire(key, intervalSeconds);
+        if (!existing || now > existing.resetTime) {
+            // Nova janela ou janela expirada
+            rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+            return true;
         }
 
-        if (current > tokensPerInterval) {
-            res.status(429).json({
-                error: 'Too Many Requests',
-                retryAfter: intervalSeconds
-            });
+        if (existing.count >= maxRequests) {
+            const retryAfter = Math.ceil((existing.resetTime - now) / 1000);
+            res.status(429).json({ error: 'Too Many Requests', retryAfter });
             return false;
         }
 
+        existing.count++;
         return true;
     } catch (error) {
-        // Fallback para rate limiter em memória se KV não estiver configurado
-        console.warn('Vercel KV não disponível, usando rate limiter em memória:', error);
-
-        const interval: "hour" | "min" | "second" = intervalSeconds >= 3600 ? "hour" :
-            intervalSeconds >= 60 ? "min" : "second";
-
-        if (!limiters.has(ip)) {
-            limiters.set(ip, new RateLimiter({ tokensPerInterval, interval }));
-        }
-
-        const limiter = limiters.get(ip)!;
-        const hasToken = limiter.tryRemoveTokens(1);
-
-        if (!hasToken) {
-            res.status(429).json({ error: 'Too Many Requests' });
-            return false;
-        }
+        // Fail-open: se houver qualquer erro, permite a requisição
+        console.warn('Rate limiter error, allowing request:', error);
         return true;
     }
 }
 
 export function applyCors(req: VercelRequest, res: VercelResponse) {
     // Whitelist de origens permitidas
-    const allowedOrigins = [
+    const allowedOrigins: (string | RegExp)[] = [
+        // Produção Vercel
         'https://guia-digital-flatlili.vercel.app',
+        // Produção - Domínio customizado (todas as variantes)
         'https://www.flatsintegracao.com.br',
         'https://flatsintegracao.com.br',
+        'http://www.flatsintegracao.com.br',
+        'http://flatsintegracao.com.br',
         // Ambientes Vercel (para preview deployments)
-        /https:\/\/guia-digital-flatlili-.*\.vercel\.app$/,
+        /^https:\/\/guia-digital-flatlili-.*\.vercel\.app$/,
+        /^https:\/\/guia-digital-flatlili\.vercel\.app$/,
+        // Qualquer subdomínio de flatsintegracao.com.br
+        /^https?:\/\/.*\.?flatsintegracao\.com\.br$/,
         // Desenvolvimento local
         'http://localhost:5173',
         'http://localhost:3000',

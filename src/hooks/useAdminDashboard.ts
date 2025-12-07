@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { logger } from '../utils/logger';
+import { generateShortId } from '../utils/helpers';
 import { User } from 'firebase/auth';
 import { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import {
@@ -91,15 +92,6 @@ export const useAdminDashboard = () => {
 
     const removeToast = (id: string) => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
-    };
-
-    const generateShortId = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let result = '';
-        for (let i = 0; i < 6; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
     };
 
     const loadMoreHistory = async (reset = false) => {
@@ -388,7 +380,6 @@ export const useAdminDashboard = () => {
         setGuestAlertText(res.guestAlertText || '');
         setCheckInDate(res.checkInDate || '');
         setCheckoutDate(res.checkoutDate || '');
-        setCheckInTime(res.checkInTime || '14:00');
         setCheckInTime(res.checkInTime || '14:00');
         setCheckOutTime(res.checkOutTime || '11:00');
         setGuestCount(res.guestCount || 1);

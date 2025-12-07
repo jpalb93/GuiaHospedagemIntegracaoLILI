@@ -41,7 +41,7 @@ const ModernLoadingScreen: React.FC<ModernLoadingScreenProps> = ({ variant = 'gu
       iconColor: 'text-purple-500',
       dropShadow: 'drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]',
       title: 'Flats Integração',
-      subtitle: 'Carregando...',
+      subtitle: 'Bem-vindo',
       titleGradient: 'from-white via-purple-100 to-white'
     }
   };

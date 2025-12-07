@@ -28,16 +28,18 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction, l
     }
   }, [transcript]);
 
-  // Mensagem inicial dinâmica baseada no idioma
+  // Mensagem inicial dinâmica baseada no idioma (otimizado com ref)
+  const hasInitialized = useRef(false);
   useEffect(() => {
-    if (messages.length === 0) {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
       const initialText = language === 'pt'
         ? `Olá, ${guestName}! Sou o Concierge Virtual do flat. Posso ajudar com dicas de Petrolina, regras da casa ou dúvidas gerais?`
         : `Hello, ${guestName}! I'm the Virtual Concierge. Can I help you with tips about Petrolina, house rules, or general questions?`;
 
       setMessages([{ role: 'model', text: initialText }]);
     }
-  }, [language, guestName, isOpen, messages.length]);
+  }, [language, guestName]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -137,10 +139,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction, l
 
       <button
         onClick={() => setIsOpen(true)}
+        aria-label={language === 'pt' ? 'Abrir chat de suporte' : 'Open support chat'}
+        aria-expanded={isOpen}
         className={`fixed bottom-6 right-6 z-40 p-4 rounded-full shadow-xl shadow-orange-500/30 transition-all duration-500 flex items-center gap-3
           ${isOpen ? 'scale-0 opacity-0 translate-y-10' : 'scale-100 opacity-100 bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:scale-105 hover:shadow-orange-500/40'}`}
       >
-        <MessageCircle size={28} fill="currentColor" className="text-white/90" />
+        <MessageCircle size={28} fill="currentColor" className="text-white/90" aria-hidden="true" />
         <span className="font-bold hidden md:inline font-heading tracking-wide text-lg">Concierge</span>
       </button>
 
@@ -157,8 +161,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction, l
               <p className="text-xs text-orange-100 opacity-90 font-medium">Powered by Gemini AI</p>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/20 rounded-full transition-colors">
-            <X size={24} />
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+            aria-label={language === 'pt' ? 'Fechar chat' : 'Close chat'}
+          >
+            <X size={24} aria-hidden="true" />
           </button>
         </div>
 

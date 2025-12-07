@@ -1,7 +1,31 @@
+import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { GuestConfig } from '../types';
+
 
 export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null> => {
     try {
+        const isNative = Capacitor.isNativePlatform();
+
+        if (isNative) {
+            const targetUrl = `https://flatsintegracao.com.br/api/get-guest-config?rid=${rid}`;
+
+            const response = await CapacitorHttp.get({
+                url: targetUrl,
+            });
+
+            if (response.status === 404) {
+                console.warn("Reserva não encontrada na API (Native).");
+                return null;
+            }
+
+            if (response.status !== 200) {
+                throw new Error(`Erro na API (Native): ${response.status}`);
+            }
+
+            return response.data as GuestConfig;
+        }
+
+        // Web Fallback
         const response = await fetch(`/api/get-guest-config?rid=${rid}`);
 
         if (!response.ok) {

@@ -25,15 +25,40 @@ if (!getApps().length) {
 
 const db = getFirestore();
 
-// Schema de Validação
-const QuerySchema = z.object({
-    rid: z.string().min(1, "Missing reservation ID (rid)")
-});
+// --- INLINED UTILS (To ensure stability and remove dependencies) ---
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // CORS (Basic handling if needed, but reverting to original behavior)
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+const ALLOWED_ORIGINS = [
+    'https://guia-digital-flatlili.vercel.app',
+    'https://www.flatsintegracao.com.br',
+    'https://flatsintegracao.com.br',
+    'http://www.flatsintegracao.com.br',
+    'http://flatsintegracao.com.br',
+    'http://localhost:5173',
+    'http://localhost:3000',
+];
+
+const ALLOWED_PATTERNS = [
+    /^https:\/\/guia-digital-flatlili-.*\.vercel\.app$/,
+    /^https?:\/\/.*\.?flatsintegracao\.com\.br$/,
+];
+
+// Simple in-memory rate limiter
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function handleCors(req: VercelRequest, res: VercelResponse): boolean {
+    const origin = req.headers.origin;
+    const isAllowed = origin && (
+        ALLOWED_ORIGINS.includes(origin) ||
+        ALLOWED_PATTERNS.some(p => p.test(origin))
+    );
+
+    if (isAllowed) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    } else if (!origin) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
     res.setHeader(
         'Access-Control-Allow-Headers',
@@ -42,8 +67,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
-        return;
+        return true;
     }
+    return false;
+}
+
+function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): boolean {
+    try {
+        const ip = (Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for']) || req.socket.remoteAddress || 'unknown';
+        const now = Date.now();
+        const windowMs = 60 * 1000;
+
+        const record = rateLimitMap.get(ip);
+        if (!record || now > record.resetTime) {
+            rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+            return true;
+        }
+
+        if (record.count >= limit) {
+            res.status(429).json({ error: 'Too Many Requests' });
+            return false;
+        }
+
+        record.count++;
+        return true;
+    } catch (e) {
+        console.warn('Rate limit check failed, allowing request', e);
+        return true;
+    }
+}
+
+// Schema de Validação
+const QuerySchema = z.object({
+    rid: z.string().min(1, "Missing reservation ID (rid)")
+});
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    // 1. CORS
+    if (handleCors(req, res)) return;
+
+    // 2. Rate Limit
+    if (!checkRateLimit(req, res)) return;
 
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method Not Allowed' });

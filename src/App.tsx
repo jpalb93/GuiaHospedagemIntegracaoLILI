@@ -1,10 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 
 import { AppMode, GuestConfig } from './types';
 // Importação otimizada de ícones - Lucide React já faz tree-shaking automaticamente
-import { Lock, MapPin, CalendarX, MessageCircle, AlertTriangle, LogOut, KeyRound, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
+import { CalendarX, MessageCircle, AlertTriangle, LogOut, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
 
-import { HERO_IMAGE_URL, HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } from './constants';
+import { HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime, } from './constants';
 import { fetchGuestConfig } from './services/guest';
 import ErrorBoundary from './components/ErrorBoundary';
 import { GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/LoadingSkeletons';
@@ -16,6 +18,7 @@ const AdminDashboard = lazy(() => import(/* webpackChunkName: "admin" */ './comp
 const GuestView = lazy(() => import(/* webpackChunkName: "guest" */ './components/GuestView'));
 
 const LandingPageLili = lazy(() => import(/* webpackChunkName: "landing-lili" */ './components/LandingLili'));
+const LandingFlatsIntegracao = lazy(() => import(/* webpackChunkName: "landing-flats" */ './components/LandingFlats'));
 
 // --- FUNÇÃO DE SEGURANÇA: REMOVIDA (Agora é Server-Side) ---
 // A sanitização ocorre na API /api/get-guest-config
@@ -47,6 +50,31 @@ const App: React.FC = () => {
       }
     }
   }, [theme]);
+  // --- CAPACITOR ANDROID BACK BUTTON ---
+  useEffect(() => {
+    let backListener: any;
+    const setupBack = async () => {
+      try {
+        const isNative = Capacitor.isNativePlatform();
+        if (isNative) {
+          backListener = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+            if (canGoBack) {
+              window.history.back();
+            } else {
+              CapacitorApp.exitApp();
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('Capacitor App plugin error', e);
+      }
+    };
+    setupBack();
+
+    return () => {
+      if (backListener) backListener.remove();
+    };
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => {
@@ -56,12 +84,19 @@ const App: React.FC = () => {
     });
   };
 
+  // Detect Native Platform using Capacitor Global or Plugin
+  const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform();
+
   // --- ESTADO DO APP ---
   const [appState, setAppState] = useState<{ mode: AppMode | 'LANDING' | 'LILI_LANDING' | 'EXPIRED' | 'BLOCKED' | 'LOADING' | 'RECONNECTING'; config: GuestConfig }>(() => {
+    // SE FOR APP NATIVO -> JÁ INICIA COMO ADMIN
+    if (isNative) {
+      return { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } };
+    }
     return { mode: 'LOADING', config: { guestName: '', lockCode: '' } };
   });
 
-  const [showManualLogin, setShowManualLogin] = useState(false);
+  const [showManualLogin, setShowManualLogin] = useState(false); // No longer needed default true for native
   const [manualInput, setManualInput] = useState('');
 
   // --- MONITORAMENTO (AGORA VIA API) ---
@@ -81,6 +116,12 @@ const App: React.FC = () => {
       if (isCMS) {
         await minLoadingTime;
         setAppState({ mode: AppMode.CMS, config: { guestName: '', lockCode: '' } });
+        return;
+      }
+
+      // SE FOR APP NATIVO ->GARANTE MODO ADMIN
+      if (isNative) {
+        setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
         return;
       }
 
@@ -112,7 +153,10 @@ const App: React.FC = () => {
       }
 
       if (!reservationId) {
-        reservationId = localStorage.getItem('flat_lili_last_rid');
+        // Prevent auto-redirect on root path (Landing Page)
+        if (path !== '/') {
+          reservationId = localStorage.getItem('flat_lili_last_rid');
+        }
       } else {
         localStorage.setItem('flat_lili_last_rid', reservationId);
       }
@@ -187,32 +231,62 @@ const App: React.FC = () => {
     window.location.href = '/';
   };
 
-  const handleManualSubmit = () => {
+  const handleManualSubmit = async () => {
     if (!manualInput.trim()) return;
     let rid = manualInput.trim();
+
     try {
-      if (rid.includes('http') || rid.includes('?')) {
-        const urlObj = new URL(rid.startsWith('http') ? rid : `http://${rid}`);
-        const id = urlObj.searchParams.get('rid');
-        if (id) rid = id;
+      // 1. Tenta extrair de URLs completas
+      if (rid.includes('http') || rid.includes('.com') || rid.includes('.app')) {
+        const urlString = rid.startsWith('http') ? rid : `https://${rid}`;
+        const urlObj = new URL(urlString);
+        const idParam = urlObj.searchParams.get('rid');
+        if (idParam) {
+          rid = idParam;
+        } else {
+          const textSegments = urlObj.pathname.split('/').filter(s => s && s.length > 0);
+          if (textSegments.length > 0) {
+            const potentialCode = textSegments[textSegments.length - 1];
+            if (/^[a-zA-Z0-9]{3,20}$/.test(potentialCode)) rid = potentialCode;
+          }
+        }
       }
-    } catch (_e) { }
-    localStorage.setItem('flat_lili_last_rid', rid);
-    window.location.href = `/?rid=${rid}`;
+    } catch (e) {
+      console.warn("Erro ao parsear input manual", e);
+    }
+
+    setAppState({ mode: 'LOADING', config: { guestName: '', lockCode: '' } }); // Feedback visual imediato
+
+    try {
+      const config = await fetchGuestConfig(rid);
+      if (config) {
+        localStorage.setItem('flat_lili_last_rid', rid);
+        setAppState({ mode: AppMode.GUEST, config });
+        setShowManualLogin(false);
+      } else {
+        setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
+      }
+    } catch (error) {
+      console.error("Erro manual:", error);
+      setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
+    }
   };
 
   // --- RENDERIZAÇÃO ---
 
   // 1. Tela de Carregamento (Enquanto decide a rota)
   if (appState.mode === 'LOADING') {
-    // Determina a variante do loading baseada na URL atual (antes do estado ser definido)
+    // Determina a variante do loading baseada na URL atual OU localStorage
     let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
     const path = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
+    const hasStoredRid = typeof localStorage !== 'undefined' && !!localStorage.getItem('flat_lili_last_rid');
 
     if (path === '/admin') {
       loadingVariant = 'admin';
-    } else if (params.get('rid') || (path.length > 1 && !['/cms', '/lili', '/flat-lili'].includes(path))) {
+    } else if (path === '/') {
+      loadingVariant = 'landing';
+    } else if (params.get('rid') || (path.length > 1 && !['/cms', '/lili', '/flat-lili'].includes(path)) || hasStoredRid) {
       loadingVariant = 'guest';
     }
 
@@ -311,42 +385,11 @@ const App: React.FC = () => {
   // 5. Tela Inicial (Landing / Login com Código)
   if (appState.mode === 'LANDING') {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center relative overflow-hidden font-sans text-white">
-        <div className="absolute inset-0 z-0">
-          <img src={HERO_IMAGE_URL} className="w-full h-full object-cover opacity-40 blur-sm scale-105" alt="Background" />
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
-        <div className="relative z-10 bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 shadow-2xl max-w-md text-center mx-4 animate-fadeIn w-full">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-            <Lock className="text-white" size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-wide font-heading">Flats Integração</h1>
-          <p className="text-orange-200 text-sm font-medium uppercase tracking-widest mb-8 font-heading">Guia Digital do Hóspede</p>
-
-          {!showManualLogin ? (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="bg-black/30 p-6 rounded-xl border border-white/10">
-                <p className="text-gray-200 text-sm leading-relaxed font-medium">
-                  Bem-vindo! Para acessar as informações do flat, utilize o <span className="font-bold text-white">link exclusivo</span> enviado pelo seu anfitrião via WhatsApp.
-                </p>
-              </div>
-              <button onClick={() => setShowManualLogin(true)} className="text-xs text-gray-400 hover:text-white underline underline-offset-4 decoration-gray-500 hover:decoration-white transition-all flex items-center justify-center gap-1 mx-auto">
-                <KeyRound size={12} /> Já tenho um código de acesso
-              </button>
-            </div>
-          ) : (
-            <div className="animate-fadeIn bg-black/40 p-6 rounded-2xl border border-white/10">
-              <p className="text-sm text-gray-200 mb-3 font-bold text-left">Insira o link ou código:</p>
-              <input type="text" value={manualInput} onChange={(e) => setManualInput(e.target.value)} placeholder="Cole aqui (ex: ?rid=...)" className="w-full p-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder:text-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 mb-4 text-sm transition-all" />
-              <div className="flex gap-3">
-                <button onClick={() => setShowManualLogin(false)} className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 text-sm font-bold transition-colors">Cancelar</button>
-                <button onClick={handleManualSubmit} disabled={!manualInput.trim()} className="flex-1 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">Acessar <ArrowRight size={16} /></button>
-              </div>
-            </div>
-          )}
-          <div className="mt-8 flex items-center justify-center gap-2 text-white/50 text-xs font-medium"><MapPin size={12} /> <span>Petrolina, Pernambuco</span></div>
-        </div>
-      </div>
+      <ErrorBoundary>
+        <Suspense fallback={<LandingSkeleton />}>
+          <LandingFlatsIntegracao />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 

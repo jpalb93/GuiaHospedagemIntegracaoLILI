@@ -370,7 +370,24 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
       </div>
 
       <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
-        <ChatWidget guestName={config.guestName} systemInstruction={appSettings?.aiSystemPrompts?.[config.propertyId || 'lili'] || appSettings?.aiSystemPrompt || property.ai.systemPrompt} />
+        {/* CORREÇÃO: Lógica de seleção do prompt para evitar misturar personas */}
+        <ChatWidget
+          guestName={config.guestName}
+          systemInstruction={(() => {
+            const propId = config.propertyId || 'lili';
+            // 1. Tenta pegar a configuração específica da propriedade (NOVO PADRÃO)
+            const specificPrompt = appSettings?.aiSystemPrompts?.[propId];
+            if (specificPrompt) return specificPrompt;
+
+            // 2. Se for a Lili, aceita o fallback para o campo antigo (LEGADO)
+            if (propId === 'lili') {
+              return appSettings?.aiSystemPrompt || property.ai.systemPrompt;
+            }
+
+            // 3. Se for outra propriedade e não tiver config específica, usa o hardcoded do código
+            return property.ai.systemPrompt;
+          })()}
+        />
 
       </div>
 

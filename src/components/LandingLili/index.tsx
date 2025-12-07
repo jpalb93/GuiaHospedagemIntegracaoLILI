@@ -3,7 +3,9 @@ import { MapPin, Star, Phone, ChevronLeft, ChevronRight, XCircle, Wifi, Tv, Coff
 import { subscribeToFutureReservations, getGuestReviews, subscribeToFutureBlockedDates } from '../../services/firebase';
 import { Reservation, GuestReview, BlockedDateRange } from '../../types';
 import SimpleGallery from '../SimpleGallery';
-import { LANDING_GALLERY_IMAGES, LANDING_HERO_SLIDES, FLAT_ADDRESS } from '../../constants';
+import { LANDING_GALLERY_IMAGES, LANDING_HERO_SLIDES, FLAT_ADDRESS, HOST_PHONE } from '../../constants';
+import LogoLili from '../LogoLili';
+import ScrollReveal from '../ui/ScrollReveal';
 
 // --- CALENDÁRIO DINÂMICO (OTIMIZADO E INTEGRADO COM FIREBASE) ---
 const AvailabilityCalendar = () => {
@@ -142,9 +144,92 @@ const AvailabilityCalendar = () => {
 const LandingLili: React.FC = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [openAccordion, setOpenAccordion] = useState<string | null>('quarto');
+    const [openAccordion, setOpenAccordion] = useState<string | null>(null);
     const [reviews, setReviews] = useState<GuestReview[]>([]);
     const [scrollY, setScrollY] = useState(0);
+    const [showNotification, setShowNotification] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowNotification(true);
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // --- SEO & METADATA CONFIGURATION ---
+    useEffect(() => {
+        // 1. Update Title
+        document.title = "Flat de Lili | Experiência Premium em Petrolina";
+
+        // 2. Update Meta Tags
+        const updateMeta = (name: string, content: string) => {
+            let element = document.querySelector(`meta[name="${name}"]`);
+            if (!element) {
+                element = document.createElement('meta');
+                element.setAttribute('name', name);
+                document.head.appendChild(element);
+            }
+            element.setAttribute('content', content);
+        };
+
+        const updateOgMeta = (property: string, content: string) => {
+            let element = document.querySelector(`meta[property="${property}"]`);
+            if (!element) {
+                element = document.createElement('meta');
+                element.setAttribute('property', property);
+                document.head.appendChild(element);
+            }
+            element.setAttribute('content', content);
+        };
+
+        const description = "Seu refúgio de conforto sofisticado e estilo único no coração de Petrolina. Hospedagem premium com localização privilegiada.";
+        updateMeta('description', description);
+        updateMeta('keywords', 'Flat Petrolina, Hospedagem Premium, Flat de Lili, Aluguel Temporada, Hotel Petrolina');
+
+        updateOgMeta('og:title', 'Flat de Lili | Experiência Premium em Petrolina 🌵');
+        updateOgMeta('og:description', description);
+        updateOgMeta('og:url', window.location.href);
+
+        // 3. Inject JSON-LD (Schema.org)
+        const schema = {
+            "@context": "https://schema.org",
+            "@type": "LodgingBusiness",
+            "name": "Flat de Lili",
+            "image": [
+                "https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg"
+            ],
+            "url": window.location.href,
+            "telephone": `+${HOST_PHONE}`,
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": FLAT_ADDRESS.split(',')[0],
+                "addressLocality": "Petrolina",
+                "addressRegion": "PE",
+                "postalCode": "56302-270",
+                "addressCountry": "BR"
+            },
+            "priceRange": "$$$",
+            "description": description,
+            "starRating": {
+                "@type": "Rating",
+                "ratingValue": "5"
+            }
+        };
+
+        const scriptId = 'flat-lili-jsonld';
+        let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+        if (!script) {
+            script = document.createElement('script');
+            script.id = scriptId;
+            script.type = 'application/ld+json';
+            document.head.appendChild(script);
+        }
+        script.text = JSON.stringify(schema);
+
+        return () => {
+        };
+    }, []);
 
     // Parallax effect
     useEffect(() => {
@@ -153,6 +238,7 @@ const LandingLili: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Slide rotation
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide(prev => (prev === 1 ? 0 : 1));
@@ -160,6 +246,7 @@ const LandingLili: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
+    // Fetch reviews
     useEffect(() => {
         getGuestReviews(3).then(data => {
             if (data.length > 0) {
@@ -186,9 +273,12 @@ const LandingLili: React.FC = () => {
                 <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         <div className="flex-shrink-0">
-                            <a href="#" className="text-3xl font-bold bg-gradient-to-r from-amber-700 via-amber-600 to-rose-600 bg-clip-text text-transparent font-heading tracking-tight flex items-center gap-2">
-                                <Sparkles size={28} className="text-amber-600" />
-                                Flat de Lili
+                            <a href="#" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+                                <LogoLili
+                                    className="h-16 w-auto text-amber-600"
+                                    sunClassName="text-yellow-500"
+                                    textClassName="text-amber-700"
+                                />
                             </a>
                         </div>
 
@@ -233,11 +323,13 @@ const LandingLili: React.FC = () => {
             <section id="inicio" className="relative h-screen min-h-[700px] w-full overflow-hidden bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900">
                 {/* Background com Parallax */}
                 <div className="absolute inset-0" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
-                    {LANDING_HERO_SLIDES.map((img, index) => (
-                        <div key={index} className={`absolute inset-0 transition-opacity duration-2000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}>
-                            <img src={img} className="w-full h-full object-cover scale-110" alt="Flat de Lili" />
-                        </div>
-                    ))}
+                    {
+                        LANDING_HERO_SLIDES.map((img, index) => (
+                            <div key={index} className={`absolute inset-0 transition-opacity duration-2000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}>
+                                <img src={img} className="w-full h-full object-cover scale-110" alt="Flat de Lili" />
+                            </div>
+                        ))
+                    }
                 </div>
 
                 {/* Gradient Overlay Premium */}
@@ -246,55 +338,61 @@ const LandingLili: React.FC = () => {
                 {/* Efeito de Brilho Sutil */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 via-transparent to-rose-500/10"></div>
 
-                {/* Conteúdo Central */}
-                <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 z-10">
-                    {/* Badge Premium */}
-                    <div className="mb-6 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 shadow-xl animate-fadeIn">
-                        <Award size={18} className="text-amber-400" />
-                        <span className="text-white/90 text-sm font-semibold tracking-wide">Experiência Premium em Petrolina</span>
+                <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center pb-20 pt-20">
+                    <div className="flex flex-col items-center mb-8 sm:mb-12 animate-fadeIn">
+                        {/* Badge Premium */}
+                        <div className="inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-md px-4 py-1.5 rounded-full border border-yellow-500/30 mb-6 shadow-lg animate-fade-up">
+                            <Sparkles size={14} className="text-yellow-400" />
+                            <span className="text-yellow-100 text-xs sm:text-sm font-semibold tracking-wide uppercase">Experiência Premium em Petrolina</span>
+                        </div>
+
+                        <LogoLili
+                            className="h-32 sm:h-48 w-auto drop-shadow-2xl mb-4"
+                            sunClassName="text-yellow-400 animate-pulse-slow"
+                            textClassName="text-white animate-reveal-curtain"
+                        />
+
+                        <p className="text-lg sm:text-2xl text-white/90 font-light tracking-wide max-w-2xl drop-shadow-md font-sans mt-2">
+                            Seu refúgio de <span className="text-amber-400 font-semibold">conforto sofisticado</span> e <span className="text-rose-400 font-semibold">estilo único</span> no coração de Petrolina
+                        </p>
                     </div>
 
-                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-heading font-extrabold text-white mb-6 drop-shadow-2xl tracking-tight animate-fadeIn leading-tight">
-                        Flat de Lili
-                    </h1>
-
-                    <p className="text-xl sm:text-2xl md:text-3xl font-light text-white/95 mb-10 max-w-3xl drop-shadow-lg animate-fadeIn leading-relaxed">
-                        Seu refúgio de <span className="font-semibold text-amber-300">conforto sofisticado</span> e <span className="font-semibold text-rose-300">estilo único</span> no coração de Petrolina
-                    </p>
-
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 animate-fadeIn">
-                        <a href="#calendario" className="group bg-gradient-to-r from-amber-600 to-rose-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-xl">
+                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 animate-fade-up animation-delay-300 w-full sm:w-auto px-4 z-50">
+                        <a href="#calendario" className="group bg-gradient-to-r from-amber-600 to-rose-600 text-white px-8 py-4 rounded-full text-lg font-bold hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 shadow-xl w-full sm:w-auto ring-1 ring-white/20 animate-shimmer">
                             Ver Disponibilidade
                             <ChevronRight className="group-hover:translate-x-1 transition-transform" size={20} />
                         </a>
-                        <a href="#sobre" className="bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-white/20 transition-all duration-300 border border-white/30 shadow-xl">
+                        <a href="#sobre" className="bg-white/10 backdrop-blur-md text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-white/20 transition-all duration-300 border border-white/30 shadow-xl w-full sm:w-auto flex justify-center ring-1 ring-white/10">
                             Conhecer o Espaço
                         </a>
                     </div>
 
-                    {/* Stats Premium */}
-                    <div className="mt-16 flex flex-wrap justify-center gap-8 animate-fadeIn">
-                        <div className="text-center">
-                            <div className="flex items-center gap-2 justify-center mb-1">
-                                <Star className="text-amber-400 fill-amber-400" size={20} />
-                                <span className="text-3xl font-bold text-white">5.0</span>
+                    {/* Stats Premium - Movido para dentro do flex container para evitar overlap no mobile */}
+                    <div className="relative mt-8 sm:absolute sm:bottom-24 sm:mt-0 left-1/2 transform -translate-x-1/2 w-full px-4 z-20">
+                        <div className="flex flex-wrap justify-center gap-6 sm:gap-12 animate-fadeIn bg-black/20 backdrop-blur-sm py-4 px-8 rounded-2xl border border-white/10 max-w-4xl mx-auto">
+                            <div className="text-center">
+                                <div className="flex items-center gap-2 justify-center mb-1">
+                                    <Star className="text-amber-400 fill-amber-400" size={20} />
+                                    <span className="text-2xl sm:text-3xl font-bold text-white">5.0</span>
+                                </div>
+                                <p className="text-white/80 text-sm font-medium uppercase tracking-wider">Avaliação</p>
                             </div>
-                            <p className="text-white/70 text-sm font-medium">Avaliação</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="flex items-center gap-2 justify-center mb-1">
-                                <Heart className="text-rose-400 fill-rose-400" size={20} />
-                                <span className="text-3xl font-bold text-white">100%</span>
+                            <div className="w-px h-12 bg-white/20 hidden sm:block"></div>
+                            <div className="text-center">
+                                <div className="flex items-center gap-2 justify-center mb-1">
+                                    <Heart className="text-rose-400 fill-rose-400" size={20} />
+                                    <span className="text-2xl sm:text-3xl font-bold text-white">100%</span>
+                                </div>
+                                <p className="text-white/80 text-sm font-medium uppercase tracking-wider">Recomendação</p>
                             </div>
-                            <p className="text-white/70 text-sm font-medium">Recomendação</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="flex items-center gap-2 justify-center mb-1">
-                                <MapPin className="text-emerald-400" size={20} />
-                                <span className="text-3xl font-bold text-white">Centro</span>
+                            <div className="w-px h-12 bg-white/20 hidden sm:block"></div>
+                            <div className="text-center">
+                                <div className="flex items-center gap-2 justify-center mb-1">
+                                    <MapPin className="text-emerald-400" size={20} />
+                                    <span className="text-2xl sm:text-3xl font-bold text-white">Centro</span>
+                                </div>
+                                <p className="text-white/80 text-sm font-medium uppercase tracking-wider">Localização</p>
                             </div>
-                            <p className="text-white/70 text-sm font-medium">Localização</p>
                         </div>
                     </div>
                 </div>
@@ -376,7 +474,7 @@ const LandingLili: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="max-w-4xl mx-auto space-y-3">
+                    <ScrollReveal className="max-w-4xl mx-auto space-y-3">
                         <AccordionItem id="banheiro" title="Banheiro" icon={<div className="text-amber-700"><img width="24" height="24" src="https://img.icons8.com/ios/50/shower.png" alt="shower" style={{ filter: "sepia(100%) hue-rotate(350deg) saturate(500%)" }} /></div>} isOpen={openAccordion === 'banheiro'} onClick={() => toggleAccordion('banheiro')}>
                             <ul className="list-none pl-0 text-gray-700 space-y-3">
                                 <li className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-500 to-rose-500"></div>Secador de cabelo</li>
@@ -438,14 +536,14 @@ const LandingLili: React.FC = () => {
                                 <li className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-500 to-rose-500"></div>Kit de primeiros socorros</li>
                             </ul>
                         </AccordionItem>
-                    </div>
+                    </ScrollReveal>
                 </div>
-            </section>
+            </section >
 
             {/* LOCALIZAÇÃO E CALENDÁRIO - Premium Layout */}
-            <section id="localizacao" className="py-24 sm:py-32 bg-gradient-to-br from-amber-50 via-white to-rose-50 relative overflow-hidden">
+            < section id="localizacao" className="py-24 sm:py-32 bg-gradient-to-br from-amber-50 via-white to-rose-50 relative overflow-hidden" >
                 {/* Decorative Elements */}
-                <div className="absolute top-0 left-0 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl"></div>
+                < div className="absolute top-0 left-0 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl" ></div >
                 <div className="absolute bottom-0 right-0 w-96 h-96 bg-rose-200/20 rounded-full blur-3xl"></div>
 
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -518,14 +616,14 @@ const LandingLili: React.FC = () => {
 
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* AVALIAÇÕES - Premium Cards */}
-            <section id="avaliacoes" className="py-24 sm:py-32 bg-white relative overflow-hidden">
+            < section id="avaliacoes" className="py-24 sm:py-32 bg-white relative overflow-hidden" >
                 {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-5">
+                < div className="absolute inset-0 opacity-5" >
                     <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #e11d48 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-                </div>
+                </div >
 
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
@@ -537,18 +635,18 @@ const LandingLili: React.FC = () => {
                             O que nossos hóspedes dizem
                         </h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <ScrollReveal className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {reviews.map((review, idx) => (
                             <ReviewCard key={review.id || idx} name={review.name} text={review.text} />
                         ))}
-                    </div>
+                    </ScrollReveal>
                 </div>
-            </section>
+            </section >
 
             {/* FOOTER - Premium */}
-            <footer className="bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-gray-400 py-12 text-center border-t border-gray-800 relative overflow-hidden">
+            < footer className="bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-gray-400 py-12 text-center border-t border-gray-800 relative overflow-hidden" >
                 {/* Decorative Elements */}
-                <div className="absolute top-0 left-1/4 w-64 h-64 bg-amber-600/5 rounded-full blur-3xl"></div>
+                < div className="absolute top-0 left-1/4 w-64 h-64 bg-amber-600/5 rounded-full blur-3xl" ></div >
                 <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-rose-600/5 rounded-full blur-3xl"></div>
 
                 <div className="relative z-10">
@@ -561,13 +659,19 @@ const LandingLili: React.FC = () => {
                         Nós respeitamos sua privacidade. Seus dados são utilizados apenas para a gestão da sua reserva e nunca compartilhados.
                     </p>
                 </div>
-            </footer>
+            </footer >
 
             {/* BOTÃO FLUTUANTE WHATSAPP - Premium */}
-            <a href="https://wa.me/558788342138" target="_blank" rel="noreferrer" className="fixed bottom-8 right-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white p-5 rounded-full shadow-2xl hover:shadow-green-500/50 hover:scale-110 transition-all duration-300 z-50 group animate-pulse hover:animate-none border-4 border-white">
+            <a href="https://wa.me/558788342138" target="_blank" rel="noreferrer" className="fixed bottom-8 right-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white p-5 rounded-full shadow-2xl hover:shadow-green-500/50 hover:scale-110 transition-all duration-300 z-[100] group border-4 border-white">
+                {/* Notificação Vermelha ("Fake Notification") */}
+                {showNotification && (
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-sm z-20">
+                        <span className="text-white text-xs font-bold">1</span>
+                    </div>
+                )}
                 <Phone size={28} className="group-hover:rotate-12 transition-transform" />
             </a>
-        </div>
+        </div >
     );
 };
 

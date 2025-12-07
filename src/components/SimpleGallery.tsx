@@ -9,9 +9,14 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // --- LIGHTBOX STATE ---
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
   // --- 1. AUTO-PLAY (FOTOS MUDAM SOZINHAS) ---
+  // Pausa o autoplay se o lightbox estiver aberto
   useEffect(() => {
-    if (!images || images.length === 0) return;
+    if (!images || images.length === 0 || isLightboxOpen) return;
 
     const interval = setInterval(() => {
       if (scrollRef.current) {
@@ -27,7 +32,7 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
     }, 4000); // Muda a cada 4 segundos
 
     return () => clearInterval(interval);
-  }, [activeIndex, images]);
+  }, [activeIndex, images, isLightboxOpen]);
 
   // --- FUNÇÕES DE CONTROLE ---
   const scroll = (direction: 'left' | 'right') => {
@@ -50,6 +55,26 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
     }
   };
 
+  // --- LIGHTBOX FUNCTIONS ---
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const nextLightboxImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLightboxIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevLightboxImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   if (!images || images.length === 0) return null;
 
   return (
@@ -67,6 +92,7 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
         `}
       </style>
 
+      {/* --- GALERIA PRINCIPAL --- */}
       <div className="relative group rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700 bg-gray-900 mb-8">
 
         {/* --- BOTÕES --- */}
@@ -97,11 +123,14 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
         >
           {images.map((src, idx) => (
             <div key={idx} className="min-w-full snap-center relative h-full">
-              <div className="w-full h-full overflow-hidden">
+              <div
+                className="w-full h-full overflow-hidden cursor-pointer"
+                onClick={() => openLightbox(idx)}
+              >
                 <img
                   src={src}
                   alt={`Foto ${idx + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-1000"
+                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105"
                 />
               </div>
 
@@ -127,10 +156,58 @@ const SimpleGallery: React.FC<SimpleGalleryProps> = ({ images }) => {
         </div>
 
         {/* Contador no canto */}
-        <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 z-20">
+        <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 z-20 pointer-events-none">
           <ImageIcon size={12} /> {activeIndex + 1} / {images.length}
         </div>
+
+        <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-white text-xxs font-bold px-2 py-1 rounded-full border border-white/10 z-20 pointer-events-none">
+          Clique para ampliar
+        </div>
       </div>
+
+      {/* --- LIGHTBOX MODAL --- */}
+      {isLightboxOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center animate-fadeIn"
+          onClick={closeLightbox}
+        >
+          <button
+            onClick={closeLightbox}
+            className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors p-2"
+          >
+            <ChevronRight className="rotate-45" size={40} />
+          </button>
+
+          <button
+            onClick={prevLightboxImage}
+            className="absolute left-4 sm:left-8 p-4 text-white/70 hover:text-white transition-all hover:scale-110"
+          >
+            <ChevronLeft size={40} />
+          </button>
+
+          <div
+            className="max-w-7xl max-h-[85vh] p-2 relative"
+            onClick={e => e.stopPropagation()} // Impede fechar ao clicar na imagem
+          >
+            <img
+              src={images[lightboxIndex]}
+              alt="Fullscreen"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+
+          <button
+            onClick={nextLightboxImage}
+            className="absolute right-4 sm:right-8 p-4 text-white/70 hover:text-white transition-all hover:scale-110"
+          >
+            <ChevronRight size={40} />
+          </button>
+
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50 text-sm font-medium">
+            {lightboxIndex + 1} de {images.length}
+          </div>
+        </div>
+      )}
     </>
   );
 };

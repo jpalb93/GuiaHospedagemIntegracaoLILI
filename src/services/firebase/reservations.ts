@@ -10,15 +10,8 @@ import {
 import { db, cleanData } from './config';
 import { Reservation } from '../../types';
 import { logger } from '../../utils/logger';
+import { generateShortId } from '../../utils/helpers';
 
-const generateShortId = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-};
 
 export const saveReservation = async (reservation: Reservation): Promise<string> => {
     const data = {
@@ -126,7 +119,7 @@ export const fetchHistoryReservations = async (
     const now = new Date();
     const today = now.toLocaleDateString('en-CA');
 
-    const constraints: any[] = [
+    const constraints: ReturnType<typeof where | typeof orderBy | typeof limit>[] = [
         where('checkoutDate', '<', today),
         orderBy('checkoutDate', 'desc'),
         limit(pageSize)

@@ -9,7 +9,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        heading: ['Montserrat', 'sans-serif'],
+        heading: ['Outfit', 'Montserrat', 'sans-serif'],
       },
       colors: {
         gray: {
@@ -46,7 +46,7 @@ export default {
         },
         shimmer: {
           '100%': { transform: 'translateX(100%)' },
-        } 
+        }
       }
     },
   },

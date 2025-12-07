@@ -33,7 +33,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const { activeReservations, historyReservations, loadMoreHistory, hasMoreHistory, loadingHistory } = data;
     const { searchTerm, setSearchTerm, showToast } = ui;
     const { handleStartEdit, handleDeleteReservation } = form;
-    const { settings } = useAdminSettings(); // To get checklist items
+    const { settings } = useAdminSettings();
 
     const [listCopiedId, setListCopiedId] = React.useState<string | null>(null);
     const [openHistoryGroups, setOpenHistoryGroups] = React.useState<number[]>([0]);
@@ -43,7 +43,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const [inspectionModalOpen, setInspectionModalOpen] = React.useState(false);
     const [inspectionReservation, setInspectionReservation] = React.useState<Reservation | null>(null);
 
-    // Optimized filtering and grouping with useMemo
+    // Optimized filtering and grouping
     const { leavingToday, staying, upcoming, historyList, tomorrowStr, groupedHistory } = useMemo(() => {
         const allReservations = [...activeReservations, ...historyReservations];
         const uniqueReservations = Array.from(new Map(allReservations.map((item: Reservation) => [item.id, item])).values());
@@ -83,10 +83,10 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             }
         });
 
-        leavingTodayArr.sort((a: Reservation, b: Reservation) => a.guestName.localeCompare(b.guestName));
-        stayingArr.sort((a: Reservation, b: Reservation) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
-        upcomingArr.sort((a: Reservation, b: Reservation) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
-        historyListArr.sort((a: Reservation, b: Reservation) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
+        leavingTodayArr.sort((a, b) => a.guestName.localeCompare(b.guestName));
+        stayingArr.sort((a, b) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
+        upcomingArr.sort((a, b) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
+        historyListArr.sort((a, b) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
 
         interface HistoryGroup { label: string; items: Reservation[]; }
         const groupedHistoryArr = historyListArr.reduce((groups: HistoryGroup[], res: Reservation) => {
@@ -138,16 +138,11 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const handleShareListWhatsApp = (res: Reservation) => {
         if (!res.id) return;
         const link = getLinkForReservation(res);
-
         const defaultTemplate = `Olá, {guestName}! 👋\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat. 📲\n\nAqui você encontra instruções e um passo a passo (com vídeos 🎥) de como entrar no flat sem dificuldade e ter uma estadia maravilhosa. ✨\n\nAlém disso, em caso de dúvidas, você pode clicar no ícone laranja 🟠 e conversar com uma Inteligência Artificial totalmente personalizada que sabe tudo (ou quase! 🤖) do nosso flat e Petrolina em geral.\n\n👇 Acesse aqui:\n{link}`;
-
         const template = settings.data.messageTemplates?.invite || defaultTemplate;
         const message = formatMessage(template, res, link);
-
         const phone = res.guestPhone ? res.guestPhone : '';
-        const whatsappUrl = phone
-            ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-            : `https://wa.me/?text=${encodeURIComponent(message)}`;
+        const whatsappUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
 
@@ -156,7 +151,6 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         const link = getLinkForReservation(res);
         const phone = res.guestPhone || '';
         let message = '';
-
         if (type === 'checkin') {
             const defaultTemplate = `Olá, {guestName}! Tudo pronto para sua chegada amanhã? ✈️\n\nJá deixei tudo preparado no seu Guia Digital (Senha da porta, Wi-Fi e Localização).\n\nAcesse aqui: {link}\n\nQualquer dúvida, estou por aqui!`;
             const template = settings.data.messageTemplates?.checkin || defaultTemplate;
@@ -166,11 +160,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             const template = settings.data.messageTemplates?.checkout || defaultTemplate;
             message = formatMessage(template, res, link);
         }
-
-        const whatsappUrl = phone
-            ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-            : `https://wa.me/?text=${encodeURIComponent(message)}`;
-
+        const whatsappUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
 
@@ -183,116 +173,161 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         setInspectionModalOpen(true);
     };
 
-    const renderReservationListItem = (res: Reservation, statusColor: string, statusLabel?: string) => {
+    // --- RENDER HELPERS ---
+
+    const renderMobileCard = (res: Reservation, statusColor: string, statusLabel?: string) => {
         const isCheckinTomorrow = res.checkInDate === tomorrowStr;
         const isCheckoutTomorrow = res.checkoutDate === tomorrowStr;
-        const property = PROPERTIES[res.propertyId || 'lili'];
+        const property = PROPERTIES[(res.propertyId || 'lili') as PropertyId];
         const isIntegracao = res.propertyId === 'integracao';
-        const isCheckoutOrHistory = statusLabel === 'Checkout Hoje' || statusColor === 'border-gray-300';
 
         return (
             <div
                 key={res.id}
-                className={`bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-3 group relative hover:shadow-md transition-all mb-3`}
+                className={`bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-4 mb-4`}
             >
                 <div className="flex justify-between items-start">
                     <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-lg">
                             {res.guestName}
-                            {res.status === 'pending' && (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                    Pré-Reserva
-                                </span>
-                            )}
-                            {statusLabel && <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${statusColor.replace('border-', 'bg-').replace('500', '100')} text-gray-700 dark:text-gray-900`}>{statusLabel}</span>}
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold border ${property.id === 'lili' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                        </h3>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {res.status === 'pending' && <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">Pré-Reserva</span>}
+                            {statusLabel && <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${statusColor.replace('border-', 'bg-').replace('500', '100')} text-gray-800 dark:text-gray-900`}>{statusLabel}</span>}
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold border ${property.id === 'lili' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
                                 {property.name}
                             </span>
-                        </h3>
-                        <div className="flex flex-col mt-1.5 gap-1">
-                            <span className="text-xs text-gray-500 flex items-center gap-1"><CalendarDays size={12} /> In: {res.checkInDate?.split('-').reverse().join('/')}</span>
-                            <span className="text-xs text-gray-500 flex items-center gap-1"><History size={12} /> Out: {res.checkoutDate?.split('-').reverse().join('/')}</span>
-                            {res.flatNumber && <span className="text-xs text-gray-500 flex items-center gap-1"><KeyRound size={12} /> Flat: {res.flatNumber}</span>}
+                        </div>
+                        <div className="flex flex-col mt-3 gap-1.5">
+                            <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium"><CalendarDays size={14} className="text-gray-400" /> In: {res.checkInDate?.split('-').reverse().join('/')}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium"><History size={14} className="text-gray-400" /> Out: {res.checkoutDate?.split('-').reverse().join('/')}</span>
+                            {res.flatNumber && <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium"><KeyRound size={14} className="text-gray-400" /> Flat: {res.flatNumber}</span>}
                         </div>
                         {res.adminNotes && (
-                            <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
-                                <StickyNote size={10} /> Nota
+                            <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 font-medium border border-yellow-100 dark:border-yellow-900/30">
+                                <StickyNote size={12} /> Nota: {res.adminNotes}
                             </div>
                         )}
                         {res.guestAlertActive && (
-                            <div className="mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-1 rounded-md inline-flex items-center gap-1 font-medium">
-                                <MessageSquare size={10} /> Recado para {res.guestName}
+                            <div className="mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 font-medium border border-blue-100 dark:border-blue-900/30">
+                                <MessageSquare size={12} /> Recado Ativo
                             </div>
                         )}
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }}
-                            className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
-                            title="Editar"
-                        >
-                            <Pencil size={16} />
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); if (res.id) handleDeleteReservation(res.id); }}
-                            className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                            title="Excluir"
-                        >
-                            <Trash2 size={16} />
-                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }} className="p-2.5 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-blue-500 rounded-xl transition-colors shadow-sm" title="Editar"><Pencil size={18} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); if (res.id) handleDeleteReservation(res.id); }} className="p-2.5 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 rounded-xl transition-colors shadow-sm" title="Excluir"><Trash2 size={18} /></button>
                     </div>
                 </div>
 
-                {isCheckinTomorrow && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkin'); }}
-                        className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm animate-pulse"
-                    >
-                        <BellRing size={14} /> Enviar Lembrete de Chegada
-                    </button>
-                )}
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                    {isCheckinTomorrow && (
+                        <button onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkin'); }} className="col-span-2 py-2.5 bg-green-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm animate-pulse"><BellRing size={16} /> Lembrete Chegada</button>
+                    )}
+                    {isCheckoutTomorrow && (
+                        <button onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkout'); }} className="col-span-2 py-2.5 bg-orange-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><LogOut size={16} /> Instr. Saída</button>
+                    )}
+                    {isIntegracao && (
+                        <button onClick={(e) => { e.stopPropagation(); handleOpenInspection(res); }} className="col-span-2 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><ClipboardCheck size={16} /> Vistoria</button>
+                    )}
 
-                {isCheckoutTomorrow && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkout'); }}
-                        className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
-                    >
-                        <LogOut size={14} /> Enviar Instruções de Saída
+                    <button onClick={(e) => { e.stopPropagation(); handleCopyListLink(res); }} className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'}`}>
+                        {listCopiedId === res.id ? <Check size={14} /> : <LinkIcon size={14} />} {listCopiedId === res.id ? 'Copiado' : 'Link'}
                     </button>
-                )}
-
-                {/* VISTORIA BUTTON (Only for Integração & Checkout/History) */}
-                {isIntegracao && isCheckoutOrHistory && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleOpenInspection(res); }}
-                        className="w-full py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
-                    >
-                        <ClipboardCheck size={14} /> Fazer Vistoria
-                    </button>
-                )}
-
-                <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleCopyListLink(res); }}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100'}`}
-                    >
-                        {listCopiedId === res.id ? <Check size={12} /> : <LinkIcon size={12} />}
-                        {listCopiedId === res.id ? 'Copiado' : 'Copiar'}
-                    </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }}
-                        className="flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors"
-                    >
-                        <Share2 size={12} /> Convite
+                    <button onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }} className="py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors">
+                        <Share2 size={14} /> WhatsApp
                     </button>
                 </div>
             </div>
         );
     };
 
+    const renderDesktopRow = (res: Reservation, statusLabel: string = '') => {
+        const isCheckinTomorrow = res.checkInDate === tomorrowStr;
+        const isCheckoutTomorrow = res.checkoutDate === tomorrowStr;
+        const property = PROPERTIES[(res.propertyId || 'lili') as PropertyId];
+
+        let badgeClass = "bg-gray-100 text-gray-600";
+        if (statusLabel === 'Checkout Hoje') badgeClass = 'bg-orange-100 text-orange-700';
+        if (statusLabel === 'Hospedado') badgeClass = 'bg-green-100 text-green-700';
+        if (res.status === 'pending') badgeClass = 'bg-yellow-100 text-yellow-800';
+
+        return (
+            <tr key={res.id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0">
+                <td className="py-4 px-4 align-top">
+                    <div className="flex flex-col">
+                        <span className="font-bold text-gray-900 dark:text-white text-sm">{res.guestName}</span>
+                        <span className="text-[10px] text-gray-400">{res.flatNumber ? `Flat ${res.flatNumber}` : 'Sem nº'}</span>
+                        {res.adminNotes && <span className="text-[10px] text-yellow-600 mt-1 flex items-center gap-1"><StickyNote size={8} /> {res.adminNotes}</span>}
+                    </div>
+                </td>
+                <td className="py-4 px-4 align-top">
+                    <div className="flex flex-col items-start gap-1">
+                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${property.id === 'lili' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                            {property.name}
+                        </span>
+                        {statusLabel && <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${badgeClass}`}>{statusLabel}</span>}
+                    </div>
+                </td>
+                <td className="py-4 px-4 align-top">
+                    <div className="flex flex-col text-xs text-gray-600 dark:text-gray-400 font-medium">
+                        <span className="flex items-center gap-1.5 mb-1"><CalendarDays size={12} className="text-gray-400" /> {res.checkInDate?.split('-').reverse().join('/')}</span>
+                        <span className="flex items-center gap-1.5"><LogOut size={12} className="text-gray-400" /> {res.checkoutDate?.split('-').reverse().join('/')}</span>
+                    </div>
+                </td>
+                <td className="py-4 px-4 align-middle text-right">
+                    <div className="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                        {isCheckinTomorrow && (
+                            <button onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkin'); }} className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Lembrete Chegada"><BellRing size={16} /></button>
+                        )}
+                        {isCheckoutTomorrow && (
+                            <button onClick={(e) => { e.stopPropagation(); sendReminder(res, 'checkout'); }} className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors" title="Instruções Saída"><LogOut size={16} /></button>
+                        )}
+                        <button onClick={(e) => { e.stopPropagation(); handleShareListWhatsApp(res); }} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="WhatsApp"><Share2 size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); handleCopyListLink(res); }} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Copiar Link"><LinkIcon size={16} /></button>
+                        <div className="w-px h-4 bg-gray-200 mx-1"></div>
+                        <button onClick={(e) => { e.stopPropagation(); handleStartEdit(res); }} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg" title="Editar"><Pencil size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteReservation(res.id!); }} className="p-2 text-gray-400 hover:text-red-600 rounded-lg" title="Excluir"><Trash2 size={16} /></button>
+                    </div>
+                </td>
+            </tr>
+        );
+    };
+
+    const renderSection = (title: string, list: Reservation[], statusColor: string, statusLabel: string, showEmpty = false) => {
+        if (list.length === 0 && !showEmpty) return null;
+
+        return (
+            <div className="mb-8 animate-fadeIn">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 pl-1 flex items-center gap-2">
+                    {title} <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] px-1.5 rounded-md">{list.length}</span>
+                </h3>
+                <div className="md:hidden">
+                    {list.map(res => renderMobileCard(res, statusColor, statusLabel))}
+                </div>
+                <div className="hidden md:block bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-white/40 dark:border-gray-700/50 shadow-sm overflow-hidden">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50/50 dark:bg-black/20 border-b border-gray-100 dark:border-gray-700/50">
+                            <tr>
+                                <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Hóspede</th>
+                                <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                                <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Datas</th>
+                                <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {list.map(res => renderDesktopRow(res, statusLabel))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    };
+
     return (
-        <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900/50 min-h-[400px]">
+        <div className="p-6 space-y-6 min-h-[400px]">
+            {/* SEARCH & FILTERS */}
             <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -300,34 +335,17 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Buscar por nome ou nota..."
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-shadow"
                 />
-
             </div>
 
-            {/* FILTRO DE PROPRIEDADE (Apenas se tiver acesso a mais de uma) */}
             {(!userPermission || userPermission.role === 'super_admin' || userPermission.allowedProperties.length > 1) && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                    <button
-                        onClick={() => setPropertyFilter('all')}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${propertyFilter === 'all' ? 'bg-gray-800 text-white border-gray-800 dark:bg-white dark:text-gray-900' : 'bg-white text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'}`}
-                    >
-                        Todos
-                    </button>
+                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <button onClick={() => setPropertyFilter('all')} className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${propertyFilter === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}>Todos</button>
                     {Object.values(PROPERTIES).map(prop => {
-                        // Show property button only if user has access to it
-                        if (userPermission && userPermission.role !== 'super_admin' && !userPermission.allowedProperties.includes(prop.id)) {
-                            return null;
-                        }
+                        if (userPermission && userPermission.role !== 'super_admin' && !userPermission.allowedProperties.includes(prop.id)) return null;
                         return (
-                            <button
-                                key={prop.id}
-                                onClick={() => setPropertyFilter(prop.id)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border flex items-center gap-1 ${propertyFilter === prop.id
-                                    ? (prop.id === 'lili' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-blue-100 text-blue-700 border-blue-200')
-                                    : 'bg-white text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
-                                    }`}
-                            >
+                            <button key={prop.id} onClick={() => setPropertyFilter(prop.id)} className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${propertyFilter === prop.id ? (prop.id === 'lili' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/30') : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}>
                                 <Building2 size={12} /> {prop.name}
                             </button>
                         );
@@ -335,65 +353,49 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 </div>
             )}
 
-            <div className="space-y-6">
-                {leavingToday.length > 0 && (
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Saindo Hoje</h3>
-                        {leavingToday.map((res: Reservation) => renderReservationListItem(res, 'border-orange-500', 'Checkout Hoje'))}
-                    </div>
-                )}
-
-                {staying.length > 0 && (
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Hospedados</h3>
-                        {staying.map((res: Reservation) => renderReservationListItem(res, 'border-green-500', 'Hospedado'))}
-                    </div>
-                )}
-
-                {upcoming.length > 0 && (
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Próximas Chegadas</h3>
-                        {upcoming.map((res: Reservation) => renderReservationListItem(res, 'border-blue-500'))}
-                    </div>
-                )}
+            <div className="space-y-2">
+                {renderSection('Saindo Hoje', leavingToday, 'border-orange-500', 'Checkout Hoje')}
+                {renderSection('Hospedados', staying, 'border-green-500', 'Hospedado')}
+                {renderSection('Próximas Chegadas', upcoming, 'border-blue-500', '', false)}
 
                 {historyList.length > 0 && (
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1 mt-8">Histórico</h3>
-                        <div className="space-y-3">
-                            {groupedHistory.map((group: { label: string; items: Reservation[] }, index: number) => (
-                                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden bg-white dark:bg-gray-800">
-                                    <button
-                                        onClick={() => toggleHistoryGroup(index)}
-                                        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        <span className="font-bold text-sm text-gray-700 dark:text-gray-300">{group.label}</span>
-                                        {openHistoryGroups.includes(index) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                    </button>
-                                    {openHistoryGroups.includes(index) && (
-                                        <div className="p-3 bg-gray-50/50 dark:bg-gray-900/20 border-t border-gray-100 dark:border-gray-700">
-                                            {group.items.map((res: Reservation) => renderReservationListItem(res, 'border-gray-300'))}
+                    <div className="mt-12">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase mb-4 ml-1">Histórico Recente</h3>
+                        {groupedHistory.map((group, index) => (
+                            <div key={index} className="mb-4 bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700/30 rounded-3xl overflow-hidden backdrop-blur-sm">
+                                <button onClick={() => toggleHistoryGroup(index)} className="w-full flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                                    <span className="font-bold text-sm text-gray-700 dark:text-gray-300">{group.label}</span>
+                                    {openHistoryGroups.includes(index) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                </button>
+                                {openHistoryGroups.includes(index) && (
+                                    <div className="p-2 md:p-4">
+                                        <div className="md:hidden space-y-3">
+                                            {group.items.map(res => renderMobileCard(res, 'border-gray-300', 'Histórico'))}
                                         </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                                        <div className="hidden md:block overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700">
+                                            <table className="w-full text-left bg-white dark:bg-gray-900">
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {group.items.map(res => renderDesktopRow(res, 'Histórico'))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
 
                         {hasMoreHistory && (
-                            <button
-                                onClick={() => loadMoreHistory()}
-                                disabled={loadingHistory}
-                                className="w-full py-3 mt-4 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center justify-center gap-2"
-                            >
-                                {loadingHistory ? <Loader2 className="animate-spin" size={14} /> : 'Carregar Mais Antigos'}
+                            <button onClick={loadMoreHistory} disabled={loadingHistory} className="w-full py-4 text-xs font-bold text-gray-500 hover:text-gray-800 flex items-center justify-center gap-2 transition-colors">
+                                {loadingHistory ? <Loader2 className="animate-spin" size={16} /> : 'Carregar Mais Antigos'}
                             </button>
                         )}
                     </div>
                 )}
 
                 {activeReservations.length === 0 && historyReservations.length === 0 && (
-                    <div className="text-center py-10 text-gray-400">
-                        <p>Nenhuma reserva encontrada.</p>
+                    <div className="text-center py-20">
+                        <Search size={48} className="mx-auto text-gray-200 mb-4" />
+                        <p className="text-gray-400 font-medium">Nenhuma reserva encontrada.</p>
                     </div>
                 )}
             </div>
