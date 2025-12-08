@@ -1,0 +1,2 @@
+// At end of file
+export { applyCors as handleCors };

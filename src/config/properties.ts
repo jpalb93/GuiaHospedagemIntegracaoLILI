@@ -1,4 +1,4 @@
-export type PropertyId = 'lili' | 'integracao';
+import { PropertyId } from '../types';
 
 export interface PropertyConfig {
     id: PropertyId;

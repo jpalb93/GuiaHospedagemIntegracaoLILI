@@ -3,7 +3,6 @@ import { Loader2, Lock, LogIn } from 'lucide-react';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 import { useAdminContent } from '../../hooks/useAdminContent';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
-import ToastContainer from '../Toast';
 import ReservationForm from './ReservationForm';
 import ReservationList from './ReservationList';
 import BlockedDatesManager from './BlockedDatesManager';
@@ -31,7 +30,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
     // Counter para forçar re-render quando necessário
     const [refreshKey, setRefreshKey] = useState(0);
 
-    const { activeTab, setActiveTab, toasts, removeToast } = ui;
+    const { activeTab, setActiveTab } = ui;
 
     // AUTO-REFRESH: Quando aba volta após longo período, força reload da página
     useEffect(() => {
@@ -137,7 +136,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                         </button>
                     </form>
                 </div>
-                <ToastContainer toasts={toasts} removeToast={removeToast} />
+
             </div>
         );
     }
@@ -315,7 +314,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                 </div>
             </div>
 
-            <ToastContainer toasts={toasts} removeToast={removeToast} />
+
 
             <ConfirmModal
                 isOpen={ui.confirmModal.isOpen}

@@ -120,3 +120,6 @@ export async function retry<T>(
         return retry(fn, retries - 1, delayMs * 2); // Exponential backoff
     }
 }
+
+// Export alias for backward compatibility
+export { applyCors as handleCors };

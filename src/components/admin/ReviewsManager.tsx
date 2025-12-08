@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GuestReview } from '../../types';
 import { Star, Trash2, Plus, Loader2 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
-import ToastContainer, { ToastMessage } from '../Toast';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ReviewsManagerProps {
     reviews: {
@@ -15,35 +15,29 @@ interface ReviewsManagerProps {
 const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
     const [newReview, setNewReview] = useState({ name: '', text: '' });
     const [isAdding, setIsAdding] = useState(false);
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
+    const { showSuccess, showError, showWarning } = useToast();
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         isDestructive: false,
     });
 
-    const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
-        const id = Date.now().toString();
-        setToasts((prev) => [...prev, { id, message, type }]);
-        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
-    };
-
     const handleAdd = async () => {
         if (!newReview.name || !newReview.text) {
-            showToast('Preencha nome e comentário.', 'warning');
+            showWarning('Preencha nome e comentário.');
             return;
         }
         setIsAdding(true);
         try {
             await reviews.add(newReview);
             setNewReview({ name: '', text: '' });
-            showToast('Avaliação adicionada!', 'success');
+            showSuccess('Avaliação adicionada!');
         } catch (_error) {
-            showToast('Erro ao adicionar avaliação.', 'error');
+            showError('Erro ao adicionar avaliação.');
         } finally {
             setIsAdding(false);
         }
@@ -57,7 +51,7 @@ const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
             isDestructive: true,
             onConfirm: async () => {
                 await reviews.delete(id);
-                showToast('Avaliação excluída.', 'success');
+                showSuccess('Avaliação excluída.');
             },
         });
     };
@@ -149,10 +143,6 @@ const ReviewsManager: React.FC<ReviewsManagerProps> = ({ reviews }) => {
                 isDestructive={confirmModal.isDestructive}
             />
 
-            <ToastContainer
-                toasts={toasts}
-                removeToast={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
-            />
         </div>
     );
 };

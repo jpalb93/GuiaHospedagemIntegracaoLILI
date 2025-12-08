@@ -96,6 +96,53 @@ export interface Reservation extends GuestConfig {
     status: 'active' | 'cancelled' | 'pending';
 }
 
+// --- DERIVED TYPES (Single Source of Truth) ---
+
+/**
+ * Form data for creating/editing reservations
+ * Derived from Reservation to ensure consistency
+ */
+export type ReservationFormData = Pick<
+    Reservation,
+    | 'guestName'
+    | 'guestPhone'
+    | 'propertyId'
+    | 'flatNumber'
+    | 'lockCode'
+    | 'welcomeMessage'
+    | 'adminNotes'
+    | 'guestAlertActive'
+    | 'guestAlertText'
+    | 'checkInDate'
+    | 'checkoutDate'
+    | 'checkInTime'
+    | 'checkOutTime'
+    | 'guestCount'
+    | 'paymentMethod'
+    | 'email'
+> & {
+    editingId: string | null; // Form-specific field
+};
+
+/**
+ * Guest access credentials (WiFi, codes)
+ * Derived from GuestConfig for type safety
+ */
+export type GuestAccessData = Pick<
+    GuestConfig,
+    'lockCode' | 'safeCode' | 'wifiSSID' | 'wifiPass'
+>;
+
+/**
+ * Guest contact information
+ * Derived from GuestConfig for consistency
+ */
+export type GuestContactData = Pick<
+    GuestConfig,
+    'guestName' | 'guestPhone' | 'email'
+>;
+
+
 // Interface para Avaliações (Reviews)
 export interface GuestReview {
     id?: string;

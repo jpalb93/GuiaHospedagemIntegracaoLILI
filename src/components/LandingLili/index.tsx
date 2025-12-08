@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import AccordionItem from './AccordionItem';
 import {
     MapPin,
     Star,
@@ -1098,42 +1099,7 @@ const LandingLili: React.FC = () => {
 };
 
 // --- SUB-COMPONENTES AUXILIARES ---
-
-interface AccordionItemProps {
-    id?: string;
-    title: string;
-    icon: React.ReactNode;
-    isOpen: boolean;
-    onClick: () => void;
-    children: React.ReactNode;
-}
-
-const AccordionItem = ({ title, icon, isOpen, onClick, children }: AccordionItemProps) => (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg border border-amber-100 hover:shadow-xl transition-all duration-300">
-        <button
-            onClick={onClick}
-            className="flex justify-between items-center w-full px-8 py-6 text-left hover:bg-gradient-to-r hover:from-amber-50/50 hover:to-rose-50/50 transition-all duration-300 group"
-        >
-            <span className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-rose-100 flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
-                    {icon}
-                </div>
-                <span className="text-xl font-bold text-gray-900 group-hover:text-amber-700 transition-colors">
-                    {title}
-                </span>
-            </span>
-            <ChevronLeft
-                className={`transition-all duration-500 ${isOpen ? '-rotate-90 text-amber-700' : '-rotate-180 text-gray-400'}`}
-                size={24}
-            />
-        </button>
-        <div
-            className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
-        >
-            <div className="px-8 pb-6 pl-24">{children}</div>
-        </div>
-    </div>
-);
+// AccordionItem já importado de './AccordionItem.tsx'
 
 const ReviewCard: React.FC<{ name: string; text: string }> = ({ name, text }) => (
     <div className="bg-gradient-to-br from-amber-50 via-white to-rose-50 p-8 rounded-2xl shadow-xl border border-amber-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 relative overflow-hidden group">

@@ -3,7 +3,7 @@ import { PlaceRecommendation } from '../../../types';
 import { Plus, Loader2, Download } from 'lucide-react';
 import Button from '../../ui/Button';
 import ConfirmModal from '../ConfirmModal';
-import ToastContainer, { ToastMessage } from '../../Toast';
+import { useToast } from '../../../contexts/ToastContext';
 import PlaceFormModal from './PlaceFormModal';
 import PlaceItemCard from './PlaceItemCard';
 import { CATEGORIES } from './constants';
@@ -33,7 +33,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
     const [filterCategory, setFilterCategory] = useState<string>('burgers');
 
     // Toast notifications
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
+    const { showSuccess, showWarning } = useToast();
 
     // Modal de confirmação de exclusão
     const [confirmModal, setConfirmModal] = useState({
@@ -43,12 +43,6 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         onConfirm: () => { },
         isDestructive: false,
     });
-
-    const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
-        const id = Date.now().toString();
-        setToasts((prev) => [...prev, { id, message, type }]);
-        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
-    };
 
     // Carrega dados iniciais
     useEffect(() => {
@@ -70,7 +64,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
 
     const handleSave = async (formData: Partial<PlaceRecommendation>, isEdit: boolean) => {
         if (!formData.name || !formData.category) {
-            showToast('Nome e Categoria são obrigatórios!', 'warning');
+            showWarning('Nome e Categoria são obrigatórios!');
             return;
         }
 
@@ -86,7 +80,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         setIsSaving(false);
         if (success) {
             handleCloseModal();
-            showToast(isEdit ? 'Local atualizado!' : 'Local adicionado!', 'success');
+            showSuccess(isEdit ? 'Local atualizado!' : 'Local adicionado!');
         }
     };
 
@@ -99,7 +93,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
             isDestructive: true,
             onConfirm: async () => {
                 await places.delete(place.id!);
-                showToast('Local excluído com sucesso!', 'success');
+                showSuccess('Local excluído com sucesso!');
             },
         });
     };
@@ -114,7 +108,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         a.download = `backup_lugares_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast('Backup de lugares exportado!', 'success');
+        showSuccess('Backup de lugares exportado!');
     };
 
     // Filtra lugares pela categoria selecionada
@@ -203,12 +197,6 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
                 title={confirmModal.title}
                 message={confirmModal.message}
                 isDestructive={confirmModal.isDestructive}
-            />
-
-            {/* Toasts */}
-            <ToastContainer
-                toasts={toasts}
-                removeToast={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
             />
         </div>
     );

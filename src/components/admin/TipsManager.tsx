@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tip, CityCuriosity } from '../../types';
 import { Plus, Loader2, Sparkles, Download } from 'lucide-react';
 import Button from '../ui/Button';
 import ConfirmModal from './ConfirmModal';
-import ToastContainer, { ToastMessage } from '../Toast';
+import { useToast } from '../../contexts/ToastContext';
 import { TipItemCard, TipFormModal, CuriositiesSection } from './tips';
 
 interface TipsManagerProps {
@@ -49,7 +49,14 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
     const [isSavingCuriosities, setIsSavingCuriosities] = useState(false);
 
     // --- UI STATE ---
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
+    const { showSuccess, showError, showWarning } = useToast();
+
+    // Compatibility wrapper for CuriositiesSection prop
+    const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+        const toastFunctions = { success: showSuccess, error: showError, warning: showWarning };
+        toastFunctions[type](message);
+    };
+
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
         title: '',
@@ -57,16 +64,6 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
         onConfirm: () => { },
         isDestructive: false,
     });
-
-    // --- HELPERS ---
-    const showToast = useCallback(
-        (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
-            const id = Date.now().toString();
-            setToasts((prev) => [...prev, { id, message, type }]);
-            setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
-        },
-        []
-    );
 
     useEffect(() => {
         if (tips.data.length === 0 && !tips.loading) tips.refresh();
@@ -94,7 +91,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
 
     const handleSaveTip = async () => {
         if (!formData.title || !formData.content) {
-            showToast('Título e Conteúdo são obrigatórios!', 'warning');
+            showWarning('Título e Conteúdo são obrigatórios!');
             return;
         }
 
@@ -105,20 +102,17 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
 
         setIsSavingTip(false);
         if (success) {
-            showToast(editingId ? 'Dica atualizada!' : 'Dica criada!', 'success');
+            showSuccess(editingId ? 'Dica atualizada!' : 'Dica criada!');
             setIsModalOpen(false);
         } else {
-            showToast('Erro ao salvar dica.', 'error');
+            showError('Erro ao salvar dica.');
         }
     };
 
     const handleDeleteTip = async (id: string) => {
         if (window.confirm('Tem certeza que deseja excluir esta dica?')) {
             const success = await tips.delete(id);
-            showToast(
-                success ? 'Dica removida.' : 'Erro ao remover dica.',
-                success ? 'success' : 'error'
-            );
+            success ? showSuccess('Dica removida.') : showError('Erro ao remover dica.');
         }
     };
 
@@ -177,7 +171,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 setIsSavingCuriosities(true);
                 await curiosities.save(newItems);
                 setIsSavingCuriosities(false);
-                showToast('Curiosidade removida.', 'success');
+                showSuccess('Curiosidade removida.');
                 if (editingCuriosityIndex === index) {
                     setCuriosityForm({ text: '', image: '' });
                     setEditingCuriosityIndex(null);
@@ -207,7 +201,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                                     a.download = `backup_dicas_${new Date().toISOString().split('T')[0]}.json`;
                                     a.click();
                                     URL.revokeObjectURL(url);
-                                    showToast('Backup exportado!', 'success');
+                                    showSuccess('Backup exportado!');
                                 }}
                                 variant="ghost"
                                 size="sm"
@@ -302,11 +296,6 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 title={confirmModal.title}
                 message={confirmModal.message}
                 isDestructive={confirmModal.isDestructive}
-            />
-
-            <ToastContainer
-                toasts={toasts}
-                removeToast={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
             />
         </div>
     );

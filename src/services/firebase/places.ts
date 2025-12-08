@@ -17,6 +17,7 @@ import {
 import { db, cleanData, getFromCache, saveToCache } from './config';
 import { PlaceRecommendation } from '../../types';
 import { logger } from '../../utils/logger';
+import { mapFirestoreDocs } from './mappers';
 
 export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecommendation[]> => {
     if (!forceRefresh) {
@@ -26,13 +27,7 @@ export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecom
 
     try {
         const querySnapshot = await getDocs(collection(db, 'places'));
-        const data = querySnapshot.docs.map(
-            (doc) =>
-                ({
-                    id: doc.id,
-                    ...(doc.data() as Omit<PlaceRecommendation, 'id'>),
-                }) as PlaceRecommendation
-        );
+        const data = mapFirestoreDocs<PlaceRecommendation>(querySnapshot);
 
         saveToCache('cached_places', data);
         return data;
@@ -47,13 +42,7 @@ export const subscribeToPlaces = (callback: (places: PlaceRecommendation[]) => v
     return onSnapshot(
         q,
         (snapshot) => {
-            const data = snapshot.docs.map(
-                (doc) =>
-                    ({
-                        id: doc.id,
-                        ...(doc.data() as Omit<PlaceRecommendation, 'id'>),
-                    }) as PlaceRecommendation
-            );
+            const data = mapFirestoreDocs<PlaceRecommendation>(snapshot);
             callback(data);
         },
         (error) => {

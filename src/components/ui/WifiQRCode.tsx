@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Wifi, Smartphone } from 'lucide-react';
+import { Card } from './Card';
 
 interface WifiQRCodeProps {
     ssid: string;
@@ -30,7 +31,11 @@ const WifiQRCode: React.FC<WifiQRCodeProps> = ({ ssid, password, size = 180 }) =
     }, [wifiString, size]);
 
     return (
-        <div className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
+        <Card
+            variant="flat-border"
+            padding="xl"
+            className="flex flex-col items-center gap-4"
+        >
             {/* Header */}
             <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                 <Wifi className="text-blue-500" size={24} />
@@ -60,7 +65,7 @@ const WifiQRCode: React.FC<WifiQRCodeProps> = ({ ssid, password, size = 180 }) =
                 <div className="text-xs text-gray-400 uppercase tracking-wider">Rede</div>
                 <div className="font-mono font-bold text-gray-800 dark:text-white">{ssid}</div>
             </div>
-        </div>
+        </Card>
     );
 };
 

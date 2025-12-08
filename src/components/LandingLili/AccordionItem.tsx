@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
 
-interface AccordionItemProps {
+export interface AccordionItemProps {
     id?: string;
     title: string;
     icon: React.ReactNode;
@@ -9,6 +9,7 @@ interface AccordionItemProps {
     onClick: () => void;
     children: React.ReactNode;
 }
+
 
 const AccordionItem: React.FC<AccordionItemProps> = ({
     title,

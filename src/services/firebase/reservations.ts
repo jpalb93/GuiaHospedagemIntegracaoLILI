@@ -23,6 +23,7 @@ import { db, cleanData } from './config';
 import { Reservation } from '../../types';
 import { logger } from '../../utils/logger';
 import { generateShortId } from '../../utils/helpers';
+import { mapFirestoreDocs } from './mappers';
 
 export const saveReservation = async (reservation: Reservation): Promise<string> => {
     const data = {
@@ -105,13 +106,7 @@ export const subscribeToActiveReservations = (
     return onSnapshot(
         q,
         (snapshot) => {
-            let data = snapshot.docs.map(
-                (doc) =>
-                    ({
-                        id: doc.id,
-                        ...doc.data(),
-                    }) as Reservation
-            );
+            let data = mapFirestoreDocs<Reservation>(snapshot);
 
             // Filtro client-side por propriedade (evita problema de índice composto)
             if (allowedProperties && allowedProperties.length > 0) {

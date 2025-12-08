@@ -161,7 +161,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                                     <div className="relative">
                                         <div className="absolute -inset-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl" />
                                         <LogoLili
-                                            className="relative h-20 w-auto text-white drop-shadow-2xl"
+                                            className="relative h-16 w-auto text-white drop-shadow-2xl"
                                             sunClassName="text-yellow-400 animate-sunrise-pulse"
                                             textClassName="text-white animate-reveal-curtain"
                                         />

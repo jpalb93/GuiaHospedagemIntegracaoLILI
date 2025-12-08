@@ -3,25 +3,8 @@ import { PropertyId, PaymentMethod, Reservation } from '../types';
 import { PROPERTIES } from '../config/properties';
 import { fetchOfficialTime } from '../constants';
 
-export interface ReservationFormState {
-    editingId: string | null;
-    guestName: string;
-    guestPhone: string;
-    propertyId: PropertyId;
-    flatNumber: string;
-    lockCode: string;
-    welcomeMessage: string;
-    adminNotes: string;
-    guestAlertActive: boolean;
-    guestAlertText: string;
-    checkInDate: string;
-    checkoutDate: string;
-    checkInTime: string;
-    checkOutTime: string;
-    guestCount: number;
-    paymentMethod: PaymentMethod | '';
-    shortId: string;
-}
+// ReservationFormState removed - now using ReservationFormData from types.ts
+
 
 export const useReservationForm = () => {
     // Form State

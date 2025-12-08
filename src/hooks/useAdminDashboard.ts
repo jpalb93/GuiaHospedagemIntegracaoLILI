@@ -5,7 +5,7 @@ import { saveReservation, updateReservation } from '../services/firebase';
 import { isApiConfigured } from '../services/geminiService';
 import { Reservation } from '../types';
 import { useAdminAuth } from './useAdminAuth';
-import { useToast } from './useToast';
+import { useToast } from '../contexts/ToastContext';
 import { useReservations } from './useReservations';
 import { useReservationForm } from './useReservationForm';
 import { useBlockedDates } from './useBlockedDates';
@@ -15,7 +15,13 @@ export const useAdminDashboard = () => {
     const { user, userPermission, authLoading, login, logout } = useAdminAuth();
 
     // Use extracted toast hook
-    const { toasts, showToast, removeToast } = useToast();
+    const { showSuccess, showError, showWarning, showInfo } = useToast();
+
+    // Compatibility wrapper for old showToast call signature
+    const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+        const toastFunctions = { success: showSuccess, error: showError, warning: showWarning, info: showInfo };
+        toastFunctions[type](message);
+    };
 
     // Use extracted reservations hook
     const {
@@ -358,9 +364,7 @@ export const useAdminDashboard = () => {
             generatedLink,
             setGeneratedLink,
             apiKeyStatus,
-            toasts,
             showToast,
-            removeToast,
             confirmModal,
             setConfirmModal,
         },
