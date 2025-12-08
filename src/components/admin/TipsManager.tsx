@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tip, CityCuriosity } from '../../types';
 import { Plus, Loader2, Sparkles, Download } from 'lucide-react';
+import Button from '../ui/Button';
 import ConfirmModal from './ConfirmModal';
 import ToastContainer, { ToastMessage } from '../Toast';
 import { TipItemCard, TipFormModal, CuriositiesSection } from './tips';
@@ -53,7 +54,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         isDestructive: false,
     });
 
@@ -196,7 +197,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                     <div className="flex gap-2 flex-wrap">
                         {/* Backup Buttons */}
                         {tips.data.length > 0 && (
-                            <button
+                            <Button
                                 onClick={() => {
                                     const dataStr = JSON.stringify(tips.data, null, 2);
                                     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -208,18 +209,21 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                                     URL.revokeObjectURL(url);
                                     showToast('Backup exportado!', 'success');
                                 }}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
-                                title="Exportar backup de dicas"
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<Download size={14} />}
+                                className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
                             >
-                                <Download size={14} /> Backup
-                            </button>
+                                Backup
+                            </Button>
                         )}
-                        <button
+                        <Button
                             onClick={() => handleOpenModal()}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg shadow-yellow-500/20 text-sm"
+                            leftIcon={<Plus size={18} />}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg shadow-yellow-500/20"
                         >
-                            <Plus size={18} /> Nova Dica
-                        </button>
+                            Nova Dica
+                        </Button>
                     </div>
                 </div>
 
@@ -247,13 +251,15 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                         ))}
 
                         {sortedTips.length > visibleTipsCount && (
-                            <button
+                            <Button
                                 onClick={() => setVisibleTipsCount((prev) => prev + 10)}
-                                className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                variant="ghost"
+                                fullWidth
+                                className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                             >
                                 Carregar mais dicas ({sortedTips.length - visibleTipsCount}{' '}
                                 restantes)
-                            </button>
+                            </Button>
                         )}
 
                         {sortedTips.length === 0 && (

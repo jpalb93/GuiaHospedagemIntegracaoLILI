@@ -2,6 +2,7 @@ import React from 'react';
 import { LogOut, Wifi, Check, MapPin, Maximize2, Sparkles, MessageCircle } from 'lucide-react';
 import { GuestConfig } from '../../../types';
 import HolographicCard from '../../ui/HolographicCard';
+import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
 import AccessTicket from './AccessTicket';
@@ -168,16 +169,17 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 </div>
             </HolographicCard>
 
-            <button
+            <Button
                 onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     onOpenSupport();
                 }}
-                className={`w-full py-3 ${theme.button.primary} text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg active:scale-[0.98]`}
+                fullWidth
+                leftIcon={<MessageCircle size={16} />}
+                className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                <MessageCircle size={16} className="text-white" />{' '}
                 {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
-            </button>
+            </Button>
         </div>
     );
 };

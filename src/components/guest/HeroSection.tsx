@@ -68,7 +68,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     return (
         <div className="relative h-[26rem] sm:h-[30rem] bg-gray-900 overflow-hidden shadow-xl group">
             {/* Controles Superiores + Guia Interativo (Esquerda) */}
-            <div className="absolute top-5 left-5 z-50 flex flex-col gap-2 animate-fadeIn">
+            <div className="absolute top-5 left-5 z-40 flex flex-col gap-2 animate-fadeIn">
                 <div className="flex gap-2">
                     <button
                         onClick={toggleLanguage}
@@ -109,7 +109,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 ))}
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-20" />
+            {/* Enhanced Gradient Overlay for Text Contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent z-20" />
 
             {/* Wrapper de Conteúdo com Padding Ajustado para a Dock */}
             {/* AJUSTE FINO: pb-32 para empurrar o texto mais para cima e não ficar atrás da barra */}
@@ -120,10 +122,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                             <div className="mb-4 animate-fadeIn flex flex-col items-center text-center w-full">
                                 <div className="flex items-center justify-center gap-4 mb-2">
                                     <div className="relative group">
+                                        {/* Glassmorphism Ring */}
+                                        <div className="absolute -inset-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl" />
                                         <img
                                             src={flatsLogo}
                                             alt="Logo Flats Integração"
-                                            className="relative z-10 h-20 w-auto object-contain drop-shadow-md"
+                                            className="relative z-10 h-20 w-auto object-contain drop-shadow-2xl"
                                         />
                                         <div
                                             className="absolute inset-0 z-20 animate-logo-shimmer pointer-events-none"
@@ -153,11 +157,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                                 {/* Text Logo + Guia Interativo (Matching Integração Layout) */}
                                 <div className="flex items-center justify-center gap-4 mb-2">
                                     {/* Typographic Logo Lockup */}
-                                    <LogoLili
-                                        className="h-20 w-auto text-white drop-shadow-md"
-                                        sunClassName="text-yellow-400 animate-sunrise-pulse"
-                                        textClassName="text-white animate-reveal-curtain"
-                                    />
+                                    {/* Glassmorphism Ring for Lili Logo */}
+                                    <div className="relative">
+                                        <div className="absolute -inset-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl" />
+                                        <LogoLili
+                                            className="relative h-20 w-auto text-white drop-shadow-2xl"
+                                            sunClassName="text-yellow-400 animate-sunrise-pulse"
+                                            textClassName="text-white animate-reveal-curtain"
+                                        />
+                                    </div>
 
                                     {/* Vertical Separator */}
                                     <div className="h-10 w-px bg-white/30 rounded-full mx-1"></div>

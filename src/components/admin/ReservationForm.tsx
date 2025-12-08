@@ -21,6 +21,7 @@ import {
     CreditCard,
     Banknote,
 } from 'lucide-react';
+import Button from '../ui/Button';
 import { PROPERTIES } from '../../config/properties';
 import { PropertyId, UserPermission, PaymentMethod, Reservation } from '../../types';
 
@@ -219,11 +220,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                         <button
                             key={prop.id}
                             onClick={() => setPropertyId(prop.id)}
-                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${
-                                propertyId === prop.id
+                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${propertyId === prop.id
                                     ? 'bg-white dark:bg-gray-700 text-orange-600 shadow-sm'
                                     : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                            }`}
+                                }`}
                         >
                             <Building2 size={14} /> {prop.name}
                         </button>
@@ -488,20 +488,15 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                 />
             </div>
 
-            <button
+            <Button
                 onClick={handleSaveReservation}
                 disabled={isSaving}
-                className={`w-full py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 shadow-xl flex items-center justify-center gap-2 ${editingId ? 'bg-orange-500 text-white' : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'}`}
+                fullWidth
+                leftIcon={isSaving ? <Loader2 className="animate-spin" /> : editingId ? <Save size={20} /> : <Sparkles className="text-yellow-400" />}
+                className={`py-4 text-lg shadow-xl ${editingId ? 'bg-orange-500' : 'bg-gray-900 dark:bg-white dark:text-gray-900'}`}
             >
-                {isSaving ? (
-                    <Loader2 className="animate-spin" />
-                ) : editingId ? (
-                    <Save size={20} />
-                ) : (
-                    <Sparkles className="text-yellow-400" />
-                )}
                 {isSaving ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Gerar Magic Link'}
-            </button>
+            </Button>
 
             {generatedLink && !editingId && (
                 <div className="animate-fadeIn mt-4 bg-orange-50 dark:bg-orange-900/10 p-4 rounded-2xl border border-orange-100 dark:border-orange-800/30">
@@ -515,18 +510,24 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                         {generatedLink}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                        <button
+                        <Button
                             onClick={copyToClipboard}
-                            className="py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors bg-white text-gray-700 border-gray-200 border"
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<Copy size={14} />}
+                            className="bg-white text-gray-700 border-gray-200 border"
                         >
-                            <Copy size={14} /> Copiar
-                        </button>
-                        <button
+                            Copiar
+                        </Button>
+                        <Button
                             onClick={shareOnWhatsApp}
-                            className="py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 bg-green-50 text-green-600 border border-green-200 hover:bg-green-600 shadow-sm"
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<Send size={14} />}
+                            className="bg-green-50 text-green-600 border border-green-200 hover:bg-green-600"
                         >
-                            <Send size={14} /> WhatsApp
-                        </button>
+                            WhatsApp
+                        </Button>
                     </div>
                 </div>
             )}

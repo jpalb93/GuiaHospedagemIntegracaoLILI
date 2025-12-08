@@ -1,6 +1,7 @@
 import React from 'react';
 import { CalendarHeart, Sparkles, Lightbulb } from 'lucide-react';
 import { PlaceRecommendation } from '../../types';
+import { analytics } from '../../utils/analytics';
 
 interface StoriesBarProps {
     activeEvents: PlaceRecommendation[];
@@ -11,7 +12,7 @@ interface StoriesBarProps {
 const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, showTips = true }) => {
     return (
         // AJUSTE FINO: -mt-20 para subir bem a barra (estilo App Nativo), mb-1 para colar no conteúdo
-        <div className="relative z-40 -mt-20 w-full mb-1">
+        <div className="relative z-30 -mt-20 w-full mb-1">
             {/* Wrapper centralizado */}
             <div className="flex justify-center px-4">
                 {/* CÁPSULA / DOCK FLUTUANTE - Dark Glass Style */}
@@ -19,7 +20,13 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
                     {/* --- AGENDA --- */}
                     {activeEvents.length > 0 && (
                         <button
-                            onClick={() => onOpenStory('agenda')}
+                            onClick={() => {
+                                analytics.trackStoryViewed({
+                                    type: 'agenda',
+                                    hasActiveEvents: activeEvents.length > 0,
+                                });
+                                onOpenStory('agenda');
+                            }}
                             className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95 animate-pop-in"
                             style={{ animationDelay: '0ms' }}
                         >
@@ -52,7 +59,10 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
 
                     {/* --- CURIOSIDADES --- */}
                     <button
-                        onClick={() => onOpenStory('curiosities')}
+                        onClick={() => {
+                            analytics.trackStoryViewed({ type: 'curiosities' });
+                            onOpenStory('curiosities');
+                        }}
                         className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95 animate-pop-in"
                         style={{ animationDelay: activeEvents.length > 0 ? '150ms' : '0ms' }}
                     >
@@ -75,7 +85,10 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
                     {/* --- DICAS DO FLAT --- */}
                     {showTips && (
                         <button
-                            onClick={() => onOpenStory('tips')}
+                            onClick={() => {
+                                analytics.trackStoryViewed({ type: 'tips' });
+                                onOpenStory('tips');
+                            }}
                             className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-transform active:scale-95 animate-pop-in"
                             style={{ animationDelay: activeEvents.length > 0 ? '300ms' : '150ms' }}
                         >

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Key, Bell, Eye, Lock } from 'lucide-react';
 import { PropertyId } from '../../../types';
+import { ThemeColors } from '../../../hooks/useGuestTheme';
 import { triggerConfetti } from '../../../utils/confetti';
 
 interface AccessTicketProps {
@@ -8,7 +9,7 @@ interface AccessTicketProps {
     code: string;
     label: string;
     subLabel?: string;
-    theme: any; // Using the theme object from useGuestTheme
+    theme: ThemeColors;
     alwaysVisible?: boolean;
     variant?: 'default' | 'small';
 }
@@ -72,11 +73,10 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
 
             {/* Top Decoration Line */}
             <div
-                className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${
-                    propertyId === 'integracao'
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
-                        : 'bg-gradient-to-r from-orange-500 to-purple-600'
-                }`}
+                className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${propertyId === 'integracao'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
+                    : 'bg-gradient-to-r from-orange-500 to-purple-600'
+                    }`}
             />
 
             <div
@@ -110,11 +110,10 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                             </div>
                             <button
                                 onClick={handleReveal}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${
-                                    propertyId === 'integracao'
-                                        ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                                        : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
-                                }`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${propertyId === 'integracao'
+                                    ? 'bg-cyan-600 text-white hover:bg-cyan-500'
+                                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                                    }`}
                             >
                                 <Eye size={14} /> Revelar Senha
                             </button>

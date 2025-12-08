@@ -80,13 +80,12 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                         <button
                             key={prop.id}
                             onClick={() => setPropertyFilter(prop.id)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border flex items-center gap-1 ${
-                                propertyFilter === prop.id
-                                    ? prop.id === 'lili'
-                                        ? 'bg-orange-100 text-orange-700 border-orange-200'
-                                        : 'bg-blue-100 text-blue-700 border-blue-200'
-                                    : 'bg-white text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
-                            }`}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border flex items-center gap-1 ${propertyFilter === prop.id
+                                ? prop.id === 'lili'
+                                    ? 'bg-orange-100 text-orange-700 border-orange-200'
+                                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                                : 'bg-white text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                }`}
                         >
                             <Building2 size={12} /> {prop.name}
                         </button>
@@ -210,7 +209,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1.5 font-medium">
                                         <Calendar size={12} />
                                         {(res.checkoutDate || '') >=
-                                        new Date().toLocaleDateString('en-CA') ? (
+                                            new Date().toLocaleDateString('en-CA') ? (
                                             <span className="text-green-600 dark:text-green-400">
                                                 Até{' '}
                                                 {(res.checkoutDate || '')

@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { UserPermission, PropertyId, UserRole } from '../types';
+import { logger } from '../utils/logger';
 
 export const getUserPermission = async (email: string): Promise<UserPermission | null> => {
     try {
@@ -17,7 +18,7 @@ export const getUserPermission = async (email: string): Promise<UserPermission |
                 allowedProperties: data.allowedProperties as PropertyId[],
             };
         } else {
-            console.warn(`Permissão não encontrada no Firestore para: ${normalizedEmail}`);
+            logger.warn(`Permissão não encontrada no Firestore para: ${normalizedEmail}`);
         }
     } catch (error) {
         console.error('Error fetching user permission:', error);

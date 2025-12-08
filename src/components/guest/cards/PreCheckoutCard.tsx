@@ -3,6 +3,7 @@ import { LogOut, MessageCircle, Wifi, MapPin } from 'lucide-react';
 import { GuestConfig } from '../../../types';
 import { triggerConfetti } from '../../../utils/confetti';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import Button from '../../ui/Button';
 import AccessTicket from './AccessTicket';
 
 interface PreCheckoutCardProps {
@@ -98,15 +99,17 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                     </p>
                     <p className="text-xs text-gray-400 font-medium">Amanhã</p>
                 </div>
-                <button
+                <Button
                     onClick={() => {
                         if (navigator.vibrate) navigator.vibrate(50);
                         onOpenCheckout();
                     }}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wide transition-all rounded-lg shadow-lg shadow-blue-900/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                    fullWidth
+                    leftIcon={<LogOut size={16} />}
+                    className="py-3 bg-blue-600 hover:bg-blue-500 text-xs uppercase tracking-wide shadow-lg shadow-blue-900/20"
                 >
-                    <LogOut size={16} /> Ver Checklist de Saída
-                </button>
+                    Ver Checklist de Saída
+                </Button>
             </div>
 
             {/* COMPACT DOOR CODE */}
@@ -124,16 +127,17 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                 />
             </div>
 
-            <button
+            <Button
                 onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     onOpenSupport();
                 }}
-                className={`w-full py-3 ${theme.button.primary} text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg active:scale-[0.98]`}
+                fullWidth
+                leftIcon={<MessageCircle size={16} />}
+                className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                <MessageCircle size={16} className="text-white" />{' '}
                 {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
-            </button>
+            </Button>
         </div>
     );
 };

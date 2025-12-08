@@ -2,6 +2,7 @@ import React from 'react';
 import { LogOut, Wifi, Check, MapPin, Maximize2, CalendarHeart, MessageCircle } from 'lucide-react';
 import { GuestConfig } from '../../../types';
 import HolographicCard from '../../ui/HolographicCard';
+import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
 import AccessTicket from './AccessTicket';
@@ -92,15 +93,16 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
             </div>
 
             {isSingleNight && (
-                <button
+                <Button
                     onClick={() => {
                         if (navigator.vibrate) navigator.vibrate(50);
                         onOpenCheckin();
                     }}
-                    className={`w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wide transition-all rounded-xl shadow-lg shadow-purple-900/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-4 relative z-10 border border-white/10`}
+                    fullWidth
+                    className="mb-4 relative z-10 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs uppercase tracking-wide shadow-lg shadow-purple-900/20 border border-white/10"
                 >
                     Como fazer Check-in
-                </button>
+                </Button>
             )}
 
             {/* ACCESS TICKET (Replaces HolographicCard for Access) */}
@@ -201,15 +203,16 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
             </div>
 
             {!isSingleNight && (
-                <button
+                <Button
                     onClick={() => {
                         if (navigator.vibrate) navigator.vibrate(50);
                         onOpenCheckin();
                     }}
-                    className={`w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2 font-sans active:scale-[0.98] mb-3`}
+                    fullWidth
+                    className="mb-3 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25"
                 >
                     Iniciar Passo a Passo
-                </button>
+                </Button>
             )}
 
             {isSingleNight && (
@@ -234,16 +237,17 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 </div>
             )}
 
-            <button
+            <Button
                 onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     onOpenSupport();
                 }}
-                className={`w-full py-3 ${theme.button.primary} text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg active:scale-[0.98]`}
+                fullWidth
+                leftIcon={<MessageCircle size={16} />}
+                className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                <MessageCircle size={16} className="text-white" />{' '}
                 {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
-            </button>
+            </Button>
 
             {!isSingleNight && (
                 <div className="mt-4 pt-4 border-t border-white/5 flex justify-center items-center gap-2 text-orange-300/80">

@@ -22,8 +22,12 @@ const ALLOWED_PATTERNS = [
     /^https?:\/\/.*\.?flatsintegracao\.com\.br$/,
 ];
 
+// Valid property IDs for multi-tenant support
+type PropertyId = 'lili' | 'integracao';
+
 // Schema de validação do payload
 const PaymentSchema = z.object({
+    propertyId: z.enum(['lili', 'integracao']).optional().default('lili'),
     transaction_amount: z.number().positive().max(10000), // Limite de R$10.000
     description: z.string().min(1).max(200),
     payer: z.object({
@@ -35,6 +39,19 @@ const PaymentSchema = z.object({
         }),
     }),
 });
+
+// Get access token based on property (for future multi-merchant setup)
+function getAccessToken(_propertyId: PropertyId): string {
+    // Future: support per-property tokens
+    // const tokens: Record<PropertyId, string | undefined> = {
+    //     'lili': process.env.MERCADO_PAGO_TOKEN_LILI,
+    //     'integracao': process.env.MERCADO_PAGO_TOKEN_INTEGRACAO,
+    // };
+    // return tokens[_propertyId] || process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
+
+    // For now, use single token (already configured)
+    return process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
+}
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
     const headers: Record<string, string> = {
@@ -106,14 +123,14 @@ export default async function handler(request: Request) {
             );
         }
 
-        const { transaction_amount, description, payer } = validationResult.data;
+        const { propertyId, transaction_amount, description, payer } = validationResult.data;
 
-        const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+        const accessToken = getAccessToken(propertyId);
         if (!accessToken) {
-            throw new Error('MERCADO_PAGO_ACCESS_TOKEN not configured');
+            throw new Error(`MERCADO_PAGO_ACCESS_TOKEN not configured for property: ${propertyId}`);
         }
 
-        const client = new MercadoPagoConfig({ accessToken: accessToken });
+        const client = new MercadoPagoConfig({ accessToken });
         const payment = new Payment(client);
 
         const body = {

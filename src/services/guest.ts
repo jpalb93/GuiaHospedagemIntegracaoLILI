@@ -1,5 +1,6 @@
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { GuestConfig } from '../types';
+import { logger } from '../utils/logger';
 
 export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null> => {
     try {
@@ -13,7 +14,7 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
             });
 
             if (response.status === 404) {
-                console.warn('Reserva não encontrada na API (Native).');
+                logger.warn('Reserva não encontrada na API (Native).');
                 return null;
             }
 
@@ -29,7 +30,7 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
 
         if (!response.ok) {
             if (response.status === 404) {
-                console.warn('Reserva não encontrada na API.');
+                logger.warn('Reserva não encontrada na API.');
                 return null;
             }
             throw new Error(`Erro na API: ${response.statusText}`);

@@ -2,6 +2,7 @@ import React from 'react';
 import { MessageCircle } from 'lucide-react';
 import { GuestConfig } from '../../../types';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import Button from '../../ui/Button';
 import AccessTicket from './AccessTicket';
 
 interface PreCheckinCardProps {
@@ -89,15 +90,16 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                         </p>
                     </div>
 
-                    <button
+                    <Button
                         onClick={() => {
                             if (navigator.vibrate) navigator.vibrate(50);
                             onOpenCheckin();
                         }}
-                        className={`w-full py-3 ${theme.button.primary} text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg active:scale-[0.98] relative z-10`}
+                        fullWidth
+                        className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg relative z-10`}
                     >
                         Ver Instruções Completas
-                    </button>
+                    </Button>
                 </>
             ) : (
                 <>
@@ -134,15 +136,17 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                         </div>
                     </div>
 
-                    <button
+                    <Button
                         onClick={() => {
                             if (navigator.vibrate) navigator.vibrate(50);
                             onOpenCheckin();
                         }}
-                        className={`w-full py-3 ${theme.button.secondary} text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl border border-white/10 active:scale-[0.98] relative z-10`}
+                        fullWidth
+                        variant="secondary"
+                        className="text-[11px] uppercase tracking-wide border border-white/10 relative z-10"
                     >
                         Como fazer seu Check-In
-                    </button>
+                    </Button>
                 </>
             )}
         </div>

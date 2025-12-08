@@ -37,26 +37,27 @@ export const sendMessageToGemini = async (
 
         const data = await response.json();
         return data.text || 'Desculpe, não consegui gerar uma resposta.';
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
         console.error('Erro ao falar com a API Vercel:', error);
 
-        if (error.message.includes('404')) {
-            return error.message;
+        if (errorMessage.includes('404')) {
+            return errorMessage;
         }
 
         // Tenta extrair a mensagem de erro do backend se estiver no formato JSON stringificado
         try {
-            const match = error.message.match(/\{.*\}/);
+            const match = errorMessage.match(/\{.*\}/);
             if (match) {
                 const errorJson = JSON.parse(match[0]);
                 if (errorJson.error) {
                     return `Erro do Sistema: ${errorJson.error} ${errorJson.details ? JSON.stringify(errorJson.details) : ''}`;
                 }
             }
-        } catch (e) {
+        } catch (_e) {
             // Ignora erro de parse
         }
 
-        return `Desculpe, tive um problema técnico. (${error.message || 'Erro desconhecido'})`;
+        return `Desculpe, tive um problema técnico. (${errorMessage})`;
     }
 };

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Reservation, UserPermission, PropertyId } from '../../types';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
 import { PROPERTIES } from '../../config/properties';
-import { Badge, Input } from '../ui';
+import { Badge, Input, Button } from '../ui';
 import {
     CalendarDays,
     History,
@@ -290,83 +290,92 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleStartEdit(res);
                             }}
+                            variant="icon"
                             className="p-2.5 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-blue-500 rounded-xl transition-colors shadow-sm"
                             title="Editar"
                         >
                             <Pencil size={18} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (res.id) handleDeleteReservation(res.id);
                             }}
+                            variant="icon"
                             className="p-2.5 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-red-500 rounded-xl transition-colors shadow-sm"
                             title="Excluir"
                         >
                             <Trash2 size={18} />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 mt-2">
                     {isCheckinTomorrow && (
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 sendReminder(res, 'checkin');
                             }}
+                            fullWidth
+                            leftIcon={<BellRing size={16} />}
                             className="col-span-2 py-2.5 bg-green-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm animate-pulse"
                         >
-                            <BellRing size={16} /> Lembrete Chegada
-                        </button>
+                            Lembrete Chegada
+                        </Button>
                     )}
                     {isCheckoutTomorrow && (
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 sendReminder(res, 'checkout');
                             }}
+                            fullWidth
+                            leftIcon={<LogOut size={16} />}
                             className="col-span-2 py-2.5 bg-orange-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
                         >
-                            <LogOut size={16} /> Instr. Saída
-                        </button>
+                            Instr. Saída
+                        </Button>
                     )}
                     {isIntegracao && (
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleOpenInspection(res);
                             }}
+                            fullWidth
+                            leftIcon={<ClipboardCheck size={16} />}
                             className="col-span-2 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"
                         >
-                            <ClipboardCheck size={16} /> Vistoria
-                        </button>
+                            Vistoria
+                        </Button>
                     )}
 
-                    <button
+                    <Button
                         onClick={(e) => {
                             e.stopPropagation();
                             handleCopyListLink(res);
                         }}
+                        leftIcon={listCopiedId === res.id ? <Check size={14} /> : <LinkIcon size={14} />}
                         className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'}`}
                     >
-                        {listCopiedId === res.id ? <Check size={14} /> : <LinkIcon size={14} />}{' '}
                         {listCopiedId === res.id ? 'Copiado' : 'Link'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={(e) => {
                             e.stopPropagation();
                             handleShareListWhatsApp(res);
                         }}
+                        leftIcon={<Share2 size={14} />}
                         className="py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
                     >
-                        <Share2 size={14} /> WhatsApp
-                    </button>
+                        WhatsApp
+                    </Button>
                 </div>
             </div>
         );
@@ -434,70 +443,76 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 <td className="py-4 px-4 align-middle text-right">
                     <div className="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                         {isCheckinTomorrow && (
-                            <button
+                            <Button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     sendReminder(res, 'checkin');
                                 }}
-                                className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                                variant="icon"
+                                className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
                                 title="Lembrete Chegada"
                             >
                                 <BellRing size={16} />
-                            </button>
+                            </Button>
                         )}
                         {isCheckoutTomorrow && (
-                            <button
+                            <Button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     sendReminder(res, 'checkout');
                                 }}
-                                className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors"
+                                variant="icon"
+                                className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200"
                                 title="Instruções Saída"
                             >
                                 <LogOut size={16} />
-                            </button>
+                            </Button>
                         )}
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleShareListWhatsApp(res);
                             }}
+                            variant="icon"
                             className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
                             title="WhatsApp"
                         >
                             <Share2 size={16} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleCopyListLink(res);
                             }}
+                            variant="icon"
                             className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                             title="Copiar Link"
                         >
                             <LinkIcon size={16} />
-                        </button>
+                        </Button>
                         <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleStartEdit(res);
                             }}
+                            variant="icon"
                             className="p-2 text-gray-400 hover:text-blue-600 rounded-lg"
                             title="Editar"
                         >
                             <Pencil size={16} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteReservation(res.id!);
                             }}
+                            variant="icon"
                             className="p-2 text-gray-400 hover:text-red-600 rounded-lg"
                             title="Excluir"
                         >
                             <Trash2 size={16} />
-                        </button>
+                        </Button>
                     </div>
                 </td>
             </tr>
@@ -645,17 +660,19 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                         ))}
 
                         {hasMoreHistory && (
-                            <button
+                            <Button
                                 onClick={loadMoreHistory}
                                 disabled={loadingHistory}
-                                className="w-full py-4 text-xs font-bold text-gray-500 hover:text-gray-800 flex items-center justify-center gap-2 transition-colors"
+                                variant="ghost"
+                                fullWidth
+                                className="py-4 text-xs font-bold text-gray-500 hover:text-gray-800"
                             >
                                 {loadingHistory ? (
                                     <Loader2 className="animate-spin" size={16} />
                                 ) : (
                                     'Carregar Mais Antigos'
                                 )}
-                            </button>
+                            </Button>
                         )}
                     </div>
                 )}

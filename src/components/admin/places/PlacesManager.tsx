@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlaceRecommendation } from '../../../types';
 import { Plus, Loader2, Download } from 'lucide-react';
+import Button from '../../ui/Button';
 import ConfirmModal from '../ConfirmModal';
 import ToastContainer, { ToastMessage } from '../../Toast';
 import PlaceFormModal from './PlaceFormModal';
@@ -39,7 +40,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         isDestructive: false,
     });
 
@@ -142,20 +143,23 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
                     {places.data.length > 0 && (
-                        <button
+                        <Button
                             onClick={handleExportBackup}
-                            className="flex items-center gap-1 px-3 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
-                            title="Exportar backup de lugares"
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<Download size={16} />}
+                            className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
                         >
-                            <Download size={16} /> Backup
-                        </button>
+                            Backup
+                        </Button>
                     )}
-                    <button
+                    <Button
                         onClick={() => handleOpenModal()}
-                        className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-orange-500/20"
+                        leftIcon={<Plus size={20} />}
+                        className="flex-1 sm:flex-none shadow-lg shadow-orange-500/20"
                     >
-                        <Plus size={20} /> Novo Local
-                    </button>
+                        Novo Local
+                    </Button>
                 </div>
             </div>
 

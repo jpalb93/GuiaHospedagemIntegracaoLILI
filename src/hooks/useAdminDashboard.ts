@@ -1,85 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { generateShortId } from '../utils/helpers';
-import { User } from 'firebase/auth';
-import { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import {
-    subscribeToAuth,
-    loginCMS,
-    logoutCMS,
-    subscribeToActiveReservations,
-    fetchHistoryReservations,
-    subscribeToFutureBlockedDates,
-    saveReservation,
-    updateReservation,
-    deleteReservation,
-    addBlockedDate,
-    deleteBlockedDate,
-} from '../services/firebase';
-import { fetchOfficialTime } from '../constants';
+import { saveReservation, updateReservation } from '../services/firebase';
 import { isApiConfigured } from '../services/geminiService';
-import { Reservation, BlockedDateRange, PropertyId, PaymentMethod } from '../types';
-import { PROPERTIES } from '../config/properties';
-import { ToastMessage, ToastType } from '../components/Toast';
-import { getUserPermission } from '../services/userManagement';
-import { UserPermission } from '../types';
+import { Reservation } from '../types';
+import { useAdminAuth } from './useAdminAuth';
+import { useToast } from './useToast';
+import { useReservations } from './useReservations';
+import { useReservationForm } from './useReservationForm';
+import { useBlockedDates } from './useBlockedDates';
 
 export const useAdminDashboard = () => {
-    // Auth State
-    const [user, setUser] = useState<User | null>(null);
-    const [authLoading, setAuthLoading] = useState(true);
-    const [userPermission, setUserPermission] = useState<UserPermission | null>(null);
+    // Use extracted auth hook
+    const { user, userPermission, authLoading, login, logout } = useAdminAuth();
 
-    // Data State
-    const [activeReservations, setActiveReservations] = useState<Reservation[]>([]);
-    const [historyReservations, setHistoryReservations] = useState<Reservation[]>([]);
-    const [blockedDates, setBlockedDates] = useState<BlockedDateRange[]>([]);
+    // Use extracted toast hook
+    const { toasts, showToast, removeToast } = useToast();
 
-    // History Pagination
-    const [lastHistoryDoc, setLastHistoryDoc] = useState<unknown>(null);
-    const [loadingHistory, setLoadingHistory] = useState(false);
-    const [hasMoreHistory, setHasMoreHistory] = useState(true);
+    // Use extracted reservations hook
+    const {
+        activeReservations,
+        historyReservations,
+        loadingHistory,
+        hasMoreHistory,
+        loadMoreHistory,
+        removeReservation,
+    } = useReservations({ userPermission, showToast });
 
-    // Form State
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [guestName, setGuestName] = useState('');
-    const [guestPhone, setGuestPhone] = useState('');
-    const [propertyId, setPropertyId] = useState<PropertyId>('lili');
-    const [flatNumber, setFlatNumber] = useState('');
-    const [lockCode, setLockCode] = useState('');
-    const [welcomeMessage, setWelcomeMessage] = useState('');
-    const [adminNotes, setAdminNotes] = useState('');
-    const [guestAlertActive, setGuestAlertActive] = useState(false);
-    const [guestAlertText, setGuestAlertText] = useState('');
-    const [checkInDate, setCheckInDate] = useState('');
-    const [checkoutDate, setCheckoutDate] = useState('');
-    const [checkInTime, setCheckInTime] = useState('14:00');
-    const [checkOutTime, setCheckOutTime] = useState('11:00');
-    const [guestCount, setGuestCount] = useState<number>(1);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
-    const [shortId, setShortId] = useState('');
+    // Use extracted form hook
+    const reservationForm = useReservationForm();
+    const {
+        editingId,
+        guestName, setGuestName,
+        guestPhone, setGuestPhone,
+        propertyId, setPropertyId,
+        flatNumber, setFlatNumber,
+        lockCode, setLockCode,
+        welcomeMessage, setWelcomeMessage,
+        adminNotes, setAdminNotes,
+        guestAlertActive, setGuestAlertActive,
+        guestAlertText, setGuestAlertText,
+        checkInDate, setCheckInDate,
+        checkoutDate, setCheckoutDate,
+        checkInTime, setCheckInTime,
+        checkOutTime, setCheckOutTime,
+        guestCount, setGuestCount,
+        paymentMethod, setPaymentMethod,
+        shortId,
+        generatedLink, setGeneratedLink,
+        isSaving, setIsSaving,
+        resetForm: resetReservationForm,
+        loadReservation,
+        getFormValues,
+    } = reservationForm;
 
-    // Blocked Dates Form State
-    const [blockedStartDate, setBlockedStartDate] = useState('');
-    const [blockedEndDate, setBlockedEndDate] = useState('');
-    const [blockedReason, setBlockedReason] = useState('');
-    const [isBlocking, setIsBlocking] = useState(false);
+    // Use extracted blocked dates hook
+    const blockedDatesHook = useBlockedDates({ showToast });
+    const {
+        blockedDates,
+        blockedStartDate, setBlockedStartDate,
+        blockedEndDate, setBlockedEndDate,
+        blockedReason, setBlockedReason,
+        isBlocking,
+        subscribe: subscribeToBlockedDates,
+        resetBlockedForm,
+        handleAddBlock,
+        handleDeleteBlock: deleteBlock,
+    } = blockedDatesHook;
 
     // UI State
-    const [activeTab, setActiveTab] = useState<
-        | 'home'
-        | 'create'
-        | 'list'
-        | 'calendar'
-        | 'blocks'
-        | 'places'
-        | 'tips'
-        | 'reviews'
-        | 'suggestions'
-        | 'settings'
-    >(() => {
+    type AdminTab = 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings';
+
+    const [activeTab, setActiveTab] = useState<AdminTab>(() => {
         const saved = localStorage.getItem('admin_active_tab');
-        return (saved as any) || 'home';
+        return (saved as AdminTab) || 'home';
     });
 
     useEffect(() => {
@@ -87,128 +81,26 @@ export const useAdminDashboard = () => {
     }, [activeTab]);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [generatedLink, setGeneratedLink] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
     const [apiKeyStatus, setApiKeyStatus] = useState<'checking' | 'ok' | 'missing'>('checking');
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
         isDestructive: false,
+        onConfirm: async () => { },
     });
 
-    // --- HELPERS ---
-    const showToast = (message: string, type: ToastType = 'info') => {
-        const id = Date.now().toString() + Math.random().toString();
-        setToasts((prev) => [...prev, { id, message, type }]);
-        setTimeout(() => removeToast(id), 4000);
-    };
+    // Reset form wrapper that also resets blocked dates
+    const resetForm = useCallback(async () => {
+        await resetReservationForm();
+        await resetBlockedForm();
+    }, [resetReservationForm, resetBlockedForm]);
 
-    const removeToast = (id: string) => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-    };
-
-    const loadMoreHistory = async (reset = false) => {
-        if (loadingHistory) return;
-        setLoadingHistory(true);
-        try {
-            const lastDoc = reset
-                ? null
-                : (lastHistoryDoc as QueryDocumentSnapshot<unknown, DocumentData> | null);
-
-            const filterProps =
-                userPermission?.role === 'super_admin'
-                    ? undefined
-                    : userPermission?.allowedProperties;
-
-            const { data, lastVisible, hasMore } = await fetchHistoryReservations(
-                lastDoc,
-                20,
-                filterProps
-            );
-
-            // FILTER HISTORY BY PERMISSION (Double check)
-            const filteredData = data.filter(
-                (r) =>
-                    !userPermission ||
-                    userPermission.role === 'super_admin' ||
-                    userPermission.allowedProperties.includes(r.propertyId || 'lili')
-            );
-
-            setHistoryReservations((prev) => (reset ? filteredData : [...prev, ...filteredData]));
-            setLastHistoryDoc(lastVisible);
-            setHasMoreHistory(hasMore);
-        } catch (e) {
-            logger.error('Erro ao carregar histórico', e);
-            showToast('Erro ao carregar histórico', 'error');
-        } finally {
-            setLoadingHistory(false);
-        }
-    };
-
-    const resetForm = async () => {
-        const officialNow = await fetchOfficialTime();
-        const yyyy = officialNow.getFullYear();
-        const mm = String(officialNow.getMonth() + 1).padStart(2, '0');
-        const dd = String(officialNow.getDate()).padStart(2, '0');
-
-        const tomorrow = new Date(officialNow);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const t_yyyy = tomorrow.getFullYear();
-        const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const t_dd = String(tomorrow.getDate()).padStart(2, '0');
-
-        setCheckInDate(`${yyyy}-${mm}-${dd}`);
-        setCheckoutDate(`${t_yyyy}-${t_mm}-${t_dd}`);
-        setCheckInTime(PROPERTIES[propertyId].defaults.checkInTime);
-        setCheckOutTime(PROPERTIES[propertyId].defaults.checkOutTime);
-        setGuestName('');
-        setGuestPhone('');
-        setPropertyId('lili');
-        setFlatNumber('');
-        setLockCode('');
-        setWelcomeMessage('');
-        setAdminNotes('');
-        setGuestAlertActive(false);
-        setGuestAlertText('');
-        setGeneratedLink('');
-        setEditingId(null);
-        setGuestCount(1);
-        setPaymentMethod('');
-        setShortId('');
-
-        setBlockedStartDate(`${yyyy}-${mm}-${dd}`);
-        setBlockedEndDate(`${t_yyyy}-${t_mm}-${t_dd}`);
-        setBlockedReason('');
-    };
-
-    // --- AUTH LISTENER ---
+    // --- DATA LISTENERS (Blocked Dates Only - Reservations handled by useReservations) ---
     useEffect(() => {
-        const unsubscribe = subscribeToAuth(async (u) => {
-            setUser(u);
-            if (u && u.email) {
-                const perm = await getUserPermission(u.email);
-                setUserPermission(perm);
-            } else {
-                setUserPermission(null);
-            }
-            setAuthLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    // --- DATA LISTENERS ---
-    useEffect(() => {
-        if (user) {
-            if (!userPermission) {
-                // Removido toast de erro prematuro. O AdminDashboard mostrará um banner se necessário.
-                return;
-            }
-
+        if (user && userPermission) {
             // AUTO-SELECT PROPERTY FOR RESTRICTED USERS
             if (
                 userPermission.role !== 'super_admin' &&
@@ -217,27 +109,11 @@ export const useAdminDashboard = () => {
                 setPropertyId(userPermission.allowedProperties[0]);
             }
 
-            // Determine filters based on role
-            const filterProps =
-                userPermission.role === 'super_admin'
-                    ? undefined
-                    : userPermission.allowedProperties;
-
-            const unsubActive = subscribeToActiveReservations((data) => {
-                // O filtro por propriedade já é feito no serviço Firebase
-                setActiveReservations(data);
-            }, filterProps);
-
-            loadMoreHistory(true);
-            const unsubBlocked = subscribeToFutureBlockedDates(setBlockedDates);
-
-            return () => {
-                unsubActive();
-                unsubBlocked();
-            };
+            const unsubBlocked = subscribeToBlockedDates();
+            return () => unsubBlocked();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, userPermission, authLoading]);
+    }, [user, userPermission, subscribeToBlockedDates]);
 
     // --- VISIBILITY CHANGE HANDLER (RECONEXÃO QUANDO ABA VOLTA) ---
     useEffect(() => {
@@ -271,24 +147,13 @@ export const useAdminDashboard = () => {
             }
         };
 
-        // Também detecta quando a página foi restaurada do cache (bfcache)
-        const handlePageShow = (e: PageTransitionEvent) => {
-            if (e.persisted && user && userPermission) {
-                logger.info('[AdminDashboard] Page restored from bfcache - refreshing');
-                loadMoreHistory(true);
-            }
-        };
-
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('pageshow', handlePageShow);
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('pageshow', handlePageShow);
             if (reloadTimeout) clearTimeout(reloadTimeout);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, userPermission]);
+    }, [user, userPermission, loadMoreHistory, showToast]);
 
     // --- API KEY CHECK ---
     useEffect(() => {
@@ -304,12 +169,11 @@ export const useAdminDashboard = () => {
 
     // --- ACTIONS ---
     const handleLogin = async (e: React.FormEvent, email: string, pass: string) => {
-        e.preventDefault();
-        try {
-            await loginCMS(email, pass);
+        const result = await login(e, email, pass);
+        if (result.success) {
             showToast('Bem-vindo de volta!', 'success');
-        } catch (_e) {
-            showToast('Erro ao entrar. Verifique email e senha.', 'error');
+        } else {
+            showToast(result.error || 'Erro ao entrar. Verifique email e senha.', 'error');
         }
     };
 
@@ -363,31 +227,19 @@ export const useAdminDashboard = () => {
             // Use existing shortId if editing, otherwise generate new one
             const finalShortId = editingId && shortId ? shortId : generateShortId();
 
+            const formValues = getFormValues();
             const payload: Reservation = {
-                guestName: guestName.trim(),
-                guestPhone: guestPhone.replace(/\D/g, ''),
-                propertyId,
-                flatNumber: flatNumber.trim(),
-                lockCode: lockCode.trim(),
-                welcomeMessage: welcomeMessage.trim(),
-                adminNotes: adminNotes.trim(),
-                guestAlertActive: guestAlertActive,
-                guestAlertText: guestAlertText.trim(),
-                checkInDate: checkInDate,
-                checkoutDate: checkoutDate,
-                checkInTime: checkInTime,
-                checkOutTime: checkOutTime,
+                ...formValues,
                 status: 'active',
                 createdAt: '',
-                shortId: finalShortId, // Passando o ID curto gerado
-                guestCount,
-                paymentMethod: paymentMethod as 'pix' | 'money' | 'card' | undefined,
+                shortId: finalShortId,
+                paymentMethod: formValues.paymentMethod as 'pix' | 'money' | 'card' | undefined,
             };
 
             if (editingId) {
                 await updateReservation(editingId, payload);
                 showToast('Reserva atualizada com sucesso!', 'success');
-                resetForm();
+                resetReservationForm();
             } else {
                 await saveReservation(payload);
                 const baseUrl = window.location.origin + '/';
@@ -413,63 +265,17 @@ export const useAdminDashboard = () => {
                 'Tem certeza que deseja excluir esta reserva permanentemente? Esta ação não pode ser desfeita.',
             isDestructive: true,
             onConfirm: async () => {
-                await deleteReservation(id);
-                setHistoryReservations((prev) => prev.filter((r) => r.id !== id));
-                setActiveReservations((prev) => prev.filter((r) => r.id !== id));
+                await removeReservation(id);
                 showToast('Reserva excluída.', 'success');
             },
         });
     };
 
     const handleStartEdit = (res: Reservation) => {
-        setEditingId(res.id!);
-        setGuestName(res.guestName);
-        setGuestPhone(res.guestPhone || '');
-        setPropertyId(res.propertyId || 'lili');
-        setFlatNumber(res.flatNumber || '');
-        setLockCode(res.lockCode || '');
-        setWelcomeMessage(res.welcomeMessage || '');
-        setAdminNotes(res.adminNotes || '');
-        setGuestAlertActive(res.guestAlertActive || false);
-        setGuestAlertText(res.guestAlertText || '');
-        setCheckInDate(res.checkInDate || '');
-        setCheckoutDate(res.checkoutDate || '');
-        setCheckInTime(res.checkInTime || '14:00');
-        setCheckOutTime(res.checkOutTime || '11:00');
-        setGuestCount(res.guestCount || 1);
-        setPaymentMethod(res.paymentMethod || '');
-        setShortId(res.shortId || '');
-
+        loadReservation(res);
         setActiveTab('create');
-        setGeneratedLink('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         showToast('Editando reserva de ' + res.guestName, 'info');
-    };
-
-    const handleAddBlock = async () => {
-        if (!blockedStartDate || !blockedEndDate) {
-            showToast('Selecione as datas de início e fim.', 'warning');
-            return;
-        }
-        if (blockedEndDate < blockedStartDate) {
-            showToast('A data final deve ser depois da data inicial.', 'warning');
-            return;
-        }
-
-        setIsBlocking(true);
-        try {
-            await addBlockedDate({
-                startDate: blockedStartDate,
-                endDate: blockedEndDate,
-                reason: blockedReason,
-            });
-            setBlockedReason('');
-            showToast('Datas bloqueadas com sucesso!', 'success');
-        } catch (_e) {
-            showToast('Erro ao bloquear datas.', 'error');
-        } finally {
-            setIsBlocking(false);
-        }
     };
 
     const handleDeleteBlock = async (id?: string) => {
@@ -480,14 +286,13 @@ export const useAdminDashboard = () => {
             message: 'Tem certeza que deseja remover este bloqueio de datas?',
             isDestructive: false,
             onConfirm: async () => {
-                await deleteBlockedDate(id);
-                showToast('Datas desbloqueadas.', 'success');
+                await deleteBlock(id);
             },
         });
     };
 
     return {
-        auth: { user, authLoading, handleLogin, logoutCMS, userPermission },
+        auth: { user, authLoading, handleLogin, logout, userPermission },
         data: {
             activeReservations,
             historyReservations,

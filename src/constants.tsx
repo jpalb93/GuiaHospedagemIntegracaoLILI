@@ -70,6 +70,7 @@ export const HOST_PHONE = '5587988342138'; // Número da Lili
 */
 export const USE_OFFICIAL_TIME = true;
 
+import { logger } from './utils/logger';
 export const fetchOfficialTime = async (): Promise<Date> => {
     if (!USE_OFFICIAL_TIME) return new Date();
 
@@ -87,7 +88,7 @@ export const fetchOfficialTime = async (): Promise<Date> => {
             return new Date(data.datetime);
         }
     } catch (_error) {
-        console.warn('Falha ao buscar hora oficial, usando hora local.');
+        logger.warn('Falha ao buscar hora oficial, usando hora local.');
     }
     return new Date();
 };

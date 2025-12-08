@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
     MapPin,
     Star,
@@ -168,13 +169,12 @@ const AvailabilityCalendar = () => {
                             key={idx}
                             className={`
                         aspect-square flex items-center justify-center rounded-xl text-sm font-semibold relative transition-all duration-300
-                        ${
-                            isOccupied
-                                ? 'bg-gradient-to-br from-red-100 to-rose-100 text-red-500 cursor-not-allowed shadow-sm'
-                                : isPast
-                                  ? 'text-gray-300 cursor-not-allowed'
-                                  : 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 hover:from-emerald-100 hover:to-teal-100 cursor-pointer hover:scale-110 hover:shadow-lg font-bold'
-                        } 
+                        ${isOccupied
+                                    ? 'bg-gradient-to-br from-red-100 to-rose-100 text-red-500 cursor-not-allowed shadow-sm'
+                                    : isPast
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 hover:from-emerald-100 hover:to-teal-100 cursor-pointer hover:scale-110 hover:shadow-lg font-bold'
+                                } 
                         ${isToday ? 'ring-2 ring-amber-400 ring-offset-2 shadow-xl' : ''}
                      `}
                             title={isOccupied ? 'Ocupado' : isPast ? 'Passado' : 'Disponível'}
@@ -292,7 +292,7 @@ const LandingLili: React.FC = () => {
         }
         script.text = JSON.stringify(schema);
 
-        return () => {};
+        return () => { };
     }, []);
 
     // Parallax effect
@@ -340,6 +340,46 @@ const LandingLili: React.FC = () => {
 
     return (
         <div className="font-sans bg-white text-gray-800 scroll-smooth overflow-x-hidden">
+            {/* SEO Meta Tags - Using Helmet for React */}
+            <Helmet>
+                <title>Flat da Lili - Guia Digital do Hóspede | Petrolina, PE</title>
+                <meta
+                    name="description"
+                    content="Guia interativo do Flat da Lili com senhas Wi-Fi, dicas de Petrolina, informações da estadia e atendimento 24h. Reserve agora!"
+                />
+                <meta
+                    name="keywords"
+                    content="flat Petrolina, hospedagem Petrolina, guia digital, Flat da Lili, aluguel temporada, hotel Petrolina"
+                />
+                <meta name="author" content="Flat da Lili" />
+                <meta name="robots" content="index, follow" />
+
+                {/* Open Graph / Facebook */}
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://guia-digital-flatlili.vercel.app/lili" />
+                <meta property="og:title" content="Flat da Lili - Guia Digital do Hóspede" />
+                <meta
+                    property="og:description"
+                    content="Sua estadia facilitada com guia digital interativo. Wi-Fi, dicas locais e atendimento completo."
+                />
+                <meta property="og:locale" content="pt_BR" />
+                <meta
+                    property="og:image"
+                    content="https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg"
+                />
+
+                {/* Twitter */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Flat da Lili - Guia Digital" />
+                <meta name="twitter:description" content="Guia interativo para uma estadia perfeita em Petrolina" />
+                <meta
+                    name="twitter:image"
+                    content="https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg"
+                />
+
+                {/* Canonical URL */}
+                <link rel="canonical" href="https://guia-digital-flatlili.vercel.app/lili" />
+            </Helmet>
             {/* HEADER / NAV - Premium Glassmorphism */}
             <header className="bg-white/80 backdrop-blur-xl shadow-lg sticky top-0 z-50 border-b border-amber-100/20">
                 <nav className="container mx-auto px-4 sm:px-6 lg:px-8">

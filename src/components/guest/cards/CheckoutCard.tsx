@@ -2,9 +2,11 @@ import React from 'react';
 import { LogOut, MessageCircle, Star, Plane, Bus, Check, MapPin, Maximize2 } from 'lucide-react';
 import { GuestConfig } from '../../../types';
 import HolographicCard from '../../ui/HolographicCard';
+import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
 import { GOOGLE_REVIEW_LINK } from '../../../constants';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import ReviewIncentiveModal from '../modals/ReviewIncentiveModal';
 
 interface CheckoutCardProps {
     config: GuestConfig;
@@ -22,6 +24,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     onOpenReview,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
+    const [showReviewModal, setShowReviewModal] = React.useState(false);
     // Hardcoded address state for checkout card as it's not passed down
     const addressCopied = false;
     const onCopyAddress = () => {
@@ -64,15 +67,33 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
             </div>
 
             {/* REVIEW BUTTON (New Position) */}
-            <button
+            <Button
                 onClick={() => {
                     onOpenReview();
-                    window.open(GOOGLE_REVIEW_LINK, '_blank');
+                    // Show incentive modal only for Lili property
+                    if (config.propertyId === 'lili') {
+                        setShowReviewModal(true);
+                    } else {
+                        // Direct link for other properties
+                        window.open(GOOGLE_REVIEW_LINK, '_blank');
+                    }
                 }}
-                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-yellow-500/20 active:scale-[0.98] mb-4 relative z-10"
+                fullWidth
+                leftIcon={<Star size={14} className="fill-white" />}
+                className="mb-4 relative z-10 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-[11px] uppercase tracking-wide shadow-lg shadow-yellow-500/20"
             >
-                <Star size={14} className="fill-white" /> Avaliar Estadia
-            </button>
+                Avaliar Estadia
+            </Button>
+
+            {/* Review Incentive Modal - Only for Lili */}
+            {config.propertyId === 'lili' && (
+                <ReviewIncentiveModal
+                    isOpen={showReviewModal}
+                    onClose={() => setShowReviewModal(false)}
+                    propertyName="Flat da Lili"
+                    guestName={config.guestName}
+                />
+            )}
 
             {/* TRANSPORTATION CARDS (Airport & Bus) */}
             <div className="grid grid-cols-2 gap-3 mb-3 relative z-10">
@@ -148,27 +169,30 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
             </HolographicCard>
 
             {/* CHECKLIST ACTION (Primary) */}
-            <button
+            <Button
                 onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     onOpenCheckout();
                 }}
-                className="w-full py-3.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white text-xs font-bold uppercase tracking-wide transition-all rounded-xl shadow-lg shadow-red-900/20 active:scale-[0.98] flex items-center justify-center gap-2 mb-3 relative z-10 border border-white/10"
+                fullWidth
+                leftIcon={<LogOut size={16} />}
+                className="mb-3 relative z-10 py-3.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-xs uppercase tracking-wide shadow-lg shadow-red-900/20 border border-white/10"
             >
-                <LogOut size={16} /> Fazer Check-out Agora
-            </button>
+                Fazer Check-out Agora
+            </Button>
 
             {/* SUPPORT BUTTON */}
-            <button
+            <Button
                 onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     onOpenSupport();
                 }}
-                className={`w-full py-3 ${theme.button.primary} text-white text-[11px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg active:scale-[0.98] relative z-10 mb-4`}
+                fullWidth
+                leftIcon={<MessageCircle size={16} />}
+                className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg relative z-10 mb-4`}
             >
-                <MessageCircle size={16} className="text-white" />{' '}
                 {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
-            </button>
+            </Button>
 
             {/* CHECKOUT TIME (Bottom) */}
             <div className="flex items-center justify-center gap-2 text-red-100/60 relative z-10 mt-auto">

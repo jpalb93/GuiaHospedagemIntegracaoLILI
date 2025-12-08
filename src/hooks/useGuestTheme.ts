@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { PropertyId } from '../types';
 
-interface ThemeColors {
+// Exported for reuse in components like AccessTicket
+export interface ThemeColors {
     background: string;
     backgroundGradient: string;
     border: string;

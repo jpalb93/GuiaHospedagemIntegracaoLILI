@@ -32,6 +32,11 @@ export interface PropertyConfig {
     address: string;
     hostPhone: string;
     googleReviewLink?: string;
+    companyInfo: {
+        name: string;
+        address: string;
+        logo: string;
+    };
 }
 
 export const PROPERTIES: Record<PropertyId, PropertyConfig> = {
@@ -77,6 +82,11 @@ Você ajuda com senha do wi-fi, dicas de restaurantes e dúvidas sobre o flat.
 Se não souber, peça para falar com a Lili (Anfitriã).
 `,
         },
+        companyInfo: {
+            name: 'Flat da Lili',
+            address: 'R. São José, 475 - Centro, Petrolina - PE, 56302-270',
+            logo: 'https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg',
+        },
     },
     integracao: {
         id: 'integracao',
@@ -117,6 +127,11 @@ Seu tom é profissional, direto e educado.
 Você ajuda com informações sobre o flat e a cidade.
 As duas chaves ficam no cofre na entrada do prédio.
 `,
+        },
+        companyInfo: {
+            name: 'Flats Integração',
+            address: 'Rua São José, 475 - Centro, Petrolina - PE, 56302-270',
+            logo: 'https://i.postimg.cc/3xRGwtvg/Whats-App-Image-2025-12-04-at-16-45-58.jpg',
         },
     },
 };

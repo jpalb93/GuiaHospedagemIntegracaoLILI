@@ -1,9 +1,11 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
+import type { PluginListenerHandle } from '@capacitor/core';
 
 import { AppMode, GuestConfig } from './types';
 import { Button, Input } from './components/ui';
+import { logger } from './utils/logger';
 // Importação otimizada de ícones - Lucide React já faz tree-shaking automaticamente
 import {
     CalendarX,
@@ -72,7 +74,7 @@ const App: React.FC = () => {
     }, [theme]);
     // --- CAPACITOR ANDROID BACK BUTTON ---
     useEffect(() => {
-        let backListener: any;
+        let backListener: PluginListenerHandle | undefined;
         const setupBack = async () => {
             try {
                 const isNative = Capacitor.isNativePlatform();
@@ -86,7 +88,7 @@ const App: React.FC = () => {
                     });
                 }
             } catch (e) {
-                console.warn('Capacitor App plugin error', e);
+                logger.warn('Capacitor App plugin error', e);
             }
         };
         setupBack();
@@ -245,7 +247,7 @@ const App: React.FC = () => {
                         }
                     } catch (error) {
                         // Erro de Rede (Temporário)
-                        console.warn('Erro de conexão. Entrando em modo de reconexão...', error);
+                        logger.warn('Erro de conexão. Entrando em modo de reconexão...', error);
                         setAppState({
                             mode: 'RECONNECTING',
                             config: { guestName: '', lockCode: '' },
@@ -295,7 +297,7 @@ const App: React.FC = () => {
                 }
             }
         } catch (e) {
-            console.warn('Erro ao parsear input manual', e);
+            logger.warn('Erro ao parsear input manual', e);
         }
 
         setAppState({ mode: 'LOADING', config: { guestName: '', lockCode: '' } }); // Feedback visual imediato

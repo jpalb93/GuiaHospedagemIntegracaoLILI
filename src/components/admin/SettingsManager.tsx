@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppConfig } from '../../types';
 import { Settings, Sparkles, Save, Check, Loader2, Download } from 'lucide-react';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../../constants';
+import Button from '../ui/Button';
 import {
     PropertySelector,
     HeroImagesSection,
@@ -168,30 +169,23 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
 
                 {/* BACKUP & SAVE BUTTONS */}
                 <div className="flex gap-3">
-                    <button
+                    <Button
                         onClick={handleExportBackup}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
-                        title="Exportar backup de configurações"
+                        variant="ghost"
+                        leftIcon={<Download size={18} />}
+                        className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
                     >
-                        <Download size={18} /> Backup
-                    </button>
-                    <button
+                        Backup
+                    </Button>
+                    <Button
                         onClick={handleSaveSettings}
                         disabled={isSaving}
-                        className={`flex-1 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all shadow-lg ${saveSuccess ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600'}`}
+                        fullWidth
+                        leftIcon={isSaving ? <Loader2 className="animate-spin" size={18} /> : saveSuccess ? <Check size={18} /> : <Save size={18} />}
+                        className={`${saveSuccess ? 'bg-green-500 hover:bg-green-600 outline-none ring-2 ring-green-500 ring-offset-2' : 'bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600'}`}
                     >
-                        {isSaving ? (
-                            <Loader2 className="animate-spin" size={18} />
-                        ) : saveSuccess ? (
-                            <>
-                                <Check size={18} /> Salvo!
-                            </>
-                        ) : (
-                            <>
-                                <Save size={18} /> Salvar Configurações
-                            </>
-                        )}
-                    </button>
+                        {isSaving ? null : saveSuccess ? 'Salvo!' : 'Salvar Configurações'}
+                    </Button>
                 </div>
             </div>
         </div>

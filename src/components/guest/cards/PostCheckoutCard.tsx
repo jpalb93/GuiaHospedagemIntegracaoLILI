@@ -1,6 +1,7 @@
 import React from 'react';
 import { MessageCircle, Star, Sparkles } from 'lucide-react';
 import { GuestConfig } from '../../../types';
+import Button from '../../ui/Button';
 import { GOOGLE_REVIEW_LINK } from '../../../constants';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
 
@@ -39,26 +40,30 @@ const PostCheckoutCard: React.FC<PostCheckoutCardProps> = ({
                     Volte sempre!
                 </p>
 
-                <button
+                <Button
                     onClick={() => {
                         if (navigator.vibrate) navigator.vibrate(50);
                         onOpenSupport();
                     }}
-                    className={`w-full py-3.5 ${theme.button.secondary} border border-white/10 text-white text-xs font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg active:scale-[0.98] mb-3`}
+                    fullWidth
+                    variant="secondary"
+                    leftIcon={<MessageCircle size={16} />}
+                    className="mb-3 py-3.5 border border-white/10 text-xs uppercase tracking-wide shadow-lg"
                 >
-                    <MessageCircle size={16} />{' '}
                     {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
-                </button>
+                </Button>
 
-                <button
+                <Button
                     onClick={() => {
                         onOpenReview();
                         window.open(GOOGLE_REVIEW_LINK, '_blank');
                     }}
-                    className="w-full py-3.5 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white text-xs font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-yellow-500/20 active:scale-[0.98]"
+                    fullWidth
+                    leftIcon={<Star size={16} className="fill-white" />}
+                    className="py-3.5 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-xs uppercase tracking-wide shadow-lg shadow-yellow-500/20"
                 >
-                    <Star size={16} className="fill-white" /> Avaliar Estadia
-                </button>
+                    Avaliar Estadia
+                </Button>
             </div>
         </div>
     );

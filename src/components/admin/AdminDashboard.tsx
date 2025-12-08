@@ -152,23 +152,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                 setActiveTab={(tab) =>
                     setActiveTab(
                         tab as
-                            | 'home'
-                            | 'create'
-                            | 'list'
-                            | 'calendar'
-                            | 'blocks'
-                            | 'places'
-                            | 'tips'
-                            | 'reviews'
-                            | 'suggestions'
-                            | 'settings'
+                        | 'home'
+                        | 'create'
+                        | 'list'
+                        | 'calendar'
+                        | 'blocks'
+                        | 'places'
+                        | 'tips'
+                        | 'reviews'
+                        | 'suggestions'
+                        | 'settings'
                     )
                 }
                 isMobileMenuOpen={isMobileMenuOpen}
                 setIsMobileMenuOpen={setIsMobileMenuOpen}
                 theme={theme}
                 toggleTheme={toggleTheme}
-                onLogout={auth.logoutCMS}
+                onLogout={auth.logout}
                 userEmail={auth.user.email || ''}
                 userPermission={auth.userPermission}
             />
@@ -184,11 +184,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                                     ? 'Admin Geral'
                                     : auth.userPermission?.allowedProperties.length === 1 &&
                                         auth.userPermission.allowedProperties[0] === 'lili'
-                                      ? 'Flat da Lili'
-                                      : auth.userPermission?.allowedProperties.length === 1 &&
-                                          auth.userPermission.allowedProperties[0] === 'integracao'
-                                        ? 'Flats Integração'
-                                        : 'Painel de Gestão'}
+                                        ? 'Flat da Lili'
+                                        : auth.userPermission?.allowedProperties.length === 1 &&
+                                            auth.userPermission.allowedProperties[0] === 'integracao'
+                                            ? 'Flats Integração'
+                                            : 'Painel de Gestão'}
                             </h1>
                             <div className="flex flex-col">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -231,16 +231,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                                 onNavigate={(tab) =>
                                     setActiveTab(
                                         tab as
-                                            | 'home'
-                                            | 'create'
-                                            | 'list'
-                                            | 'calendar'
-                                            | 'blocks'
-                                            | 'places'
-                                            | 'tips'
-                                            | 'reviews'
-                                            | 'suggestions'
-                                            | 'settings'
+                                        | 'home'
+                                        | 'create'
+                                        | 'list'
+                                        | 'calendar'
+                                        | 'blocks'
+                                        | 'places'
+                                        | 'tips'
+                                        | 'reviews'
+                                        | 'suggestions'
+                                        | 'settings'
                                     )
                                 }
                                 userPermission={auth.userPermission}
