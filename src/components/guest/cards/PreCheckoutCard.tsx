@@ -3,6 +3,7 @@ import { LogOut, MessageCircle, Wifi, MapPin } from 'lucide-react';
 import { GuestConfig } from '../../../types';
 import { triggerConfetti } from '../../../utils/confetti';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import { useLanguage } from '../../../hooks/useLanguage';
 import Button from '../../ui/Button';
 import AccessTicket from './AccessTicket';
 
@@ -30,6 +31,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
     onOpenCheckout,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
+    const { t } = useLanguage();
 
     return (
         <div
@@ -42,7 +44,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                 <h2
                     className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${theme.text.secondary}`}
                 >
-                    Acesso Rápido
+                    {t('Acesso Rápido', 'Quick Access', 'Acceso Rápido')}
                 </h2>
                 <div className="flex gap-2">
                     <button
@@ -79,7 +81,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                 <h3
                     className={`text-lg font-heading font-bold ${theme.text.primary} flex items-center justify-center gap-2`}
                 >
-                    Sua estadia está chegando ao fim 🥲
+                    {t('Sua estadia está chegando ao fim 🥲', 'Your stay is coming to an end 🥲', 'Su estancia está llegando a su fin 🥲')}
                 </h3>
             </div>
 
@@ -89,7 +91,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
             >
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-indigo-600 opacity-80" />
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
-                    Check-out
+                    {t('Check-out', 'Check-out', 'Check-out')}
                 </p>
                 <div className="flex flex-col items-center justify-center gap-1 mb-3">
                     <p
@@ -97,7 +99,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                     >
                         {config.checkOutTime || '11:00'}
                     </p>
-                    <p className="text-xs text-gray-400 font-medium">Amanhã</p>
+                    <p className="text-xs text-gray-400 font-medium">{t('Amanhã', 'Tomorrow', 'Mañana')}</p>
                 </div>
                 <Button
                     onClick={() => {
@@ -108,7 +110,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                     leftIcon={<LogOut size={16} />}
                     className="py-3 bg-blue-600 hover:bg-blue-500 text-xs uppercase tracking-wide shadow-lg shadow-blue-900/20"
                 >
-                    Ver Checklist de Saída
+                    {t('Ver Checklist de Saída', 'View Exit Checklist', 'Ver Lista de Salida')}
                 </Button>
             </div>
 
@@ -121,7 +123,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                             ? config.flatNumber || ''
                             : config.lockCode || ''
                     }
-                    label={config.propertyId === 'integracao' ? 'Unidade' : 'Senha'}
+                    label={config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha', 'Code', 'Código')}
                     theme={theme}
                     alwaysVisible={true}
                 />
@@ -136,7 +138,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
+                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
             </Button>
         </div>
     );

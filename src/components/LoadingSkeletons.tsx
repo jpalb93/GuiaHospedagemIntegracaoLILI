@@ -1,3 +1,5 @@
+import PlaceCardSkeleton from './skeletons/PlaceCardSkeleton';
+
 // Loading skeletons para diferentes rotas
 
 /**
@@ -17,27 +19,26 @@ export const LoadingScreen = () => (
  */
 export const GuestSkeleton = () => (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 animate-pulse relative overflow-hidden">
-        <div className="absolute inset-0 animate-shimmer z-10 pointer-events-none"></div>
         {/* Header Skeleton */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 mb-4">
+            <div className="flex justify-between items-center">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+            </div>
         </div>
 
-        {/* Hero Image Skeleton */}
-        <div className="h-64 bg-gray-300 dark:bg-gray-700"></div>
+        {/* Categories Pills Skeleton */}
+        <div className="px-4 mb-6 flex gap-3 overflow-x-hidden">
+            {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0"></div>
+            ))}
+        </div>
 
-        {/* Content Cards Skeleton */}
-        <div className="p-4 space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 space-y-3">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 space-y-3">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            </div>
+        {/* Content Cards Skeleton - List of PlaceCardSkeletons */}
+        <div className="px-4 space-y-4 pb-20">
+            {[1, 2, 3].map((i) => (
+                <PlaceCardSkeleton key={i} />
+            ))}
         </div>
     </div>
 );

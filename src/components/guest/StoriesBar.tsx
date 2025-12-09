@@ -2,6 +2,7 @@ import React from 'react';
 import { CalendarHeart, Sparkles, Lightbulb } from 'lucide-react';
 import { PlaceRecommendation } from '../../types';
 import { analytics } from '../../utils/analytics';
+import { hapticFeedback } from '../../utils/haptics';
 
 interface StoriesBarProps {
     activeEvents: PlaceRecommendation[];
@@ -9,18 +10,23 @@ interface StoriesBarProps {
     showTips?: boolean;
 }
 
+import { useLanguage } from '../../hooks/useLanguage';
+
 const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, showTips = true }) => {
+    const { t } = useLanguage();
+
     return (
         // AJUSTE FINO: -mt-20 para subir bem a barra (estilo App Nativo), mb-1 para colar no conteúdo
         <div className="relative z-30 -mt-20 w-full mb-1">
             {/* Wrapper centralizado */}
             <div className="flex justify-center px-4">
-                {/* CÁPSULA / DOCK FLUTUANTE - Dark Glass Style */}
-                <div className="flex items-center gap-6 p-3 px-6 bg-black/60 dark:bg-black/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 rounded-[2rem] overflow-x-auto no-scrollbar max-w-full">
+                {/* CÁPSULA / DOCK FLUTUANTE - Dark Glass Style with Scroll Snap */}
+                <div className="stories-scroll-container flex items-center gap-6 p-3 px-6 bg-black/60 dark:bg-black/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 rounded-[2rem] overflow-x-auto no-scrollbar max-w-full">
                     {/* --- AGENDA --- */}
                     {activeEvents.length > 0 && (
                         <button
                             onClick={() => {
+                                hapticFeedback('light');
                                 analytics.trackStoryViewed({
                                     type: 'agenda',
                                     hasActiveEvents: activeEvents.length > 0,
@@ -52,7 +58,7 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
 
                             {/* Texto */}
                             <span className="text-[10px] font-bold text-white/90 tracking-wide group-hover:text-pink-400 transition-colors drop-shadow-sm">
-                                Agenda
+                                {t('Agenda', 'Agenda', 'Agenda')}
                             </span>
                         </button>
                     )}
@@ -60,6 +66,7 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
                     {/* --- CURIOSIDADES --- */}
                     <button
                         onClick={() => {
+                            hapticFeedback('light');
                             analytics.trackStoryViewed({ type: 'curiosities' });
                             onOpenStory('curiosities');
                         }}
@@ -78,7 +85,7 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
                             </div>
                         </div>
                         <span className="text-[10px] font-bold text-white/90 tracking-wide group-hover:text-indigo-400 transition-colors drop-shadow-sm">
-                            Curiosidades
+                            {t('Curiosidades', 'Curiosities', 'Curiosidades')}
                         </span>
                     </button>
 
@@ -86,6 +93,7 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
                     {showTips && (
                         <button
                             onClick={() => {
+                                hapticFeedback('light');
                                 analytics.trackStoryViewed({ type: 'tips' });
                                 onOpenStory('tips');
                             }}
@@ -103,8 +111,9 @@ const StoriesBar: React.FC<StoriesBarProps> = ({ activeEvents, onOpenStory, show
                                     />
                                 </div>
                             </div>
+                            {/* Texto */}
                             <span className="text-[10px] font-bold text-white/90 tracking-wide group-hover:text-amber-400 transition-colors drop-shadow-sm">
-                                Dicas do Flat
+                                {t('Dicas do Flat', 'Flat Tips', 'Consejos del Flat')}
                             </span>
                         </button>
                     )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coffee, Utensils, Sunset, Moon, LogOut, CalendarHeart, CalendarClock } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 import { fetchOfficialTime } from '../constants';
 import { SmartSuggestionsConfig, TimeOfDaySuggestion, PlaceRecommendation } from '../types';
 
@@ -14,65 +15,7 @@ const SmartSuggestionSkeleton = () => (
     </div>
 );
 
-// --- CONTEÚDO ESTÁTICO ---
-const DEFAULT_TIME_CONTENT = {
-    morning: {
-        icon: Coffee,
-        label: 'Bom dia',
-        title: 'Café da Manhã',
-        desc: 'Que tal um bolo de rolo na Pão Nosso?',
-        color: 'from-orange-400 to-amber-400', // Gradiente da Borda
-        textColor: 'text-orange-900 dark:text-orange-100',
-        iconBg: 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300',
-    },
-    lunch: {
-        icon: Utensils,
-        label: 'Almoço',
-        title: 'Vai um Bodinho?',
-        desc: 'O Bodódromo é parada obrigatória!',
-        color: 'from-red-400 to-orange-400',
-        textColor: 'text-red-900 dark:text-red-100',
-        iconBg: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300',
-    },
-    sunset: {
-        icon: Sunset,
-        label: 'Fim de Tarde',
-        title: 'Pôr do Sol na Orla',
-        desc: 'Corra para a Orla e veja um pôr do sol deslumbrante!',
-        color: 'from-indigo-400 to-purple-400',
-        textColor: 'text-indigo-900 dark:text-indigo-100',
-        iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300',
-    },
-    night: {
-        icon: Moon,
-        label: 'Boa Noite',
-        title: 'Jantar ou Delivery?',
-        desc: 'O Villa Romana tem ótimas pizzas!',
-        color: 'from-slate-400 to-blue-400',
-        textColor: 'text-slate-900 dark:text-slate-100',
-        iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
-    },
-};
 
-const CHECKOUT_CONTENT = {
-    icon: LogOut,
-    label: 'Despedida',
-    title: 'Hoje é dia de partir',
-    desc: 'Poxa, hoje é dia de despedida. A melhor dica: VOLTE SEMPRE!',
-    color: 'from-blue-400 to-cyan-400',
-    textColor: 'text-blue-900 dark:text-blue-100',
-    iconBg: 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300',
-};
-
-const PRE_CHECKOUT_CONTENT = {
-    icon: CalendarClock,
-    label: 'Última Noite',
-    title: 'Amanhã é dia de partir 😢',
-    desc: 'Aproveite as últimas horas! Se for sair de madrugada, veja as instruções.',
-    color: 'from-indigo-400 to-blue-400',
-    textColor: 'text-indigo-900 dark:text-indigo-100',
-    iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300',
-};
 
 interface SmartSuggestionProps {
     stayStage: 'pre_checkin' | 'checkin' | 'middle' | 'pre_checkout' | 'checkout' | 'post_checkout';
@@ -91,7 +34,68 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
     places = [],
     activeEvents = [],
 }) => {
+    const { t } = useLanguage();
     const [simpleTemp, setSimpleTemp] = useState<number | null>(null);
+
+    // --- CONTEÚDO ESTÁTICO (Agora com Tradução) ---
+    const DEFAULT_TIME_CONTENT = {
+        morning: {
+            icon: Coffee,
+            label: t('Bom dia', 'Good morning', 'Buenos días'),
+            title: t('Café da Manhã', 'Breakfast', 'Desayuno'),
+            desc: t('Que tal um bolo de rolo na Pão Nosso?', 'How about a roll cake at Pão Nosso?', '¿Qué tal un pastel de rollo en Pão Nosso?'),
+            color: 'from-orange-400 to-amber-400',
+            textColor: 'text-orange-900 dark:text-orange-100',
+            iconBg: 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300',
+        },
+        lunch: {
+            icon: Utensils,
+            label: t('Almoço', 'Lunch', 'Almuerzo'),
+            title: t('Vai um Bodinho?', 'Want some Goat Meat?', '¿Quieres carne de chivo?'),
+            desc: t('O Bodódromo é parada obrigatória!', 'The Bodódromo is a mandatory stop!', '¡El Bodódromo es una parada obligatoria!'),
+            color: 'from-red-400 to-orange-400',
+            textColor: 'text-red-900 dark:text-red-100',
+            iconBg: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300',
+        },
+        sunset: {
+            icon: Sunset,
+            label: t('Fim de Tarde', 'Late Afternoon', 'Atardecer'),
+            title: t('Pôr do Sol na Orla', 'Sunset at the Waterfront', 'Puesta de Sol en la Orilla'),
+            desc: t('Corra para a Orla e veja um pôr do sol deslumbrante!', 'Run to the Waterfront and see a stunning sunset!', '¡Corre a la Orilla y ve una puesta de sol impresionante!'),
+            color: 'from-indigo-400 to-purple-400',
+            textColor: 'text-indigo-900 dark:text-indigo-100',
+            iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300',
+        },
+        night: {
+            icon: Moon,
+            label: t('Boa Noite', 'Good Night', 'Buenas Noches'),
+            title: t('Jantar ou Delivery?', 'Dinner or Delivery?', '¿Cena o Delivery?'),
+            desc: t('O Villa Romana tem ótimas pizzas!', 'Villa Romana has great pizzas!', '¡Villa Romana tiene excelentes pizzas!'),
+            color: 'from-slate-400 to-blue-400',
+            textColor: 'text-slate-900 dark:text-slate-100',
+            iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+        },
+    };
+
+    const CHECKOUT_CONTENT = {
+        icon: LogOut,
+        label: t('Despedida', 'Farewell', 'Despedida'),
+        title: t('Hoje é dia de partir', 'Today is departure day', 'Hoy es día de partir'),
+        desc: t('Poxa, hoje é dia de despedida. A melhor dica: VOLTE SEMPRE!', 'Oh, today is goodbye. Best tip: COME BACK SOON!', 'Oh, hoy es despedida. Mejor consejo: ¡VUELVE PRONTO!'),
+        color: 'from-blue-400 to-cyan-400',
+        textColor: 'text-blue-900 dark:text-blue-100',
+        iconBg: 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300',
+    };
+
+    const PRE_CHECKOUT_CONTENT = {
+        icon: CalendarClock,
+        label: t('Última Noite', 'Last Night', 'Última Noche'),
+        title: t('Amanhã é dia de partir 😢', 'Tomorrow is departure day 😢', 'Mañana es día de partir 😢'),
+        desc: t('Aproveite as últimas horas! Se for sair de madrugada, veja as instruções.', 'Enjoy the last hours! If leaving at dawn, see instructions.', '¡Disfruta las últimas horas! Si sales de madrugada, mira instrucciones.'),
+        color: 'from-indigo-400 to-blue-400',
+        textColor: 'text-indigo-900 dark:text-indigo-100',
+        iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300',
+    };
     const [randomSuggestion, setRandomSuggestion] = useState<TimeOfDaySuggestion | null>(null);
     const [dynamicPlace, setDynamicPlace] = useState<PlaceRecommendation | null>(null);
     const [isEventToday, setIsEventToday] = useState<boolean>(false);
@@ -277,8 +281,8 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
         activeContent.title = randomSuggestion.title;
         activeContent.desc = randomSuggestion.description;
     } else if (dynamicPlace) {
-        activeContent.title = `Que tal o ${dynamicPlace.name}?`;
-        activeContent.desc = dynamicPlace.description;
+        activeContent.title = `${t('Que tal o', 'How about', '¿Qué tal el')} ${t(dynamicPlace.name, dynamicPlace.name_en, dynamicPlace.name_es)}?`;
+        activeContent.desc = t(dynamicPlace.description, dynamicPlace.description_en, dynamicPlace.description_es);
     }
 
     if (stayStage === 'checkout' || stayStage === 'post_checkout') activeContent = CHECKOUT_CONTENT;
@@ -287,9 +291,9 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
     if (stayStage === 'pre_checkin') {
         activeContent = {
             icon: CalendarHeart,
-            label: 'Contagem Regressiva',
-            title: 'Prepare as malas! 🧳',
-            desc: `Petrolina te espera! O clima hoje está na casa dos ${simpleTemp || 30}°C.`,
+            label: t('Contagem Regressiva', 'Countdown', 'Cuenta Regresiva'),
+            title: t('Prepare as malas! 🧳', 'Pack your bags! 🧳', '¡Empaca tus maletas! 🧳'),
+            desc: `${t('Petrolina te espera!', 'Petrolina awaits you!', '¡Petrolina te espera!')} ${t('O clima hoje está na casa dos', 'Today\'s weather is around', 'El clima hoy está alrededor de')} ${simpleTemp || 30}°C.`,
             color: 'from-fuchsia-400 to-purple-400',
             textColor: 'text-purple-900 dark:text-purple-100',
             iconBg: 'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300',
@@ -307,7 +311,7 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
                 {/* Badge HOJE para eventos */}
                 {isEventToday && (
                     <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-extrabold px-2 py-1 rounded-full animate-pulse uppercase tracking-wider shadow-lg">
-                        HOJE
+                        {t('HOJE', 'TODAY', 'HOY')}
                     </div>
                 )}
                 <div

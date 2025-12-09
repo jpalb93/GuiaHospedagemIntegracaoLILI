@@ -5,12 +5,13 @@ import Button from '../ui/Button';
 import ConfirmModal from './ConfirmModal';
 import { useToast } from '../../contexts/ToastContext';
 import { TipItemCard, TipFormModal, CuriositiesSection } from './tips';
+import { translateBatch } from '../../services/translation';
 
 interface TipsManagerProps {
     tips: {
         data: Tip[];
         loading: boolean;
-        add: (tip: Tip) => Promise<boolean>;
+        add: (tip: Tip) => Promise<string | null>;
         update: (id: string, tip: Partial<Tip>) => Promise<boolean>;
         delete: (id: string) => Promise<boolean>;
         reorder: (tips: Tip[]) => Promise<boolean>;
@@ -96,14 +97,32 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
         }
 
         setIsSavingTip(true);
-        const success = editingId
-            ? await tips.update(editingId, formData)
-            : await tips.add(formData as Tip);
+        let resultId: string | null | boolean = null;
+
+        if (editingId) {
+            resultId = await tips.update(editingId, formData);
+        } else {
+            resultId = await tips.add(formData as Tip);
+        }
 
         setIsSavingTip(false);
-        if (success) {
+
+        if (resultId) {
             showSuccess(editingId ? 'Dica atualizada!' : 'Dica criada!');
             setIsModalOpen(false);
+
+            // AUTO-TRANSLATE (Option 1)
+            const tipId = editingId || (typeof resultId === 'string' ? resultId : null);
+            if (tipId) {
+                // Construct the full tip object for translation
+                const tipToTranslate: Tip = {
+                    ...formData as Tip,
+                    id: tipId
+                };
+                // Trigger silent translation
+                handleTranslateTips([tipToTranslate], true);
+            }
+
         } else {
             showError('Erro ao salvar dica.');
         }
@@ -180,6 +199,131 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
         });
     };
 
+
+    // --- TRANSLATION LOGIC (TIPS) ---
+    const handleTranslateTips = async (itemsToTranslate?: Tip[], silent = false) => {
+        const tipsToCheck = itemsToTranslate || tips.data;
+
+        const untranslated = tipsToCheck.filter(
+            (t) => !t.title_en || !t.content_en || !t.title_es
+        );
+
+        if (untranslated.length === 0) {
+            if (!silent) showSuccess('Todas as dicas já estão traduzidas!');
+            return;
+        }
+
+        if (!silent && !confirm(`Traduzir ${untranslated.length} dicas pendentes?`)) return;
+
+        setIsSavingTip(true);
+        try {
+            const results = await translateBatch(
+                untranslated.map((t) => ({
+                    ...t, // Pass all props so translateBatch checks work
+                    id: t.id!,
+                    // No need to stringify. translateBatch picks keys from 'fields' config.
+                })),
+                [
+                    { source: 'title', targetEn: 'title_en', targetEs: 'title_es' },
+                    { source: 'subtitle', targetEn: 'subtitle_en', targetEs: 'subtitle_es' },
+                    { source: 'content', targetEn: 'content_en', targetEs: 'content_es' }
+                ],
+                'gemini-2.5-flash-lite'
+            );
+
+            for (const res of results) {
+                if (res.id) {
+                    // O resultado já é o objeto de atualização (Partial<Tip>)
+                    await tips.update(res.id, res);
+                }
+            }
+            showSuccess('Dicas traduzidas!');
+            tips.refresh();
+        } catch (err) {
+            console.error(err);
+            showError('Erro na tradução automática. Verifique sua conexão.');
+        } finally {
+            setIsSavingTip(false);
+        }
+    };
+
+    // --- TRANSLATION LOGIC (CURIOSITIES) ---
+    const handleTranslateCuriosities = async (itemsToScan?: CityCuriosity[], silent = false) => {
+        // Use provided list OR current state
+        const listToCheck = itemsToScan || curiosities.data;
+
+        const untranslated = listToCheck.filter(
+            (c) => !c.text_en || !c.text_es
+        );
+
+        if (untranslated.length === 0) {
+            if (!silent) showSuccess('Curiosidades já traduzidas!');
+            return;
+        }
+
+        if (!silent && !confirm(`Traduzir ${untranslated.length} curiosidades pendentes?`)) return;
+
+        setIsSavingCuriosities(true);
+        try {
+            // Curiosities usually just have 'text'.
+            const results = await translateBatch(
+                untranslated.map((c) => ({
+                    id: c.id || `temp-${Date.now()}-${Math.random()}`, // Ensure ID exists for mapping
+                    text: c.text,
+                    type: 'curiosity',
+                    field: 'text'
+                })),
+                [
+                    { source: 'text', targetEn: 'text_en', targetEs: 'text_es' }
+                ],
+                'gemini-2.5-flash-lite'
+            );
+
+            // Batch save for curiosities (usually we save the whole array)
+            // But here we might update items in place and save the whole array.
+            // IMPORTANT: If itemsToScan is provided (e.g. from CuriositiesSection after add), use it!
+            // Otherwise we risk using stale state from curiosities.data and overwriting the new item.
+            const newCuriosities = itemsToScan ? [...itemsToScan] : [...curiosities.data];
+            let changed = false;
+            let matchCount = 0;
+
+            for (const res of results) {
+                // Tenta encontrar pelo ID (que garantimos enviar)
+                let idx = newCuriosities.findIndex(c => c.id === res.id);
+
+                // Fallback: Tenta pelo texto se o ID falhar (improvável mas seguro)
+                if (idx === -1 && res.text) {
+                    idx = newCuriosities.findIndex(c => c.text === res.text);
+                }
+
+                if (idx !== -1) {
+                    newCuriosities[idx] = {
+                        ...newCuriosities[idx],
+                        text_en: res.text_en || newCuriosities[idx].text_en,
+                        text_es: res.text_es || newCuriosities[idx].text_es
+                    };
+                    changed = true;
+                    matchCount++;
+                }
+            }
+
+            if (changed) {
+                await curiosities.save(newCuriosities);
+                if (!silent) showSuccess(`Sucesso! ${matchCount} curiosidades traduzidas.`);
+            } else {
+                if (!silent) showWarning('Nenhuma curiosidade foi atualizada. Verifique os logs.');
+            }
+
+        } catch (err) {
+            console.error(err);
+            // Always show error for translation failures, even in silent mode, 
+            // otherwise user thinks it worked but it didn't.
+            showError('Erro na tradução automática. Tente novamente.');
+        } finally {
+            setIsSavingCuriosities(false);
+        }
+    };
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* --- LEFT COLUMN: TIPS --- */}
@@ -210,7 +354,18 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                             >
                                 Backup
                             </Button>
+
                         )}
+                        <Button
+                            onClick={() => handleTranslateTips()}
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<Sparkles size={16} />}
+                            className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/40"
+                            disabled={isSavingTip}
+                        >
+                            {isSavingTip ? '...' : 'Traduzir'}
+                        </Button>
                         <Button
                             onClick={() => handleOpenModal()}
                             leftIcon={<Plus size={18} />}
@@ -274,8 +429,9 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 setEditingIndex={setEditingCuriosityIndex}
                 isSaving={isSavingCuriosities}
                 setIsSaving={setIsSavingCuriosities}
-                onDelete={handleDeleteCuriosity}
                 showToast={showToast}
+                onTranslate={handleTranslateCuriosities}
+                onDelete={handleDeleteCuriosity}
             />
 
             {/* --- MODAL --- */}
@@ -297,7 +453,7 @@ const TipsManager: React.FC<TipsManagerProps> = ({ tips, curiosities }) => {
                 message={confirmModal.message}
                 isDestructive={confirmModal.isDestructive}
             />
-        </div>
+        </div >
     );
 };
 

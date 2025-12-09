@@ -2,6 +2,7 @@ import React from 'react';
 import { Ambulance, Flame, Shield, Phone } from 'lucide-react';
 import { PlaceRecommendation } from '../../../../types';
 import ExpandablePlaceList from '../ExpandablePlaceList';
+import { useLanguage } from '../../../../hooks/useLanguage';
 
 interface EmergencySheetProps {
     emergencyPlaces: PlaceRecommendation[];
@@ -12,34 +13,36 @@ interface EmergencySheetProps {
  * Contém números de emergência e lista de hospitais/clínicas
  */
 const EmergencySheet: React.FC<EmergencySheetProps> = ({ emergencyPlaces }) => {
+    const { t } = useLanguage();
+
     return (
         <>
             {/* Grid de Números de Emergência */}
             <div className="grid grid-cols-2 gap-3 mb-5">
                 <EmergencyButton
                     number="192"
-                    label="SAMU"
+                    label={t('SAMU', 'Ambulance', 'Ambulancia')}
                     icon={Ambulance}
                     colorClass="bg-red-500 hover:bg-red-600"
                     shadowClass="shadow-red-500/30"
                 />
                 <EmergencyButton
                     number="193"
-                    label="Bombeiros"
+                    label={t('Bombeiros', 'Firefighters', 'Bomberos')}
                     icon={Flame}
                     colorClass="bg-orange-600 hover:bg-orange-700"
                     shadowClass="shadow-orange-600/30"
                 />
                 <EmergencyButton
                     number="190"
-                    label="Polícia"
+                    label={t('Polícia', 'Police', 'Policía')}
                     icon={Shield}
                     colorClass="bg-blue-800 hover:bg-blue-900"
                     shadowClass="shadow-blue-800/30"
                 />
                 <EmergencyButton
                     number="188"
-                    label="CVV (Vida)"
+                    label={t('CVV (Vida)', 'Life Support', 'Apoyo Vital')}
                     icon={Phone}
                     colorClass="bg-teal-600 hover:bg-teal-700"
                     shadowClass="shadow-teal-600/30"
@@ -48,7 +51,7 @@ const EmergencySheet: React.FC<EmergencySheetProps> = ({ emergencyPlaces }) => {
 
             {/* Hospitais e Clínicas */}
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 font-bold font-heading uppercase tracking-wider ml-1">
-                Hospitais e Clínicas
+                {t('Hospitais e Clínicas', 'Hospitals & Clinics', 'Hospitales y Clínicas')}
             </p>
             <ExpandablePlaceList places={emergencyPlaces} />
         </>

@@ -4,6 +4,7 @@ import { GuestConfig } from '../../../types';
 import Button from '../../ui/Button';
 import { GOOGLE_REVIEW_LINK } from '../../../constants';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 interface PostCheckoutCardProps {
     config: GuestConfig;
@@ -17,6 +18,7 @@ const PostCheckoutCard: React.FC<PostCheckoutCardProps> = ({
     onOpenReview,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
+    const { t } = useLanguage();
 
     return (
         <div
@@ -30,14 +32,14 @@ const PostCheckoutCard: React.FC<PostCheckoutCardProps> = ({
                 </div>
 
                 <h3 className={`text-2xl font-heading font-bold ${theme.text.primary} mb-2`}>
-                    Obrigado! 👋
+                    {t('Obrigado! 👋', 'Thank You! 👋', '¡Gracias! 👋')}
                 </h3>
                 <p
                     className={`text-sm ${theme.text.secondary} font-medium leading-relaxed max-w-xs mx-auto mb-6`}
                 >
-                    Esperamos que tenha gostado de Petrolina.
+                    {t('Esperamos que tenha gostado de Petrolina.', 'We hope you enjoyed Petrolina.', 'Esperamos que hayas disfrutado de Petrolina.')}
                     <br />
-                    Volte sempre!
+                    {t('Volte sempre!', 'Come back soon!', '¡Vuelve pronto!')}
                 </p>
 
                 <Button
@@ -50,7 +52,7 @@ const PostCheckoutCard: React.FC<PostCheckoutCardProps> = ({
                     leftIcon={<MessageCircle size={16} />}
                     className="mb-3 py-3.5 border border-white/10 text-xs uppercase tracking-wide shadow-lg"
                 >
-                    {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
+                    {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
                 </Button>
 
                 <Button
@@ -62,7 +64,7 @@ const PostCheckoutCard: React.FC<PostCheckoutCardProps> = ({
                     leftIcon={<Star size={16} className="fill-white" />}
                     className="py-3.5 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-xs uppercase tracking-wide shadow-lg shadow-yellow-500/20"
                 >
-                    Avaliar Estadia
+                    {t('Avaliar Estadia', 'Rate Stay', 'Calificar Estancia')}
                 </Button>
             </div>
         </div>

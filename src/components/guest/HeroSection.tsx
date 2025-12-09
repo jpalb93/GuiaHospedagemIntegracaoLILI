@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 import OptimizedImage from '../OptimizedImage';
 import WeatherWidget from '../WeatherWidget';
 import { GuestConfig } from '../../types';
@@ -7,13 +8,14 @@ import { DEFAULT_SLIDES } from '../../constants';
 // import { PROPERTIES } from '../../config/properties';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 import LogoLili from '../LogoLili';
+import { hapticFeedback } from '../../utils/haptics';
 
 interface HeroSectionProps {
     config: GuestConfig;
     heroSlides?: string[];
     theme?: 'light' | 'dark';
     toggleTheme?: () => void;
-    currentLang: 'pt' | 'en';
+    currentLang: 'pt' | 'en' | 'es';
     toggleLanguage: () => void;
 }
 
@@ -25,6 +27,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     currentLang,
     toggleLanguage,
 }) => {
+    const { t } = useLanguage();
     const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
 
     useEffect(() => {
@@ -58,9 +61,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         const brasiliaTime = new Date(utc - 3 * 60 * 60 * 1000);
         const hour = brasiliaTime.getHours();
 
-        if (hour >= 5 && hour < 12) return 'Bom dia';
-        if (hour >= 12 && hour < 18) return 'Boa tarde';
-        return 'Boa noite';
+        if (hour >= 5 && hour < 12) return t('Bom dia', 'Good morning', 'Buenos días');
+        if (hour >= 12 && hour < 18) return t('Boa tarde', 'Good afternoon', 'Buenas tardes');
+        return t('Boa noite', 'Good evening', 'Buenas noches');
     };
 
     const greeting = getGreeting();
@@ -71,11 +74,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="absolute top-5 left-5 z-40 flex flex-col gap-2 animate-fadeIn">
                 <div className="flex gap-2">
                     <button
-                        onClick={toggleLanguage}
-                        className="px-2.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 dark:bg-black/60 dark:hover:bg-black/80 backdrop-blur-md text-white border border-white/20 shadow-black/10 transition-all flex items-center gap-1 justify-center font-bold text-[10px]"
+                        onClick={() => {
+                            hapticFeedback('light');
+                            toggleLanguage();
+                        }}
+                        className="px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 dark:bg-black/60 dark:hover:bg-black/80 backdrop-blur-md text-white border border-white/20 shadow-black/10 transition-all flex items-center gap-1 justify-center font-bold text-sm"
                     >
-                        <Globe size={12} />
-                        {currentLang === 'pt' ? 'EN' : 'PT'}
+                        {currentLang === 'pt' ? '🇺🇸' : currentLang === 'en' ? '🇪🇸' : '🇧🇷'}
                     </button>
 
                     {toggleTheme && (
@@ -145,7 +150,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                                     </div>
                                     <div className="h-8 w-px bg-white/30 rounded-full mx-1"></div>
                                     <p className="text-white/90 font-light tracking-[0.2em] uppercase text-xs font-heading drop-shadow-sm">
-                                        GUIA INTERATIVO
+                                        {t('GUIA INTERATIVO', 'INTERACTIVE GUIDE', 'GUÍA INTERACTIVA')}
                                     </p>
                                 </div>
                                 <h1 className="text-2xl sm:text-3xl font-heading font-bold mb-2 leading-tight text-white drop-shadow-sm mt-2">
@@ -172,7 +177,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
                                     {/* Label */}
                                     <p className="text-white/90 font-light tracking-[0.2em] uppercase text-xs font-heading drop-shadow-sm">
-                                        GUIA INTERATIVO
+                                        {t('GUIA INTERATIVO', 'INTERACTIVE GUIDE', 'GUÍA INTERACTIVA')}
                                     </p>
                                 </div>
 
@@ -197,7 +202,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                             <p
                                 className={`text-white/90 text-sm sm:text-lg font-medium font-sans max-w-lg leading-relaxed drop-shadow-sm tracking-tight ${config.propertyId !== 'integracao' ? 'mx-auto text-center' : ''}`}
                             >
-                                Sua casa longe de casa no Vale do São Francisco.
+                                {t('Sua casa longe de casa no Vale do São Francisco.', 'Your home away from home in the San Francisco Valley.', 'Tu hogar lejos de casa en el Valle del São Francisco.')}
                             </p>
                         )}
                     </div>

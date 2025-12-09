@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import {
     PlaceRecommendation,
@@ -90,29 +90,29 @@ export const useGuestData = (config: GuestConfig) => {
         };
     }, [config.guestName, config.propertyId]);
 
-    const dismissGlobal = (text: string) => {
+    const dismissGlobal = useCallback((text: string) => {
         setDismissedGlobalText(text);
         localStorage.setItem('flat_lili_dismissed_global', text);
-    };
+    }, []);
 
-    const dismissPersonal = (text: string) => {
+    const dismissPersonal = useCallback((text: string) => {
         setDismissedPersonalText(text);
         localStorage.setItem(`flat_lili_dismissed_personal_${config.guestName}`, text);
-    };
+    }, [config.guestName]);
 
-    const dismissAlert = (type: 'global' | 'personal', text: string) => {
+    const dismissAlert = useCallback((type: 'global' | 'personal', text: string) => {
         if (type === 'global') dismissGlobal(text);
         else dismissPersonal(text);
-    };
+    }, [dismissGlobal, dismissPersonal]);
 
-    const mergePlaces = (staticList: PlaceRecommendation[], category: string) => {
+    const mergePlaces = useCallback((staticList: PlaceRecommendation[], category: string) => {
         const dynamic = dynamicPlaces.filter((p) => p.category === category);
         return [...dynamic, ...staticList];
-    };
+    }, [dynamicPlaces]);
 
-    const hasContent = (list: PlaceRecommendation[], category: string) => {
+    const hasContent = useCallback((list: PlaceRecommendation[], category: string) => {
         return list.length > 0 || dynamicPlaces.some((p) => p.category === category);
-    };
+    }, [dynamicPlaces]);
 
     return {
         dynamicPlaces,

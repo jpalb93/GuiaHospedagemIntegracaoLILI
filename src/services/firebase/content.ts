@@ -41,8 +41,9 @@ export const getTips = async (): Promise<Tip[]> => {
     }
 };
 
-export const addTip = async (tip: Tip) => {
-    await addDoc(collection(db, 'tips'), cleanData(tip));
+export const addTip = async (tip: Tip): Promise<string> => {
+    const docRef = await addDoc(collection(db, 'tips'), cleanData(tip));
+    return docRef.id;
 };
 
 export const updateTip = async (id: string, tip: Partial<Tip>) => {
@@ -68,16 +69,37 @@ export const saveTipsOrder = async (tips: Tip[]) => {
 // --- CURIOSIDADES (CURIOSITIES) ---
 export const getCuriosities = async (): Promise<CityCuriosity[]> => {
     try {
-        const docSnap = await getDoc(doc(db, 'app_config', 'curiosities'));
+        const docRef = doc(db, 'app_config', 'curiosities');
+        const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
-            const items = docSnap.data()?.items || [];
-            // Migração segura: Se for string, converte para objeto
-            return items.map((item: string | CityCuriosity) => {
+            let items: CityCuriosity[] = docSnap.data()?.items || [];
+            let needsUpdate = false;
+
+            // Normalize and ensure IDs
+            items = items.map((item: string | CityCuriosity) => {
+                let normItem: CityCuriosity;
                 if (typeof item === 'string') {
-                    return { text: item, visible: true };
+                    normItem = { text: item, visible: true };
+                } else {
+                    normItem = { ...item };
                 }
-                return item;
+
+                // Generates ID if missing
+                if (!normItem.id) {
+                    normItem.id = crypto.randomUUID ? crypto.randomUUID() : `curiosity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    needsUpdate = true;
+                }
+                return normItem;
             });
+
+            // Self-heal: Persist generated IDs so they remain stable
+            if (needsUpdate) {
+                logger.log('Self-healing: Assigning IDs to Curiosities...');
+                await updateDoc(docRef, { items });
+            }
+
+            return items;
         }
         return [];
     } catch (_error) {
@@ -86,7 +108,10 @@ export const getCuriosities = async (): Promise<CityCuriosity[]> => {
 };
 
 export const saveCuriosities = async (items: CityCuriosity[]) => {
-    await setDoc(doc(db, 'app_config', 'curiosities'), { items });
+    // Sanitize data: Firestore throws "Unsupported field value: undefined"
+    // We must ensure no undefined fields exist in the array objects.
+    const cleanItems = items.map(item => cleanData(item));
+    await setDoc(doc(db, 'app_config', 'curiosities'), { items: cleanItems });
 };
 
 // --- AVALIAÇÕES (REVIEWS) ---

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Key, Bell, Eye, Lock } from 'lucide-react';
 import { PropertyId } from '../../../types';
 import { ThemeColors } from '../../../hooks/useGuestTheme';
 import { triggerConfetti } from '../../../utils/confetti';
+import { useLongPress } from '../../../hooks/useLongPress';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 interface AccessTicketProps {
     propertyId: PropertyId;
@@ -23,6 +25,7 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
     alwaysVisible = false,
     variant = 'default',
 }) => {
+    const { t } = useLanguage();
     // Key for localStorage: access_revealed_{propertyId}_{code}
     // We use the code itself in the key so if the password changes, it resets
     const storageKey = `access_revealed_${propertyId}_${code}`;
@@ -58,6 +61,22 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
             triggerConfetti(document.getElementById('access-ticket') as HTMLElement);
         }, 800); // Animation duration
     };
+
+    const handleCopyCode = useCallback(() => {
+        navigator.clipboard.writeText(code);
+        triggerConfetti(document.getElementById('access-code-display') as HTMLElement);
+    }, [code]);
+
+    // Long press for copy action with visual feedback
+    const longPress = useLongPress({
+        delay: 500,
+        onClick: handleCopyCode,
+        onLongPress: () => {
+            // Long press action: could show QR code or details modal
+            // For now, just copy with extra feedback
+            handleCopyCode();
+        },
+    });
 
     const isSmall = variant === 'small';
 
@@ -115,7 +134,7 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                     : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
                                     }`}
                             >
-                                <Eye size={14} /> Revelar Senha
+                                <Eye size={14} /> {t('Revelar Senha', 'Reveal Password', 'Revelar Contraseña')}
                             </button>
                         </div>
                     )}
@@ -126,16 +145,22 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                             <div className="mb-2 p-3 bg-amber-500/20 rounded-full animate-spin">
                                 <Key size={24} className="text-amber-500" />
                             </div>
-                            <p className="text-xs text-amber-400 font-bold">Desbloqueando...</p>
+                            <p className="text-xs text-amber-400 font-bold">{t('Desbloqueando...', 'Unlocking...', 'Desbloqueando...')}</p>
                         </div>
                     )}
 
-                    {/* Revealed State */}
-                    {isRevealed && (
-                        <div className="flex flex-col items-center animate-pop-in w-full justify-center h-full">
+                    {/* Revealed State (Code Display) */}
+                    {isRevealed && !isAnimating && (
+                        <div
+                            id="access-code-display"
+                            {...longPress.handlers}
+                            className="relative flex flex-col items-center animate-fade-in cursor-pointer select-none"
+                        >
                             <div className="flex items-center justify-center gap-2 mb-0.5">
                                 <p
-                                    className={`font-mono font-bold tracking-[0.15em] drop-shadow-lg ${theme.text.primary} ${isSmall ? 'text-lg' : 'text-4xl'}`}
+                                    className={`text-center font-mono font-bold tracking-widest transition-all ${isSmall ? 'text-lg' : 'text-2xl'
+                                        }`}
+                                    style={{ color: theme.text.primary }}
                                 >
                                     {code}
                                 </p>
@@ -146,6 +171,16 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                     />
                                 )}
                             </div>
+
+                            {/* Long Press Progress Indicator */}
+                            {longPress.isLongPressing && (
+                                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-blue-500 transition-all"
+                                        style={{ width: `${longPress.progress * 100}%` }}
+                                    />
+                                </div>
+                            )}
                             {subLabel && (
                                 <p
                                     className={`font-medium flex items-center justify-center gap-1 ${theme.text.secondary} ${isSmall ? 'text-[8px]' : 'text-[10px]'}`}

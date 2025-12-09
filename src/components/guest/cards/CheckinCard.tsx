@@ -5,6 +5,7 @@ import HolographicCard from '../../ui/HolographicCard';
 import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import { useLanguage } from '../../../hooks/useLanguage';
 import AccessTicket from './AccessTicket';
 
 interface CheckinCardProps {
@@ -41,6 +42,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
     onOpenCheckout,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
+    const { t } = useLanguage();
 
     return (
         <div
@@ -53,7 +55,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 <h2
                     className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${isSingleNight ? 'text-orange-400' : 'text-gray-500'}`}
                 >
-                    {isSingleNight ? 'Estadia Rápida' : 'Acesso Rápido'}
+                    {isSingleNight ? t('Estadia Rápida', 'Quick Stay', 'Estancia Rápida') : t('Acesso Rápido', 'Quick Access', 'Acceso Rápido')}
                 </h2>
                 <div className="flex gap-2">
                     <button
@@ -69,7 +71,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         }}
                         className={`text-[10px] font-bold ${theme.text.secondary} flex items-center gap-1 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors font-sans shadow-sm min-h-[32px]`}
                     >
-                        Salvar Acesso
+                        {t('Salvar Acesso', 'Save Access', 'Guardar Acceso')}
                     </button>
                 </div>
             </div>
@@ -80,15 +82,15 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     className={`text-xl font-heading font-bold ${theme.text.primary} mb-2 flex items-center justify-center gap-2`}
                 >
                     {isSingleNight
-                        ? `Veio rapidinho, ${config.guestName?.split(' ')[0]}? 👋`
-                        : 'Feliz em te receber! 😄'}
+                        ? `${t('Veio rapidinho', 'Quick visit', 'Visita rápida')}, ${config.guestName?.split(' ')[0]}? 👋`
+                        : t('Feliz em te receber! 😄', 'Happy to welcome you! 😄', '¡Feliz de recibirte! 😄')}
                 </h3>
                 <p
                     className={`text-xs ${theme.text.secondary} font-medium leading-relaxed max-w-xs mx-auto`}
                 >
                     {isSingleNight
-                        ? 'Aproveite ao máximo sua estadia!'
-                        : 'Faça o check-in sem estresse com o passo a passo!'}
+                        ? t('Aproveite ao máximo sua estadia!', 'Make the most of your stay!', '¡Aprovecha al máximo tu estadía!')
+                        : t('Faça o check-in sem estresse com o passo a passo!', 'Stress-free check-in with our guide!', '¡Haz el check-in sin estrés con nuestra guía!')}
                 </p>
             </div>
 
@@ -101,7 +103,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     fullWidth
                     className="mb-4 relative z-10 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs uppercase tracking-wide shadow-lg shadow-purple-900/20 border border-white/10"
                 >
-                    Como fazer Check-in
+                    {t('Como fazer Check-in', 'How to Check-in', 'Cómo hacer el Check-in')}
                 </Button>
             )}
 
@@ -114,11 +116,11 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             ? config.flatNumber || ''
                             : config.lockCode || ''
                     }
-                    label={config.propertyId === 'integracao' ? 'Unidade' : 'Senha de Acesso'}
+                    label={config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha de Acesso', 'Access Code', 'Código de Acceso')}
                     subLabel={
                         config.propertyId === 'integracao'
-                            ? 'Chaves no cofre'
-                            : 'Toque no sino após digitar'
+                            ? t('Chaves no cofre', 'Keys in safeBox', 'Llaves en caja fuerte')
+                            : t('Toque no sino após digitar', 'Ring bell after typing', 'Toca el timbre tras digitar')
                     }
                     theme={theme}
                 />
@@ -133,7 +135,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         onCopyWifi();
                     }}
                     className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${wifiCopied ? 'ring-1 ring-green-500/50' : ''}`}
-                    title={`Senha: ${currentWifiPass}`}
+                    title={`${t('Senha', 'Pass', 'Clave')}: ${currentWifiPass}`}
                 >
                     <div className="absolute top-2 right-2">
                         <Maximize2
@@ -148,7 +150,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     </div>
                     <div className="w-full">
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                            Wi-Fi
+                            {t('Wi-Fi', 'Wi-Fi', 'Wi-Fi')}
                         </p>
                         <p
                             className={`text-sm font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
@@ -156,7 +158,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             {currentWifiSSID}
                         </p>
                         <p className="text-[9px] text-blue-400 font-medium">
-                            {wifiCopied ? 'Copiado!' : 'Copiar Senha'}
+                            {wifiCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
                         </p>
                     </div>
                 </HolographicCard>
@@ -188,7 +190,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     </div>
                     <div className="w-full">
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                            Local
+                            {t('Local', 'Local', 'Ubicación')}
                         </p>
                         <p
                             className={`text-sm font-bold ${theme.text.primary} truncate leading-none mb-1`}
@@ -196,7 +198,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             R. São José, 475B
                         </p>
                         <p className="text-[9px] text-purple-400 font-medium">
-                            {addressCopied ? 'Copiado!' : 'Copiar Endereço'}
+                            {addressCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}
                         </p>
                     </div>
                 </HolographicCard>
@@ -211,7 +213,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     fullWidth
                     className="mb-3 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25"
                 >
-                    Iniciar Passo a Passo
+                    {t('Iniciar Passo a Passo', 'Start Walkthrough', 'Iniciar Guía Paso a Paso')}
                 </Button>
             )}
 
@@ -219,10 +221,10 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 <div className="mb-4 bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 flex items-center justify-between relative z-10">
                     <div>
                         <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide flex items-center gap-1">
-                            <CalendarHeart size={12} /> Check-out Amanhã
+                            <CalendarHeart size={12} /> {t('Check-out Amanhã', 'Check-out Tomorrow', 'Check-out Mañana')}
                         </p>
                         <p className="text-xs text-orange-200 font-bold">
-                            Até às {config.checkOutTime || '11:00'}
+                            {t('Até às', 'Until', 'Hasta las')} {config.checkOutTime || '11:00'}
                         </p>
                     </div>
                     <button
@@ -232,7 +234,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         }}
                         className="px-3 py-1.5 bg-orange-500/20 text-orange-300 text-[9px] font-bold uppercase rounded-lg shadow-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
                     >
-                        Ver Regras
+                        {t('Ver Regras', 'View Rules', 'Ver Reglas')}
                     </button>
                 </div>
             )}
@@ -246,14 +248,14 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
+                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
             </Button>
 
             {!isSingleNight && (
                 <div className="mt-4 pt-4 border-t border-white/5 flex justify-center items-center gap-2 text-orange-300/80">
                     <CalendarHeart size={14} />
                     <p className="text-[10px] font-bold font-sans">
-                        Check-in liberado a partir das {config.checkInTime || '14:00'}
+                        {t('Check-in liberado a partir das', 'Check-in available from', 'Check-in disponible desde')} {config.checkInTime || '14:00'}
                     </p>
                 </div>
             )}

@@ -5,6 +5,7 @@ import { useGuestStay } from '../hooks/useGuestStay';
 import { useGuestData } from '../hooks/useGuestData';
 import { useGuestUI } from '../hooks/useGuestUI';
 import { useLanguage } from '../hooks/useLanguage';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 // Components
 import HeroSection from './guest/HeroSection';
@@ -21,6 +22,7 @@ import OfflineCardModal from './modals/OfflineCardModal';
 import DriverModeModal from './modals/DriverModeModal';
 import VideoModal from './modals/VideoModal';
 import SupportModal from './modals/SupportModal';
+import PullRefreshIndicator from './ui/PullRefreshIndicator';
 
 import { CURIOSITY_STORY_IMAGES, DRONE_VIDEO_URL } from '../constants';
 import { PROPERTIES } from '../config/properties';
@@ -67,7 +69,16 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
     const { modals, video, checkout, stories, clipboard } = useGuestUI();
 
     // State local para idioma (agora via hook)
-    const { currentLang, toggleLanguage } = useLanguage();
+    const { t, currentLang, toggleLanguage } = useLanguage();
+
+    // Pull to  refresh
+    const pullToRefresh = usePullToRefresh({
+        threshold: 80,
+        onRefresh: async () => {
+            // Simple refresh - reload the page
+            window.location.reload();
+        },
+    });
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -104,9 +115,11 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
 
     // Lógica de Stories (ainda um pouco acoplada, mas simplificada)
     const [currentStories, setCurrentStories] = React.useState<StoryItem[]>([]);
+    const [currentStoriesType, setCurrentStoriesType] = React.useState<'agenda' | 'curiosities' | 'tips' | null>(null);
 
     const handleOpenStories = useCallback(
         (type: 'agenda' | 'curiosities' | 'tips') => {
+            setCurrentStoriesType(type);
             if (navigator.vibrate) navigator.vibrate(50);
             if (type === 'agenda') {
                 const eventStories: StoryItem[] = activeEvents.map((evt) => {
@@ -121,8 +134,14 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                         id: evt.id || evt.name,
                         type: 'event',
                         title: evt.name,
+                        title_en: evt.name_en,
+                        title_es: evt.name_es, // Sync
                         subtitle: subtitle || 'Em breve',
+                        subtitle_en: subtitle, // Date
+                        subtitle_es: subtitle, // Date
                         content: evt.description,
+                        content_en: evt.description_en,
+                        content_es: evt.description_es, // Sync
                         image: evt.imageUrl,
                         link: evt.orderLink,
                         icon: CalendarHeart,
@@ -136,8 +155,14 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                     id: tip.id || tip.title,
                     type: tip.type,
                     title: tip.title,
+                    title_en: tip.title_en,
+                    title_es: tip.title_es, // Sync
                     subtitle: tip.subtitle,
+                    subtitle_en: tip.subtitle_en,
+                    subtitle_es: tip.subtitle_es, // Sync
                     content: tip.content,
+                    content_en: tip.content_en,
+                    content_es: tip.content_es, // Sync
                     image: tip.image,
                     icon: getIcon(tip.iconName), // Mapeia string -> Componente
                     color: 'from-blue-800 to-blue-900', // Cor padrão ou vinda do banco se tiver
@@ -151,15 +176,20 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                 const shuffledImages = [...CURIOSITY_STORY_IMAGES].sort(() => 0.5 - Math.random());
 
                 const curiosityStories: StoryItem[] = shuffled.map((item, idx) => ({
-                    id: `curiosity-${idx}`,
+                    id: item.id || `curiosity-${idx}`, // Prefer ID if available (self-healed)
                     type: 'curiosity',
                     title: 'Você Sabia?',
+                    title_en: 'Did You Know?',
+                    title_es: '¿Sabías Qué?', // Static translation
                     subtitle: 'Curiosidade de Petrolina',
+                    subtitle_en: 'Curiosity about Petrolina',
+                    subtitle_es: 'Curiosidad sobre Petrolina', // Static translation
                     content: item.text,
+                    content_en: item.text_en,
+                    content_es: item.text_es, // Sync dynamic content
                     icon: Sparkles,
                     image: item.image || shuffledImages[idx % shuffledImages.length],
                 }));
-
                 setCurrentStories(curiosityStories);
             }
 
@@ -260,6 +290,15 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                 onClose={() => modals.setIsStoryOpen(false)}
                 items={currentStories}
                 startIndex={stories.storyStartIndex}
+                // Adiciona música apenas para as Dicas/Curiosidades
+                audioSrc={currentStoriesType === 'curiosities' ? '/music/juazeiro.mp3' : undefined}
+            />
+
+            {/* Pull to Refresh Indicator */}
+            <PullRefreshIndicator
+                pullDistance={pullToRefresh.pullDistance}
+                isRefreshing={pullToRefresh.isRefreshing}
+                progress={pullToRefresh.progress}
             />
 
             {/* HERO SECTION */}
@@ -341,7 +380,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                     <MapPin size={20} />
                                 </div>
                                 <h3 className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
-                                    Localização
+                                    {t('Localização', 'Location')}
                                 </h3>
                                 <p className="text-sm font-bold text-gray-800 dark:text-gray-200 max-w-[280px] leading-snug mb-3">
                                     {flatAddress}
@@ -355,7 +394,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                     aria-label="Copiar endereço"
                                     className="mb-4 px-4 py-1.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-full border border-purple-100 dark:border-purple-900/30 hover:bg-purple-50 dark:hover:bg-purple-900/20 active:scale-95 transition-all shadow-sm"
                                 >
-                                    {clipboard.addressCopied ? 'Copiado!' : 'Toque p/ Copiar'}
+                                    {clipboard.addressCopied ? t('Copiado!', 'Copied!') : t('Toque p/ Copiar', 'Tap to Copy')}
                                 </button>
 
                                 <div className="flex gap-3 w-full justify-center">
@@ -365,13 +404,13 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                         rel="noopener noreferrer"
                                         className="flex-1 py-2.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm"
                                     >
-                                        <ExternalLink size={14} /> Abrir Mapa
+                                        <ExternalLink size={14} /> {t('Abrir Mapa', 'Open Map')}
                                     </a>
                                     <button
                                         onClick={() => video.openVideoModal(DRONE_VIDEO_URL, false)}
                                         className="flex-1 py-2.5 bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wide rounded-xl shadow-md shadow-purple-200 dark:shadow-none hover:bg-purple-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                                     >
-                                        <Video size={14} /> Ver do Alto
+                                        <Video size={14} /> {t('Ver do Alto', 'Drone View')}
                                     </button>
                                 </div>
                             </div>
@@ -401,11 +440,10 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                     {property.features.hasReviews && (
                         <>
                             <h3 className="text-xl font-heading font-bold mb-2">
-                                Sua opinião vale ouro! ⭐
+                                {t('Sua opinião vale ouro! ⭐', 'Your opinion is gold! ⭐')}
                             </h3>
                             <p className="text-blue-50 text-sm mb-6 leading-relaxed font-medium opacity-90">
-                                Olá, {config.guestName}! Espero que tenha amado a estadia. Se puder
-                                deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!
+                                {t('Olá', 'Hello')}, {config.guestName}! {t('Espero que tenha amado a estadia. Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!', 'Hope you loved your stay. Leaving a quick review on Google helps us a lot!')}
                             </p>
                             <a
                                 href={property.googleReviewLink || GOOGLE_REVIEW_LINK}
@@ -414,7 +452,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                                 className="bg-white text-blue-700 font-bold py-3.5 px-6 rounded-xl inline-flex items-center gap-2.5 hover:bg-blue-50 transition-all shadow-lg w-full justify-center sm:w-auto font-sans text-sm active:scale-95"
                             >
                                 <Star size={18} className="fill-yellow-400 text-yellow-400" />{' '}
-                                Avaliar no Google
+                                {t('Avaliar no Google', 'Rate on Google', 'Calificar en Google')}
                             </a>
                         </>
                     )}
@@ -427,17 +465,29 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                     guestName={config.guestName}
                     systemInstruction={(() => {
                         const propId = config.propertyId || 'lili';
-                        // 1. Tenta pegar a configuração específica da propriedade (NOVO PADRÃO)
-                        const specificPrompt = appSettings?.aiSystemPrompts?.[propId];
-                        if (specificPrompt) return specificPrompt;
 
-                        // 2. Se for a Lili, aceita o fallback para o campo antigo (LEGADO)
-                        if (propId === 'lili') {
-                            return appSettings?.aiSystemPrompt || property.ai.systemPrompt;
+                        // 1. Tenta pegar a configuração específica da propriedade
+                        let finalPrompt = appSettings?.aiSystemPrompts?.[propId];
+
+                        // 2. Se for a Lili e não tiver específico, tenta o campo legado (global)
+                        if (!finalPrompt && propId === 'lili') {
+                            finalPrompt = appSettings?.aiSystemPrompt;
                         }
 
-                        // 3. Se for outra propriedade e não tiver config específica, usa o hardcoded do código
-                        return property.ai.systemPrompt;
+                        // 3. Verifica se temos traduções (se o usuário estiver em outro idioma)
+                        if (currentLang === 'en' && appSettings?.aiSystemPrompt_en) {
+                            return appSettings.aiSystemPrompt_en;
+                        } else if (currentLang === 'es' && appSettings?.aiSystemPrompt_es) {
+                            return appSettings.aiSystemPrompt_es;
+                        }
+
+                        // 4. Se o prompt encontrado for vazio ou apenas espaços, usa o Default do código (properties.ts)
+                        // Isso previne que um save vazio quebre a IA
+                        if (!finalPrompt || !finalPrompt.trim()) {
+                            finalPrompt = property.ai.systemPrompt;
+                        }
+
+                        return finalPrompt;
                     })()}
                 />
             </div>
@@ -451,7 +501,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                 }
                 propertyId={config.propertyId}
             />
-        </div>
+        </div >
     );
 };
 

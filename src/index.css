@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe Area Insets for Mobile Devices with Notches/Dynamic Island */
+:root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
 /* =============================================
    UI PRIMITIVES - Reusable Component Classes
    ============================================= */
@@ -600,4 +608,39 @@ body {
 
 .react-calendar--selectRange .react-calendar__tile--hover {
     background-color: #e6e6e6;
+}
+/* =============================================
+   SAFE AREA UTILITIES - Mobile Notch Support
+   ============================================= */
+
+/* Safe area padding utilities */
+.safe-top { padding-top: max(1rem, var(--safe-area-top)); }
+.safe-bottom { padding-bottom: max(1rem, var(--safe-area-bottom)); }
+.safe-left { padding-left: max(1rem, var(--safe-area-left)); }
+.safe-right { padding-right: max(1rem, var(--safe-area-right)); }
+
+/* Safe area margin utilities */
+.safe-mt { margin-top: var(--safe-area-top); }
+.safe-mb { margin-bottom: var(--safe-area-bottom)); }
+
+/* Combined safe areas */
+.safe-x {
+    padding-left: max(1rem, var(--safe-area-left));
+    padding-right: max(1rem, var(--safe-area-right));
+}
+.safe-y {
+    padding-top: max(1rem, var(--safe-area-top));
+    padding-bottom: max(1rem, var(--safe-area-bottom));
+}
+/* Stories Scroll Snap - Instagram-like alignment */
+.stories-scroll-container {
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding: 0 24px; /* Account for container padding */
+}
+
+.story-item {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
 }

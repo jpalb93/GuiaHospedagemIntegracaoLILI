@@ -38,8 +38,8 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-    // Skip chrome extensions and non-http requests
-    if (!event.request.url.startsWith('http')) {
+    // Skip chrome extensions, non-http requests, and non-GET requests (POST not cacheable)
+    if (!event.request.url.startsWith('http') || event.request.method !== 'GET') {
         return;
     }
 

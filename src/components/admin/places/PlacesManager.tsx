@@ -6,13 +6,16 @@ import ConfirmModal from '../ConfirmModal';
 import { useToast } from '../../../contexts/ToastContext';
 import PlaceFormModal from './PlaceFormModal';
 import PlaceItemCard from './PlaceItemCard';
+
 import { CATEGORIES } from './constants';
+import { translateBatch } from '../../../services/translation';
+import { Sparkles } from 'lucide-react';
 
 interface PlacesManagerProps {
     places: {
         data: PlaceRecommendation[];
         loading: boolean;
-        add: (place: Omit<PlaceRecommendation, 'id'>) => Promise<boolean>;
+        add: (place: Omit<PlaceRecommendation, 'id'>) => Promise<string | null>;
         update: (id: string, place: Partial<PlaceRecommendation>) => Promise<boolean>;
         delete: (id: string) => Promise<boolean>;
         refresh: () => void;
@@ -33,7 +36,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
     const [filterCategory, setFilterCategory] = useState<string>('burgers');
 
     // Toast notifications
-    const { showSuccess, showWarning } = useToast();
+    const { showSuccess, showWarning, showError } = useToast();
 
     // Modal de confirmação de exclusão
     const [confirmModal, setConfirmModal] = useState({
@@ -69,18 +72,34 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         }
 
         setIsSaving(true);
-        let success = false;
+        let resultId: string | null | boolean = null;
 
         if (isEdit && editingPlace?.id) {
-            success = await places.update(editingPlace.id, formData);
+            resultId = await places.update(editingPlace.id, formData);
         } else {
-            success = await places.add(formData as Omit<PlaceRecommendation, 'id'>);
+            resultId = await places.add(formData as Omit<PlaceRecommendation, 'id'>);
         }
 
         setIsSaving(false);
-        if (success) {
+
+        if (resultId) {
             handleCloseModal();
             showSuccess(isEdit ? 'Local atualizado!' : 'Local adicionado!');
+
+            // AUTO-TRANSLATE (Option 1)
+            const placeId = (isEdit && editingPlace?.id) ? editingPlace.id : (typeof resultId === 'string' ? resultId : null);
+
+            if (placeId) {
+                const placeToTranslate: PlaceRecommendation = {
+                    ...(formData as PlaceRecommendation),
+                    id: placeId
+                };
+                // Trigger silent translation
+                handleTranslatePlaces([placeToTranslate], true);
+            }
+
+        } else {
+            showError('Erro ao salvar local.');
         }
     };
 
@@ -109,6 +128,64 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         a.click();
         URL.revokeObjectURL(url);
         showSuccess('Backup de lugares exportado!');
+        // Duplicate line removed
+    };
+
+    // --- TRANSLATION LOGIC ---
+    const handleTranslatePlaces = async (itemsToTranslate?: PlaceRecommendation[], silent = false) => {
+        const placesToCheck = itemsToTranslate || places.data;
+
+        const untranslated = placesToCheck.filter(
+            (p) => !p.name_en || !p.description_en || !p.name_es
+        );
+
+        if (untranslated.length === 0) {
+            if (!silent) showSuccess('Todos os locais já estão traduzidos!');
+            return;
+        }
+
+        if (
+            !silent &&
+            !confirm(
+                `Deseja traduzir ${untranslated.length} locais pendentes? Isso pode levar alguns segundos.`
+            )
+        ) {
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const results = await translateBatch(
+                untranslated.map((p) => ({
+                    ...p, // Pass full object so generic keys logic works
+                    id: p.id!,
+                    // No need to manually construct text JSON anymore if prompt is generic
+                })),
+                [
+                    { source: 'name', targetEn: 'name_en', targetEs: 'name_es' },
+                    { source: 'description', targetEn: 'description_en', targetEs: 'description_es' },
+                    { source: 'distance', targetEn: 'distance_en', targetEs: 'distance_es' },
+                ],
+                'gemini-2.5-flash-lite'
+            );
+
+            // Apply updates
+            for (const res of results) {
+                if (res.id) {
+                    // translateBatch returns the patch object directly now
+                    await places.update(res.id, res);
+                }
+            }
+
+            if (!silent) showSuccess('Tradução concluída!');
+            places.refresh();
+        } catch (error) {
+            console.error(error);
+            // Always show error toast even in silent mode
+            showError('Erro na tradução automática. Verifique sua conexão.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     // Filtra lugares pela categoria selecionada
@@ -137,15 +214,27 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
                     {places.data.length > 0 && (
-                        <Button
-                            onClick={handleExportBackup}
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<Download size={16} />}
-                            className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
-                        >
-                            Backup
-                        </Button>
+                        <>
+                            <Button
+                                onClick={handleExportBackup}
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<Download size={16} />}
+                                className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
+                            >
+                                Backup
+                            </Button>
+                            <Button
+                                onClick={() => handleTranslatePlaces()}
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<Sparkles size={16} />}
+                                className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/40"
+                                disabled={isSaving}
+                            >
+                                {isSaving ? 'Traduzindo...' : 'Traduzir'}
+                            </Button>
+                        </>
                     )}
                     <Button
                         onClick={() => handleOpenModal()}

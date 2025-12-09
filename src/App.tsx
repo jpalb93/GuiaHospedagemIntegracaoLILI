@@ -22,6 +22,8 @@ import { fetchGuestConfig } from './services/guest';
 import ErrorBoundary from './components/ErrorBoundary';
 import { GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/LoadingSkeletons';
 import ModernLoadingScreen from './components/ModernLoadingScreen';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { LanguageProvider } from './hooks/useLanguage';
 
 // --- LAZY LOADING (CODE SPLITTING) ---
 // Carrega os componentes pesados apenas quando necessários
@@ -489,21 +491,25 @@ const App: React.FC = () => {
     // 6. App Principal (Admin ou Guest) com Suspense e ErrorBoundary
     return (
         <ErrorBoundary>
-            <Suspense
-                fallback={appState.mode === AppMode.ADMIN ? <AdminSkeleton /> : <GuestSkeleton />}
-            >
-                <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-                    {appState.mode === AppMode.ADMIN ? (
-                        <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
-                    ) : (
-                        <GuestView
-                            config={appState.config}
-                            theme={theme}
-                            toggleTheme={toggleTheme}
-                        />
-                    )}
-                </div>
-            </Suspense>
+            <LanguageProvider>
+                <FavoritesProvider>
+                    <Suspense
+                        fallback={appState.mode === AppMode.ADMIN ? <AdminSkeleton /> : <GuestSkeleton />}
+                    >
+                        <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+                            {appState.mode === AppMode.ADMIN ? (
+                                <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
+                            ) : (
+                                <GuestView
+                                    config={appState.config}
+                                    theme={theme}
+                                    toggleTheme={toggleTheme}
+                                />
+                            )}
+                        </div>
+                    </Suspense>
+                </FavoritesProvider>
+            </LanguageProvider>
         </ErrorBoundary>
     );
 };

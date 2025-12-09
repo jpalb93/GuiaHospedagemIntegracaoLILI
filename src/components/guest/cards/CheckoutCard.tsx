@@ -6,7 +6,9 @@ import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
 import { GOOGLE_REVIEW_LINK } from '../../../constants';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import { useLanguage } from '../../../hooks/useLanguage';
 import ReviewIncentiveModal from '../modals/ReviewIncentiveModal';
+import { hapticFeedback } from '../../../utils/haptics';
 
 interface CheckoutCardProps {
     config: GuestConfig;
@@ -24,10 +26,12 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     onOpenReview,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
+    const { t } = useLanguage();
     const [showReviewModal, setShowReviewModal] = React.useState(false);
     // Hardcoded address state for checkout card as it's not passed down
     const addressCopied = false;
     const onCopyAddress = () => {
+        hapticFeedback('light');
         navigator.clipboard.writeText('R. São José, 475B, Centro, Petrolina - PE');
         triggerConfetti(document.getElementById('checkout-address') as HTMLElement);
     };
@@ -47,7 +51,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
             {/* Header */}
             <div className="flex justify-between items-start mb-4 relative z-10">
                 <h2 className="text-[10px] font-heading font-extrabold text-red-400 uppercase tracking-[0.15em] mt-1.5">
-                    Dia da Saída
+                    {t('Dia da Saída', 'Departure Day')}
                 </h2>
                 <div className="flex gap-2">
                     <button
@@ -62,7 +66,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
             {/* Main Message */}
             <div className="mb-3 relative z-10 text-center">
                 <h3 className={`text-lg font-heading font-bold ${theme.text.primary} mb-1`}>
-                    Volte sempre, viu? 👋
+                    {t('Volte sempre, viu? 👋', 'Come back soon! 👋')}
                 </h3>
             </div>
 
@@ -82,7 +86,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                 leftIcon={<Star size={14} className="fill-white" />}
                 className="mb-4 relative z-10 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-[11px] uppercase tracking-wide shadow-lg shadow-yellow-500/20"
             >
-                Avaliar Estadia
+                {t('Avaliar Estadia', 'Rate Stay')}
             </Button>
 
             {/* Review Incentive Modal - Only for Lili */}
@@ -107,7 +111,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                         <Plane size={18} />
                     </div>
                     <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">
-                        Aeroporto
+                        {t('Aeroporto', 'Airport')}
                     </span>
                 </a>
 
@@ -121,7 +125,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                         <Bus size={18} />
                     </div>
                     <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">
-                        Rodoviária
+                        {t('Rodoviária', 'Bus Station')}
                     </span>
                 </a>
             </div>
@@ -154,7 +158,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                     </div>
                     <div className="text-left">
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                            Endereço
+                            {t('Endereço', 'Address')}
                         </p>
                         <p
                             className={`text-sm font-bold ${theme.text.primary} leading-none mb-0.5`}
@@ -178,7 +182,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                 leftIcon={<LogOut size={16} />}
                 className="mb-3 relative z-10 py-3.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-xs uppercase tracking-wide shadow-lg shadow-red-900/20 border border-white/10"
             >
-                Fazer Check-out Agora
+                {t('Fazer Check-out Agora', 'Check-out Now')}
             </Button>
 
             {/* SUPPORT BUTTON */}
@@ -191,12 +195,12 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg relative z-10 mb-4`}
             >
-                {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
+                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili') : t('Fale Conosco', 'Talk to Us')}
             </Button>
 
             {/* CHECKOUT TIME (Bottom) */}
             <div className="flex items-center justify-center gap-2 text-red-100/60 relative z-10 mt-auto">
-                <p className="text-[10px] font-medium">Liberar o flat até às</p>
+                <p className="text-[10px] font-medium">{t('Liberar o flat até às', 'Vacate flat by')}</p>
                 <p
                     className={`text-sm font-mono font-bold ${theme.text.primary} bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20`}
                 >

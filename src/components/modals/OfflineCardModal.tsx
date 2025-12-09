@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Wifi, Camera, User, Lock, Copy, Check, QrCode, MapPin, Bell } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 import { GuestConfig } from '../../types';
 import { PROPERTIES } from '../../config/properties';
 
@@ -26,6 +27,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
 }) => {
     const [copiedField, setCopiedField] = useState<string | null>(null);
     const [showQrCode, setShowQrCode] = useState(false);
+    const { t } = useLanguage();
 
     if (!isOpen) return null;
 
@@ -67,7 +69,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1 rounded-full mb-3 backdrop-blur-md">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                             <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">
-                                Cartão de Acesso
+                                {t('Cartão de Acesso', 'Access Card', 'Tarjeta de Acceso')}
                             </span>
                         </div>
                         <h2 className="text-2xl font-heading font-bold text-white tracking-tight mb-1">
@@ -75,7 +77,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                         </h2>
                         <div className="flex items-center justify-center gap-2 text-white/50 text-xs font-medium">
                             <User size={12} />
-                            <span>{config.guestName || 'Visitante VIP'}</span>
+                            <span>{config.guestName || t('Visitante VIP', 'VIP Guest', 'Visitante VIP')}</span>
                         </div>
                     </div>
 
@@ -86,10 +88,10 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
 
                             <p className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1">
                                 {isIntegracao
-                                    ? 'Unidade'
+                                    ? t('Unidade', 'Unit', 'Unidad')
                                     : config.propertyId === 'lili'
-                                      ? 'Flat'
-                                      : 'Senha Porta'}
+                                        ? 'Flat'
+                                        : t('Senha Porta', 'Door Code', 'Código Puerta')}
                             </p>
 
                             <div className="flex items-center justify-center gap-3">
@@ -97,10 +99,10 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                                     {isIntegracao
                                         ? config.flatNumber
                                         : config.propertyId === 'lili'
-                                          ? '304'
-                                          : isPasswordReleased
-                                            ? config.lockCode
-                                            : '****'}
+                                            ? '304'
+                                            : isPasswordReleased
+                                                ? config.lockCode
+                                                : '****'}
                                 </span>
                                 {!isIntegracao && config.propertyId !== 'lili' && (
                                     <Bell size={24} className="text-amber-500 animate-pulse" />
@@ -109,8 +111,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
 
                             {!isIntegracao && config.propertyId !== 'lili' && (
                                 <p className="text-[9px] text-gray-500 font-medium mt-2 flex items-center justify-center gap-1">
-                                    Toque no <Bell size={10} className="text-amber-500" /> após
-                                    digitar a senha
+                                    {t('Toque no', 'Tap on', 'Toca en')} <Bell size={10} className="text-amber-500" /> {t('após digitar a senha', 'after typing code', 'tras digitar el código')}
                                 </p>
                             )}
                         </div>
@@ -130,7 +131,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                                 <div className="flex items-center gap-2 mb-1 text-gray-400 group-hover/item:text-white transition-colors">
                                     <Lock size={14} />
                                     <span className="text-[9px] uppercase tracking-widest font-bold">
-                                        Porta
+                                        {t('Porta', 'Door', 'Puerta')}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -153,7 +154,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                             <div className="flex items-center gap-2 mb-1 text-gray-400 group-hover/item:text-white transition-colors">
                                 <Lock size={14} />
                                 <span className="text-[9px] uppercase tracking-widest font-bold">
-                                    Cofre
+                                    {t('Cofre', 'Safe', 'Caja Fuerte')}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -177,7 +178,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                                     </div>
                                     <div className="text-left">
                                         <p className="text-[10px] text-gray-400 uppercase font-bold">
-                                            Rede Wi-Fi
+                                            {t('Rede Wi-Fi', 'Wi-Fi Network', 'Red Wi-Fi')}
                                         </p>
                                         <p className="text-white font-bold text-sm tracking-wide">
                                             {wifiSSID}
@@ -202,7 +203,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                                         />
                                     </div>
                                     <p className="text-[10px] text-gray-400">
-                                        Escaneie para conectar
+                                        {t('Escaneie para conectar', 'Scan to connect', 'Escanea para conectar')}
                                     </p>
                                 </div>
                             ) : (
@@ -211,7 +212,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                                     className="w-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-lg py-2 flex items-center justify-center gap-2 transition-all group/wifi"
                                 >
                                     <span className="text-xs text-gray-400 group-hover/wifi:text-white">
-                                        Senha:
+                                        {t('Senha:', 'Pass:', 'Clave:')}
                                     </span>
                                     <span className="text-sm font-mono font-bold text-white">
                                         {wifiPass}
@@ -236,7 +237,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                         </div>
                         <div>
                             <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">
-                                Endereço
+                                {t('Endereço', 'Address', 'Dirección')}
                             </p>
                             <p className="text-xs font-bold text-white leading-tight">{address}</p>
                         </div>
@@ -253,7 +254,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
             </div>
 
             <p className="text-white/30 text-xs mt-8 text-center max-w-xs font-medium">
-                Salve este card para acesso offline.
+                {t('Salve este card para acesso offline.', 'Save this card for offline access.', 'Guarda este card para acceso offline.')}
             </p>
         </div>
     );

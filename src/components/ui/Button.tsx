@@ -12,17 +12,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-    sm: 'py-2 px-3 text-xs',
-    md: 'py-3 px-5 text-sm',
-    lg: 'py-4 px-6 text-base',
+    sm: 'py-2 px-3 text-xs min-h-[44px]',
+    md: 'py-3 px-5 text-sm min-h-[48px]',
+    lg: 'py-4 px-6 text-base min-h-[52px]',
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-    primary: 'ui-btn-primary',
-    secondary: 'ui-btn-secondary',
-    ghost: 'ui-btn-ghost',
-    icon: 'ui-btn-icon',
-    danger: 'ui-btn-danger',
+    primary: 'ui-btn-primary active:scale-95',
+    secondary: 'ui-btn-secondary active:scale-95',
+    ghost: 'ui-btn-ghost active:scale-95',
+    icon: 'ui-btn-icon min-w-[44px] min-h-[44px] active:scale-90',
+    danger: 'ui-btn-danger active:scale-95',
 };
 
 export const Button: React.FC<ButtonProps> = ({

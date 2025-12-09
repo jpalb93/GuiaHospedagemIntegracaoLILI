@@ -40,6 +40,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
         qr_code_base64: string;
     } | null>(null);
     const [reservationId, setReservationId] = useState<string | null>(null);
+    const [isCopied, setIsCopied] = useState(false);
 
     if (!isOpen) return null;
 
@@ -136,7 +137,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
     const copyToClipboard = () => {
         if (paymentData?.qr_code) {
             navigator.clipboard.writeText(paymentData.qr_code);
-            alert('Código PIX copiado!');
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
         }
     };
 
@@ -295,9 +297,16 @@ const BookingModal: React.FC<BookingModalProps> = ({
                                     />
                                     <button
                                         onClick={copyToClipboard}
-                                        className="bg-gray-900 text-white p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                                        className={`p-2 rounded-lg transition-all duration-300 flex items-center gap-2 ${isCopied ? 'bg-green-500 text-white w-auto px-4' : 'bg-gray-900 text-white hover:bg-gray-800'}`}
                                     >
-                                        <Copy size={18} />
+                                        {isCopied ? (
+                                            <>
+                                                <CheckCircle size={18} />
+                                                <span className="text-xs font-bold">Copiado!</span>
+                                            </>
+                                        ) : (
+                                            <Copy size={18} />
+                                        )}
                                     </button>
                                 </div>
                             </div>

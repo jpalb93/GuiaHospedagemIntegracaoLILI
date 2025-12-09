@@ -5,6 +5,7 @@ import HolographicCard from '../../ui/HolographicCard';
 import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
+import { useLanguage } from '../../../hooks/useLanguage';
 import AccessTicket from './AccessTicket';
 
 interface MiddleStayCardProps {
@@ -37,6 +38,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
     onOpenCheckout: _onOpenCheckout,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
+    const { t } = useLanguage();
 
     return (
         <div
@@ -49,7 +51,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 <h2
                     className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${theme.text.secondary}`}
                 >
-                    Acesso Rápido
+                    {t('Acesso Rápido', 'Quick Access', 'Acceso Rápido')}
                 </h2>
                 <div className="flex gap-2">
                     <button
@@ -65,7 +67,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         }}
                         className={`text-[10px] font-bold ${theme.text.secondary} flex items-center gap-1 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors font-sans shadow-sm min-h-[32px]`}
                     >
-                        Salvar Acesso
+                        {t('Salvar Acesso', 'Save Access', 'Guardar Acceso')}
                     </button>
                 </div>
             </div>
@@ -75,7 +77,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 <h3
                     className={`text-lg font-heading font-bold ${theme.text.primary} flex items-center justify-center gap-2`}
                 >
-                    <Sparkles size={16} className="text-orange-400" /> Aproveite sua estadia!
+                    <Sparkles size={16} className="text-orange-400" /> {t('Aproveite sua estadia!', 'Enjoy your stay!', '¡Disfruta tu estadía!')}
                 </h3>
             </div>
 
@@ -90,7 +92,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                                 ? config.flatNumber || ''
                                 : config.lockCode || ''
                         }
-                        label={config.propertyId === 'integracao' ? 'Unidade' : 'Senha'}
+                        label={config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha', 'Code', 'Código')}
                         theme={theme}
                         alwaysVisible={true}
                         variant="small"
@@ -104,7 +106,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         onCopyWifi();
                     }}
                     className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${wifiCopied ? 'ring-1 ring-green-500/50' : ''}`}
-                    title={`Senha: ${currentWifiPass}`}
+                    title={`${t('Senha', 'Pass', 'Clave')}: ${currentWifiPass}`}
                 >
                     <div
                         className={`p-1.5 rounded-lg flex items-center justify-center mb-1 ${wifiCopied ? 'text-green-400' : 'text-blue-400'}`}
@@ -113,7 +115,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                     </div>
                     <div className="w-full">
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                            Wi-Fi
+                            {t('Wi-Fi', 'Wi-Fi', 'Wi-Fi')}
                         </p>
                         <p
                             className={`text-xs font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
@@ -121,7 +123,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                             {currentWifiSSID}
                         </p>
                         <p className="text-[8px] text-blue-400 font-medium">
-                            {wifiCopied ? 'Copiado!' : 'Copiar Senha'}
+                            {wifiCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
                         </p>
                     </div>
                 </HolographicCard>
@@ -155,7 +157,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                     </div>
                     <div className="text-left">
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                            Endereço
+                            {t('Endereço', 'Address', 'Dirección')}
                         </p>
                         <p
                             className={`text-sm font-bold ${theme.text.primary} leading-none mb-0.5`}
@@ -178,7 +180,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                {config.propertyId === 'lili' ? 'Fale com a Lili' : 'Fale Conosco'}
+                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
             </Button>
         </div>
     );

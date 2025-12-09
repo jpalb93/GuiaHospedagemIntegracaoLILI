@@ -10,6 +10,7 @@ import {
     NoticesSection,
     ChecklistSection,
     MessageTemplatesSection,
+    TranslationManager,
 } from './settings';
 
 interface SettingsManagerProps {
@@ -100,6 +101,77 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         }
     };
 
+    // --- TRANSLATE PROMPT ---
+    const handleTranslatePrompt = async () => {
+        const promptText = getAiPrompt();
+        if (!promptText) return;
+
+        if (activeProperty !== 'lili') {
+            alert('A tradução automática para propriedades secundárias (Integração) será implementada em breve. Por enquanto, traduza o prompt principal (Lili/Padrão).');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // Import dynamically to avoid circular dependencies
+            const { sendMessageToGemini } = await import('../../services/geminiService');
+
+            const translateTo = async (targetLang: 'English' | 'Spanish', slangExamples: string) => {
+                const translationInstruction = `
+                    You are an expert cultural consultant and translator specialized in adapting brand personas.
+                    
+                    TASK: Translate the following AI System Prompt from Portuguese (Brazil - Northeast Region) to ${targetLang}.
+                    
+                    CRITICAL INSTRUCTIONS:
+                    1. **Adapt, Don't Just Translate**: The original text contains local Brazilian Northeast slang like "oxe", "viu", "painho", "massa". CHANGE these into natural, warm, and friendly equivalents in ${targetLang} (such as: ${slangExamples}) that convey the same feeling of hospitality and intimacy.
+                       - Example (PT -> EN): "Oxe, viu" -> "Oh my!", "Gosh", "You know?", or "Don't worry" (depending on context).
+                       - Example (PT -> ES): "Oxe, viu" -> "¡Vaya!", "¡Oye!", "¡Anda!".
+                    2. **Maintain Personality**: The persona "Lili" is warm, caring, like a requested "auntie" or a super-host. The translation MUST feel human, not robotic.
+                    3. **Output Only**: Return ONLY the translated/adapted text. No explanations.
+                `;
+
+                return await sendMessageToGemini(
+                    `Please translate/adapt this text:\n\n${promptText}`,
+                    [],
+                    'Admin',
+                    translationInstruction
+                );
+            };
+
+            const [enText, esText] = await Promise.all([
+                translateTo('English', "Wow, Gosh, You know"),
+                translateTo('Spanish', "¡Vaya!, ¡Oye!")
+            ]);
+
+            if (enText && esText) {
+                const newSettings = {
+                    ...localSettings,
+                    aiSystemPrompt_en: enText,
+                    aiSystemPrompt_es: esText
+                };
+
+                // Update local UI
+                setLocalSettings(newSettings);
+
+                // AUTO-SAVE to Firebase to prevent data loss
+                await settings.save(newSettings);
+
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
+
+                alert('Prompt traduzido e salvo com sucesso! \n\nO sistema converteu gírias locais para expressões naturais em Inglês e Espanhol.');
+            } else {
+                throw new Error("Falha na geração de uma das traduções.");
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao traduzir prompt. Verifique sua conexão ou tente novamente.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
             {/* PROPERTY SELECTOR */}
@@ -135,7 +207,21 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                     </strong>
                     .
                 </p>
+                <div className="mt-2 flex justify-end">
+                    <Button
+                        onClick={handleTranslatePrompt}
+                        variant="ghost"
+                        size="sm"
+                        leftIcon={<Sparkles size={14} />}
+                        className="text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/40"
+                    >
+                        Traduzir Prompt
+                    </Button>
+                </div>
             </div>
+
+            {/* TRANSLATION MANAGER (AI) */}
+            <TranslationManager />
 
             {/* GENERAL SETTINGS */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">

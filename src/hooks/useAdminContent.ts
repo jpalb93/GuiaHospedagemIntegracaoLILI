@@ -80,26 +80,23 @@ export const useAdminContent = () => {
 
     const handleAddPlace = useCallback(
         async (place: Omit<PlaceRecommendation, 'id'>) => {
-            // Optimistic Update: Add to UI immediately with a temp ID
-            const tempId = 'temp_' + Date.now();
-            const tempPlace = { ...place, id: tempId };
-            setPlaces((prev) => [tempPlace, ...prev]);
+            setOperationLoading(true);
+            try {
+                // We await the real ID to enable immediate features like Translation
+                const newId = await addDynamicPlace(place);
 
-            // Background Sync
-            addDynamicPlace(place)
-                .then(() => {
-                    // Silent refresh to get real ID
-                    loadPlaces();
-                })
-                .catch((error) => {
-                    logger.error('Error adding place:', error);
-                    // Revert on error (could be improved with toast)
-                    setPlaces((prev) => prev.filter((p) => p.id !== tempId));
-                });
+                // Add to local state immediately with the real ID
+                setPlaces((prev) => [{ ...place, id: newId }, ...prev]);
 
-            return true; // Return success immediately
+                return newId;
+            } catch (error) {
+                logger.error('Error adding place:', error);
+                return null;
+            } finally {
+                setOperationLoading(false);
+            }
         },
-        [loadPlaces]
+        []
     );
 
     const handleUpdatePlace = useCallback(
@@ -164,12 +161,12 @@ export const useAdminContent = () => {
         async (tip: Tip) => {
             setOperationLoading(true);
             try {
-                await addTip(tip);
+                const newId = await addTip(tip);
                 await loadTips();
-                return true;
+                return newId;
             } catch (error) {
                 logger.error('Error adding tip:', error);
-                return false;
+                return null;
             } finally {
                 setOperationLoading(false);
             }

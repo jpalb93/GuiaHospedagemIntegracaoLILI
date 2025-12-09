@@ -5,15 +5,17 @@ import {
     ExternalLink,
     X,
     Car,
-    Footprints,
     Phone,
     ShoppingBag,
     Ticket,
     Calendar,
     Clock,
     MessageCircle,
+    Heart,
 } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
+import { useFavorites } from '../hooks/useFavorites';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface PlaceCardProps {
     place: PlaceRecommendation;
@@ -21,6 +23,32 @@ interface PlaceCardProps {
 
 const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true); // Default expanded as per UX request
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const { t } = useLanguage();
+    const favorite = place.id ? isFavorite(place.id) : false;
+
+    // Translatable Content
+    const displayName = t(place.name, place.name_en || '[SEM TRADUÇÃO]', place.name_es);
+    const displayDescription = t(place.description, place.description_en, place.description_es);
+
+    const handleToggleFavorite = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (place.id) {
+            toggleFavorite(place.id);
+        }
+    };
+
+
+    const toggleExpand = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsExpanded(!isExpanded);
+    };
+
+    const openModal = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsOpen(true);
+    };
 
     const googleMapsUrl = place.address
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name} ${place.address} Petrolina PE`)}`
@@ -38,7 +66,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
         category === 'events' ||
         category === 'eventos';
 
-    const actionLabel = isAttraction ? 'Reservar / Ver Site' : 'Fazer Pedido Online';
+    const actionLabel = isAttraction
+        ? t('Reservar / Ver Site', 'Book / View Site', 'Reservar / Ver Sitio')
+        : t('Fazer Pedido Online', 'Order Online', 'Pedir en Línea');
     const ActionIcon = isAttraction ? Ticket : ShoppingBag;
 
     const getFormattedEventDate = () => {
@@ -49,71 +79,155 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
 
     return (
         <>
-            {/* --- CARD COMPACTO (LISTA) --- */}
+            {/* --- CARD EXPANDÍVEL --- */}
             <div
-                onClick={() => setIsOpen(true)}
-                className="flex bg-white dark:bg-gray-800 rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:bg-gray-750 transition-all duration-300 h-32 w-full cursor-pointer active:scale-[0.99] group relative"
+                className={`flex flex-col bg-white dark:bg-gray-800 rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:bg-gray-750 transition-all duration-300 w-full group relative ${isExpanded ? 'ring-2 ring-orange-100 dark:ring-gray-600' : ''}`}
             >
-                <div className="w-28 h-full shrink-0 relative overflow-hidden bg-gray-50 dark:bg-gray-700">
-                    <OptimizedImage
-                        src={place.imageUrl}
-                        alt={place.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors pointer-events-none"></div>
+                {/* Header Collapsed (Always Visible) */}
+                <div
+                    onClick={toggleExpand}
+                    className="flex items-center p-3 cursor-pointer min-h-[72px]"
+                >
+                    {/* Tiny Thumbnail */}
+                    <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
+                        <OptimizedImage
+                            src={place.imageUrl}
+                            alt={place.name}
+                            className="w-full h-full object-cover"
+                        />
+                        {place.eventDate && (
+                            <div className="absolute inset-0 bg-pink-900/40 flex items-center justify-center">
+                                <span className="text-[10px] font-bold text-white">{getFormattedEventDate()}</span>
+                            </div>
+                        )}
+                    </div>
 
-                    {place.eventDate && (
-                        <div className="absolute top-1.5 left-1.5 bg-pink-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm z-10 border border-white/10 font-sans tracking-wide">
-                            <Calendar size={9} />
-                            <span>{getFormattedEventDate()}</span>
-                            {place.eventTime && (
-                                <span className="border-l border-white/20 pl-1 ml-1 flex items-center gap-0.5">
-                                    <Clock size={8} /> {place.eventTime}
+                    {/* Basic Info */}
+                    <div className="ml-3 flex-1 min-w-0 flex flex-col justify-center">
+                        <h4 className="font-heading font-bold text-gray-900 dark:text-white text-sm leading-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1 notranslate">
+                            {displayName}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">
+                                {(() => {
+                                    const rawTag = place.tags?.[0] || place.category || 'Local';
+                                    const tagMap: Record<string, string> = {
+                                        'burgers': t('Hambúrguer', 'Burgers', 'Hamburguesas'),
+                                        'pizza': t('Pizza', 'Pizza', 'Pizza'),
+                                        'japonesa': t('Japonesa', 'Japanese', 'Japonesa'),
+                                        'doces': t('Doces', 'Sweets', 'Dulces'),
+                                        'brasileira': t('Brasileira', 'Brazilian', 'Brasileña'),
+                                        'saudavel': t('Saudável', 'Healthy', 'Saludable'),
+                                        'bebidas': t('Bebidas', 'Drinks', 'Bebidas'),
+                                        'almoço': t('Almoço', 'Lunch', 'Almuerzo'),
+                                        'espetinho': t('Espetinho', 'Skewers', 'Brochetas'),
+                                        'local': t('Local', 'Place', 'Lugar'),
+                                        'lanches': t('Lanches', 'Snacks', 'Bocadillos'),
+                                        'jantar': t('Jantar', 'Dinner', 'Cena'),
+                                        'café': t('Café', 'Coffee', 'Café'),
+                                        'padaria': t('Padaria', 'Bakery', 'Panadería'),
+                                        'sorvete': t('Sorvete', 'Ice Cream', 'Helado'),
+                                        'açaí': t('Açaí', 'Acai', 'Açaí'),
+                                        'massas': t('Massas', 'Pasta', 'Pastas'),
+                                        'frutos do mar': t('Frutos do Mar', 'Seafood', 'Mariscos'),
+                                        'carnes': t('Carnes', 'Steakhouse', 'Carnes'),
+                                        'vegetariano': t('Vegetariano', 'Vegetarian', 'Vegetariano'),
+                                        'vegano': t('Vegano', 'Vegan', 'Vegano'),
+                                        'bar': t('Bar', 'Bar', 'Bar'),
+                                        'pub': t('Pub', 'Pub', 'Pub'),
+                                        'balada': t('Balada', 'Club', 'Discoteca'),
+                                        'música ao vivo': t('Música ao Vivo', 'Live Music', 'Música en Vivo'),
+                                        'happy hour': t('Happy Hour', 'Happy Hour', 'Happy Hour'),
+                                        'delivery': t('Delivery', 'Delivery', 'Entrega'),
+                                        'retirada': t('Retirada', 'Pick-up', 'Recogida'),
+                                        'rodízio': t('Rodízio', 'All-you-can-eat', 'Rodizio'),
+                                        'self-service': t('Self-Service', 'Buffet', 'Buffet'),
+                                        'a la carte': t('À La Carte', 'À La Carte', 'A la Carta'),
+                                        'fast food': t('Fast Food', 'Fast Food', 'Comida Rápida'),
+                                        'gourmet': t('Gourmet', 'Gourmet', 'Gourmet'),
+                                        'artesanal': t('Artesanal', 'Artisanal', 'Artesanal'),
+                                        'regional': t('Regional', 'Regional', 'Regional'),
+                                        'internacional': t('Internacional', 'International', 'Internacional'),
+                                    };
+                                    return tagMap[rawTag.toLowerCase()] || rawTag;
+                                })()}
+                            </span>
+                            {place.distance && !place.eventDate && (
+                                <span className="flex items-center text-[10px] text-gray-400">
+                                    <span className="w-0.5 h-0.5 rounded-full bg-gray-300 mx-1.5" />
+                                    {cleanDistance(place.distance)}
                                 </span>
                             )}
                         </div>
-                    )}
+                    </div>
 
-                    {place.distance && !place.eventDate && (
-                        <div className="absolute top-1.5 right-1.5 bg-gray-900/80 backdrop-blur-md text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm z-10 border border-white/10 font-sans tracking-wide">
-                            <Footprints size={9} className="text-orange-300" />
-                            <span>{cleanDistance(place.distance)}</span>
-                        </div>
-                    )}
 
-                    {(place.orderLink || place.whatsapp) && !place.eventDate && (
-                        <div
-                            className={`absolute bottom-1.5 right-1.5 backdrop-blur-md text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm z-10 border border-white/10 font-sans tracking-wide ${isAttraction ? 'bg-purple-600/90' : 'bg-green-600/90'}`}
-                        >
-                            <ActionIcon size={9} className="text-white" />
-                            <span>{isAttraction ? 'Reservar' : 'Delivery'}</span>
-                        </div>
-                    )}
+                    {/* Favorite Heart */}
+                    <button
+                        onClick={handleToggleFavorite}
+                        className="p-2 mr-1 text-gray-400 active:scale-95 transition-all outline-none"
+                    >
+                        <Heart
+                            size={20}
+                            className={`transition-colors duration-300 ${favorite ? 'fill-red-500 text-red-500' : 'text-gray-300 hover:text-gray-400'}`}
+                        />
+                    </button>
+
+                    {/* Chevron / Toggle Indicator */}
+                    <div className={`p-2 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-orange-500' : ''}`}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </div>
                 </div>
 
-                <div className="flex-1 p-3.5 flex flex-col h-full min-w-0">
-                    {/* NOTRANSLATE ADDED */}
-                    <h4 className="font-heading font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1 notranslate">
-                        {place.name}
-                    </h4>
+                {/* Expanded Content (Animated) */}
+                <div
+                    className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                >
+                    <div className="overflow-hidden">
+                        <div className="p-3 pt-0 pb-4">
+                            {/* Full Image (Click to open modal) */}
+                            <div
+                                onClick={openModal}
+                                className="w-full h-32 rounded-xl overflow-hidden relative group/image cursor-pointer mb-3"
+                            >
+                                <OptimizedImage
+                                    src={place.imageUrl}
+                                    alt={place.name}
+                                    className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-500"
+                                />
+                                <div className="absolute inset-0 bg-black/10 group-hover/image:bg-transparent transition-colors" />
+                            </div>
 
-                    <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3 font-sans font-medium pr-1 mb-auto">
-                        {place.description}
-                    </p>
-
-                    {place.address ? (
-                        <div className="flex items-center gap-1 pt-2 mt-1 border-t border-gray-50 dark:border-gray-700">
-                            <MapPin
-                                size={10}
-                                className="text-gray-400 dark:text-gray-500 shrink-0"
-                            />
-                            <p className="text-[9px] text-gray-500 dark:text-gray-400 truncate font-semibold font-sans notranslate">
-                                {place.address}
+                            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3 font-sans font-medium mb-3">
+                                {displayDescription}
                             </p>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={openModal}
+                                    className="flex-1 py-2 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    {t('Mais Informações', 'More Info', 'Más Información')}
+                                </button>
+                                {(place.orderLink || place.whatsapp) && !place.eventDate && (
+                                    <a
+                                        href={place.orderLink || (place.whatsapp ? `https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}` : '#')}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className={`flex-1 py-2 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all ${isAttraction ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'}`}
+                                    >
+                                        <ActionIcon size={12} />
+                                        {isAttraction
+                                            ? t('Reservar', 'Book', 'Reservar')
+                                            : t('Pedir', 'Order', 'Pedir')}
+                                    </a>
+                                )}
+                            </div>
                         </div>
-                    ) : (
-                        <div className="pt-1"></div>
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -142,24 +256,68 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none"></div>
                             <div className="absolute bottom-0 left-0 w-full p-6">
                                 <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
-                                    {place.name}
+                                    <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
+                                        <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
+                                            {displayName}
+                                        </h2>
+                                    </h2>
                                 </h2>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {place.tags.slice(0, 3).map((tag, idx) => (
-                                        <span
-                                            key={idx}
-                                            className="text-[9px] font-bold font-sans uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-lg backdrop-blur-md border border-white/10 shadow-sm"
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
+                                    {place.tags.slice(0, 3).map((tag, idx) => {
+                                        const tagMap: Record<string, string> = {
+                                            'burgers': t('Hambúrguer', 'Burgers', 'Hamburguesas'),
+                                            'pizza': t('Pizza', 'Pizza', 'Pizza'),
+                                            'japonesa': t('Japonesa', 'Japanese', 'Japonesa'),
+                                            'doces': t('Doces', 'Sweets', 'Dulces'),
+                                            'brasileira': t('Brasileira', 'Brazilian', 'Brasileña'),
+                                            'saudavel': t('Saudável', 'Healthy', 'Saludable'),
+                                            'bebidas': t('Bebidas', 'Drinks', 'Bebidas'),
+                                            'almoço': t('Almoço', 'Lunch', 'Almuerzo'),
+                                            'espetinho': t('Espetinho', 'Skewers', 'Brochetas'),
+                                            'local': t('Local', 'Place', 'Lugar'),
+                                            'lanches': t('Lanches', 'Snacks', 'Bocadillos'),
+                                            'jantar': t('Jantar', 'Dinner', 'Cena'),
+                                            'café': t('Café', 'Coffee', 'Café'),
+                                            'padaria': t('Padaria', 'Bakery', 'Panadería'),
+                                            'sorvete': t('Sorvete', 'Ice Cream', 'Helado'),
+                                            'açaí': t('Açaí', 'Acai', 'Açaí'),
+                                            'massas': t('Massas', 'Pasta', 'Pastas'),
+                                            'frutos do mar': t('Frutos do Mar', 'Seafood', 'Mariscos'),
+                                            'carnes': t('Carnes', 'Steakhouse', 'Carnes'),
+                                            'vegetariano': t('Vegetariano', 'Vegetarian', 'Vegetariano'),
+                                            'vegano': t('Vegano', 'Vegan', 'Vegano'),
+                                            'bar': t('Bar', 'Bar', 'Bar'),
+                                            'pub': t('Pub', 'Pub', 'Pub'),
+                                            'balada': t('Balada', 'Club', 'Discoteca'),
+                                            'música ao vivo': t('Música ao Vivo', 'Live Music', 'Música en Vivo'),
+                                            'happy hour': t('Happy Hour', 'Happy Hour', 'Happy Hour'),
+                                            'delivery': t('Delivery', 'Delivery', 'Entrega'),
+                                            'retirada': t('Retirada', 'Pick-up', 'Recogida'),
+                                            'rodízio': t('Rodízio', 'All-you-can-eat', 'Rodizio'),
+                                            'self-service': t('Self-Service', 'Buffet', 'Buffet'),
+                                            'a la carte': t('À La Carte', 'À La Carte', 'A la Carta'),
+                                            'fast food': t('Fast Food', 'Fast Food', 'Comida Rápida'),
+                                            'gourmet': t('Gourmet', 'Gourmet', 'Gourmet'),
+                                            'artesanal': t('Artesanal', 'Artisanal', 'Artesanal'),
+                                            'regional': t('Regional', 'Regional', 'Regional'),
+                                            'internacional': t('Internacional', 'International', 'Internacional'),
+                                        };
+                                        return (
+                                            <span
+                                                key={idx}
+                                                className="text-[9px] font-bold font-sans uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-lg backdrop-blur-md border border-white/10 shadow-sm"
+                                            >
+                                                {tagMap[tag.toLowerCase()] || tag}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
 
                         <div className="p-6 overflow-y-auto">
                             <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-6 font-sans font-medium">
-                                {place.description}
+                                {displayDescription}
                             </p>
 
                             <div className="space-y-5">
@@ -170,12 +328,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] text-pink-500 dark:text-pink-400 uppercase font-bold mb-0.5 font-heading tracking-wider">
-                                                Quando
+                                                {t('Quando', 'When', 'Cuándo')}
                                             </p>
                                             <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug">
                                                 {place.eventDate.split('-').reverse().join('/')}
                                                 {place.eventEndDate &&
-                                                    ` até ${place.eventEndDate.split('-').reverse().join('/')}`}
+                                                    ` ${t('até', 'until', 'hasta')} ${place.eventEndDate.split('-').reverse().join('/')}`}
                                             </p>
                                             {place.eventTime && (
                                                 <div className="mt-1 flex items-center gap-1 text-xs text-pink-700 dark:text-pink-300 font-medium">
@@ -197,15 +355,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-bold mb-0.5 font-heading tracking-wider">
-                                                Localização
+                                                {t('Localização', 'Location', 'Ubicación')}
                                             </p>
-                                            {/* NOTRANSLATE ADDED */}
                                             <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug notranslate">
                                                 {place.address}
                                             </p>
                                             {place.distance && (
                                                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1 font-medium font-sans">
-                                                    <Car size={12} /> Aprox. {place.distance}
+                                                    <Car size={12} /> {t('Aprox.', 'Approx.', 'Aprox.')} {place.distance}
                                                 </p>
                                             )}
                                         </div>
@@ -233,7 +390,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                             className="flex items-center justify-center gap-2 w-full bg-orange-600 text-white font-bold font-sans py-3.5 rounded-xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98] text-sm"
                                         >
                                             <ExternalLink size={18} />
-                                            Abrir no Google Maps
+                                            {t('Abrir no Google Maps', 'Open in Google Maps', 'Abrir en Google Maps')}
                                         </a>
                                     )}
 
@@ -246,7 +403,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                                 size={18}
                                                 className="text-green-600 dark:text-green-400"
                                             />
-                                            Ligar Agora
+                                            {t('Ligar Agora', 'Call Now', 'Llamar Ahora')}
                                         </a>
                                     )}
 
@@ -272,3 +429,4 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
 };
 
 export default React.memo(PlaceCard);
+

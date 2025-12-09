@@ -7,8 +7,14 @@ export interface StoryItem {
     id: string;
     type: 'event' | 'curiosity';
     title: string;
+    title_en?: string; // Translation
+    title_es?: string; // Translation
     subtitle?: string;
+    subtitle_en?: string; // Translation
+    subtitle_es?: string; // Translation
     content?: string;
+    content_en?: string; // Translation
+    content_es?: string; // Translation
     image?: string;
     link?: string;
     icon?: React.ElementType;
@@ -21,12 +27,59 @@ interface StoryViewerProps {
     onClose: () => void;
     items: StoryItem[];
     startIndex?: number;
+    audioSrc?: string;
 }
 
-const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, startIndex = 0 }) => {
+import { useLanguage } from '../hooks/useLanguage';
+import { Volume2, VolumeX } from 'lucide-react';
+
+const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, startIndex = 0, audioSrc }) => {
+    const { t } = useLanguage();
     const [currentIndex, setCurrentIndex] = useState(startIndex);
     const [progress, setProgress] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+
+    // Audio State
+    const [isMuted, setIsMuted] = useState(false);
+    const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+    // Audio Control Effect
+    useEffect(() => {
+        if (!audioSrc) return;
+
+        if (isOpen) {
+            if (!audioRef.current) {
+                audioRef.current = new Audio(audioSrc);
+                audioRef.current.loop = true;
+            }
+            // Tenta tocar (navegadores podem bloquear se não houver interação prévia, 
+            // mas como o usuário clicou para abrir o story, geralmente funciona)
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Audio play prevented:", error);
+                });
+            }
+        } else {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        }
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+        };
+    }, [isOpen, audioSrc]);
+
+    // Mute Effect
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.muted = isMuted;
+        }
+    }, [isMuted]);
 
     useEffect(() => {
         if (isOpen) {
@@ -105,8 +158,8 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                                     idx < currentIndex
                                         ? '100%'
                                         : idx === currentIndex
-                                          ? `${progress}%`
-                                          : '0%',
+                                            ? `${progress}%`
+                                            : '0%',
                             }}
                         />
                     </div>
@@ -120,21 +173,35 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                     </div>
                     <div>
                         <span className="font-bold text-sm font-heading block leading-none drop-shadow-md">
-                            {currentStory.title}
+                            {t(currentStory.title, currentStory.title_en, currentStory.title_es)}
                         </span>
                         {currentStory.subtitle && (
                             <span className="text-xs opacity-90 font-medium drop-shadow-sm">
-                                {currentStory.subtitle}
+                                {t(currentStory.subtitle, currentStory.subtitle_en, currentStory.subtitle_es)}
                             </span>
                         )}
                     </div>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-white/20 rounded-full transition-colors pointer-events-auto cursor-pointer"
-                >
-                    <X size={24} />
-                </button>
+
+                <div className="flex items-center gap-2 pointer-events-auto">
+                    {audioSrc && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsMuted(!isMuted);
+                            }}
+                            className="p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
+                        >
+                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                        </button>
+                    )}
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
             </div>
 
             {currentStory.image ? (
@@ -200,20 +267,18 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
             </div>
 
             <div
-                className={`absolute inset-0 z-20 flex flex-col items-center p-6 text-center pointer-events-none ${
-                    currentStory.type === 'event' ? 'justify-center' : 'justify-end pb-40'
-                }`}
+                className={`absolute inset-0 z-20 flex flex-col items-center p-6 text-center pointer-events-none ${currentStory.type === 'event' ? 'justify-center' : 'justify-end pb-40'
+                    }`}
             >
                 <div
-                    className={`flex flex-col items-center w-full max-w-md animate-scaleIn ${
-                        currentStory.type === 'event' ? 'justify-center h-full' : ''
-                    }`}
+                    className={`flex flex-col items-center w-full max-w-md animate-scaleIn ${currentStory.type === 'event' ? 'justify-center h-full' : ''
+                        }`}
                 >
                     {currentStory.type === 'event' ? (
                         <>
                             <div className="mb-3 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm">
                                 <CalendarHeart size={14} />
-                                {currentStory.subtitle}
+                                {t(currentStory.subtitle || '', currentStory.subtitle_en, currentStory.subtitle_es)}
                             </div>
 
                             {/* ENDEREÇO NO STORY */}
@@ -225,12 +290,12 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                             )}
 
                             <h2 className="text-3xl md:text-4xl text-white font-bold font-heading leading-tight drop-shadow-xl mb-4">
-                                {currentStory.title}
+                                {t(currentStory.title, currentStory.title_en, currentStory.title_es)}
                             </h2>
 
                             {currentStory.content && (
                                 <div className="bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-white/90 text-sm md:text-base leading-relaxed mb-8 shadow-lg max-h-40 overflow-y-auto no-scrollbar">
-                                    {currentStory.content}
+                                    {t(currentStory.content || '', currentStory.content_en, currentStory.content_es)}
                                 </div>
                             )}
 
@@ -243,8 +308,8 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                                     className="pointer-events-auto relative z-50 px-8 py-4 bg-white text-pink-600 font-bold rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-2 animate-bounce-slow uppercase tracking-wide text-sm cursor-pointer hover:bg-gray-100"
                                 >
                                     {currentStory.link.includes('instagram')
-                                        ? 'Ver no Instagram'
-                                        : 'Garantir Ingresso / Info'}
+                                        ? t('Ver no Instagram', 'View on Instagram', 'Ver en Instagram')
+                                        : t('Garantir Ingresso / Info', 'Get Tickets / Info', 'Obtener Entradas / Info')}
                                     <ExternalLink size={16} />
                                 </a>
                             )}
@@ -259,11 +324,11 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ isOpen, onClose, items, start
                             )}
 
                             <p className="text-xl md:text-2xl text-white font-bold font-heading leading-relaxed drop-shadow-md">
-                                "{currentStory.content}"
+                                "{t(currentStory.content || '', currentStory.content_en, currentStory.content_es)}"
                             </p>
 
                             <div className="mt-8 text-white/50 text-xs font-medium uppercase tracking-widest animate-pulse">
-                                {isPaused ? 'Pausado' : 'Segure para ler'}
+                                {isPaused ? t('Pausado', 'Paused', 'Pausado') : t('Segure para ler', 'Hold to read', 'Mantén para leer')}
                             </div>
                         </>
                     )}

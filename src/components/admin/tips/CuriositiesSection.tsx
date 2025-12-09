@@ -1,6 +1,6 @@
 import React from 'react';
 import { CityCuriosity } from '../../../types';
-import { Plus, Edit, Trash2, Save, X, Loader2, Image as ImageIcon, Download } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Loader2, Image as ImageIcon, Download, Sparkles } from 'lucide-react';
 import ImageUpload from '../ImageUpload';
 
 interface CuriositiesSectionProps {
@@ -17,6 +17,7 @@ interface CuriositiesSectionProps {
     setIsSaving: React.Dispatch<React.SetStateAction<boolean>>;
     onDelete: (index: number) => void;
     showToast: (message: string, type: 'success' | 'error' | 'warning') => void;
+    onTranslate: (items?: CityCuriosity[], silent?: boolean) => Promise<void>;
 }
 
 const CuriositiesSection: React.FC<CuriositiesSectionProps> = ({
@@ -29,31 +30,42 @@ const CuriositiesSection: React.FC<CuriositiesSectionProps> = ({
     setIsSaving,
     onDelete,
     showToast,
+    onTranslate,
 }) => {
     const handleAdd = async () => {
         if (!curiosityForm.text.trim()) return;
 
         const newItem: CityCuriosity = {
+            id: crypto.randomUUID(), // Ensure stable ID immediately
             text: curiosityForm.text.trim(),
             image: curiosityForm.image.trim() || undefined,
             visible: true,
         };
 
-        let newItems = [...curiosities.data];
-
+        const newItems = [...curiosities.data, newItem];
+        // Note: editing logic also needs to be careful, but mainly append here.
         if (editingIndex !== null) {
-            newItems[editingIndex] = newItem;
-        } else {
-            newItems = [...newItems, newItem];
+            // Keep original ID if editing
+            const originalId = curiosities.data[editingIndex].id;
+            newItems[editingIndex] = { ...newItem, id: originalId || newItem.id };
         }
 
         setIsSaving(true);
-        await curiosities.save(newItems);
+        const success = await curiosities.save(newItems);
 
-        setCuriosityForm({ text: '', image: '' });
-        setEditingIndex(null);
+        if (success) {
+            setCuriosityForm({ text: '', image: '' });
+            setEditingIndex(null);
+            showToast('Curiosidade salva!', 'success');
+
+            // AUTO-TRANSLATE (Option 1)
+            // Pass the EXACT new array we just attempted to save
+            onTranslate(newItems, true);
+        } else {
+            showToast('Erro ao salvar curiosidade. Tente novamente.', 'error');
+        }
+
         setIsSaving(false);
-        showToast('Curiosidade salva!', 'success');
     };
 
     const handleEdit = (index: number) => {
@@ -80,21 +92,101 @@ const CuriositiesSection: React.FC<CuriositiesSectionProps> = ({
         showToast('Backup exportado!', 'success');
     };
 
+    // Importar curiosidades (upload JSON)
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const importedData = JSON.parse(text);
+
+            if (Array.isArray(importedData)) {
+                if (window.confirm(`Deseja importar ${importedData.length} curiosidades? Isso substituirá a lista atual.`)) {
+                    setIsSaving(true);
+
+                    // Validate/Sanitize basic structure
+                    const validItems: CityCuriosity[] = importedData.map((item: any) => ({
+                        id: item.id || crypto.randomUUID(),
+                        text: item.text || '',
+                        image: item.image,
+                        visible: item.visible !== false,
+                        text_en: item.text_en,
+                        text_es: item.text_es
+                    })).filter(item => item.text); // Remove empty items
+
+                    const success = await curiosities.save(validItems);
+                    if (success) {
+                        showToast('Curiosidades importadas com sucesso!', 'success');
+
+                        // AUTO-TRANSLATE: Trigger translation for imported items that might miss translations
+                        onTranslate(validItems, true);
+                    } else {
+                        showToast('Erro ao salvar importação.', 'error');
+                    }
+                    setIsSaving(false);
+                }
+            } else {
+                showToast('Arquivo inválido. O formato deve ser uma lista JSON.', 'error');
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            showToast('Erro ao ler arquivo. Verifique se é um JSON válido.', 'error');
+        }
+
+        // Reset input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     💡 Curiosidades da Cidade
                 </h2>
-                {curiosities.data.length > 0 && (
+                <div className="flex gap-2">
+                    {/* Hidden Input for Import */}
+                    <input
+                        type="file"
+                        accept=".json"
+                        ref={fileInputRef}
+                        onChange={handleImportFile}
+                        className="hidden"
+                    />
+
                     <button
-                        onClick={handleExport}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
-                        title="Exportar backup JSON"
+                        onClick={handleImportClick}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                        title="Importar backup JSON"
                     >
-                        <Download size={14} /> Backup
+                        <Download size={14} className="rotate-180" /> Importar
                     </button>
-                )}
+
+                    {curiosities.data.length > 0 && (
+                        <button
+                            onClick={handleExport}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                            title="Exportar backup JSON"
+                        >
+                            <Download size={14} /> Backup
+                        </button>
+                    )}
+                    {curiosities.data.length > 0 && (
+                        <button
+                            onClick={() => onTranslate()}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+                            title="Traduzir Curiosidades"
+                        >
+                            <Sparkles size={14} /> Traduzir
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">

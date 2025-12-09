@@ -54,6 +54,14 @@ export interface PlaceRecommendation {
     whatsapp?: string; // Novo: Para contato direto via WhatsApp
     orderLink?: string; // Novo: Link para pedir (iFood, site próprio)
 
+    // I18n Fields (Optional - Populated by AI)
+    name_en?: string;
+    description_en?: string;
+    distance_en?: string;
+    name_es?: string;
+    description_es?: string;
+    distance_es?: string;
+
     // NOVOS CAMPOS PARA EVENTOS
     eventDate?: string; // Data do evento (YYYY-MM-DD)
     eventEndDate?: string; // Data de término (opcional, para festivais de dias)
@@ -176,6 +184,8 @@ export interface AppConfig {
     globalNotices?: Record<string, { active: boolean; text: string }>; // Novo: Avisos por propriedade
     hostPhones?: Record<string, string>; // Novo: Telefones por propriedade
     aiSystemPrompt?: string; // O Cérebro da IA (Dinâmico - Default/Lili)
+    aiSystemPrompt_en?: string; // Novo: Prompt em Inglês
+    aiSystemPrompt_es?: string; // Novo: Prompt em Espanhol
     aiSystemPrompts?: Record<string, string>; // Novo: Prompts por propriedade (ex: { integracao: "..." })
     cityCuriosities?: CityCuriosity[]; // Curiosidades da Cidade (Dinâmico)
     checklist?: ChecklistItem[]; // Novo: Itens de Vistoria
@@ -222,6 +232,16 @@ export interface Tip {
     content: string;
     iconName: string; // Nome do ícone (ex: 'Wifi', 'Key') para mapeamento
     image?: string;
+
+    // I18n Fields
+    title_en?: string;
+    subtitle_en?: string;
+
+    content_en?: string;
+    title_es?: string;
+    subtitle_es?: string;
+    content_es?: string;
+
     order?: number; // Para ordenação personalizada
     visible?: boolean;
 }
@@ -230,6 +250,8 @@ export interface Tip {
 export interface CityCuriosity {
     id?: string;
     text: string;
+    text_en?: string; // I18n Field
+    text_es?: string;
     image?: string; // URL da imagem personalizada
     visible?: boolean;
 }

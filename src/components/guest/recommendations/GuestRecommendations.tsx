@@ -10,19 +10,22 @@ import {
     Home,
     AlertTriangle,
     HeartPulse,
+    Heart,
     Salad,
     Pill,
 } from 'lucide-react';
 import SectionCard from '../../SectionCard';
 import BottomSheet from '../../ui/BottomSheet';
 import { PlaceRecommendation } from '../../../types';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 // Importa sheets e componentes auxiliares
 import FlatAmenitiesSheet from './sheets/FlatAmenitiesSheet';
 import RulesSheet from './sheets/RulesSheet';
 import EmergencySheet from './sheets/EmergencySheet';
+import FavoritesSheet from './sheets/FavoritesSheet'; // New import
 import ExpandablePlaceList from './ExpandablePlaceList';
-import { PlacesCategory } from './PlacesCategory';
+import AccordionCategoryGroup from './AccordionCategoryGroup';
 
 interface GuestRecommendationsProps {
     mergePlaces: (staticList: PlaceRecommendation[], category: string) => PlaceRecommendation[];
@@ -45,6 +48,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     emergencyRef,
     propertyId = 'lili',
 }) => {
+    const { t } = useLanguage();
     const [activeSheet, setActiveSheet] = useState<string | null>(null);
 
     const handleOpen = (sheet: string) => setActiveSheet(sheet);
@@ -64,28 +68,28 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 {/* Coluna 1 */}
                 <div className="flex flex-col gap-6">
                     <SectionCard
-                        title="O Flat & Comodidades"
+                        title={t('O Flat & Comodidades', 'The Flat & Amenities', 'El Flat y Comodidades')}
                         icon={Home}
                         color="bg-orange-500"
                         isTrigger={true}
                         onToggle={() => handleOpen('O Flat & Comodidades')}
                     />
                     <SectionCard
-                        title="Regras & Avisos"
+                        title={t('Regras & Avisos', 'Rules & Notices', 'Reglas y Avisos')}
                         icon={AlertTriangle}
                         color="bg-red-500"
                         isTrigger={true}
                         onToggle={() => handleOpen('Regras & Avisos')}
                     />
                     <SectionCard
-                        title="Mercados e Serviços"
+                        title={t('Mercados e Serviços', 'Markets & Services', 'Mercados y Servicios')}
                         icon={ShoppingBasket}
                         color="bg-green-500"
                         isTrigger={true}
                         onToggle={() => handleOpen('Mercados e Serviços')}
                     />
                     <SectionCard
-                        title="Bares e Restaurantes"
+                        title={t('Bares e Restaurantes', 'Bars & Restaurants', 'Bares y Restaurantes')}
                         icon={Utensils}
                         color="bg-red-500"
                         isTrigger={true}
@@ -96,21 +100,28 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 {/* Coluna 2 */}
                 <div className="flex flex-col gap-6">
                     <SectionCard
-                        title="Cafés e Padarias"
+                        title={t('Meus Favoritos', 'My Favorites', 'Mis Favoritos')}
+                        icon={Heart} // Using Heart icon
+                        color="bg-pink-600" // Distinct color
+                        isTrigger={true}
+                        onToggle={() => handleOpen('Meus Favoritos')}
+                    />
+                    <SectionCard
+                        title={t('Cafés e Padarias', 'Cafes & Bakeries', 'Cafés y Panaderías')}
                         icon={Coffee}
                         color="bg-amber-600"
                         isTrigger={true}
                         onToggle={() => handleOpen('Cafés e Padarias')}
                     />
                     <SectionCard
-                        title="Passeios & Lazer"
+                        title={t('Passeios & Lazer', 'Tours & Leisure', 'Paseos y Ocio')}
                         icon={Map}
                         color="bg-blue-500"
                         isTrigger={true}
                         onToggle={() => handleOpen('Passeios & Lazer')}
                     />
                     <SectionCard
-                        title="Eventos & Agenda"
+                        title={t('Eventos & Agenda', 'Events & Agenda', 'Eventos y Agenda')}
                         icon={CalendarHeart}
                         color="bg-pink-500"
                         isTrigger={true}
@@ -118,7 +129,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                     />
                     <div ref={emergencyRef} className="break-inside-avoid">
                         <SectionCard
-                            title="SOS & Emergência"
+                            title={t('SOS & Emergência', 'SOS & Emergency', 'SOS y Emergencia')}
                             icon={HeartPulse}
                             color="bg-red-600"
                             isTrigger={true}
@@ -134,7 +145,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'O Flat & Comodidades'}
                 onClose={handleClose}
-                title="O Flat & Comodidades"
+                title={t('O Flat & Comodidades', 'The Flat & Amenities', 'El Flat y Comodidades')}
                 icon={Home}
             >
                 <FlatAmenitiesSheet propertyId={propertyId} />
@@ -144,7 +155,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'Regras & Avisos'}
                 onClose={handleClose}
-                title="Regras & Avisos"
+                title={t('Regras & Avisos', 'Rules & Notices', 'Reglas y Avisos')}
                 icon={AlertTriangle}
             >
                 <RulesSheet />
@@ -154,50 +165,47 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'Mercados e Serviços'}
                 onClose={handleClose}
-                title="Mercados e Serviços"
+                title={t('Mercados e Serviços', 'Markets & Services', 'Mercados y Servicios')}
                 icon={ShoppingBasket}
             >
-                <PlacesCategory
-                    title="Mercados"
-                    icon={<ShoppingBasket size={18} className="text-green-600" />}
-                    places={mergePlaces([], 'essentials')}
-                    visible={hasContent([], 'essentials')}
-                />
-                <PlacesCategory
-                    title="Farmácias"
-                    icon={<Pill size={18} className="text-red-500" />}
-                    places={mergePlaces([], 'pharmacies')}
-                    visible={hasContent([], 'pharmacies')}
-                />
-                <PlacesCategory
-                    title="Lavanderia"
-                    icon={
-                        <span role="img" aria-label="laundry">
-                            🧺
-                        </span>
-                    }
-                    places={mergePlaces([], 'laundry')}
-                    visible={hasContent([], 'laundry')}
-                />
-                <PlacesCategory
-                    title="Salão de Beleza"
-                    icon={
-                        <span role="img" aria-label="salon">
-                            💇‍♀️
-                        </span>
-                    }
-                    places={mergePlaces([], 'salon')}
-                    visible={hasContent([], 'salon')}
-                />
-                <PlacesCategory
-                    title="Academia"
-                    icon={
-                        <span role="img" aria-label="gym">
-                            💪
-                        </span>
-                    }
-                    places={mergePlaces([], 'gym')}
-                    visible={hasContent([], 'gym')}
+                <AccordionCategoryGroup
+                    categories={[
+                        {
+                            id: 'markets',
+                            title: t('Mercados', 'Markets', 'Mercados'),
+                            icon: <ShoppingBasket size={18} className="text-green-600" />,
+                            places: mergePlaces([], 'essentials'),
+                            visible: hasContent([], 'essentials')
+                        },
+                        {
+                            id: 'pharmacies',
+                            title: t('Farmácias', 'Pharmacies', 'Farmacias'),
+                            icon: <Pill size={18} className="text-red-500" />,
+                            places: mergePlaces([], 'pharmacies'),
+                            visible: hasContent([], 'pharmacies')
+                        },
+                        {
+                            id: 'laundry',
+                            title: t('Lavanderia', 'Laundry', 'Lavandería'),
+                            icon: <span role="img" aria-label="laundry">🧺</span>,
+                            places: mergePlaces([], 'laundry'),
+                            visible: hasContent([], 'laundry')
+                        },
+                        {
+                            id: 'salon',
+                            title: t('Salão de Beleza', 'Beauty Salon', 'Salón de Belleza'),
+                            icon: <span role="img" aria-label="salon">💇‍♀️</span>,
+                            places: mergePlaces([], 'salon'),
+                            visible: hasContent([], 'salon')
+                        },
+                        {
+                            id: 'gym',
+                            title: t('Academia', 'Gym', 'Gimnasio'),
+                            icon: <span role="img" aria-label="gym">💪</span>,
+                            places: mergePlaces([], 'gym'),
+                            visible: hasContent([], 'gym')
+                        }
+                    ]}
                 />
             </BottomSheet>
 
@@ -205,78 +213,75 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'Bares e Restaurantes'}
                 onClose={handleClose}
-                title="Bares e Restaurantes"
+                title={t('Bares e Restaurantes', 'Bars & Restaurants', 'Bares y Restaurantes')}
                 icon={Utensils}
             >
-                <PlacesCategory
-                    title="Bares & Pubs"
-                    icon={
-                        <span role="img" aria-label="beer">
-                            🍺
-                        </span>
-                    }
-                    places={mergePlaces([], 'bars')}
-                    visible={hasContent([], 'bars')}
-                />
-                <PlacesCategory
-                    title="Hambúrguer & Sanduíches"
-                    icon={
-                        <span role="img" aria-label="burger">
-                            🍔
-                        </span>
-                    }
-                    places={mergePlaces([], 'burgers')}
-                    visible={hasContent([], 'burgers')}
-                />
-                <PlacesCategory
-                    title="Espetinhos & Jantinha"
-                    icon={<Flame size={18} className="text-orange-500" />}
-                    places={mergePlaces([], 'skewers')}
-                    visible={hasContent([], 'skewers')}
-                />
-                <PlacesCategory
-                    title="Saladas & Saudável"
-                    icon={<Salad size={18} className="text-green-500" />}
-                    places={mergePlaces([], 'salads')}
-                    visible={hasContent([], 'salads')}
-                />
-                <PlacesCategory
-                    title="Pizzas & Massas"
-                    icon={<Pizza size={18} className="text-red-500" />}
-                    places={mergePlaces([], 'pasta')}
-                    visible={hasContent([], 'pasta')}
-                />
-                <PlacesCategory
-                    title="Oriental & Sushi"
-                    icon={
-                        <span role="img" aria-label="sushi">
-                            🍣
-                        </span>
-                    }
-                    places={mergePlaces([], 'oriental')}
-                    visible={hasContent([], 'oriental')}
-                />
-                <PlacesCategory
-                    title="À La Carte & Refinados"
-                    icon={<Utensils size={18} className="text-gray-500" />}
-                    places={mergePlaces([], 'alacarte')}
-                    visible={hasContent([], 'alacarte')}
-                />
-                <PlacesCategory
-                    title="Self-Service & Almoço"
-                    icon={<Utensils size={18} className="text-green-600" />}
-                    places={mergePlaces([], 'selfservice')}
-                    visible={hasContent([], 'selfservice')}
-                />
-                <PlacesCategory
-                    title="Lanches Rápidos"
-                    icon={
-                        <span role="img" aria-label="hotdog">
-                            🌭
-                        </span>
-                    }
-                    places={mergePlaces([], 'snacks')}
-                    visible={hasContent([], 'snacks')}
+                <AccordionCategoryGroup
+                    categories={[
+                        {
+                            id: 'bars',
+                            title: t('Bares & Pubs', 'Bars & Pubs', 'Bares y Pubs'),
+                            icon: <span role="img" aria-label="beer">🍺</span>,
+                            places: mergePlaces([], 'bars'),
+                            visible: hasContent([], 'bars')
+                        },
+                        {
+                            id: 'burgers',
+                            title: t('Hambúrguer & Sanduíches', 'Burgers & Sandwiches', 'Hamburguesas y Sándwiches'),
+                            icon: <span role="img" aria-label="burger">🍔</span>,
+                            places: mergePlaces([], 'burgers'),
+                            visible: hasContent([], 'burgers')
+                        },
+                        {
+                            id: 'skewers',
+                            title: t('Espetinhos & Jantinha', 'Skewers & Dinner', 'Brochetas y Cena'),
+                            icon: <Flame size={18} className="text-orange-500" />,
+                            places: mergePlaces([], 'skewers'),
+                            visible: hasContent([], 'skewers')
+                        },
+                        {
+                            id: 'salads',
+                            title: t('Saladas & Saudável', 'Salads & Healthy', 'Ensaladas y Saludable'),
+                            icon: <Salad size={18} className="text-green-500" />,
+                            places: mergePlaces([], 'salads'),
+                            visible: hasContent([], 'salads')
+                        },
+                        {
+                            id: 'pizza',
+                            title: t('Pizzas & Massas', 'Pizzas & Pasta', 'Pizzas y Pastas'),
+                            icon: <Pizza size={18} className="text-red-500" />,
+                            places: mergePlaces([], 'pasta'),
+                            visible: hasContent([], 'pasta')
+                        },
+                        {
+                            id: 'sushi',
+                            title: t('Oriental & Sushi', 'Oriental & Sushi', 'Oriental y Sushi'),
+                            icon: <span role="img" aria-label="sushi">🍣</span>,
+                            places: mergePlaces([], 'oriental'),
+                            visible: hasContent([], 'oriental')
+                        },
+                        {
+                            id: 'alacarte',
+                            title: t('À La Carte & Refinados', 'À La Carte & Fine Dining', 'A La Carta y Refinados'),
+                            icon: <Utensils size={18} className="text-gray-500" />,
+                            places: mergePlaces([], 'alacarte'),
+                            visible: hasContent([], 'alacarte')
+                        },
+                        {
+                            id: 'selfservice',
+                            title: t('Self-Service & Almoço', 'Self-Service & Lunch', 'Buffet y Almuerzo'),
+                            icon: <Utensils size={18} className="text-green-600" />,
+                            places: mergePlaces([], 'selfservice'),
+                            visible: hasContent([], 'selfservice')
+                        },
+                        {
+                            id: 'snacks',
+                            title: t('Lanches Rápidos', 'Quick Snacks', 'Bocadillos Rápidos'),
+                            icon: <span role="img" aria-label="hotdog">🌭</span>,
+                            places: mergePlaces([], 'snacks'),
+                            visible: hasContent([], 'snacks')
+                        }
+                    ]}
                 />
             </BottomSheet>
 
@@ -284,14 +289,21 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'Cafés e Padarias'}
                 onClose={handleClose}
-                title="Cafés e Padarias"
+                title={t('Cafés e Padarias', 'Cafes & Bakeries', 'Cafés y Panaderías')}
                 icon={Coffee}
             >
-                <PlacesCategory
-                    title="Cafés & Padarias"
-                    icon={<Coffee size={18} className="text-amber-700" />}
-                    places={mergePlaces([], 'cafes')}
-                    visible={hasContent([], 'cafes')}
+                <AccordionCategoryGroup
+                    categories={[
+                        {
+                            id: 'cafes',
+                            title: t('Cafés & Padarias', 'Cafes & Bakeries', 'Cafés y Panaderías'),
+                            icon: <Coffee size={18} className="text-amber-700" />,
+                            places: mergePlaces([], 'cafes'),
+                            visible: hasContent([], 'cafes')
+                        }
+                    ]}
+                    initialOpenId="cafes" // Auto-open since it is the only one? Or let it be closed? User said "menus close others". If only one, maybe better open? 
+                // Let's stick to default behavior (first open).
                 />
             </BottomSheet>
 
@@ -299,34 +311,33 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'Passeios & Lazer'}
                 onClose={handleClose}
-                title="Passeios & Lazer"
+                title={t('Passeios & Lazer', 'Tours & Leisure', 'Paseos y Ocio')}
                 icon={Map}
             >
-                <PlacesCategory
-                    title="Passeios Imperdíveis"
-                    icon={<Map size={18} className="text-blue-600" />}
-                    places={mergePlaces([], 'attractions')}
-                    visible={hasContent([], 'attractions')}
-                />
-                <PlacesCategory
-                    title="Aluguel de Bicicletas"
-                    icon={
-                        <span role="img" aria-label="bike">
-                            🚲
-                        </span>
-                    }
-                    places={mergePlaces([], 'bikes')}
-                    visible={hasContent([], 'bikes')}
-                />
-                <PlacesCategory
-                    title="Lembrancinhas"
-                    icon={
-                        <span role="img" aria-label="gift">
-                            🎁
-                        </span>
-                    }
-                    places={mergePlaces([], 'souvenirs')}
-                    visible={hasContent([], 'souvenirs')}
+                <AccordionCategoryGroup
+                    categories={[
+                        {
+                            id: 'attractions',
+                            title: t('Passeios Imperdíveis', 'Must-See Tours', 'Paseos Imperdibles'),
+                            icon: <Map size={18} className="text-blue-600" />,
+                            places: mergePlaces([], 'attractions'),
+                            visible: hasContent([], 'attractions')
+                        },
+                        {
+                            id: 'bikes',
+                            title: t('Aluguel de Bicicletas', 'Bicycle Rental', 'Alquiler de Bicicletas'),
+                            icon: <span role="img" aria-label="bike">🚲</span>,
+                            places: mergePlaces([], 'bikes'),
+                            visible: hasContent([], 'bikes')
+                        },
+                        {
+                            id: 'souvenirs',
+                            title: t('Lembrancinhas', 'Souvenirs', 'Recuerdos'),
+                            icon: <span role="img" aria-label="gift">🎁</span>,
+                            places: mergePlaces([], 'souvenirs'),
+                            visible: hasContent([], 'souvenirs')
+                        }
+                    ]}
                 />
             </BottomSheet>
 
@@ -334,14 +345,14 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'Eventos & Agenda'}
                 onClose={handleClose}
-                title="Eventos & Agenda"
+                title={t('Eventos & Agenda', 'Events & Agenda', 'Eventos y Agenda')}
                 icon={CalendarHeart}
             >
                 {activeEvents.length > 0 ? (
                     <ExpandablePlaceList places={activeEvents} />
                 ) : (
                     <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                        <p className="text-xs">Nenhum evento programado para os próximos dias.</p>
+                        <p className="text-xs">{t('Nenhum evento programado para os próximos dias.', 'No events scheduled for the next few days.', 'No hay eventos programados para los próximos días.')}</p>
                     </div>
                 )}
             </BottomSheet>
@@ -350,10 +361,22 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             <BottomSheet
                 isOpen={activeSheet === 'SOS & Emergência'}
                 onClose={handleClose}
-                title="SOS & Emergência"
+                title={t('SOS & Emergência', 'SOS & Emergency', 'SOS y Emergencia')}
                 icon={HeartPulse}
             >
                 <EmergencySheet emergencyPlaces={mergePlaces([], 'emergency')} />
+            </BottomSheet>
+
+            {/* Meus Favoritos */}
+            <BottomSheet
+                isOpen={activeSheet === 'Meus Favoritos'}
+                onClose={handleClose}
+                title={t('Meus Favoritos', 'My Favorites', 'Mis Favoritos')}
+                icon={Heart}
+            >
+                <FavoritesSheet
+                    allPlaces={mergePlaces([], 'all')} // We need to pass all places to filter them
+                />
             </BottomSheet>
         </>
     );

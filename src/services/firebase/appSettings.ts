@@ -21,7 +21,7 @@ export const getAppSettings = async (): Promise<AppConfig | null> => {
 };
 
 export const saveAppSettings = async (config: AppConfig) => {
-    await setDoc(doc(db, 'app_config', 'general'), config);
+    await setDoc(doc(db, 'app_config', 'general'), config, { merge: true });
 
     // Sync curiosities to its own document for GuestView
     if (config.cityCuriosities) {
