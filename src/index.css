@@ -609,38 +609,106 @@ body {
 .react-calendar--selectRange .react-calendar__tile--hover {
     background-color: #e6e6e6;
 }
+
 /* =============================================
    SAFE AREA UTILITIES - Mobile Notch Support
    ============================================= */
 
 /* Safe area padding utilities */
-.safe-top { padding-top: max(1rem, var(--safe-area-top)); }
-.safe-bottom { padding-bottom: max(1rem, var(--safe-area-bottom)); }
-.safe-left { padding-left: max(1rem, var(--safe-area-left)); }
-.safe-right { padding-right: max(1rem, var(--safe-area-right)); }
+.safe-top {
+    padding-top: max(1rem, var(--safe-area-top));
+}
+
+.safe-bottom {
+    padding-bottom: max(1rem, var(--safe-area-bottom));
+}
+
+.safe-left {
+    padding-left: max(1rem, var(--safe-area-left));
+}
+
+.safe-right {
+    padding-right: max(1rem, var(--safe-area-right));
+}
 
 /* Safe area margin utilities */
-.safe-mt { margin-top: var(--safe-area-top); }
-.safe-mb { margin-bottom: var(--safe-area-bottom)); }
+.safe-mt {
+    margin-top: var(--safe-area-top);
+}
+
+.safe-mb {
+    margin-bottom: var(--safe-area-bottom);
+}
 
 /* Combined safe areas */
 .safe-x {
     padding-left: max(1rem, var(--safe-area-left));
     padding-right: max(1rem, var(--safe-area-right));
 }
+
 .safe-y {
     padding-top: max(1rem, var(--safe-area-top));
     padding-bottom: max(1rem, var(--safe-area-bottom));
 }
+
 /* Stories Scroll Snap - Instagram-like alignment */
 .stories-scroll-container {
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    scroll-padding: 0 24px; /* Account for container padding */
+    scroll-padding: 0 24px;
+    /* Account for container padding */
 }
 
 .story-item {
     scroll-snap-align: center;
     scroll-snap-stop: always;
+}
+
+/* =============================================
+   RESPONSIVIDADE E PRINT (Auditoria UX 18)
+   ============================================= */
+
+@media print {
+
+    .no-print,
+    nav,
+    button,
+    .mobile-bottom-nav,
+    .stories-scroll-container,
+    .hero-section-controls {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    .ui-card,
+    .ui-card-glass,
+    .ui-card-dark {
+        box-shadow: none !important;
+        background: white !important;
+        border: 1px solid #ddd !important;
+        color: black !important;
+    }
+
+    /* Esconde elementos decorativos */
+    .animate-bounce,
+    .animate-spin,
+    .animate-pulse {
+        animation: none !important;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .mobile-bottom-nav {
+        /* Move para a lateral ou esconde em landscape curto */
+        display: none;
+    }
+
+    .landscape-padding {
+        padding-bottom: 20px !important;
+    }
 }

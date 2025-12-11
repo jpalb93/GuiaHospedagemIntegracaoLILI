@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Monitor } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import OptimizedImage from '../OptimizedImage';
 import WeatherWidget from '../WeatherWidget';
@@ -10,11 +10,11 @@ import flatsLogo from '../../assets/flats-integracao-logo.png';
 import LogoLili from '../LogoLili';
 import { hapticFeedback } from '../../utils/haptics';
 
+import { useTheme } from '../../contexts/ThemeContext';
+
 interface HeroSectionProps {
     config: GuestConfig;
     heroSlides?: string[];
-    theme?: 'light' | 'dark';
-    toggleTheme?: () => void;
     currentLang: 'pt' | 'en' | 'es';
     toggleLanguage: () => void;
 }
@@ -22,11 +22,15 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({
     config,
     heroSlides = DEFAULT_SLIDES,
-    theme,
-    toggleTheme,
     currentLang,
     toggleLanguage,
 }) => {
+    const { theme, setTheme } = useTheme();
+    const cycleTheme = () => {
+        if (theme === 'light') setTheme('dark');
+        else if (theme === 'dark') setTheme('system');
+        else setTheme('light');
+    };
     const { t } = useLanguage();
     const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
 
@@ -83,14 +87,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                         {currentLang === 'pt' ? '🇺🇸' : currentLang === 'en' ? '🇪🇸' : '🇧🇷'}
                     </button>
 
-                    {toggleTheme && (
-                        <button
-                            onClick={toggleTheme}
-                            className="px-2.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 dark:bg-black/60 dark:hover:bg-black/80 backdrop-blur-md text-white border border-white/20 shadow-black/10 transition-all flex items-center justify-center"
-                        >
-                            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-                        </button>
-                    )}
+                    <button
+                        onClick={cycleTheme}
+                        className="px-2.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 dark:bg-black/60 dark:hover:bg-black/80 backdrop-blur-md text-white border border-white/20 shadow-black/10 transition-all flex items-center justify-center"
+                    >
+                        {theme === 'dark' ? (
+                            <Moon size={14} />
+                        ) : theme === 'light' ? (
+                            <Sun size={14} />
+                        ) : (
+                            <Monitor size={14} /> // Requires importing Monitor
+                        )}
+                    </button>
                     <WeatherWidget />
                 </div>
 

@@ -6,7 +6,6 @@ import type { PluginListenerHandle } from '@capacitor/core';
 import { AppMode, GuestConfig } from './types';
 import { Button, Input } from './components/ui';
 import { logger } from './utils/logger';
-// Importação otimizada de ícones - Lucide React já faz tree-shaking automaticamente
 import {
     CalendarX,
     MessageCircle,
@@ -24,9 +23,10 @@ import { GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/Load
 import ModernLoadingScreen from './components/ModernLoadingScreen';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LanguageProvider } from './hooks/useLanguage';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { PageTransition } from './components/ui/PageTransition';
 
 // --- LAZY LOADING (CODE SPLITTING) ---
-// Carrega os componentes pesados apenas quando necessários
 const AdminDashboard = lazy(
     () => import(/* webpackChunkName: "admin" */ './components/admin/AdminDashboard')
 );
@@ -40,40 +40,8 @@ const LandingFlatsIntegracao = lazy(
 );
 
 // --- FUNÇÃO DE SEGURANÇA: REMOVIDA (Agora é Server-Side) ---
-// A sanitização ocorre na API /api/get-guest-config
 
 const App: React.FC = () => {
-    // --- TEMA ---
-    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-        if (typeof window !== 'undefined') {
-            const savedTheme = localStorage.getItem('flat_lili_theme');
-            if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
-            const prefersDark =
-                window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            return prefersDark ? 'dark' : 'light';
-        }
-        return 'light';
-    });
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        const colorLight = '#f9fafb';
-        const colorDark = '#111827';
-
-        if (root && root.classList) {
-            if (theme === 'dark') {
-                root.classList.add('dark');
-                document
-                    .querySelector('meta[name=theme-color]')
-                    ?.setAttribute('content', colorDark);
-            } else {
-                root.classList.remove('dark');
-                document
-                    .querySelector('meta[name=theme-color]')
-                    ?.setAttribute('content', colorLight);
-            }
-        }
-    }, [theme]);
     // --- CAPACITOR ANDROID BACK BUTTON ---
     useEffect(() => {
         let backListener: PluginListenerHandle | undefined;
@@ -100,14 +68,6 @@ const App: React.FC = () => {
         };
     }, []);
 
-    const toggleTheme = () => {
-        setTheme((prev) => {
-            const newTheme = prev === 'light' ? 'dark' : 'light';
-            localStorage.setItem('flat_lili_theme', newTheme);
-            return newTheme;
-        });
-    };
-
     // Detect Native Platform using Capacitor Global or Plugin
     const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform();
 
@@ -130,7 +90,7 @@ const App: React.FC = () => {
         return { mode: 'LOADING', config: { guestName: '', lockCode: '' } };
     });
 
-    const [showManualLogin, setShowManualLogin] = useState(false); // No longer needed default true for native
+    const [showManualLogin, setShowManualLogin] = useState(false);
     const [manualInput, setManualInput] = useState('');
 
     // --- MONITORAMENTO (AGORA VIA API) ---
@@ -159,9 +119,6 @@ const App: React.FC = () => {
             }
 
             // ADMIN ROUTE SECURITY:
-            // Check for /admin path
-            // The AdminView component itself handles authentication (Firebase Auth),
-            // so we just need to route correctly here.
             if (path === '/admin') {
                 await minLoadingTime;
                 setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
@@ -197,8 +154,6 @@ const App: React.FC = () => {
             if (reservationId) {
                 const fetchWithRetry = async () => {
                     try {
-                        // Executa o fetch e o timer em paralelo
-                        // O Promise.all aguarda AMBOS terminarem. Se o fetch for rápido, espera o timer.
                         const [safeConfig] = await Promise.all([
                             fetchGuestConfig(reservationId!),
                             minLoadingTime,
@@ -255,7 +210,7 @@ const App: React.FC = () => {
                             config: { guestName: '', lockCode: '' },
                         });
 
-                        // Tenta novamente em 2 segundos (loop recursivo via setTimeout para não travar)
+                        // Tenta novamente em 2 segundos
                         setTimeout(fetchWithRetry, 2000);
                     }
                 };
@@ -302,7 +257,7 @@ const App: React.FC = () => {
             logger.warn('Erro ao parsear input manual', e);
         }
 
-        setAppState({ mode: 'LOADING', config: { guestName: '', lockCode: '' } }); // Feedback visual imediato
+        setAppState({ mode: 'LOADING', config: { guestName: '', lockCode: '' } });
 
         try {
             const config = await fetchGuestConfig(rid);
@@ -321,9 +276,8 @@ const App: React.FC = () => {
 
     // --- RENDERIZAÇÃO ---
 
-    // 1. Tela de Carregamento (Enquanto decide a rota)
+    // 1. Tela de Carregamento
     if (appState.mode === 'LOADING') {
-        // Determina a variante do loading baseada na URL atual OU localStorage
         let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
         const path = window.location.pathname;
         const params = new URLSearchParams(window.location.search);
@@ -345,7 +299,7 @@ const App: React.FC = () => {
         return <ModernLoadingScreen variant={loadingVariant} />;
     }
 
-    // 1.5 Tela de Reconexão (NOVO)
+    // 1.5 Tela de Reconexão
     if (appState.mode === 'RECONNECTING') {
         return (
             <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
@@ -364,22 +318,19 @@ const App: React.FC = () => {
         );
     }
 
-    // 2. Modo Admin (Protegido)
-    if (appState.mode === (AppMode.ADMIN as any)) {
-        return (
-            <Suspense fallback={<ModernLoadingScreen variant="admin" />}>
-                <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
-            </Suspense>
-        );
-    }
-
-    // 3. Modo CMS (Redirecionado para Admin)
-    if (appState.mode === AppMode.CMS) {
+    // 2. Modo Admin e CMS
+    if (appState.mode === (AppMode.ADMIN as any) || appState.mode === AppMode.CMS) {
         return (
             <ErrorBoundary>
-                <Suspense fallback={<AdminSkeleton />}>
-                    <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
-                </Suspense>
+                <ThemeProvider>
+                    <LanguageProvider>
+                        <Suspense fallback={<ModernLoadingScreen variant="admin" />}>
+                            <PageTransition>
+                                <AdminDashboard />
+                            </PageTransition>
+                        </Suspense>
+                    </LanguageProvider>
+                </ThemeProvider>
             </ErrorBoundary>
         );
     }
@@ -388,9 +339,13 @@ const App: React.FC = () => {
     if (appState.mode === 'LILI_LANDING') {
         return (
             <ErrorBoundary>
-                <Suspense fallback={<LandingSkeleton />}>
-                    <LandingPageLili />
-                </Suspense>
+                <ThemeProvider>
+                    <Suspense fallback={<LandingSkeleton />}>
+                        <PageTransition>
+                            <LandingPageLili />
+                        </PageTransition>
+                    </Suspense>
+                </ThemeProvider>
             </ErrorBoundary>
         );
     }
@@ -400,79 +355,81 @@ const App: React.FC = () => {
         const isExpired = appState.mode === 'EXPIRED';
         return (
             <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
-                <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-red-500/30 shadow-2xl max-w-md animate-fadeIn w-full">
-                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        {isExpired ? (
-                            <CalendarX className="text-red-400" size={32} />
+                <PageTransition>
+                    <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-red-500/30 shadow-2xl max-w-md animate-fadeIn w-full">
+                        <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            {isExpired ? (
+                                <CalendarX className="text-red-400" size={32} />
+                            ) : (
+                                <AlertTriangle className="text-red-400" size={32} />
+                            )}
+                        </div>
+                        <h1 className="text-2xl font-bold text-white mb-2 font-heading">
+                            {isExpired ? 'Acesso Expirado' : 'Reserva Não Encontrada'}
+                        </h1>
+                        {!showManualLogin ? (
+                            <>
+                                <p className="text-gray-300 text-sm mb-8 leading-relaxed font-medium">
+                                    {isExpired
+                                        ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
+                                        : 'Este link não está mais disponível ou a reserva foi cancelada.'}
+                                </p>
+                                <div className="flex flex-col gap-3">
+                                    <Button
+                                        onClick={() => setShowManualLogin(true)}
+                                        fullWidth
+                                        leftIcon={<RefreshCw size={16} />}
+                                    >
+                                        {isExpired ? 'Inserir Novo Código' : 'Tenho um novo código'}
+                                    </Button>
+                                    <a
+                                        href={`https://wa.me/${HOST_PHONE}`}
+                                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-heading"
+                                    >
+                                        <MessageCircle size={18} /> Falar com a Anfitriã
+                                    </a>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={handleResetApp}
+                                        className="text-xs text-gray-400 hover:text-white underline"
+                                        leftIcon={<LogOut size={12} />}
+                                    >
+                                        Voltar ao Início
+                                    </Button>
+                                </div>
+                            </>
                         ) : (
-                            <AlertTriangle className="text-red-400" size={32} />
+                            <div className="animate-fadeIn">
+                                <p className="text-sm text-gray-300 mb-3 font-medium">
+                                    Cole o novo link abaixo:
+                                </p>
+                                <Input
+                                    value={manualInput}
+                                    onChange={(e) => setManualInput(e.target.value)}
+                                    placeholder="Cole aqui (ex: ?rid=...)"
+                                    className="bg-black/50 border-white/20 text-white placeholder:text-gray-500 mb-4"
+                                />
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => setShowManualLogin(false)}
+                                        className="flex-1 bg-white/10 hover:bg-white/20 text-gray-300 border-0"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        onClick={handleManualSubmit}
+                                        disabled={!manualInput.trim()}
+                                        className="flex-1"
+                                        rightIcon={<ArrowRight size={16} />}
+                                    >
+                                        Acessar
+                                    </Button>
+                                </div>
+                            </div>
                         )}
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-2 font-heading">
-                        {isExpired ? 'Acesso Expirado' : 'Reserva Não Encontrada'}
-                    </h1>
-                    {!showManualLogin ? (
-                        <>
-                            <p className="text-gray-300 text-sm mb-8 leading-relaxed font-medium">
-                                {isExpired
-                                    ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
-                                    : 'Este link não está mais disponível ou a reserva foi cancelada.'}
-                            </p>
-                            <div className="flex flex-col gap-3">
-                                <Button
-                                    onClick={() => setShowManualLogin(true)}
-                                    fullWidth
-                                    leftIcon={<RefreshCw size={16} />}
-                                >
-                                    {isExpired ? 'Inserir Novo Código' : 'Tenho um novo código'}
-                                </Button>
-                                <a
-                                    href={`https://wa.me/${HOST_PHONE}`}
-                                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-heading"
-                                >
-                                    <MessageCircle size={18} /> Falar com a Anfitriã
-                                </a>
-                                <Button
-                                    variant="ghost"
-                                    onClick={handleResetApp}
-                                    className="text-xs text-gray-400 hover:text-white underline"
-                                    leftIcon={<LogOut size={12} />}
-                                >
-                                    Voltar ao Início
-                                </Button>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="animate-fadeIn">
-                            <p className="text-sm text-gray-300 mb-3 font-medium">
-                                Cole o novo link abaixo:
-                            </p>
-                            <Input
-                                value={manualInput}
-                                onChange={(e) => setManualInput(e.target.value)}
-                                placeholder="Cole aqui (ex: ?rid=...)"
-                                className="bg-black/50 border-white/20 text-white placeholder:text-gray-500 mb-4"
-                            />
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="secondary"
-                                    onClick={() => setShowManualLogin(false)}
-                                    className="flex-1 bg-white/10 hover:bg-white/20 text-gray-300 border-0"
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    onClick={handleManualSubmit}
-                                    disabled={!manualInput.trim()}
-                                    className="flex-1"
-                                    rightIcon={<ArrowRight size={16} />}
-                                >
-                                    Acessar
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                </PageTransition>
             </div>
         );
     }
@@ -481,9 +438,13 @@ const App: React.FC = () => {
     if (appState.mode === 'LANDING') {
         return (
             <ErrorBoundary>
-                <Suspense fallback={<LandingSkeleton />}>
-                    <LandingFlatsIntegracao />
-                </Suspense>
+                <ThemeProvider>
+                    <Suspense fallback={<LandingSkeleton />}>
+                        <PageTransition>
+                            <LandingFlatsIntegracao />
+                        </PageTransition>
+                    </Suspense>
+                </ThemeProvider>
             </ErrorBoundary>
         );
     }
@@ -491,25 +452,27 @@ const App: React.FC = () => {
     // 6. App Principal (Admin ou Guest) com Suspense e ErrorBoundary
     return (
         <ErrorBoundary>
-            <LanguageProvider>
-                <FavoritesProvider>
-                    <Suspense
-                        fallback={appState.mode === AppMode.ADMIN ? <AdminSkeleton /> : <GuestSkeleton />}
-                    >
-                        <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-                            {appState.mode === AppMode.ADMIN ? (
-                                <AdminDashboard theme={theme} toggleTheme={toggleTheme} />
-                            ) : (
-                                <GuestView
-                                    config={appState.config}
-                                    theme={theme}
-                                    toggleTheme={toggleTheme}
-                                />
-                            )}
-                        </div>
-                    </Suspense>
-                </FavoritesProvider>
-            </LanguageProvider>
+            <ThemeProvider>
+                <LanguageProvider>
+                    <FavoritesProvider>
+                        <Suspense
+                            fallback={appState.mode === AppMode.ADMIN ? <AdminSkeleton /> : <GuestSkeleton />}
+                        >
+                            <PageTransition>
+                                <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+                                    {appState.mode === AppMode.ADMIN ? (
+                                        <AdminDashboard />
+                                    ) : (
+                                        <GuestView
+                                            config={appState.config}
+                                        />
+                                    )}
+                                </div>
+                            </PageTransition>
+                        </Suspense>
+                    </FavoritesProvider>
+                </LanguageProvider>
+            </ThemeProvider>
         </ErrorBoundary>
     );
 };

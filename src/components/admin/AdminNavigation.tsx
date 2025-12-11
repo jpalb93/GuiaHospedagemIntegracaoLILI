@@ -13,17 +13,18 @@ import {
     LogOut,
     Moon,
     Sun,
+    Monitor,
 } from 'lucide-react';
 
 import { UserPermission } from '../../types';
+
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface AdminNavigationProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
     isMobileMenuOpen: boolean;
     setIsMobileMenuOpen: (isOpen: boolean) => void;
-    theme: 'light' | 'dark';
-    toggleTheme: () => void;
     onLogout: () => void;
     userEmail?: string;
     userPermission?: UserPermission | null;
@@ -34,12 +35,17 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
     setActiveTab,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
-    theme,
-    toggleTheme,
     onLogout,
     userEmail,
     userPermission,
 }) => {
+    const { theme, setTheme } = useTheme();
+
+    const cycleTheme = () => {
+        if (theme === 'light') setTheme('dark');
+        else if (theme === 'dark') setTheme('system');
+        else setTheme('light');
+    };
     // --- BRANDING LOGIC ---
     const getBrandTitle = () => {
         if (!userPermission) return 'Painel Admin';
@@ -108,11 +114,10 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
-                            className={`group w-full flex items-center gap-3.5 px-5 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${
-                                activeTab === item.id
-                                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25 ring-1 ring-white/20 translate-x-1'
-                                    : 'text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:shadow-sm dark:hover:shadow-none hover:translate-x-1'
-                            }`}
+                            className={`group w-full flex items-center gap-3.5 px-5 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${activeTab === item.id
+                                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25 ring-1 ring-white/20 translate-x-1'
+                                : 'text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:shadow-sm dark:hover:shadow-none hover:translate-x-1'
+                                }`}
                         >
                             <item.icon
                                 size={22}
@@ -136,15 +141,15 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                 {/* BOTTOM ACTIONS (USER & THEME) */}
                 <div className="p-4 mx-4 mb-6 bg-white/60 dark:bg-white/5 rounded-3xl border border-gray-100/50 dark:border-white/5 backdrop-blur-md shadow-sm dark:shadow-none">
                     <button
-                        onClick={toggleTheme}
+                        onClick={cycleTheme}
                         className="w-full flex items-center justify-between p-2.5 rounded-2xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition-all mb-3 group"
                     >
                         <div className="flex items-center gap-3">
                             <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:text-orange-500 transition-colors">
-                                {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+                                {theme === 'light' ? <Sun size={16} /> : theme === 'dark' ? <Moon size={16} /> : <Monitor size={16} />}
                             </div>
                             <span className="font-semibold">
-                                {theme === 'light' ? 'Escuro' : 'Claro'}
+                                {theme === 'light' ? 'Claro' : theme === 'dark' ? 'Escuro' : 'Sistema'}
                             </span>
                         </div>
                         <div
@@ -181,11 +186,10 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
-                            className={`relative flex flex-col items-center justify-center p-2 transition-all duration-500 ${
-                                activeTab === item.id
-                                    ? 'text-white -translate-y-4'
-                                    : 'text-gray-500 hover:text-gray-300'
-                            }`}
+                            className={`relative flex flex-col items-center justify-center p-2 transition-all duration-500 ${activeTab === item.id
+                                ? 'text-white -translate-y-4'
+                                : 'text-gray-500 hover:text-gray-300'
+                                }`}
                         >
                             <div
                                 className={`transition-all duration-500 relative z-10 ${activeTab === item.id ? 'bg-orange-500 p-3.5 rounded-full shadow-lg shadow-orange-500/50 ring-4 ring-gray-50 dark:ring-gray-900 scale-110' : ''}`}
@@ -248,18 +252,16 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                                             setActiveTab(item.id);
                                             setIsMobileMenuOpen(false);
                                         }}
-                                        className={`flex flex-col items-center gap-3 p-1 rounded-2xl transition-all active:scale-95 group ${
-                                            activeTab === item.id
-                                                ? 'text-orange-600 dark:text-orange-400'
-                                                : 'text-gray-600 dark:text-gray-400'
-                                        }`}
+                                        className={`flex flex-col items-center gap-3 p-1 rounded-2xl transition-all active:scale-95 group ${activeTab === item.id
+                                            ? 'text-orange-600 dark:text-orange-400'
+                                            : 'text-gray-600 dark:text-gray-400'
+                                            }`}
                                     >
                                         <div
-                                            className={`p-4 rounded-[1.2rem] shadow-sm transition-all duration-300 group-hover:scale-110 ${
-                                                activeTab === item.id
-                                                    ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-orange-500/30'
-                                                    : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'
-                                            }`}
+                                            className={`p-4 rounded-[1.2rem] shadow-sm transition-all duration-300 group-hover:scale-110 ${activeTab === item.id
+                                                ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-orange-500/30'
+                                                : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'
+                                                }`}
                                         >
                                             <item.icon
                                                 size={24}
@@ -276,12 +278,12 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                         {/* ACTION BUTTONS */}
                         <div className="flex items-center gap-3 p-1">
                             <button
-                                onClick={toggleTheme}
+                                onClick={cycleTheme}
                                 className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 active:scale-95 transition-all text-gray-700 dark:text-gray-300"
                             >
-                                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                                {theme === 'light' ? <Sun size={20} /> : theme === 'dark' ? <Moon size={20} /> : <Monitor size={20} />}
                                 <span className="text-xs font-bold uppercase tracking-wider">
-                                    {theme === 'light' ? 'Escuro' : 'Claro'}
+                                    {theme === 'light' ? 'Claro' : theme === 'dark' ? 'Escuro' : 'Sistema'}
                                 </span>
                             </button>
 

@@ -7,8 +7,26 @@ import { useGuestUI } from '../hooks/useGuestUI';
 import { useLanguage } from '../hooks/useLanguage';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
+import { motion, Variants } from 'framer-motion';
+
 // Components
 import HeroSection from './guest/HeroSection';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15,
+            delayChildren: 0.2
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+};
 import StoriesBar from './guest/StoriesBar';
 import GuestHeader from './guest/GuestHeader';
 import GuestStatusCard from './guest/GuestStatusCard';
@@ -42,11 +60,9 @@ import { GOOGLE_REVIEW_LINK } from '../constants';
 
 interface GuestViewProps {
     config: GuestConfig;
-    theme?: 'light' | 'dark';
-    toggleTheme?: () => void;
 }
 
-const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => {
+const GuestView: React.FC<GuestViewProps> = ({ config }) => {
     // Hooks
     const { stayStage, isTimeVerified, isPasswordReleased, isSingleNight, isCheckoutToday } =
         useGuestStay(config);
@@ -306,8 +322,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                 <HeroSection
                     config={config}
                     heroSlides={heroImages.length > 0 ? heroImages : property.assets.heroSlides}
-                    theme={theme}
-                    toggleTheme={toggleTheme}
                     currentLang={currentLang}
                     toggleLanguage={toggleLanguage}
                 />
@@ -323,9 +337,14 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
             </div>
 
             {/* --- LAYOUT PRINCIPAL (GRID + MASONRY) --- */}
-            <div className="max-w-5xl mx-auto px-4 sm:px-5 relative z-30 mt-2">
+            <motion.div
+                className="max-w-5xl mx-auto px-4 sm:px-5 relative z-30 mt-2"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
                 {/* GRID SUPERIOR: ACESSO RÁPIDO + SMART SUGGESTION + LOCALIZAÇÃO */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" variants={itemVariants}>
                     <div className="h-full animate-fade-up" style={{ animationDelay: '300ms' }}>
                         <GuestStatusCard
                             stayStage={stayStage}
@@ -416,10 +435,10 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* RECOMENDAÇÕES (ACCORDIONS) */}
-                <div className="animate-fade-up" style={{ animationDelay: '500ms' }}>
+                <motion.div variants={itemVariants}>
                     <GuestRecommendations
                         mergePlaces={mergePlaces}
                         hasContent={hasContent}
@@ -428,11 +447,11 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                         emergencyRef={emergencyRef}
                         propertyId={config.propertyId || 'lili'}
                     />
-                </div>
+                </motion.div>
 
-                <div
-                    className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[24px] p-6 text-white shadow-2xl shadow-blue-900/20 mb-8 relative overflow-hidden border border-white/10 animate-fade-up"
-                    style={{ animationDelay: '600ms' }}
+                <motion.div
+                    className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[24px] p-6 text-white shadow-2xl shadow-blue-900/20 mb-8 relative overflow-hidden border border-white/10"
+                    variants={itemVariants}
                 >
                     <div className="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
                         <Star size={120} />
@@ -445,19 +464,21 @@ const GuestView: React.FC<GuestViewProps> = ({ config, theme, toggleTheme }) => 
                             <p className="text-blue-50 text-sm mb-6 leading-relaxed font-medium opacity-90">
                                 {t('Olá', 'Hello')}, {config.guestName}! {t('Espero que tenha amado a estadia. Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!', 'Hope you loved your stay. Leaving a quick review on Google helps us a lot!')}
                             </p>
-                            <a
+                            <motion.a
                                 href={property.googleReviewLink || GOOGLE_REVIEW_LINK}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="bg-white text-blue-700 font-bold py-3.5 px-6 rounded-xl inline-flex items-center gap-2.5 hover:bg-blue-50 transition-all shadow-lg w-full justify-center sm:w-auto font-sans text-sm active:scale-95"
+                                className="bg-white text-blue-700 font-bold py-3.5 px-6 rounded-xl inline-flex items-center gap-2.5 hover:bg-blue-50 transition-all shadow-lg w-full justify-center sm:w-auto font-sans text-sm"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
                                 <Star size={18} className="fill-yellow-400 text-yellow-400" />{' '}
                                 {t('Avaliar no Google', 'Rate on Google', 'Calificar en Google')}
-                            </a>
+                            </motion.a>
                         </>
                     )}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
 
             <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
                 {/* CORREÇÃO: Lógica de seleção do prompt para evitar misturar personas */}

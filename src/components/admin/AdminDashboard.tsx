@@ -17,11 +17,9 @@ import ConfirmModal from './ConfirmModal';
 import ReservationCalendar from './ReservationCalendar';
 
 interface AdminDashboardProps {
-    theme: 'light' | 'dark';
-    toggleTheme: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     const { auth, data, form, blocks, ui } = useAdminDashboard();
     const content = useAdminContent();
     const settings = useAdminSettings();
@@ -165,8 +163,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, toggleTheme }) =
                 }
                 isMobileMenuOpen={isMobileMenuOpen}
                 setIsMobileMenuOpen={setIsMobileMenuOpen}
-                theme={theme}
-                toggleTheme={toggleTheme}
                 onLogout={auth.logout}
                 userEmail={auth.user.email || ''}
                 userPermission={auth.userPermission}
