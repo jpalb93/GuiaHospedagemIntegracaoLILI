@@ -13,7 +13,7 @@ import {
     MessageCircle,
     Heart,
 } from 'lucide-react';
-import OptimizedImage from './OptimizedImage';
+import OptimizedImage from './ui/OptimizedImage';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
 

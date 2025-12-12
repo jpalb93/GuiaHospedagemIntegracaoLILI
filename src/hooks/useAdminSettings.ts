@@ -30,6 +30,7 @@ export const useAdminSettings = () => {
         aiSystemPrompts: {},
         cityCuriosities: [],
         checklist: [],
+        reservationTemplates: [],
     });
     const [suggestions, setSuggestions] = useState<SmartSuggestionsConfig>({
         morning: [],
@@ -65,6 +66,7 @@ export const useAdminSettings = () => {
                     checklist: settings.checklist || [],
                     globalNotices: settings.globalNotices || {},
                     hostPhones: settings.hostPhones || {},
+                    reservationTemplates: settings.reservationTemplates || [],
                 });
             }
             if (suggs) {

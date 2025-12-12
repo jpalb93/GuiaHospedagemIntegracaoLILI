@@ -454,7 +454,11 @@ const App: React.FC = () => {
         <ErrorBoundary>
             <ThemeProvider>
                 <LanguageProvider>
-                    <FavoritesProvider>
+                    <FavoritesProvider
+                        // Cast config to Reservation to access sync props
+                        reservationId={(appState.config as any).id}
+                        initialFavorites={(appState.config as any).favoritePlaces}
+                    >
                         <Suspense
                             fallback={appState.mode === AppMode.ADMIN ? <AdminSkeleton /> : <GuestSkeleton />}
                         >

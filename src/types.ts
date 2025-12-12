@@ -15,6 +15,8 @@ export interface GuideSection {
     content: React.ReactNode;
 }
 
+
+
 // Tipos de categorias para o CMS
 export type PlaceCategory =
     | 'burgers'
@@ -89,6 +91,10 @@ export interface GuestConfig {
     guestAlertActive?: boolean;
     guestAlertText?: string;
 
+    // RATING INTERNO (Para controle do Admin)
+    guestRating?: number; // 1 a 5 estrelas
+    guestFeedback?: string; // Comentários internos sobre o comportamento
+
     checkInDate?: string; // Data de Check-in (YYYY-MM-DD)
     checkoutDate?: string; // Data de expiração do link (YYYY-MM-DD)
     checkInTime?: string; // Horário de Check-in
@@ -100,6 +106,7 @@ export interface GuestConfig {
 export interface Reservation extends GuestConfig {
     id?: string;
     shortId?: string; // Código curto para acesso (ex: LILI01)
+    favoritePlaces?: string[]; // IDs dos lugares favoritos sincronizados
     createdAt: string;
     status: 'active' | 'cancelled' | 'pending';
 }
@@ -128,6 +135,8 @@ export type ReservationFormData = Pick<
     | 'guestCount'
     | 'paymentMethod'
     | 'email'
+    | 'guestRating'
+    | 'guestFeedback'
 > & {
     editingId: string | null; // Form-specific field
 };
@@ -190,6 +199,18 @@ export interface AppConfig {
     cityCuriosities?: CityCuriosity[]; // Curiosidades da Cidade (Dinâmico)
     checklist?: ChecklistItem[]; // Novo: Itens de Vistoria
     messageTemplates?: MessageTemplates; // Novo: Templates de mensagem
+    reservationTemplates?: ReservationTemplate[]; // Novo: Templates de Reserva
+}
+
+export interface ReservationTemplate {
+    id: string;
+    name: string; // Ex: "Empresa X", "Família Y"
+    guestName?: string;
+    guestPhone?: string;
+    propertyId?: PropertyId;
+    flatNumber?: string;
+    welcomeMessage?: string;
+    adminNotes?: string;
 }
 
 // NOVA INTERFACE: Sugestões Inteligentes Dinâmicas (AGORA SÃO LISTAS)
@@ -272,4 +293,15 @@ export interface UserPermission {
     email: string;
     role: UserRole;
     allowedProperties: PropertyId[]; // Quais propriedades este usuário pode ver/editar
+}
+
+// NOVA INTERFACE: Log de Atividade (Audit Trail)
+export interface SystemLog {
+    id?: string;
+    action: 'create' | 'update' | 'delete' | 'settings' | 'login';
+    userEmail: string;
+    targetId?: string; // ID do objeto afetado (reserva, config)
+    targetName?: string; // Nome legível (ex: "Reserva Fulano")
+    details: string;
+    timestamp: string; // ISO String
 }

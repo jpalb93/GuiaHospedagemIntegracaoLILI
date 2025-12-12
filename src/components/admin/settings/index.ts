@@ -5,3 +5,4 @@ export { default as ChecklistSection } from './ChecklistSection';
 export { default as MessageTemplatesSection } from './MessageTemplatesSection';
 export { default as NoticesSection } from './NoticesSection';
 export { TranslationManager } from './TranslationManager';
+export { PushNotificationManager } from './PushNotificationManager';

@@ -14,6 +14,8 @@ import {
     Moon,
     Sun,
     Monitor,
+    BarChart,
+    ScrollText,
 } from 'lucide-react';
 
 import { UserPermission } from '../../types';
@@ -74,6 +76,8 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
         { id: 'reviews', label: 'Avaliações', icon: Star, mobile: false },
         { id: 'suggestions', label: 'Sugestões', icon: Sparkles, mobile: false },
         { id: 'settings', label: 'Config', icon: Settings, mobile: false },
+        { id: 'analytics', label: 'Relatórios', icon: BarChart, mobile: false },
+        { id: 'logs', label: 'Logs', icon: ScrollText, mobile: false },
     ];
 
     const mobileItems = navItems.filter((item) => item.mobile);

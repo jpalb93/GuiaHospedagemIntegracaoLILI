@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
-import OptimizedImage from '../OptimizedImage';
+import OptimizedImage from '../ui/OptimizedImage';
 import WeatherWidget from '../WeatherWidget';
 import { GuestConfig } from '../../types';
 import { DEFAULT_SLIDES } from '../../constants';

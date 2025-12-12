@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppConfig } from '../../types';
-import { Settings, Sparkles, Save, Check, Loader2, Download } from 'lucide-react';
+import { Settings, Sparkles, Save, Check, Loader2, Download, BellRing } from 'lucide-react';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../../constants';
 import Button from '../ui/Button';
 import {
@@ -11,6 +11,7 @@ import {
     ChecklistSection,
     MessageTemplatesSection,
     TranslationManager,
+    PushNotificationManager
 } from './settings';
 
 interface SettingsManagerProps {
@@ -225,6 +226,19 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
 
             {/* GENERAL SETTINGS */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
+
+                {/* PUSH NOTIFICATIONS */}
+                <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/10 rounded-xl border border-orange-100 dark:border-orange-800/30">
+                    <h3 className="text-sm font-bold text-orange-700 dark:text-orange-400 flex items-center gap-2 mb-2">
+                        <BellRing size={16} /> Notificações (Push)
+                    </h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-4">
+                        Receba alertas de novas reservas e check-ins mesmo com o app fechado.
+                    </p>
+
+                    <PushNotificationManager />
+                </div>
+
                 <h2 className="text-lg font-bold font-heading mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
                     <Settings size={20} className="text-gray-500" />
                     Geral, Acesso & Avisos

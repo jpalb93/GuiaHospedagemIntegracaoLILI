@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Star, Gift, X } from 'lucide-react';
 import { GOOGLE_REVIEW_LINK } from '../../../constants';
 import CouponBoardingPass from './CouponBoardingPass';
-import { analytics } from '../../../utils/analytics';
+import { analytics } from '../../../services/analytics';
 import { useSwipeToDismiss } from '../../../hooks/useSwipeToDismiss';
 
 import { useLanguage } from '../../../hooks/useLanguage';

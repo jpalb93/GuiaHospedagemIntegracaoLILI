@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Plane, X, Download } from 'lucide-react';
-import { analytics } from '../../../utils/analytics';
+import { analytics } from '../../../services/analytics';
 
 interface CouponBoardingPassProps {
     isOpen: boolean;

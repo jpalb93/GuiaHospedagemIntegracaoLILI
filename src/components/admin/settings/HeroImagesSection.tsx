@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImageIcon, Trash2 } from 'lucide-react';
-import OptimizedImage from '../../OptimizedImage';
+import OptimizedImage from '../../ui/OptimizedImage';
 import ImageUpload from '../ImageUpload';
 
 interface HeroImagesSectionProps {

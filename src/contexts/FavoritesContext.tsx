@@ -10,8 +10,19 @@ const FavoritesContext = createContext<FavoritesContextData>({} as FavoritesCont
 
 const STORAGE_KEY = 'lili_db_favorites';
 
-export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
+import { toggleFavoritePlace } from '../services/firebase/reservations';
+
+export const FavoritesProvider: React.FC<{
+    children: React.ReactNode;
+    reservationId?: string;
+    initialFavorites?: string[];
+}> = ({ children, reservationId, initialFavorites }) => {
     const [favorites, setFavorites] = useState<string[]>(() => {
+        // 1. Preferência: Dados do Banco (se disponíveis)
+        if (initialFavorites && initialFavorites.length > 0) return initialFavorites;
+
+        // 2. Fallback: LocalStorage
         try {
             if (typeof window === 'undefined') return [];
             const item = window.localStorage.getItem(STORAGE_KEY);
@@ -21,6 +32,19 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             return [];
         }
     });
+
+    // Sync com props recebidas (quando carregadas da API)
+    useEffect(() => {
+        if (initialFavorites) {
+            // Mescla com locais para não perder dados offline?
+            // Simplificação: Se veio do banco, confia no banco.
+            setFavorites((current) => {
+                // Opção: Mesclar
+                const merged = Array.from(new Set([...current, ...initialFavorites]));
+                return merged;
+            });
+        }
+    }, [initialFavorites]);
 
     // Persist to localStorage whenever favorites change
     useEffect(() => {
@@ -33,15 +57,26 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
     }, [favorites]);
 
-    const toggleFavorite = useCallback((id: string) => {
+    const toggleFavorite = useCallback(async (id: string) => {
+        // Optimistic UI Update
         setFavorites((prev) => {
-            if (prev.includes(id)) {
-                return prev.filter((favId) => favId !== id);
-            } else {
-                return [...prev, id];
+            const isRemoved = prev.includes(id);
+            const next = isRemoved
+                ? prev.filter((favId) => favId !== id)
+                : [...prev, id];
+
+            // Trigger Background Sync (Fire & Forget logic handled here for responsiveness)
+            if (reservationId) {
+                toggleFavoritePlace(reservationId, id, prev)
+                    .catch(err => {
+                        console.error("Failed to sync favorite:", err);
+                        // Opcional: Reverter estado em caso de erro
+                    });
             }
+
+            return next;
         });
-    }, []);
+    }, [reservationId]);
 
     const isFavorite = useCallback((id: string) => favorites.includes(id), [favorites]);
 

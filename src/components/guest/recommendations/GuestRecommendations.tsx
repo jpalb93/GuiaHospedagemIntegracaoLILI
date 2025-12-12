@@ -34,6 +34,7 @@ interface GuestRecommendationsProps {
     openEmergency?: boolean;
     emergencyRef?: React.RefObject<HTMLDivElement>;
     propertyId?: string;
+    places?: PlaceRecommendation[]; // All dynamic places for favorites filter
 }
 
 /**
@@ -47,6 +48,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     openEmergency,
     emergencyRef,
     propertyId = 'lili',
+    places = [],
 }) => {
     const { t } = useLanguage();
     const [activeSheet, setActiveSheet] = useState<string | null>(null);
@@ -375,7 +377,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 icon={Heart}
             >
                 <FavoritesSheet
-                    allPlaces={mergePlaces([], 'all')} // We need to pass all places to filter them
+                    allPlaces={places}
                 />
             </BottomSheet>
         </>

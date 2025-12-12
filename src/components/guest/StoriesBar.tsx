@@ -1,7 +1,7 @@
 import React from 'react';
 import { CalendarHeart, Sparkles, Lightbulb } from 'lucide-react';
 import { PlaceRecommendation } from '../../types';
-import { analytics } from '../../utils/analytics';
+import { analytics } from '../../services/analytics';
 import { hapticFeedback } from '../../utils/haptics';
 
 interface StoriesBarProps {

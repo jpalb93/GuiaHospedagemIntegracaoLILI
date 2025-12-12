@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
+import { getMessaging } from 'firebase/messaging';
 import { logger } from '../../utils/logger';
 
 // Configuração
@@ -32,6 +33,7 @@ export const db = initializeFirestore(app, {
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const messaging = getMessaging(app);
 
 export const isFirebaseConfigured = () => !!app;
 

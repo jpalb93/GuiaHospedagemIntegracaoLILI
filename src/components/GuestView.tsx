@@ -55,7 +55,8 @@ import {
 } from 'lucide-react';
 import { getIcon } from '../utils/iconMap';
 import SmartSuggestion from './SmartSuggestion';
-import ChatWidget from './ChatWidget';
+// Lazy load ChatWidget for better performance
+const ChatWidget = React.lazy(() => import('./ChatWidget'));
 import { GOOGLE_REVIEW_LINK } from '../constants';
 
 interface GuestViewProps {
@@ -446,6 +447,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                         openEmergency={openEmergency}
                         emergencyRef={emergencyRef}
                         propertyId={config.propertyId || 'lili'}
+                        places={dynamicPlaces}
                     />
                 </motion.div>
 
@@ -482,35 +484,37 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
 
             <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
                 {/* CORREÇÃO: Lógica de seleção do prompt para evitar misturar personas */}
-                <ChatWidget
-                    guestName={config.guestName}
-                    systemInstruction={(() => {
-                        const propId = config.propertyId || 'lili';
+                <React.Suspense fallback={<div className="h-14 w-14 rounded-full bg-white/10 animate-pulse fixed bottom-4 right-4" />}>
+                    <ChatWidget
+                        guestName={config.guestName}
+                        systemInstruction={(() => {
+                            const propId = config.propertyId || 'lili';
 
-                        // 1. Tenta pegar a configuração específica da propriedade
-                        let finalPrompt = appSettings?.aiSystemPrompts?.[propId];
+                            // 1. Tenta pegar a configuração específica da propriedade
+                            let finalPrompt = appSettings?.aiSystemPrompts?.[propId];
 
-                        // 2. Se for a Lili e não tiver específico, tenta o campo legado (global)
-                        if (!finalPrompt && propId === 'lili') {
-                            finalPrompt = appSettings?.aiSystemPrompt;
-                        }
+                            // 2. Se for a Lili e não tiver específico, tenta o campo legado (global)
+                            if (!finalPrompt && propId === 'lili') {
+                                finalPrompt = appSettings?.aiSystemPrompt;
+                            }
 
-                        // 3. Verifica se temos traduções (se o usuário estiver em outro idioma)
-                        if (currentLang === 'en' && appSettings?.aiSystemPrompt_en) {
-                            return appSettings.aiSystemPrompt_en;
-                        } else if (currentLang === 'es' && appSettings?.aiSystemPrompt_es) {
-                            return appSettings.aiSystemPrompt_es;
-                        }
+                            // 3. Verifica se temos traduções (se o usuário estiver em outro idioma)
+                            if (currentLang === 'en' && appSettings?.aiSystemPrompt_en) {
+                                return appSettings.aiSystemPrompt_en;
+                            } else if (currentLang === 'es' && appSettings?.aiSystemPrompt_es) {
+                                return appSettings.aiSystemPrompt_es;
+                            }
 
-                        // 4. Se o prompt encontrado for vazio ou apenas espaços, usa o Default do código (properties.ts)
-                        // Isso previne que um save vazio quebre a IA
-                        if (!finalPrompt || !finalPrompt.trim()) {
-                            finalPrompt = property.ai.systemPrompt;
-                        }
+                            // 4. Se o prompt encontrado for vazio ou apenas espaços, usa o Default do código (properties.ts)
+                            // Isso previne que um save vazio quebre a IA
+                            if (!finalPrompt || !finalPrompt.trim()) {
+                                finalPrompt = property.ai.systemPrompt;
+                            }
 
-                        return finalPrompt;
-                    })()}
-                />
+                            return finalPrompt;
+                        })()}
+                    />
+                </React.Suspense>
             </div>
 
             <SupportModal

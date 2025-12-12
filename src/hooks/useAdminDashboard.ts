@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { generateShortId } from '../utils/helpers';
-import { saveReservation, updateReservation } from '../services/firebase';
+import { saveReservation, updateReservation } from '../services/firebase/reservations';
 import { isApiConfigured } from '../services/geminiService';
 import { Reservation } from '../types';
 import { useAdminAuth } from './useAdminAuth';
@@ -58,6 +58,8 @@ export const useAdminDashboard = () => {
         resetForm: resetReservationForm,
         loadReservation,
         getFormValues,
+        guestRating, setGuestRating,
+        guestFeedback, setGuestFeedback,
     } = reservationForm;
 
     // Use extracted blocked dates hook
@@ -75,7 +77,7 @@ export const useAdminDashboard = () => {
     } = blockedDatesHook;
 
     // UI State
-    type AdminTab = 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings';
+    type AdminTab = 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings' | 'analytics' | 'logs';
 
     const [activeTab, setActiveTab] = useState<AdminTab>(() => {
         const saved = localStorage.getItem('admin_active_tab');
@@ -338,6 +340,10 @@ export const useAdminDashboard = () => {
             setGuestCount,
             paymentMethod,
             setPaymentMethod,
+            guestRating,
+            setGuestRating,
+            guestFeedback,
+            setGuestFeedback,
             editingId,
             handleSaveReservation,
             handleDeleteReservation,

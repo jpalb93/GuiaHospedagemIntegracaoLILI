@@ -22,6 +22,8 @@ import {
     ChevronUp,
     ChevronDown,
     Loader2,
+    ListFilter,
+    Download,
 } from 'lucide-react';
 import InspectionModal from './InspectionModal';
 
@@ -60,6 +62,22 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const [listCopiedId, setListCopiedId] = React.useState<string | null>(null);
     const [openHistoryGroups, setOpenHistoryGroups] = React.useState<number[]>([0]);
     const [propertyFilter, setPropertyFilter] = React.useState<PropertyId | 'all'>('all');
+    const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+
+    // Advanced Filters State
+    const [showFilters, setShowFilters] = React.useState(false);
+    const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'pending' | 'cancelled'>('all');
+    const [dateRange, setDateRange] = React.useState<{ start: string; end: string; type: 'checkin' | 'checkout' }>({
+        start: '',
+        end: '',
+        type: 'checkin'
+    });
+
+    const toggleSelection = (id: string) => {
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+        );
+    };
 
     // Inspection Modal State
     const [inspectionModalOpen, setInspectionModalOpen] = React.useState(false);
@@ -68,7 +86,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     );
 
     // Optimized filtering and grouping
-    const { leavingToday, staying, upcoming, historyList, tomorrowStr, groupedHistory } =
+    const { leavingToday, staying, upcoming, historyList, tomorrowStr, groupedHistory, allFiltered } =
         useMemo(() => {
             const allReservations = [...activeReservations, ...historyReservations];
             const uniqueReservations = Array.from(
@@ -82,14 +100,31 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             const tomorrowStrVal = tomorrow.toLocaleDateString('en-CA');
 
             const filteredList = uniqueReservations.filter((res: Reservation) => {
+                // 1. Search Term
                 const term = searchTerm.toLowerCase();
                 const nameMatch = res.guestName.toLowerCase().includes(term);
                 const notesMatch = res.adminNotes?.toLowerCase().includes(term);
 
+                // 2. Property Filter
                 const propertyMatch =
                     propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
 
-                return (nameMatch || notesMatch) && propertyMatch;
+                // 3. Status Filter
+                const statusMatch = statusFilter === 'all' || res.status === statusFilter;
+
+                // 4. Date Range Filter
+                let dateMatch = true;
+                if (dateRange.start || dateRange.end) {
+                    const targetDate = dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
+                    if (targetDate) {
+                        if (dateRange.start && targetDate < dateRange.start) dateMatch = false;
+                        if (dateRange.end && targetDate > dateRange.end) dateMatch = false;
+                    } else {
+                        dateMatch = false; // Se não tem data, não passa no filtro de data
+                    }
+                }
+
+                return (nameMatch || notesMatch) && propertyMatch && statusMatch && dateMatch;
             });
 
             const leavingTodayArr: Reservation[] = [];
@@ -150,6 +185,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 historyList: historyListArr,
                 tomorrowStr: tomorrowStrVal,
                 groupedHistory: groupedHistoryArr,
+                allFiltered: filteredList, // Expose for CSV Export
             };
         }, [activeReservations, historyReservations, searchTerm, propertyFilter]);
 
@@ -222,6 +258,42 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         setInspectionModalOpen(true);
     };
 
+    const handleExportCSV = () => {
+        if (!allFiltered || allFiltered.length === 0) {
+            showToast('Nenhuma reserva para exportar', 'error');
+            return;
+        }
+
+        const headers = ['Hóspede', 'Property', 'Flat', 'Status', 'Check-in', 'Check-out', 'Telefone', 'Email', 'Link'];
+        const csvContent = [
+            headers.join(','),
+            ...allFiltered.map(res => {
+                const link = getLinkForReservation(res);
+                return [
+                    `"${res.guestName}"`,
+                    res.propertyId || 'lili',
+                    res.flatNumber || '',
+                    res.status,
+                    res.checkInDate || '',
+                    res.checkoutDate || '',
+                    `"${res.guestPhone || ''}"`,
+                    res.email || '',
+                    link
+                ].join(',');
+            })
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `reservas_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // --- RENDER HELPERS ---
 
     const renderMobileCard = (res: Reservation, statusColor: string, statusLabel?: string) => {
@@ -236,57 +308,70 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 className={`bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 ${statusColor} flex flex-col gap-4 mb-4`}
             >
                 <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-lg">
-                            {res.guestName}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {res.status === 'pending' && (
-                                <Badge variant="yellow">Pré-Reserva</Badge>
-                            )}
-                            {statusLabel && (
-                                <Badge
-                                    variant={
-                                        statusLabel === 'Checkout Hoje'
-                                            ? 'orange'
-                                            : statusLabel === 'Hospedado'
-                                                ? 'green'
-                                                : 'gray'
-                                    }
-                                >
-                                    {statusLabel}
+                    <div className="flex gap-3">
+                        <div className="pt-1">
+                            <input
+                                type="checkbox"
+                                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                checked={res.id ? selectedIds.includes(res.id) : false}
+                                onChange={(e) => {
+                                    e.stopPropagation();
+                                    if (res.id) toggleSelection(res.id);
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-lg">
+                                {res.guestName}
+                            </h3>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {res.status === 'pending' && (
+                                    <Badge variant="yellow">Pré-Reserva</Badge>
+                                )}
+                                {statusLabel && (
+                                    <Badge
+                                        variant={
+                                            statusLabel === 'Checkout Hoje'
+                                                ? 'orange'
+                                                : statusLabel === 'Hospedado'
+                                                    ? 'green'
+                                                    : 'gray'
+                                        }
+                                    >
+                                        {statusLabel}
+                                    </Badge>
+                                )}
+                                <Badge variant={property.id === 'lili' ? 'orange' : 'blue'}>
+                                    {property.name}
                                 </Badge>
-                            )}
-                            <Badge variant={property.id === 'lili' ? 'orange' : 'blue'}>
-                                {property.name}
-                            </Badge>
-                        </div>
-                        <div className="flex flex-col mt-3 gap-1.5">
-                            <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium">
-                                <CalendarDays size={14} className="text-gray-400" /> In:{' '}
-                                {res.checkInDate?.split('-').reverse().join('/')}
-                            </span>
-                            <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium">
-                                <History size={14} className="text-gray-400" /> Out:{' '}
-                                {res.checkoutDate?.split('-').reverse().join('/')}
-                            </span>
-                            {res.flatNumber && (
+                            </div>
+                            <div className="flex flex-col mt-3 gap-1.5">
                                 <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium">
-                                    <KeyRound size={14} className="text-gray-400" /> Flat:{' '}
-                                    {res.flatNumber}
+                                    <CalendarDays size={14} className="text-gray-400" /> In:{' '}
+                                    {res.checkInDate?.split('-').reverse().join('/')}
                                 </span>
+                                <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium">
+                                    <History size={14} className="text-gray-400" /> Out:{' '}
+                                    {res.checkoutDate?.split('-').reverse().join('/')}
+                                </span>
+                                {res.flatNumber && (
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 font-medium">
+                                        <KeyRound size={14} className="text-gray-400" /> Flat:{' '}
+                                        {res.flatNumber}
+                                    </span>
+                                )}
+                            </div>
+                            {res.adminNotes && (
+                                <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 font-medium border border-yellow-100 dark:border-yellow-900/30">
+                                    <StickyNote size={12} /> Nota: {res.adminNotes}
+                                </div>
+                            )}
+                            {res.guestAlertActive && (
+                                <div className="mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 font-medium border border-blue-100 dark:border-blue-900/30">
+                                    <MessageSquare size={12} /> Recado Ativo
+                                </div>
                             )}
                         </div>
-                        {res.adminNotes && (
-                            <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 font-medium border border-yellow-100 dark:border-yellow-900/30">
-                                <StickyNote size={12} /> Nota: {res.adminNotes}
-                            </div>
-                        )}
-                        {res.guestAlertActive && (
-                            <div className="mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 font-medium border border-blue-100 dark:border-blue-900/30">
-                                <MessageSquare size={12} /> Recado Ativo
-                            </div>
-                        )}
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -391,6 +476,20 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 key={res.id}
                 className="group hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0"
             >
+                <td className="py-4 px-4 align-top w-10">
+                    <div className="flex items-center h-full pt-1">
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            checked={res.id ? selectedIds.includes(res.id) : false}
+                            onChange={(e) => {
+                                e.stopPropagation();
+                                if (res.id) toggleSelection(res.id);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </td>
                 <td className="py-4 px-4 align-top">
                     <div className="flex flex-col">
                         <span className="font-bold text-gray-900 dark:text-white text-sm">
@@ -543,6 +642,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 dark:bg-black/20 border-b border-gray-100 dark:border-gray-700/50">
                             <tr>
+                                <th className="py-4 px-4 w-10">
+                                    {/* Optional: Checkbox to Toggle All for this section */}
+                                </th>
                                 <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                                     Hóspede
                                 </th>
@@ -606,7 +708,130 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     </div>
                 )}
 
+            {/* EXPORT BUTTON */}
+            <div className="flex justify-end mb-2">
+                <Button
+                    onClick={handleExportCSV}
+                    variant="ghost"
+                    leftIcon={<Download size={16} />}
+                    className="text-xs font-bold text-gray-500 hover:text-green-600 hover:bg-green-50"
+                >
+                    Exportar CSV ({allFiltered?.length || 0})
+                </Button>
+            </div>
+
+            {/* ADVANCED FILTERS TOGGLE */}
+            <div className="flex justify-between items-center">
+                <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant="ghost"
+                    leftIcon={<ListFilter size={16} />}
+                    className={`text-xs font-bold ${showFilters ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50'}`}
+                >
+                    Filtros Avançados
+                    {(statusFilter !== 'all' || dateRange.start || dateRange.end) && (
+                        <span className="ml-2 w-2 h-2 rounded-full bg-blue-500"></span>
+                    )}
+                </Button>
+                {(statusFilter !== 'all' || dateRange.start || dateRange.end) && (
+                    <button
+                        onClick={() => {
+                            setStatusFilter('all');
+                            setDateRange({ start: '', end: '', type: 'checkin' });
+                        }}
+                        className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
+                    >
+                        Limpar Filtros
+                    </button>
+                )}
+            </div>
+
+            {/* FILTERS PANEL */}
+            {showFilters && (
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 animate-in slide-in-from-top-2 fade-in duration-200">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {/* Status Filter */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            >
+                                <option value="all">Todos</option>
+                                <option value="active">Confirmadas (Ativas)</option>
+                                <option value="pending">Pré-Reserva</option>
+                                <option value="cancelled">Canceladas</option>
+                            </select>
+                        </div>
+
+                        {/* Date Type */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Filtrar Data</label>
+                            <select
+                                value={dateRange.type}
+                                onChange={(e) => setDateRange(prev => ({ ...prev, type: e.target.value as 'checkin' | 'checkout' }))}
+                                className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            >
+                                <option value="checkin">Data de Check-in</option>
+                                <option value="checkout">Data de Saída</option>
+                            </select>
+                        </div>
+
+                        {/* Start Date */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">De</label>
+                            <input
+                                type="date"
+                                value={dateRange.start}
+                                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+
+                        {/* End Date */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Até</label>
+                            <input
+                                type="date"
+                                value={dateRange.end}
+                                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="space-y-2">
+                {/* BULK ACTIONS TOOLBAR */}
+                {selectedIds.length > 0 && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10 fade-in duration-300 border border-gray-700">
+                        <span className="text-sm font-bold whitespace-nowrap">
+                            {selectedIds.length} selecionado{selectedIds.length > 1 ? 's' : ''}
+                        </span>
+                        <div className="h-4 w-px bg-gray-700"></div>
+                        <button
+                            onClick={() => {
+                                if (window.confirm(`Deseja excluir ${selectedIds.length} reservas?`)) {
+                                    selectedIds.forEach((id) => handleDeleteReservation(id));
+                                    setSelectedIds([]);
+                                }
+                            }}
+                            className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 transition-colors"
+                        >
+                            <Trash2 size={16} /> Excluir
+                        </button>
+                        <div className="h-4 w-px bg-gray-700"></div>
+                        <button
+                            onClick={() => setSelectedIds([])}
+                            className="text-xs text-gray-400 hover:text-white"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                )}
+
                 {renderSection('Saindo Hoje', leavingToday, 'border-orange-500', 'Checkout Hoje')}
                 {renderSection('Hospedados', staying, 'border-green-500', 'Hospedado')}
                 {renderSection('Próximas Chegadas', upcoming, 'border-blue-500', '', false)}

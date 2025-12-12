@@ -6,7 +6,7 @@ import {
     saveReservation,
     updateReservation,
     deleteReservation,
-} from '../services/firebase';
+} from '../services/firebase/reservations';
 import { Reservation, PropertyId, UserPermission } from '../types';
 import { logger } from '../utils/logger';
 

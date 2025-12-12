@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CalendarHeart, MapPin, ExternalLink } from 'lucide-react';
-import OptimizedImage from './OptimizedImage';
+import OptimizedImage from './ui/OptimizedImage';
 
 // --- TIPO DO ITEM DO STORY ---
 export interface StoryItem {

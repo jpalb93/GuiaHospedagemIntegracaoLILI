@@ -37,6 +37,12 @@ export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null>
         }
 
         const data = await response.json();
+
+        // Check for SW offline response
+        if (data && (data as any).error === 'offline') {
+            throw new Error('Offline (Service Worker)');
+        }
+
         return data as GuestConfig;
     } catch (error) {
         console.error('Erro ao buscar configuração do hóspede:', error);

@@ -1,9 +1,11 @@
-const CACHE_NAME = 'flat-lili-v1';
+const CACHE_NAME = 'flat-lili-v2'; // Increment version to force update
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',
     '/offline.html',
     '/index.css',
+    '/logo.svg',
+    '/vite.svg'
 ];
 
 // Install event - cache static assets
@@ -36,55 +38,87 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event
 self.addEventListener('fetch', (event) => {
-    // Skip chrome extensions, non-http requests, and non-GET requests (POST not cacheable)
-    if (!event.request.url.startsWith('http') || event.request.method !== 'GET') {
+    // Skip non-http requests (e.g. chrome-extension:)
+    if (!event.request.url.startsWith('http')) return;
+
+    // 1. API Strategy (Network First -> Cache -> JSON Offline Error)
+    if (event.request.url.includes('/api/')) {
+        event.respondWith(
+            (async () => {
+                const cache = await caches.open(CACHE_NAME);
+                try {
+                    const networkResponse = await fetch(event.request);
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                } catch (error) {
+                    console.log('[Service Worker] API offline fallback:', event.request.url);
+                    const cachedResponse = await cache.match(event.request);
+                    if (cachedResponse) return cachedResponse;
+
+                    // JSON fallback for API
+                    return new Response(JSON.stringify({ error: 'offline' }), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            })()
+        );
         return;
     }
 
-    event.respondWith(
-        (async () => {
-            const cache = await caches.open(CACHE_NAME);
-
-            // Try network first for API calls
-            if (event.request.url.includes('/api/')) {
+    // 2. Navigation Strategy (Network First -> Cache (index) -> Offline Page)
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            (async () => {
                 try {
                     const networkResponse = await fetch(event.request);
                     return networkResponse;
                 } catch (error) {
-                    console.log('[Service Worker] API call failed, returning offline');
-                    const cachedResponse = await cache.match('/offline.html');
-                    return cachedResponse || new Response('Offline');
-                }
-            }
+                    const cache = await caches.open(CACHE_NAME);
+                    // Try to return the cached index.html for SPA to load
+                    const cachedIndex = await cache.match('/');
+                    if (cachedIndex) return cachedIndex;
 
-            // For other requests, try cache first
-            const cachedResponse = await cache.match(event.request);
-            if (cachedResponse) {
-                // Update cache in background
-                fetch(event.request).then((networkResponse) => {
-                    cache.put(event.request, networkResponse.clone());
-                });
-                return cachedResponse;
-            }
+                    const cachedOffline = await cache.match('/offline.html');
+                    return cachedOffline || new Response('Offline Mode');
+                }
+            })()
+        );
+        return;
+    }
 
-            // Fallback to network
-            try {
-                const networkResponse = await fetch(event.request);
-                // Cache successful responses
-                if (networkResponse && networkResponse.status === 200) {
-                    cache.put(event.request, networkResponse.clone());
+    // 3. Asset Strategy (Stale-While-Revalidate)
+    // Serves cache immediately, updates in background
+    if (event.request.method === 'GET') {
+        event.respondWith(
+            (async () => {
+                const cache = await caches.open(CACHE_NAME);
+                const cachedResponse = await cache.match(event.request);
+
+                if (cachedResponse) {
+                    // Update cache in background
+                    fetch(event.request).then((networkResponse) => {
+                        if (networkResponse && networkResponse.status === 200) {
+                            cache.put(event.request, networkResponse.clone());
+                        }
+                    }).catch(() => { }); // Eat errors in background sync
+                    return cachedResponse;
                 }
-                return networkResponse;
-            } catch (error) {
-                console.log('[Service Worker] Fetch failed, returning offline');
-                // Return offline page for navigation requests
-                if (event.request.mode === 'navigate') {
-                    return cache.match('/offline.html');
+
+                try {
+                    const networkResponse = await fetch(event.request);
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                } catch (error) {
+                    // If image, maybe return placeholder?
+                    return new Response('Asset unavailable', { status: 404 });
                 }
-                return new Response('Offline', { status: 503 });
-            }
-        })()
-    );
+            })()
+        );
+    }
 });

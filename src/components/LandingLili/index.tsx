@@ -21,9 +21,13 @@ import {
 } from 'lucide-react';
 import {
     subscribeToFutureReservations,
+} from '../../services/firebase/reservations';
+import {
     getGuestReviews,
+} from '../../services/firebase/content';
+import {
     subscribeToFutureBlockedDates,
-} from '../../services/firebase';
+} from '../../services/firebase/blockedDates';
 import { Reservation, GuestReview, BlockedDateRange } from '../../types';
 import SimpleGallery from '../SimpleGallery';
 import {
@@ -34,6 +38,7 @@ import {
 } from '../../constants';
 import LogoLili from '../LogoLili';
 import ScrollReveal from '../ui/ScrollReveal';
+import OptimizedImage from '../ui/OptimizedImage';
 
 // --- CALENDÁRIO DINÂMICO (OTIMIZADO E INTEGRADO COM FIREBASE) ---
 const AvailabilityCalendar = () => {
@@ -313,7 +318,7 @@ const LandingLili: React.FC = () => {
 
     // Fetch reviews
     useEffect(() => {
-        getGuestReviews(3).then((data) => {
+        getGuestReviews(3).then((data: GuestReview[]) => {
             if (data.length > 0) {
                 setReviews(data);
             } else {
@@ -511,7 +516,7 @@ const LandingLili: React.FC = () => {
                             key={index}
                             className={`absolute inset-0 transition-opacity duration-2000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
                         >
-                            <img
+                            <OptimizedImage
                                 src={img}
                                 className="w-full h-full object-cover scale-110"
                                 alt="Flat de Lili"

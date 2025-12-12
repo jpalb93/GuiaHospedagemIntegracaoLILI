@@ -26,6 +26,10 @@ export const useReservationForm = () => {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
     const [shortId, setShortId] = useState('');
 
+    // Rating / Quality Control (Internal)
+    const [guestRating, setGuestRating] = useState<number>(5);
+    const [guestFeedback, setGuestFeedback] = useState('');
+
     // UI State
     const [generatedLink, setGeneratedLink] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -61,6 +65,8 @@ export const useReservationForm = () => {
         setGuestCount(1);
         setPaymentMethod('');
         setShortId('');
+        setGuestRating(5);
+        setGuestFeedback('');
     }, [propertyId]);
 
     // Load existing reservation for editing
@@ -82,6 +88,8 @@ export const useReservationForm = () => {
         setGuestCount(res.guestCount || 1);
         setPaymentMethod(res.paymentMethod || '');
         setShortId(res.shortId || '');
+        setGuestRating(res.guestRating || 5);
+        setGuestFeedback(res.guestFeedback || '');
         setGeneratedLink('');
     }, []);
 
@@ -103,11 +111,13 @@ export const useReservationForm = () => {
         guestCount,
         paymentMethod: paymentMethod as PaymentMethod | undefined,
         shortId,
+        guestRating,
+        guestFeedback,
     }), [
         guestName, guestPhone, propertyId, flatNumber, lockCode,
         welcomeMessage, adminNotes, guestAlertActive, guestAlertText,
         checkInDate, checkoutDate, checkInTime, checkOutTime,
-        guestCount, paymentMethod, shortId
+        guestCount, paymentMethod, shortId, guestRating, guestFeedback
     ]);
 
     return {
@@ -129,6 +139,8 @@ export const useReservationForm = () => {
         guestCount, setGuestCount,
         paymentMethod, setPaymentMethod,
         shortId, setShortId,
+        guestRating, setGuestRating,
+        guestFeedback, setGuestFeedback,
 
         // UI State
         generatedLink, setGeneratedLink,

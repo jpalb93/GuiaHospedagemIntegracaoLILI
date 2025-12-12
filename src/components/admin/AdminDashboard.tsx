@@ -3,18 +3,22 @@ import { Loader2, Lock, LogIn } from 'lucide-react';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 import { useAdminContent } from '../../hooks/useAdminContent';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
-import ReservationForm from './ReservationForm';
-import ReservationList from './ReservationList';
-import BlockedDatesManager from './BlockedDatesManager';
-import PlacesManager from './PlacesManager';
-import TipsManager from './TipsManager';
-import ReviewsManager from './ReviewsManager';
-import SuggestionsManager from './SuggestionsManager';
-import SettingsManager from './SettingsManager';
+// LAZY LOADED COMPONENTS FOR BUNDLE OPTIMIZATION
+const ReservationForm = React.lazy(() => import('./ReservationForm'));
+const ReservationList = React.lazy(() => import('./ReservationList'));
+const BlockedDatesManager = React.lazy(() => import('./BlockedDatesManager'));
+const PlacesManager = React.lazy(() => import('./PlacesManager'));
+const TipsManager = React.lazy(() => import('./TipsManager'));
+const ReviewsManager = React.lazy(() => import('./ReviewsManager'));
+const SuggestionsManager = React.lazy(() => import('./SuggestionsManager'));
+const SettingsManager = React.lazy(() => import('./SettingsManager'));
+const DashboardHome = React.lazy(() => import('./DashboardHome'));
+const ReservationCalendar = React.lazy(() => import('./ReservationCalendar'));
+const AnalyticsDashboard = React.lazy(() => import('./AnalyticsDashboard'));
+const ActivityLogs = React.lazy(() => import('./ActivityLogs'));
+
 import AdminNavigation from './AdminNavigation';
-import DashboardHome from './DashboardHome';
 import ConfirmModal from './ConfirmModal';
-import ReservationCalendar from './ReservationCalendar';
 
 interface AdminDashboardProps {
 }
@@ -71,6 +75,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
         };
     }, []);
 
+    const FallbackLoader = () => (
+        <div className="h-full w-full flex flex-col items-center justify-center min-h-[50vh] animate-fadeIn">
+            <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+                <Loader2 className="animate-spin text-orange-500 relative z-10" size={48} />
+            </div>
+            <p className="mt-4 text-gray-400 font-medium text-sm animate-pulse">Carregando módulo...</p>
+        </div>
+    );
+
     if (auth.authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -83,6 +97,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
                 <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-700">
+                    {/* ... LOGIN FORM REMAINS SAME (omitted for brevity in prompt, but ensuring logic stays) ... */}
+                    {/* WAIT, I need to include the login form code since I am replacing the block */}
+                    {/* To avoid error I will include it. My previous tool call showed lines 1-328, so I have the context. */}
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Lock className="text-orange-600 dark:text-orange-400" size={32} />
@@ -158,7 +175,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                         | 'tips'
                         | 'reviews'
                         | 'suggestions'
+                        | 'suggestions'
                         | 'settings'
+                        | 'analytics'
+                        | 'logs'
                     )
                 }
                 isMobileMenuOpen={isMobileMenuOpen}
@@ -220,90 +240,121 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
                     {/* CONTENT RENDERER */}
                     <div className="animate-fadeIn">
-                        {activeTab === 'home' && (
-                            <DashboardHome
-                                reservations={data.activeReservations}
-                                onNavigate={(tab) =>
-                                    setActiveTab(
-                                        tab as
-                                        | 'home'
-                                        | 'create'
-                                        | 'list'
-                                        | 'calendar'
-                                        | 'blocks'
-                                        | 'places'
-                                        | 'tips'
-                                        | 'reviews'
-                                        | 'suggestions'
-                                        | 'settings'
-                                    )
-                                }
-                                userPermission={auth.userPermission}
-                            />
-                        )}
-
-                        {activeTab === 'create' && (
-                            <div className="max-w-2xl mx-auto">
-                                <ReservationForm
-                                    form={{
-                                        ...form,
-                                        setPaymentMethod: form.setPaymentMethod,
-                                    }}
-                                    ui={ui}
+                        <React.Suspense fallback={<FallbackLoader />}>
+                            {activeTab === 'home' && (
+                                <DashboardHome
+                                    reservations={data.activeReservations}
+                                    onNavigate={(tab) =>
+                                        setActiveTab(
+                                            tab as
+                                            | 'home'
+                                            | 'create'
+                                            | 'list'
+                                            | 'calendar'
+                                            | 'blocks'
+                                            | 'places'
+                                            | 'tips'
+                                            | 'reviews'
+                                            | 'suggestions'
+                                            | 'suggestions'
+                                            | 'settings'
+                                            | 'analytics'
+                                        )
+                                    }
                                     userPermission={auth.userPermission}
-                                    previousGuests={[
+                                />
+                            )}
+
+                            {activeTab === 'create' && (
+                                <div className="max-w-2xl mx-auto">
+                                    <ReservationForm
+                                        form={{
+                                            ...form,
+                                            setPaymentMethod: form.setPaymentMethod,
+                                        }}
+                                        ui={ui}
+                                        userPermission={auth.userPermission}
+                                        previousGuests={[
+                                            ...data.activeReservations,
+                                            ...data.historyReservations,
+                                        ]}
+                                        templates={settings.settings.data.reservationTemplates}
+                                        onSaveTemplate={async (template) => {
+                                            const current = settings.settings.data.reservationTemplates || [];
+                                            await settings.settings.save({
+                                                ...settings.settings.data,
+                                                reservationTemplates: [...current, template]
+                                            });
+                                            ui.showToast('Modelo salvo com sucesso!', 'success');
+                                        }}
+                                        onDeleteTemplate={async (id) => {
+                                            const current = settings.settings.data.reservationTemplates || [];
+                                            const updated = current.filter(t => t.id !== id);
+                                            await settings.settings.save({
+                                                ...settings.settings.data,
+                                                reservationTemplates: updated
+                                            });
+                                            ui.showToast('Modelo removido.', 'success');
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            {activeTab === 'list' && (
+                                <ReservationList
+                                    data={data}
+                                    ui={ui}
+                                    form={form}
+                                    userPermission={auth.userPermission}
+                                />
+                            )}
+
+                            {activeTab === 'calendar' && (
+                                <ReservationCalendar
+                                    reservations={[
                                         ...data.activeReservations,
                                         ...data.historyReservations,
                                     ]}
+                                    onEditReservation={(res) => {
+                                        form.handleStartEdit(res);
+                                        setActiveTab('create');
+                                    }}
                                 />
-                            </div>
-                        )}
+                            )}
 
-                        {activeTab === 'list' && (
-                            <ReservationList
-                                data={data}
-                                ui={ui}
-                                form={form}
-                                userPermission={auth.userPermission}
-                            />
-                        )}
+                            {activeTab === 'blocks' && (
+                                <div className="max-w-2xl mx-auto">
+                                    <BlockedDatesManager
+                                        blocks={blocks}
+                                        blockedDates={data.blockedDates}
+                                    />
+                                </div>
+                            )}
 
-                        {activeTab === 'calendar' && (
-                            <ReservationCalendar
-                                reservations={[
-                                    ...data.activeReservations,
-                                    ...data.historyReservations,
-                                ]}
-                                onEditReservation={(res) => {
-                                    form.handleStartEdit(res);
-                                    setActiveTab('create');
-                                }}
-                            />
-                        )}
-
-                        {activeTab === 'blocks' && (
-                            <div className="max-w-2xl mx-auto">
-                                <BlockedDatesManager
-                                    blocks={blocks}
-                                    blockedDates={data.blockedDates}
+                            {activeTab === 'places' && <PlacesManager places={content.places} />}
+                            {activeTab === 'tips' && (
+                                <TipsManager tips={content.tips} curiosities={content.curiosities} />
+                            )}
+                            {activeTab === 'reviews' && <ReviewsManager reviews={settings.reviews} />}
+                            {activeTab === 'suggestions' && (
+                                <SuggestionsManager suggestions={settings.suggestions} />
+                            )}
+                            {activeTab === 'settings' && (
+                                <SettingsManager
+                                    heroImages={settings.heroImages}
+                                    settings={settings.settings}
                                 />
-                            </div>
-                        )}
-
-                        {activeTab === 'places' && <PlacesManager places={content.places} />}
-                        {activeTab === 'tips' && (
-                            <TipsManager tips={content.tips} curiosities={content.curiosities} />
-                        )}
-                        {activeTab === 'reviews' && <ReviewsManager reviews={settings.reviews} />}
-                        {activeTab === 'suggestions' && (
-                            <SuggestionsManager suggestions={settings.suggestions} />
-                        )}
-                        {activeTab === 'settings' && (
-                            <SettingsManager
-                                heroImages={settings.heroImages}
-                                settings={settings.settings}
-                            />
-                        )}
+                            )}
+                            {activeTab === 'analytics' && (
+                                <AnalyticsDashboard
+                                    reservations={[
+                                        ...data.activeReservations,
+                                        ...data.historyReservations
+                                    ]}
+                                />
+                            )}
+                            {activeTab === 'logs' && <ActivityLogs />}
+                        </React.Suspense>
                     </div>
 
                     {/* MIGRATION TOOL REMOVED */}
@@ -320,7 +371,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                 message={ui.confirmModal.message}
                 isDestructive={ui.confirmModal.isDestructive}
             />
-        </div>
+        </div >
     );
 };
 
