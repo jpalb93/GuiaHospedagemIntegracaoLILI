@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Coffee, Utensils, Sunset, Moon, LogOut, CalendarHeart, CalendarClock } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { fetchOfficialTime } from '../constants';
-import { SmartSuggestionsConfig, TimeOfDaySuggestion, PlaceRecommendation } from '../types';
+import { SmartSuggestionsConfig, PlaceRecommendation, TimeOfDaySuggestion } from '../types';
 
 // --- SKELETON DE CARREGAMENTO ---
 const SmartSuggestionSkeleton = () => (
@@ -14,8 +14,6 @@ const SmartSuggestionSkeleton = () => (
         </div>
     </div>
 );
-
-
 
 interface SmartSuggestionProps {
     stayStage: 'pre_checkin' | 'checkin' | 'middle' | 'pre_checkout' | 'checkout' | 'post_checkout';
@@ -43,7 +41,11 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
             icon: Coffee,
             label: t('Bom dia', 'Good morning', 'Buenos días'),
             title: t('Café da Manhã', 'Breakfast', 'Desayuno'),
-            desc: t('Que tal um bolo de rolo na Pão Nosso?', 'How about a roll cake at Pão Nosso?', '¿Qué tal un pastel de rollo en Pão Nosso?'),
+            desc: t(
+                'Que tal um bolo de rolo na Pão Nosso?',
+                'How about a roll cake at Pão Nosso?',
+                '¿Qué tal un pastel de rollo en Pão Nosso?'
+            ),
             color: 'from-orange-400 to-amber-400',
             textColor: 'text-orange-900 dark:text-orange-100',
             iconBg: 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300',
@@ -52,7 +54,11 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
             icon: Utensils,
             label: t('Almoço', 'Lunch', 'Almuerzo'),
             title: t('Vai um Bodinho?', 'Want some Goat Meat?', '¿Quieres carne de chivo?'),
-            desc: t('O Bodódromo é parada obrigatória!', 'The Bodódromo is a mandatory stop!', '¡El Bodódromo es una parada obligatoria!'),
+            desc: t(
+                'O Bodódromo é parada obrigatória!',
+                'The Bodódromo is a mandatory stop!',
+                '¡El Bodódromo es una parada obligatoria!'
+            ),
             color: 'from-red-400 to-orange-400',
             textColor: 'text-red-900 dark:text-red-100',
             iconBg: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300',
@@ -60,8 +66,16 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
         sunset: {
             icon: Sunset,
             label: t('Fim de Tarde', 'Late Afternoon', 'Atardecer'),
-            title: t('Pôr do Sol na Orla', 'Sunset at the Waterfront', 'Puesta de Sol en la Orilla'),
-            desc: t('Corra para a Orla e veja um pôr do sol deslumbrante!', 'Run to the Waterfront and see a stunning sunset!', '¡Corre a la Orilla y ve una puesta de sol impresionante!'),
+            title: t(
+                'Pôr do Sol na Orla',
+                'Sunset at the Waterfront',
+                'Puesta de Sol en la Orilla'
+            ),
+            desc: t(
+                'Corra para a Orla e veja um pôr do sol deslumbrante!',
+                'Run to the Waterfront and see a stunning sunset!',
+                '¡Corre a la Orilla y ve una puesta de sol impresionante!'
+            ),
             color: 'from-indigo-400 to-purple-400',
             textColor: 'text-indigo-900 dark:text-indigo-100',
             iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300',
@@ -70,7 +84,11 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
             icon: Moon,
             label: t('Boa Noite', 'Good Night', 'Buenas Noches'),
             title: t('Jantar ou Delivery?', 'Dinner or Delivery?', '¿Cena o Delivery?'),
-            desc: t('O Villa Romana tem ótimas pizzas!', 'Villa Romana has great pizzas!', '¡Villa Romana tiene excelentes pizzas!'),
+            desc: t(
+                'O Villa Romana tem ótimas pizzas!',
+                'Villa Romana has great pizzas!',
+                '¡Villa Romana tiene excelentes pizzas!'
+            ),
             color: 'from-slate-400 to-blue-400',
             textColor: 'text-slate-900 dark:text-slate-100',
             iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
@@ -81,7 +99,11 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
         icon: LogOut,
         label: t('Despedida', 'Farewell', 'Despedida'),
         title: t('Hoje é dia de partir', 'Today is departure day', 'Hoy es día de partir'),
-        desc: t('Poxa, hoje é dia de despedida. A melhor dica: VOLTE SEMPRE!', 'Oh, today is goodbye. Best tip: COME BACK SOON!', 'Oh, hoy es despedida. Mejor consejo: ¡VUELVE PRONTO!'),
+        desc: t(
+            'Poxa, hoje é dia de despedida. A melhor dica: VOLTE SEMPRE!',
+            'Oh, today is goodbye. Best tip: COME BACK SOON!',
+            'Oh, hoy es despedida. Mejor consejo: ¡VUELVE PRONTO!'
+        ),
         color: 'from-blue-400 to-cyan-400',
         textColor: 'text-blue-900 dark:text-blue-100',
         iconBg: 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300',
@@ -90,15 +112,20 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
     const PRE_CHECKOUT_CONTENT = {
         icon: CalendarClock,
         label: t('Última Noite', 'Last Night', 'Última Noche'),
-        title: t('Amanhã é dia de partir 😢', 'Tomorrow is departure day 😢', 'Mañana es día de partir 😢'),
-        desc: t('Aproveite as últimas horas! Se for sair de madrugada, veja as instruções.', 'Enjoy the last hours! If leaving at dawn, see instructions.', '¡Disfruta las últimas horas! Si sales de madrugada, mira instrucciones.'),
+        title: t(
+            'Amanhã é dia de partir 😢',
+            'Tomorrow is departure day 😢',
+            'Mañana es día de partir 😢'
+        ),
+        desc: t(
+            'Aproveite as últimas horas! Se for sair de madrugada, veja as instruções.',
+            'Enjoy the last hours! If leaving at dawn, see instructions.',
+            '¡Disfruta las últimas horas! Si sales de madrugada, mira instrucciones.'
+        ),
         color: 'from-indigo-400 to-blue-400',
         textColor: 'text-indigo-900 dark:text-indigo-100',
         iconBg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300',
     };
-    const [randomSuggestion, setRandomSuggestion] = useState<TimeOfDaySuggestion | null>(null);
-    const [dynamicPlace, setDynamicPlace] = useState<PlaceRecommendation | null>(null);
-    const [isEventToday, setIsEventToday] = useState<boolean>(false);
 
     // Estado inicial preguiçoso
     const [timeOfDay, setTimeOfDay] = useState<'morning' | 'lunch' | 'sunset' | 'night'>(() => {
@@ -141,22 +168,25 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
         }
     }, [stayStage, simpleTemp]);
 
+    const [randomSuggestion, setRandomSuggestion] = useState<TimeOfDaySuggestion | null>(null);
+
     useEffect(() => {
-        // 1. Tenta usar sugestão customizada (manual override)
         if (customSuggestions) {
             const suggestionsList = customSuggestions[timeOfDay];
             if (suggestionsList && Array.isArray(suggestionsList) && suggestionsList.length > 0) {
                 const randomIndex = Math.floor(Math.random() * suggestionsList.length);
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRandomSuggestion(suggestionsList[randomIndex]);
-                setDynamicPlace(null);
-                return;
+            } else {
+                setRandomSuggestion(null);
             }
         }
+    }, [customSuggestions, timeOfDay]);
 
-        setRandomSuggestion(null);
+    const { dynamicPlace, isEventToday } = React.useMemo(() => {
+        if (randomSuggestion) return { dynamicPlace: null, isEventToday: false };
 
         // 2. 🔴 PRIORIDADE ABSOLUTA: Eventos HOJE (+1000 pontos)
-        // FIX: Usar timezone local para evitar bugs de comparação de data
         const now = new Date();
         const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
             .toISOString()
@@ -164,22 +194,16 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
         const eventToday = activeEvents.find((event) => event.eventDate === today);
 
         if (eventToday) {
-            setDynamicPlace(eventToday);
-            setIsEventToday(true);
-            return;
+            return { dynamicPlace: eventToday, isEventToday: true };
         }
-
-        setIsEventToday(false);
 
         // 3. 🧠 SUPER SMART: Sistema de pontuação para escolher o melhor lugar
         if (places && places.length > 0) {
             const now = new Date();
             const isWeekend = now.getDay() === 5 || now.getDay() === 6;
 
-            // 1. FILTRO RÍGIDO: Apenas categorias que fazem sentido para o horário
-            // Isso evita que Pizza/Hambúrguer (Jantar) apareçam no Almoço só porque têm delivery
             const validCategoriesForTime = {
-                morning: ['cafes', 'essentials', 'snacks'], // Adicionado snacks para cobrir padarias/lanchonetes
+                morning: ['cafes', 'essentials', 'snacks'],
                 lunch: ['selfservice', 'alacarte', 'oriental', 'pasta', 'salads'],
                 sunset: ['attractions', 'bikes', 'snacks', 'cafes'],
                 night: [
@@ -191,53 +215,32 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
                     'bars',
                     'pasta',
                     'alacarte',
+                    'alacarte', // Duplicate in original?
                 ],
             };
 
             const allowedCategories = validCategoriesForTime[timeOfDay] || [];
 
-            // Filtra os lugares elegíveis primeiro
             const eligiblePlaces = places.filter((place) => {
-                // 1. Categoria deve bater
                 if (!place.category || !allowedCategories.includes(place.category)) return false;
-
-                // 2. Regra Simplificada: Delivery = Só a noite
-                // Se tiver link de pedido ou whatsapp (e não for atração), só pode aparecer a noite.
                 const hasDelivery = place.orderLink || place.whatsapp;
                 const isAttraction = ['attractions', 'passeios', 'events', 'eventos'].includes(
                     (place.category || '').toLowerCase()
                 );
-
                 if (hasDelivery && !isAttraction && timeOfDay !== 'night') {
                     return false;
                 }
-
                 return true;
             });
 
-            if (eligiblePlaces.length === 0) {
-                setDynamicPlace(null);
-                return;
-            }
+            if (eligiblePlaces.length === 0) return { dynamicPlace: null, isEventToday: false };
 
-            // 2. PONTUAÇÃO: Define o melhor entre os elegíveis
             const scoredPlaces = eligiblePlaces.map((place) => {
                 let score = 0;
-
-                // Base score por ser elegível (todos aqui já são)
                 score += 100;
-
-                // 🟢 +50 pontos: Fim de semana bonus (bars/events)
-                if (isWeekend && place.category && ['bars', 'events'].includes(place.category)) {
+                if (isWeekend && place.category && ['bars', 'events'].includes(place.category))
                     score += 50;
-                }
-
-                // 🔵 +30 pontos: Tem delivery/WhatsApp
-                if (place.orderLink || place.whatsapp) {
-                    score += 30;
-                }
-
-                // 🌅 +500 pontos: Pôr do Sol na Orla (Sunset)
+                if (place.orderLink || place.whatsapp) score += 30;
                 if (timeOfDay === 'sunset') {
                     const name = (place.name || '').toLowerCase();
                     const desc = (place.description || '').toLowerCase();
@@ -250,28 +253,20 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
                         score += 500;
                     }
                 }
-
                 return { place, score };
             });
 
-            // Ordena por score
             scoredPlaces.sort((a, b) => b.score - a.score);
-
-            // 3. ROTAÇÃO: Pega os top 3 e rotaciona a cada 15 minutos
-            const topCandidates = scoredPlaces.slice(0, 3); // Pega os 3 melhores
+            const topCandidates = scoredPlaces.slice(0, 3);
 
             if (topCandidates.length > 0) {
-                // Usa os minutos atuais para escolher um índice (0, 1 ou 2)
-                // Muda a cada 15 minutos (0-14: index 0, 15-29: index 1, etc)
                 const currentMinute = new Date().getMinutes();
                 const rotationIndex = Math.floor(currentMinute / 15) % topCandidates.length;
-
-                setDynamicPlace(topCandidates[rotationIndex].place);
-            } else {
-                setDynamicPlace(null);
+                return { dynamicPlace: topCandidates[rotationIndex].place, isEventToday: false };
             }
         }
-    }, [customSuggestions, timeOfDay, places, activeEvents]);
+        return { dynamicPlace: null, isEventToday: false };
+    }, [randomSuggestion, places, activeEvents, timeOfDay]);
 
     if (!isTimeVerified) return <SmartSuggestionSkeleton />;
 
@@ -282,7 +277,11 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
         activeContent.desc = randomSuggestion.description;
     } else if (dynamicPlace) {
         activeContent.title = `${t('Que tal o', 'How about', '¿Qué tal el')} ${t(dynamicPlace.name, dynamicPlace.name_en, dynamicPlace.name_es)}?`;
-        activeContent.desc = t(dynamicPlace.description, dynamicPlace.description_en, dynamicPlace.description_es);
+        activeContent.desc = t(
+            dynamicPlace.description,
+            dynamicPlace.description_en,
+            dynamicPlace.description_es
+        );
     }
 
     if (stayStage === 'checkout' || stayStage === 'post_checkout') activeContent = CHECKOUT_CONTENT;
@@ -293,7 +292,7 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
             icon: CalendarHeart,
             label: t('Contagem Regressiva', 'Countdown', 'Cuenta Regresiva'),
             title: t('Prepare as malas! 🧳', 'Pack your bags! 🧳', '¡Empaca tus maletas! 🧳'),
-            desc: `${t('Petrolina te espera!', 'Petrolina awaits you!', '¡Petrolina te espera!')} ${t('O clima hoje está na casa dos', 'Today\'s weather is around', 'El clima hoy está alrededor de')} ${simpleTemp || 30}°C.`,
+            desc: `${t('Petrolina te espera!', 'Petrolina awaits you!', '¡Petrolina te espera!')} ${t('O clima hoje está na casa dos', "Today's weather is around", 'El clima hoy está alrededor de')} ${simpleTemp || 30}°C.`,
             color: 'from-fuchsia-400 to-purple-400',
             textColor: 'text-purple-900 dark:text-purple-100',
             iconBg: 'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300',

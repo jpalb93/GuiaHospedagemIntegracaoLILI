@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryDocumentSnapshot } from 'firebase/firestore';
 import {
     subscribeToActiveReservations,
     fetchHistoryReservations,
@@ -7,7 +8,7 @@ import {
     updateReservation,
     deleteReservation,
 } from '../services/firebase/reservations';
-import { Reservation, PropertyId, UserPermission } from '../types';
+import { Reservation, UserPermission } from '../types';
 import { logger } from '../utils/logger';
 
 interface UseReservationsOptions {
@@ -16,90 +17,103 @@ interface UseReservationsOptions {
 }
 
 export const useReservations = ({ userPermission, showToast }: UseReservationsOptions) => {
-    // Data State
+    const queryClient = useQueryClient();
+
+    // --- 1. Real-time Active Reservations (Firestore Listener) ---
+    // React Query doesn't natively support streams easily without third-party adapters,
+    // and maintaining the live socket is good for "Active" view.
     const [activeReservations, setActiveReservations] = useState<Reservation[]>([]);
-    const [historyReservations, setHistoryReservations] = useState<Reservation[]>([]);
 
-    // History Pagination
-    const [lastHistoryDoc, setLastHistoryDoc] = useState<unknown>(null);
-    const [loadingHistory, setLoadingHistory] = useState(false);
-    const [hasMoreHistory, setHasMoreHistory] = useState(true);
-
-    // Get filter properties based on user permission
-    const getFilterProps = useCallback((): PropertyId[] | undefined => {
-        if (!userPermission) return undefined;
-        return userPermission.role === 'super_admin'
-            ? undefined
-            : userPermission.allowedProperties;
-    }, [userPermission]);
-
-    // Load history with pagination
-    const loadMoreHistory = useCallback(async (reset = false) => {
-        if (loadingHistory) return;
-        setLoadingHistory(true);
-        try {
-            const lastDoc = reset
-                ? null
-                : (lastHistoryDoc as QueryDocumentSnapshot<unknown, DocumentData> | null);
-
-            const filterProps = getFilterProps();
-
-            const { data, lastVisible, hasMore } = await fetchHistoryReservations(
-                lastDoc,
-                20,
-                filterProps
-            );
-
-            // Double check filter by permission
-            const filteredData = data.filter(
-                (r) =>
-                    !userPermission ||
-                    userPermission.role === 'super_admin' ||
-                    userPermission.allowedProperties.includes(r.propertyId || 'lili')
-            );
-
-            setHistoryReservations((prev) => (reset ? filteredData : [...prev, ...filteredData]));
-            setLastHistoryDoc(lastVisible);
-            setHasMoreHistory(hasMore);
-        } catch (e) {
-            logger.error('Erro ao carregar histórico', e);
-            showToast('Erro ao carregar histórico', 'error');
-        } finally {
-            setLoadingHistory(false);
-        }
-    }, [loadingHistory, lastHistoryDoc, userPermission, getFilterProps, showToast]);
-
-    // Subscribe to active reservations
     useEffect(() => {
         if (!userPermission) return;
 
-        const filterProps = getFilterProps();
-        const unsubActive = subscribeToActiveReservations((data) => {
+        const allowedProperties =
+            userPermission.role === 'super_admin' ? undefined : userPermission.allowedProperties;
+
+        const unsubscribe = subscribeToActiveReservations((data) => {
             setActiveReservations(data);
-        }, filterProps);
+        }, allowedProperties);
 
-        loadMoreHistory(true);
-
-        return () => {
-            unsubActive();
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => unsubscribe();
     }, [userPermission]);
 
-    // CRUD Operations
-    const createReservation = useCallback(async (payload: Reservation): Promise<void> => {
-        await saveReservation(payload);
-    }, []);
+    // --- 2. History Reservations (Infinite Query) ---
+    const allowedProperties =
+        userPermission?.role === 'super_admin' ? undefined : userPermission?.allowedProperties;
 
-    const editReservation = useCallback(async (id: string, payload: Reservation): Promise<void> => {
-        await updateReservation(id, payload);
-    }, []);
+    // We use 'historyReservations' string as key + user permissions to segregate cache
+    const historyQuery = useInfiniteQuery({
+        queryKey: ['historyReservations', allowedProperties],
+        queryFn: async ({ pageParam }) => {
+            const result = await fetchHistoryReservations(
+                (pageParam as QueryDocumentSnapshot) || null,
+                20,
+                allowedProperties
+            );
+            return result;
+        },
+        initialPageParam: null as unknown, // Explicit check allow mixed types
+        getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.lastVisible : undefined),
+        enabled: !!userPermission, // Only fetch if user is defined
+        staleTime: 1000 * 60 * 5, // 5 minutes cache
+    });
 
-    const removeReservation = useCallback(async (id: string): Promise<void> => {
-        await deleteReservation(id);
-        setHistoryReservations((prev) => prev.filter((r) => r.id !== id));
-        setActiveReservations((prev) => prev.filter((r) => r.id !== id));
-    }, []);
+    // Flatten pages into a single list
+    const historyReservations = historyQuery.data?.pages.flatMap((page) => page.data) || [];
+
+    // --- 3. CRUD Mutations ---
+
+    const createMutation = useMutation({
+        mutationFn: saveReservation,
+        onSuccess: () => {
+            showToast('Reserva criada com sucesso!', 'success');
+            // No need to invalidate history usually, as new reservations are "Active"
+            // Active list updates automatically via subscription
+        },
+        onError: (error) => {
+            logger.error('Error creating reservation', { error });
+            showToast('Erro ao criar reserva', 'error');
+        },
+    });
+
+    const editMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Partial<Reservation> }) =>
+            updateReservation(id, data),
+        onSuccess: () => {
+            showToast('Reserva atualizada!', 'success');
+            // If we updated something that moves it to history (e.g. checkout dates), we might want to invalidate
+            queryClient.invalidateQueries({ queryKey: ['historyReservations'] });
+        },
+        onError: (error) => {
+            logger.error('Error updating reservation', { error });
+            showToast('Erro ao atualizar reserva', 'error');
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteReservation,
+        onSuccess: (_, deletedId) => {
+            showToast('Reserva excluída!', 'success');
+
+            // Optimistically update Active list (though subscription will eventually catch up)
+            setActiveReservations((prev) => prev.filter((r) => r.id !== deletedId));
+
+            // Invalidate history to remove it if it was there
+            queryClient.invalidateQueries({ queryKey: ['historyReservations'] });
+        },
+        onError: (error) => {
+            logger.error('Error deleting reservation', { error });
+            showToast('Erro ao excluir reserva', 'error');
+        },
+    });
+
+    // --- API Adapters for existing components ---
+
+    const loadMoreHistory = useCallback(() => {
+        if (historyQuery.hasNextPage && !historyQuery.isFetchingNextPage) {
+            historyQuery.fetchNextPage();
+        }
+    }, [historyQuery]);
 
     return {
         // Data
@@ -107,14 +121,24 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         historyReservations,
 
         // Pagination
-        loadingHistory,
-        hasMoreHistory,
+        loadingHistory: historyQuery.isLoading || historyQuery.isFetchingNextPage,
+        hasMoreHistory: !!historyQuery.hasNextPage,
         loadMoreHistory,
+        refreshHistory: historyQuery.refetch,
+
+        // Errors (Optional exposure)
+        historyError: historyQuery.error,
 
         // CRUD
-        createReservation,
-        editReservation,
-        removeReservation,
+        createReservation: (data: Reservation) => createMutation.mutateAsync(data),
+        editReservation: (id: string, data: Partial<Reservation>) =>
+            editMutation.mutateAsync({ id, data }),
+        removeReservation: (id: string) => deleteMutation.mutateAsync(id),
+
+        // Loading states for actions
+        isCreating: createMutation.isPending,
+        isEditing: editMutation.isPending,
+        isDeleting: deleteMutation.isPending,
     };
 };
 

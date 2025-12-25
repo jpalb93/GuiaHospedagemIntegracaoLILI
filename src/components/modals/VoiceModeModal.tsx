@@ -13,9 +13,15 @@ interface VoiceModeModalProps {
     systemInstruction?: string;
 }
 
-const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose, guestName, systemInstruction }) => {
+const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
+    isOpen,
+    onClose,
+    guestName,
+    systemInstruction,
+}) => {
     const { t, currentLang } = useLanguage();
-    const { isListening, transcript, startListening, stopListening, setTranscript } = useSpeechRecognition();
+    const { isListening, transcript, startListening, stopListening, setTranscript } =
+        useSpeechRecognition();
     const { speak, isSpeaking, cancel } = useTextToSpeech(); // Now supports Cloud TTS!
 
     const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle');
@@ -24,58 +30,6 @@ const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose, guestN
     // Silence Detection for Auto-Send
     const silenceTimer = useRef<NodeJS.Timeout | null>(null);
     const lastTranscriptRef = useRef('');
-
-    // --- EFFECTS ---
-
-    // 1. Reset on Open
-    useEffect(() => {
-        if (isOpen) {
-            setStatus('idle');
-            // Speak initial greeting
-            const greeting = t(
-                `Olá ${guestName}, estou ouvindo.`,
-                `Hi ${guestName}, I'm listening.`,
-                `Hola ${guestName}, te escucho.`
-            );
-            speak(greeting, currentLang, true); // Use Cloud TTS
-        } else {
-            stopListening();
-            cancel();
-            setMessages([]);
-        }
-    }, [isOpen]);
-
-    // 2. Monitoring IsSpeaking to update status
-    useEffect(() => {
-        if (isSpeaking) {
-            setStatus('speaking');
-        } else if (status === 'speaking') {
-            // Finished speaking, go back to listening automatically?
-            // For now, let's go to idle and let user click, or auto-listen if desired.
-            // Let's make it manual for v1 to avoid infinite loops.
-            setStatus('idle');
-        }
-    }, [isSpeaking]);
-
-    // 3. Auto-Send Logic (Debounced Silence)
-    useEffect(() => {
-        if (!isListening) return;
-
-        setStatus('listening');
-
-        if (transcript && transcript !== lastTranscriptRef.current) {
-            // User is talking
-            lastTranscriptRef.current = transcript;
-
-            // Clear existing timer
-            if (silenceTimer.current) clearTimeout(silenceTimer.current);
-
-            // Set new timer: if 2 seconds of silence, SEND.
-            silenceTimer.current = setTimeout(() => {
-                handleSend(transcript);
-            }, 2000);
-        }
-    }, [transcript, isListening]);
 
     // --- HANDLERS ---
 
@@ -103,16 +57,24 @@ const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose, guestN
             4. Do NOT use markdown (*, #) or emojis.
             `;
 
-            const response = await sendMessageToGemini(text, newHistory, guestName, voiceInstruction);
+            const response = await sendMessageToGemini(
+                text,
+                newHistory,
+                guestName,
+                voiceInstruction
+            );
 
             if (response) {
-                setMessages(prev => [...prev, { role: 'model', text: response }]);
+                setMessages((prev) => [...prev, { role: 'model', text: response }]);
                 // Speak response using Cloud TTS
                 speak(response, currentLang, true);
             }
-
-        } catch (error) {
-            speak(t('Desculpe, não entendi.', 'Sorry, I missed that.', 'Perdón, no entendí.'), currentLang, true);
+        } catch (_error) {
+            speak(
+                t('Desculpe, não entendi.', 'Sorry, I missed that.', 'Perdón, no entendí.'),
+                currentLang,
+                true
+            );
             setStatus('idle');
         }
 
@@ -132,6 +94,61 @@ const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose, guestN
             setStatus('listening');
         }
     };
+
+    // --- EFFECTS ---
+
+    // 1. Reset on Open
+    useEffect(() => {
+        if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStatus('idle');
+            // Speak initial greeting
+            const greeting = t(
+                `Olá ${guestName}, estou ouvindo.`,
+                `Hi ${guestName}, I'm listening.`,
+                `Hola ${guestName}, te escucho.`
+            );
+            speak(greeting, currentLang, true); // Use Cloud TTS
+        } else {
+            stopListening();
+            cancel();
+            setMessages([]);
+        }
+    }, [isOpen]);
+
+    // 2. Monitoring IsSpeaking to update status
+    useEffect(() => {
+        if (isSpeaking) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStatus('speaking');
+        } else if (status === 'speaking') {
+            // Finished speaking, go back to listening automatically?
+            // For now, let's go to idle and let user click, or auto-listen if desired.
+            // Let's make it manual for v1 to avoid infinite loops.
+            setStatus('idle');
+        }
+    }, [isSpeaking]);
+
+    // 3. Auto-Send Logic (Debounced Silence)
+    useEffect(() => {
+        if (!isListening) return;
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setStatus('listening');
+
+        if (transcript && transcript !== lastTranscriptRef.current) {
+            // User is talking
+            lastTranscriptRef.current = transcript;
+
+            // Clear existing timer
+            if (silenceTimer.current) clearTimeout(silenceTimer.current);
+
+            // Set new timer: if 2 seconds of silence, SEND.
+            silenceTimer.current = setTimeout(() => {
+                handleSend(transcript);
+            }, 2000);
+        }
+    }, [transcript, isListening]);
 
     if (!isOpen) return null;
 
@@ -168,14 +185,20 @@ const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose, guestN
                 `}
             >
                 {/* Background Circles */}
-                <div className={`absolute inset-0 rounded-full border-4 border-white/10 ${status === 'listening' ? 'animate-ping' : ''}`}></div>
-                <div className={`absolute inset-4 rounded-full border-4 border-white/20 ${status === 'processing' ? 'animate-spin-slow' : ''}`}></div>
+                <div
+                    className={`absolute inset-0 rounded-full border-4 border-white/10 ${status === 'listening' ? 'animate-ping' : ''}`}
+                ></div>
+                <div
+                    className={`absolute inset-4 rounded-full border-4 border-white/20 ${status === 'processing' ? 'animate-spin-slow' : ''}`}
+                ></div>
 
                 {/* Icon */}
-                <div className={`z-10 bg-white text-gray-900 p-8 rounded-full transition-all duration-300
+                <div
+                    className={`z-10 bg-white text-gray-900 p-8 rounded-full transition-all duration-300
                     ${status === 'listening' ? 'scale-110 bg-red-500 text-white' : ''}
                     ${status === 'speaking' ? 'scale-110 bg-green-500 text-white' : ''}
-                `}>
+                `}
+                >
                     {status === 'speaking' ? (
                         <Volume2 size={48} className="animate-pulse" />
                     ) : (

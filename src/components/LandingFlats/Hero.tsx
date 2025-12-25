@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, Award, MapPin, CalendarDays, MessageCircle } from 'lucide-react';
-import flatsLogo from '../../assets/flats-integracao-logo.png';
+import { ChevronRight, MapPin, CalendarDays, MessageCircle } from 'lucide-react';
 
 const Hero: React.FC = () => {
-    const [scrollY, setScrollY] = useState(0);
+    const [scrollY, setScrollY] = useState(() => {
+        if (typeof window !== 'undefined') return window.scrollY;
+        return 0;
+    });
 
     useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
@@ -22,9 +24,14 @@ const Hero: React.FC = () => {
                 style={{ transform: `translateY(${scrollY * 0.5}px)` }}
             >
                 <img
-                    src="https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
+                    src="/hero-bg.jpg"
                     className="w-full h-full object-cover scale-110 opacity-60"
                     alt="Flats Integração"
+                    fetchPriority="high"
+                    loading="eager"
+                    width="1920"
+                    height="1080"
+                    decoding="sync"
                 />
             </div>
 
@@ -32,41 +39,32 @@ const Hero: React.FC = () => {
 
             {/* Conteúdo */}
             <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 z-10">
-                <div className="mb-8 animate-fadeIn relative group">
-                    <img
-                        src={flatsLogo}
-                        alt="Logo Flats Integração"
-                        className="relative z-10 h-40 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-                    />
-                    <div
-                        className="absolute inset-0 z-20 animate-logo-shimmer pointer-events-none"
-                        style={{
-                            maskImage: `url(${flatsLogo})`,
-                            WebkitMaskImage: `url(${flatsLogo})`,
-                            maskSize: 'contain',
-                            WebkitMaskSize: 'contain',
-                            maskRepeat: 'no-repeat',
-                            WebkitMaskRepeat: 'no-repeat',
-                            maskPosition: 'center',
-                            WebkitMaskPosition: 'center',
-                        }}
-                    />
-                </div>
+                <div className="flex flex-col items-center">
+                    <div className="mb-4 inline-flex items-center gap-2 bg-orange-500/20 backdrop-blur-md px-4 py-1.5 rounded-full border border-orange-500/30 animate-fadeIn">
+                        <MapPin size={16} className="text-orange-400" />
+                        <span className="text-orange-100 text-xs font-bold tracking-widest uppercase">
+                            LOCALIZAÇÃO PRIVILEGIADA
+                        </span>
+                    </div>
 
-                <div className="mb-6 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 shadow-xl animate-fadeIn delay-100">
-                    <Award size={18} className="text-orange-400" />
-                    <h1 className="text-white/90 text-sm font-semibold tracking-wide uppercase">
-                        Hospedagem em Petrolina
+                    <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-2xl text-center max-w-4xl leading-tight">
+                        HOSPEDAGEM EM{' '}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">
+                            PETROLINA
+                        </span>
                     </h1>
                 </div>
 
                 {/* Gradient Overlay */}
 
                 <p className="text-xl sm:text-2xl md:text-3xl font-light text-white/95 mb-10 max-w-3xl drop-shadow-lg leading-relaxed">
-                    Seu lar longe de casa, com o{' '}
-                    <span className="font-semibold text-orange-300">conforto</span> e{' '}
-                    <span className="font-semibold text-orange-300">praticidade</span> que você
-                    merece.
+                    Flats completos e mobiliados no{' '}
+                    <strong className="font-semibold text-orange-300">Centro de Petrolina</strong>.
+                    A liberdade de um apartamento com a{' '}
+                    <strong className="font-semibold text-orange-300">
+                        localização estratégica
+                    </strong>{' '}
+                    para curtas ou longas temporadas.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -74,7 +72,7 @@ const Hero: React.FC = () => {
                         href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
                         target="_blank"
                         rel="noreferrer"
-                        className="group bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-xl"
+                        className="group bg-orange-600 hover:bg-orange-700 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-xl"
                     >
                         <CalendarDays size={20} />
                         Verificar Disponibilidade
@@ -83,7 +81,7 @@ const Hero: React.FC = () => {
                         href="https://wa.me/5587988283273"
                         target="_blank"
                         rel="noreferrer"
-                        className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-10 py-4 rounded-full text-lg font-bold transition-all duration-300 flex items-center gap-2 border border-white/30 hover:border-white/50"
+                        className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-full text-lg font-bold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
                         <MessageCircle size={20} />
                         Falar conosco no Whatsapp

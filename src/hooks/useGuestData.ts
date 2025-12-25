@@ -65,7 +65,7 @@ export const useGuestData = (config: GuestConfig) => {
                     setCuriosities(fetchedCuriosities);
                 }
             } catch (error) {
-                logger.error('Error loading static guest data:', error);
+                logger.error('Error loading static guest data:', { error });
             }
         };
         loadStaticData();
@@ -95,24 +95,36 @@ export const useGuestData = (config: GuestConfig) => {
         localStorage.setItem('flat_lili_dismissed_global', text);
     }, []);
 
-    const dismissPersonal = useCallback((text: string) => {
-        setDismissedPersonalText(text);
-        localStorage.setItem(`flat_lili_dismissed_personal_${config.guestName}`, text);
-    }, [config.guestName]);
+    const dismissPersonal = useCallback(
+        (text: string) => {
+            setDismissedPersonalText(text);
+            localStorage.setItem(`flat_lili_dismissed_personal_${config.guestName}`, text);
+        },
+        [config.guestName]
+    );
 
-    const dismissAlert = useCallback((type: 'global' | 'personal', text: string) => {
-        if (type === 'global') dismissGlobal(text);
-        else dismissPersonal(text);
-    }, [dismissGlobal, dismissPersonal]);
+    const dismissAlert = useCallback(
+        (type: 'global' | 'personal', text: string) => {
+            if (type === 'global') dismissGlobal(text);
+            else dismissPersonal(text);
+        },
+        [dismissGlobal, dismissPersonal]
+    );
 
-    const mergePlaces = useCallback((staticList: PlaceRecommendation[], category: string) => {
-        const dynamic = dynamicPlaces.filter((p) => p.category === category);
-        return [...dynamic, ...staticList];
-    }, [dynamicPlaces]);
+    const mergePlaces = useCallback(
+        (staticList: PlaceRecommendation[], category: string) => {
+            const dynamic = dynamicPlaces.filter((p) => p.category === category);
+            return [...dynamic, ...staticList];
+        },
+        [dynamicPlaces]
+    );
 
-    const hasContent = useCallback((list: PlaceRecommendation[], category: string) => {
-        return list.length > 0 || dynamicPlaces.some((p) => p.category === category);
-    }, [dynamicPlaces]);
+    const hasContent = useCallback(
+        (list: PlaceRecommendation[], category: string) => {
+            return list.length > 0 || dynamicPlaces.some((p) => p.category === category);
+        },
+        [dynamicPlaces]
+    );
 
     return {
         dynamicPlaces,

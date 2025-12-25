@@ -11,18 +11,18 @@ export interface TranslationFieldConfig {
 }
 
 export const translateBatch = async (
-    items: any[],
+    items: Record<string, unknown>[],
     fields: TranslationFieldConfig[],
     modelName?: string
-): Promise<any[]> => {
+): Promise<Record<string, unknown>[]> => {
     const effectiveModelName = modelName || 'gemini-2.5-flash-lite';
 
     const batchSize = 3; // Reduced to 3 to strictly respect Free Tier limits
-    const results: any[] = [];
+    const results: Record<string, unknown>[] = [];
 
     // Filter items that actually need translation (missing EN or ES)
     const pendingItems = items.filter((item) => {
-        return fields.some(f => !item[f.targetEn] || !item[f.targetEs]);
+        return fields.some((f) => !item[f.targetEn] || !item[f.targetEs]);
     });
 
     if (pendingItems.length === 0) return [];
@@ -39,12 +39,12 @@ export const translateBatch = async (
                 // Determine if we need to send this field
                 // If either target is missing, we send the source
                 if (item[f.source] && (!item[f.targetEn] || !item[f.targetEs])) {
-                    contentToTranslate[f.source] = item[f.source];
+                    contentToTranslate[f.source] = item[f.source] as string;
                 }
             });
             return {
                 _id: index,
-                content: contentToTranslate
+                content: contentToTranslate,
             };
         });
 
@@ -76,7 +76,7 @@ export const translateBatch = async (
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     prompt,
-                    model: effectiveModelName
+                    model: effectiveModelName,
                 }),
             });
 
@@ -89,20 +89,25 @@ export const translateBatch = async (
             const text = data.text;
 
             // Clean up code blocks if present
-            const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const cleanJson = text
+                .replace(/```json/g, '')
+                .replace(/```/g, '')
+                .trim();
             const translatedBatch = JSON.parse(cleanJson);
 
             // Merge translations back into results
-            translatedBatch.forEach((t: any) => {
+            translatedBatch.forEach((t: { _id: number; content: Record<string, string> }) => {
                 const originalItem = batch[t._id];
                 if (originalItem) {
-                    const updates: any = { id: originalItem.id };
+                    const updates: Record<string, unknown> = { id: originalItem.id };
 
-                    fields.forEach(f => {
+                    fields.forEach((f) => {
                         // AI returns source_en and source_es
                         // We map them to targetEn and targetEs
-                        if (t.content[`${f.source}_en`]) updates[f.targetEn] = t.content[`${f.source}_en`];
-                        if (t.content[`${f.source}_es`]) updates[f.targetEs] = t.content[`${f.source}_es`];
+                        if (t.content[`${f.source}_en`])
+                            updates[f.targetEn] = t.content[`${f.source}_en`];
+                        if (t.content[`${f.source}_es`])
+                            updates[f.targetEs] = t.content[`${f.source}_es`];
 
                         // Fallback: If AI returned the source key itself as translated (unlikely given prompt, but safety)
                         // Actually, relying on suffix is safest.
@@ -114,12 +119,13 @@ export const translateBatch = async (
 
             // STRICT Rate limit for Free Tier
             if (i + batchSize < pendingItems.length) {
-                logger.info(`Waiting 12s to respect API quota... (Progress: ${i + batchSize}/${pendingItems.length})`);
-                await new Promise(resolve => setTimeout(resolve, 12000));
+                logger.info(
+                    `Waiting 12s to respect API quota... (Progress: ${i + batchSize}/${pendingItems.length})`
+                );
+                await new Promise((resolve) => setTimeout(resolve, 12000));
             }
-
         } catch (error) {
-            logger.error('Error translating batch via API:', error);
+            logger.error('Error translating batch via API:', { error });
             // If it's the first batch and it fails, it's likely a configuration/quota issue.
             // Rethrowing helps the UI know something went wrong.
             if (i === 0) throw error;

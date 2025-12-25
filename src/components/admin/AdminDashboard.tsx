@@ -20,8 +20,18 @@ const ActivityLogs = React.lazy(() => import('./ActivityLogs'));
 import AdminNavigation from './AdminNavigation';
 import ConfirmModal from './ConfirmModal';
 
-interface AdminDashboardProps {
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface AdminDashboardProps {}
+
+const FallbackLoader = () => (
+    <div className="h-full w-full flex flex-col items-center justify-center min-h-[50vh] animate-fadeIn">
+        <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+            <Loader2 className="animate-spin text-orange-500 relative z-10" size={48} />
+        </div>
+        <p className="mt-4 text-gray-400 font-medium text-sm animate-pulse">Carregando módulo...</p>
+    </div>
+);
 
 const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     const { auth, data, form, blocks, ui } = useAdminDashboard();
@@ -74,16 +84,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
             window.removeEventListener('pageshow', handlePageShow);
         };
     }, []);
-
-    const FallbackLoader = () => (
-        <div className="h-full w-full flex flex-col items-center justify-center min-h-[50vh] animate-fadeIn">
-            <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-                <Loader2 className="animate-spin text-orange-500 relative z-10" size={48} />
-            </div>
-            <p className="mt-4 text-gray-400 font-medium text-sm animate-pulse">Carregando módulo...</p>
-        </div>
-    );
 
     if (auth.authLoading) {
         return (
@@ -151,7 +151,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                         </button>
                     </form>
                 </div>
-
             </div>
         );
     }
@@ -166,19 +165,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                 setActiveTab={(tab) =>
                     setActiveTab(
                         tab as
-                        | 'home'
-                        | 'create'
-                        | 'list'
-                        | 'calendar'
-                        | 'blocks'
-                        | 'places'
-                        | 'tips'
-                        | 'reviews'
-                        | 'suggestions'
-                        | 'suggestions'
-                        | 'settings'
-                        | 'analytics'
-                        | 'logs'
+                            | 'home'
+                            | 'create'
+                            | 'list'
+                            | 'calendar'
+                            | 'blocks'
+                            | 'places'
+                            | 'tips'
+                            | 'reviews'
+                            | 'suggestions'
+                            | 'suggestions'
+                            | 'settings'
+                            | 'analytics'
+                            | 'logs'
                     )
                 }
                 isMobileMenuOpen={isMobileMenuOpen}
@@ -199,11 +198,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     ? 'Admin Geral'
                                     : auth.userPermission?.allowedProperties.length === 1 &&
                                         auth.userPermission.allowedProperties[0] === 'lili'
-                                        ? 'Flat da Lili'
-                                        : auth.userPermission?.allowedProperties.length === 1 &&
-                                            auth.userPermission.allowedProperties[0] === 'integracao'
-                                            ? 'Flats Integração'
-                                            : 'Painel de Gestão'}
+                                      ? 'Flat da Lili'
+                                      : auth.userPermission?.allowedProperties.length === 1 &&
+                                          auth.userPermission.allowedProperties[0] === 'integracao'
+                                        ? 'Flats Integração'
+                                        : 'Painel de Gestão'}
                             </h1>
                             <div className="flex flex-col">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -247,18 +246,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     onNavigate={(tab) =>
                                         setActiveTab(
                                             tab as
-                                            | 'home'
-                                            | 'create'
-                                            | 'list'
-                                            | 'calendar'
-                                            | 'blocks'
-                                            | 'places'
-                                            | 'tips'
-                                            | 'reviews'
-                                            | 'suggestions'
-                                            | 'suggestions'
-                                            | 'settings'
-                                            | 'analytics'
+                                                | 'home'
+                                                | 'create'
+                                                | 'list'
+                                                | 'calendar'
+                                                | 'blocks'
+                                                | 'places'
+                                                | 'tips'
+                                                | 'reviews'
+                                                | 'suggestions'
+                                                | 'suggestions'
+                                                | 'settings'
+                                                | 'analytics'
                                         )
                                     }
                                     userPermission={auth.userPermission}
@@ -280,19 +279,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                         ]}
                                         templates={settings.settings.data.reservationTemplates}
                                         onSaveTemplate={async (template) => {
-                                            const current = settings.settings.data.reservationTemplates || [];
+                                            const current =
+                                                settings.settings.data.reservationTemplates || [];
                                             await settings.settings.save({
                                                 ...settings.settings.data,
-                                                reservationTemplates: [...current, template]
+                                                reservationTemplates: [...current, template],
                                             });
                                             ui.showToast('Modelo salvo com sucesso!', 'success');
                                         }}
                                         onDeleteTemplate={async (id) => {
-                                            const current = settings.settings.data.reservationTemplates || [];
-                                            const updated = current.filter(t => t.id !== id);
+                                            const current =
+                                                settings.settings.data.reservationTemplates || [];
+                                            const updated = current.filter((t) => t.id !== id);
                                             await settings.settings.save({
                                                 ...settings.settings.data,
-                                                reservationTemplates: updated
+                                                reservationTemplates: updated,
                                             });
                                             ui.showToast('Modelo removido.', 'success');
                                         }}
@@ -333,9 +334,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
                             {activeTab === 'places' && <PlacesManager places={content.places} />}
                             {activeTab === 'tips' && (
-                                <TipsManager tips={content.tips} curiosities={content.curiosities} />
+                                <TipsManager
+                                    tips={content.tips}
+                                    curiosities={content.curiosities}
+                                />
                             )}
-                            {activeTab === 'reviews' && <ReviewsManager reviews={settings.reviews} />}
+                            {activeTab === 'reviews' && (
+                                <ReviewsManager reviews={settings.reviews} />
+                            )}
                             {activeTab === 'suggestions' && (
                                 <SuggestionsManager suggestions={settings.suggestions} />
                             )}
@@ -349,7 +355,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                 <AnalyticsDashboard
                                     reservations={[
                                         ...data.activeReservations,
-                                        ...data.historyReservations
+                                        ...data.historyReservations,
                                     ]}
                                 />
                             )}
@@ -361,8 +367,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                 </div>
             </div>
 
-
-
             <ConfirmModal
                 isOpen={ui.confirmModal.isOpen}
                 onClose={() => ui.setConfirmModal({ ...ui.confirmModal, isOpen: false })}
@@ -371,7 +375,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                 message={ui.confirmModal.message}
                 isDestructive={ui.confirmModal.isDestructive}
             />
-        </div >
+        </div>
     );
 };
 

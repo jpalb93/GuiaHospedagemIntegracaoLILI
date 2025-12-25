@@ -66,38 +66,35 @@ export const useAdminContent = () => {
 
             // Delete expired events in background (Fire & Forget)
             if (expiredIds.length > 0) {
-                logger.log(`[Auto-Cleanup] Deleting ${expiredIds.length} expired events...`);
+                logger.info(`[Auto-Cleanup] Deleting ${expiredIds.length} expired events...`);
                 Promise.all(expiredIds.map((id) => deleteDynamicPlace(id)))
-                    .then(() => logger.log('[Auto-Cleanup] Expired events deleted.'))
+                    .then(() => logger.info('[Auto-Cleanup] Expired events deleted.'))
                     .catch((err) => logger.error('[Auto-Cleanup] Error deleting events:', err));
             }
         } catch (error) {
-            logger.error('Error loading places:', error);
+            logger.error('Error loading places:', { error });
         } finally {
             setLoadingPlaces(false);
         }
     }, []);
 
-    const handleAddPlace = useCallback(
-        async (place: Omit<PlaceRecommendation, 'id'>) => {
-            setOperationLoading(true);
-            try {
-                // We await the real ID to enable immediate features like Translation
-                const newId = await addDynamicPlace(place);
+    const handleAddPlace = useCallback(async (place: Omit<PlaceRecommendation, 'id'>) => {
+        setOperationLoading(true);
+        try {
+            // We await the real ID to enable immediate features like Translation
+            const newId = await addDynamicPlace(place);
 
-                // Add to local state immediately with the real ID
-                setPlaces((prev) => [{ ...place, id: newId }, ...prev]);
+            // Add to local state immediately with the real ID
+            setPlaces((prev) => [{ ...place, id: newId }, ...prev]);
 
-                return newId;
-            } catch (error) {
-                logger.error('Error adding place:', error);
-                return null;
-            } finally {
-                setOperationLoading(false);
-            }
-        },
-        []
-    );
+            return newId;
+        } catch (error) {
+            logger.error('Error adding place:', { error });
+            return null;
+        } finally {
+            setOperationLoading(false);
+        }
+    }, []);
 
     const handleUpdatePlace = useCallback(
         async (id: string, place: Partial<PlaceRecommendation>) => {
@@ -151,7 +148,7 @@ export const useAdminContent = () => {
             const data = await getTips();
             setTips(data);
         } catch (error) {
-            logger.error('Error loading tips:', error);
+            logger.error('Error loading tips:', { error });
         } finally {
             setLoadingTips(false);
         }
@@ -165,7 +162,7 @@ export const useAdminContent = () => {
                 await loadTips();
                 return newId;
             } catch (error) {
-                logger.error('Error adding tip:', error);
+                logger.error('Error adding tip:', { error });
                 return null;
             } finally {
                 setOperationLoading(false);
@@ -182,7 +179,7 @@ export const useAdminContent = () => {
                 await loadTips();
                 return true;
             } catch (error) {
-                logger.error('Error updating tip:', error);
+                logger.error('Error updating tip:', { error });
                 return false;
             } finally {
                 setOperationLoading(false);
@@ -200,7 +197,7 @@ export const useAdminContent = () => {
                 await loadTips();
                 return true;
             } catch (error) {
-                logger.error('Error deleting tip:', error);
+                logger.error('Error deleting tip:', { error });
                 return false;
             } finally {
                 setOperationLoading(false);
@@ -218,7 +215,7 @@ export const useAdminContent = () => {
                 await saveTipsOrder(newTips);
                 return true;
             } catch (error) {
-                logger.error('Error reordering tips:', error);
+                logger.error('Error reordering tips:', { error });
                 // Revert on error (optional, but good practice would be to reload)
                 await loadTips();
                 return false;
@@ -234,7 +231,7 @@ export const useAdminContent = () => {
             const data = await getCuriosities();
             setCuriosities(data);
         } catch (error) {
-            logger.error('Error loading curiosities:', error);
+            logger.error('Error loading curiosities:', { error });
         } finally {
             setLoadingCuriosities(false);
         }
@@ -256,7 +253,7 @@ export const useAdminContent = () => {
                 setCuriosities(items);
                 return true;
             } catch (error) {
-                logger.error('Error saving curiosities:', error);
+                logger.error('Error saving curiosities:', { error });
                 return false;
             } finally {
                 setOperationLoading(false);

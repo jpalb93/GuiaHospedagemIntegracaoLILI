@@ -140,25 +140,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                                         <img
                                             src={flatsLogo}
                                             alt="Logo Flats Integração"
-                                            className="relative z-10 h-20 w-auto object-contain drop-shadow-2xl"
-                                        />
-                                        <div
-                                            className="absolute inset-0 z-20 animate-logo-shimmer pointer-events-none"
-                                            style={{
-                                                maskImage: `url(${flatsLogo})`,
-                                                WebkitMaskImage: `url(${flatsLogo})`,
-                                                maskSize: 'contain',
-                                                WebkitMaskSize: 'contain',
-                                                maskRepeat: 'no-repeat',
-                                                WebkitMaskRepeat: 'no-repeat',
-                                                maskPosition: 'center',
-                                                WebkitMaskPosition: 'center',
-                                            }}
+                                            className="relative z-10 h-20 w-auto object-contain"
                                         />
                                     </div>
                                     <div className="h-8 w-px bg-white/30 rounded-full mx-1"></div>
                                     <p className="text-white/90 font-light tracking-[0.2em] uppercase text-xs font-heading drop-shadow-sm">
-                                        {t('GUIA INTERATIVO', 'INTERACTIVE GUIDE', 'GUÍA INTERACTIVA')}
+                                        {t(
+                                            'GUIA INTERATIVO',
+                                            'INTERACTIVE GUIDE',
+                                            'GUÍA INTERACTIVA'
+                                        )}
                                     </p>
                                 </div>
                                 <h1 className="text-2xl sm:text-3xl font-heading font-bold mb-2 leading-tight text-white drop-shadow-sm mt-2">
@@ -185,7 +176,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
                                     {/* Label */}
                                     <p className="text-white/90 font-light tracking-[0.2em] uppercase text-xs font-heading drop-shadow-sm">
-                                        {t('GUIA INTERATIVO', 'INTERACTIVE GUIDE', 'GUÍA INTERACTIVA')}
+                                        {t(
+                                            'GUIA INTERATIVO',
+                                            'INTERACTIVE GUIDE',
+                                            'GUÍA INTERACTIVA'
+                                        )}
                                     </p>
                                 </div>
 
@@ -210,7 +205,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                             <p
                                 className={`text-white/90 text-sm sm:text-lg font-medium font-sans max-w-lg leading-relaxed drop-shadow-sm tracking-tight ${config.propertyId !== 'integracao' ? 'mx-auto text-center' : ''}`}
                             >
-                                {t('Sua casa longe de casa no Vale do São Francisco.', 'Your home away from home in the San Francisco Valley.', 'Tu hogar lejos de casa en el Valle del São Francisco.')}
+                                {t(
+                                    'Sua casa longe de casa no Vale do São Francisco.',
+                                    'Your home away from home in the San Francisco Valley.',
+                                    'Tu hogar lejos de casa en el Valle del São Francisco.'
+                                )}
                             </p>
                         )}
                     </div>

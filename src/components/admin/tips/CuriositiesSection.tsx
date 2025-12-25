@@ -1,6 +1,16 @@
 import React from 'react';
 import { CityCuriosity } from '../../../types';
-import { Plus, Edit, Trash2, Save, X, Loader2, Image as ImageIcon, Download, Sparkles } from 'lucide-react';
+import {
+    Plus,
+    Edit,
+    Trash2,
+    Save,
+    X,
+    Loader2,
+    Image as ImageIcon,
+    Download,
+    Sparkles,
+} from 'lucide-react';
 import ImageUpload from '../ImageUpload';
 
 interface CuriositiesSectionProps {
@@ -108,18 +118,35 @@ const CuriositiesSection: React.FC<CuriositiesSectionProps> = ({
             const importedData = JSON.parse(text);
 
             if (Array.isArray(importedData)) {
-                if (window.confirm(`Deseja importar ${importedData.length} curiosidades? Isso substituirá a lista atual.`)) {
+                if (
+                    window.confirm(
+                        `Deseja importar ${importedData.length} curiosidades? Isso substituirá a lista atual.`
+                    )
+                ) {
                     setIsSaving(true);
 
                     // Validate/Sanitize basic structure
-                    const validItems: CityCuriosity[] = importedData.map((item: any) => ({
-                        id: item.id || crypto.randomUUID(),
-                        text: item.text || '',
-                        image: item.image,
-                        visible: item.visible !== false,
-                        text_en: item.text_en,
-                        text_es: item.text_es
-                    })).filter(item => item.text); // Remove empty items
+                    // Define types for import structure
+                    interface ImportedCuriosity {
+                        id?: string;
+                        text?: string;
+                        image?: string;
+                        visible?: boolean;
+                        text_en?: string;
+                        text_es?: string;
+                        [key: string]: unknown;
+                    }
+
+                    const validItems: CityCuriosity[] = importedData
+                        .map((item: ImportedCuriosity) => ({
+                            id: item.id || crypto.randomUUID(),
+                            text: item.text || '',
+                            image: item.image,
+                            visible: item.visible !== false,
+                            text_en: item.text_en,
+                            text_es: item.text_es,
+                        }))
+                        .filter((item: CityCuriosity) => item.text); // Remove empty items
 
                     const success = await curiosities.save(validItems);
                     if (success) {

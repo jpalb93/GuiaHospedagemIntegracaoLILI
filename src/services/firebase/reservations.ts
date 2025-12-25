@@ -37,7 +37,13 @@ export const saveReservation = async (reservation: Reservation): Promise<string>
 
     // Log Action
     const userEmail = auth.currentUser?.email || 'admin';
-    await logAction('create', userEmail, `Nova reserva para ${reservation.guestName}`, docRef.id, reservation.guestName);
+    await logAction(
+        'create',
+        userEmail,
+        `Nova reserva para ${reservation.guestName}`,
+        docRef.id,
+        reservation.guestName
+    );
 
     return docRef.id;
 };
@@ -94,7 +100,7 @@ export const subscribeToSingleReservation = (
             }
         },
         (error) => {
-            logger.error('Erro no listener de reserva única:', error);
+            logger.error('Erro no listener de reserva única:', { error });
         }
     );
 };
@@ -108,7 +114,7 @@ export const subscribeToActiveReservations = (
     const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD Local
 
     // Query base: checkout >= hoje, ordenado por checkout
-    let q = query(
+    const q = query(
         collection(db, 'reservations'),
         where('checkoutDate', '>=', today),
         orderBy('checkoutDate', 'asc')
@@ -133,7 +139,7 @@ export const subscribeToActiveReservations = (
             callback(data);
         },
         (error) => {
-            logger.error('Erro no listener de reservas ativas:', error);
+            logger.error('Erro no listener de reservas ativas:', { error });
         }
     );
 };
@@ -157,7 +163,7 @@ export const subscribeToFutureReservations = (callback: (reservations: Reservati
             callback(data);
         },
         (error) => {
-            logger.error('Erro ao buscar reservas futuras:', error);
+            logger.error('Erro ao buscar reservas futuras:', { error });
         }
     );
 };
@@ -220,7 +226,7 @@ export const subscribeToReservations = (
             callback(data);
         },
         (error) => {
-            logger.error('Erro no listener de reservas (legacy):', error);
+            logger.error('Erro no listener de reservas (legacy):', { error });
         }
     );
 };
@@ -250,7 +256,7 @@ export const toggleFavoritePlace = async (
 
         return newFavorites;
     } catch (error) {
-        logger.error('Error toggling favorite:', error);
+        logger.error('Error toggling favorite:', { error });
         throw error;
     }
 };

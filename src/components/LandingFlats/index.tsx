@@ -8,13 +8,15 @@ import GallerySection from './GallerySection';
 import LocationSection from './LocationSection';
 import GuestAccessSection from './GuestAccessSection';
 import { Phone, Instagram } from 'lucide-react';
+import flatsLogo from '../../assets/flats-integracao-logo.png';
+import logoEximus from '../../assets/logo-eximus.png';
 
 const LandingFlatsIntegracao: React.FC = () => {
     return (
         <div className="font-sans antialiased bg-white text-gray-900">
             {/* SEO Meta Tags */}
             <Helmet>
-                <title>Flats Integração - Guia Digital do Hóspede | Petrolina, PE</title>
+                <title>Flats Integração - Hospedagem em Petrolina</title>
                 <meta
                     name="description"
                     content="Guia interativo do Flats Integração com senhas Wi-Fi, informações da estadia, dicas de Petrolina e atendimento 24h."
@@ -28,8 +30,8 @@ const LandingFlatsIntegracao: React.FC = () => {
 
                 {/* Open Graph / Facebook */}
                 <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://guia-digital-flatlili.vercel.app/integracao" />
-                <meta property="og:title" content="Flats Integração - Guia Digital" />
+                <meta property="og:url" content="https://flatsintegracao.com.br" />
+                <meta property="og:title" content="Flats Integração - Hospedagem em Petrolina" />
                 <meta
                     property="og:description"
                     content="Hospedagem com alma em Petrolina. Guia digital interativo para facilitar sua estadia."
@@ -38,26 +40,36 @@ const LandingFlatsIntegracao: React.FC = () => {
 
                 {/* Twitter */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Flats Integração - Guia Digital" />
-                <meta name="twitter:description" content="Guia interativo para sua estadia em Petrolina" />
+                <meta name="twitter:title" content="Flats Integração - Hospedagem em Petrolina" />
+                <meta
+                    name="twitter:description"
+                    content="Guia interativo para sua estadia em Petrolina"
+                />
 
                 {/* Canonical URL */}
-                <link rel="canonical" href="https://guia-digital-flatlili.vercel.app/integracao" />
+                <link rel="canonical" href="https://flatsintegracao.com.br" />
             </Helmet>
 
             {/* Header Transparente */}
-            <nav className="absolute top-0 w-full z-50 p-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
-                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80"></div>
-                <div>
+            <nav className="absolute top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+                <a href="#inicio" className="hover:opacity-80 transition-opacity">
+                    <img
+                        src={flatsLogo}
+                        alt="Flats Integração"
+                        className="h-12 md:h-14 w-auto drop-shadow-lg"
+                    />
+                </a>
+
+                <div className="flex items-center gap-6">
                     <a
                         href="#galeria"
-                        className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block mr-6"
+                        className="text-white/90 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
                     >
                         Galeria
                     </a>
                     <a
                         href="#features"
-                        className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block mr-6"
+                        className="text-white/90 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
                     >
                         Diferenciais
                     </a>
@@ -65,7 +77,7 @@ const LandingFlatsIntegracao: React.FC = () => {
                         href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
                         target="_blank"
                         rel="noreferrer"
-                        className="text-white/90 hover:text-white font-semibold text-sm transition-colors hidden sm:inline-block"
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-orange-500/30"
                     >
                         Reservar
                     </a>
@@ -108,6 +120,24 @@ const LandingFlatsIntegracao: React.FC = () => {
                             className="hover:text-orange-500 transition-colors"
                         >
                             <Phone size={20} />
+                        </a>
+                    </div>
+
+                    <div className="flex flex-col items-center md:items-end gap-1">
+                        <span className="text-[10px] uppercase tracking-wider text-gray-600">
+                            Desenvolvido por:
+                        </span>
+                        <a
+                            href="https://www.eximusdigital.com.br"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hover:opacity-80 transition-opacity"
+                        >
+                            <img
+                                src={logoEximus}
+                                alt="Eximus Digital"
+                                className="h-5 w-auto opacity-70 hover:opacity-100 transition-opacity"
+                            />
                         </a>
                     </div>
 

@@ -59,6 +59,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     // Abre emergência automaticamente quando solicitado
     useEffect(() => {
         if (openEmergency) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setActiveSheet('SOS & Emergência');
         }
     }, [openEmergency]);
@@ -70,7 +71,11 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 {/* Coluna 1 */}
                 <div className="flex flex-col gap-6">
                     <SectionCard
-                        title={t('O Flat & Comodidades', 'The Flat & Amenities', 'El Flat y Comodidades')}
+                        title={t(
+                            'O Flat & Comodidades',
+                            'The Flat & Amenities',
+                            'El Flat y Comodidades'
+                        )}
                         icon={Home}
                         color="bg-orange-500"
                         isTrigger={true}
@@ -84,14 +89,22 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                         onToggle={() => handleOpen('Regras & Avisos')}
                     />
                     <SectionCard
-                        title={t('Mercados e Serviços', 'Markets & Services', 'Mercados y Servicios')}
+                        title={t(
+                            'Mercados e Serviços',
+                            'Markets & Services',
+                            'Mercados y Servicios'
+                        )}
                         icon={ShoppingBasket}
                         color="bg-green-500"
                         isTrigger={true}
                         onToggle={() => handleOpen('Mercados e Serviços')}
                     />
                     <SectionCard
-                        title={t('Bares e Restaurantes', 'Bars & Restaurants', 'Bares y Restaurantes')}
+                        title={t(
+                            'Bares e Restaurantes',
+                            'Bars & Restaurants',
+                            'Bares y Restaurantes'
+                        )}
                         icon={Utensils}
                         color="bg-red-500"
                         isTrigger={true}
@@ -177,36 +190,48 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                             title: t('Mercados', 'Markets', 'Mercados'),
                             icon: <ShoppingBasket size={18} className="text-green-600" />,
                             places: mergePlaces([], 'essentials'),
-                            visible: hasContent([], 'essentials')
+                            visible: hasContent([], 'essentials'),
                         },
                         {
                             id: 'pharmacies',
                             title: t('Farmácias', 'Pharmacies', 'Farmacias'),
                             icon: <Pill size={18} className="text-red-500" />,
                             places: mergePlaces([], 'pharmacies'),
-                            visible: hasContent([], 'pharmacies')
+                            visible: hasContent([], 'pharmacies'),
                         },
                         {
                             id: 'laundry',
                             title: t('Lavanderia', 'Laundry', 'Lavandería'),
-                            icon: <span role="img" aria-label="laundry">🧺</span>,
+                            icon: (
+                                <span role="img" aria-label="laundry">
+                                    🧺
+                                </span>
+                            ),
                             places: mergePlaces([], 'laundry'),
-                            visible: hasContent([], 'laundry')
+                            visible: hasContent([], 'laundry'),
                         },
                         {
                             id: 'salon',
                             title: t('Salão de Beleza', 'Beauty Salon', 'Salón de Belleza'),
-                            icon: <span role="img" aria-label="salon">💇‍♀️</span>,
+                            icon: (
+                                <span role="img" aria-label="salon">
+                                    💇‍♀️
+                                </span>
+                            ),
                             places: mergePlaces([], 'salon'),
-                            visible: hasContent([], 'salon')
+                            visible: hasContent([], 'salon'),
                         },
                         {
                             id: 'gym',
                             title: t('Academia', 'Gym', 'Gimnasio'),
-                            icon: <span role="img" aria-label="gym">💪</span>,
+                            icon: (
+                                <span role="img" aria-label="gym">
+                                    💪
+                                </span>
+                            ),
                             places: mergePlaces([], 'gym'),
-                            visible: hasContent([], 'gym')
-                        }
+                            visible: hasContent([], 'gym'),
+                        },
                     ]}
                 />
             </BottomSheet>
@@ -223,66 +248,102 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                         {
                             id: 'bars',
                             title: t('Bares & Pubs', 'Bars & Pubs', 'Bares y Pubs'),
-                            icon: <span role="img" aria-label="beer">🍺</span>,
+                            icon: (
+                                <span role="img" aria-label="beer">
+                                    🍺
+                                </span>
+                            ),
                             places: mergePlaces([], 'bars'),
-                            visible: hasContent([], 'bars')
+                            visible: hasContent([], 'bars'),
                         },
                         {
                             id: 'burgers',
-                            title: t('Hambúrguer & Sanduíches', 'Burgers & Sandwiches', 'Hamburguesas y Sándwiches'),
-                            icon: <span role="img" aria-label="burger">🍔</span>,
+                            title: t(
+                                'Hambúrguer & Sanduíches',
+                                'Burgers & Sandwiches',
+                                'Hamburguesas y Sándwiches'
+                            ),
+                            icon: (
+                                <span role="img" aria-label="burger">
+                                    🍔
+                                </span>
+                            ),
                             places: mergePlaces([], 'burgers'),
-                            visible: hasContent([], 'burgers')
+                            visible: hasContent([], 'burgers'),
                         },
                         {
                             id: 'skewers',
-                            title: t('Espetinhos & Jantinha', 'Skewers & Dinner', 'Brochetas y Cena'),
+                            title: t(
+                                'Espetinhos & Jantinha',
+                                'Skewers & Dinner',
+                                'Brochetas y Cena'
+                            ),
                             icon: <Flame size={18} className="text-orange-500" />,
                             places: mergePlaces([], 'skewers'),
-                            visible: hasContent([], 'skewers')
+                            visible: hasContent([], 'skewers'),
                         },
                         {
                             id: 'salads',
-                            title: t('Saladas & Saudável', 'Salads & Healthy', 'Ensaladas y Saludable'),
+                            title: t(
+                                'Saladas & Saudável',
+                                'Salads & Healthy',
+                                'Ensaladas y Saludable'
+                            ),
                             icon: <Salad size={18} className="text-green-500" />,
                             places: mergePlaces([], 'salads'),
-                            visible: hasContent([], 'salads')
+                            visible: hasContent([], 'salads'),
                         },
                         {
                             id: 'pizza',
                             title: t('Pizzas & Massas', 'Pizzas & Pasta', 'Pizzas y Pastas'),
                             icon: <Pizza size={18} className="text-red-500" />,
                             places: mergePlaces([], 'pasta'),
-                            visible: hasContent([], 'pasta')
+                            visible: hasContent([], 'pasta'),
                         },
                         {
                             id: 'sushi',
                             title: t('Oriental & Sushi', 'Oriental & Sushi', 'Oriental y Sushi'),
-                            icon: <span role="img" aria-label="sushi">🍣</span>,
+                            icon: (
+                                <span role="img" aria-label="sushi">
+                                    🍣
+                                </span>
+                            ),
                             places: mergePlaces([], 'oriental'),
-                            visible: hasContent([], 'oriental')
+                            visible: hasContent([], 'oriental'),
                         },
                         {
                             id: 'alacarte',
-                            title: t('À La Carte & Refinados', 'À La Carte & Fine Dining', 'A La Carta y Refinados'),
+                            title: t(
+                                'À La Carte & Refinados',
+                                'À La Carte & Fine Dining',
+                                'A La Carta y Refinados'
+                            ),
                             icon: <Utensils size={18} className="text-gray-500" />,
                             places: mergePlaces([], 'alacarte'),
-                            visible: hasContent([], 'alacarte')
+                            visible: hasContent([], 'alacarte'),
                         },
                         {
                             id: 'selfservice',
-                            title: t('Self-Service & Almoço', 'Self-Service & Lunch', 'Buffet y Almuerzo'),
+                            title: t(
+                                'Self-Service & Almoço',
+                                'Self-Service & Lunch',
+                                'Buffet y Almuerzo'
+                            ),
                             icon: <Utensils size={18} className="text-green-600" />,
                             places: mergePlaces([], 'selfservice'),
-                            visible: hasContent([], 'selfservice')
+                            visible: hasContent([], 'selfservice'),
                         },
                         {
                             id: 'snacks',
                             title: t('Lanches Rápidos', 'Quick Snacks', 'Bocadillos Rápidos'),
-                            icon: <span role="img" aria-label="hotdog">🌭</span>,
+                            icon: (
+                                <span role="img" aria-label="hotdog">
+                                    🌭
+                                </span>
+                            ),
                             places: mergePlaces([], 'snacks'),
-                            visible: hasContent([], 'snacks')
-                        }
+                            visible: hasContent([], 'snacks'),
+                        },
                     ]}
                 />
             </BottomSheet>
@@ -301,11 +362,11 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                             title: t('Cafés & Padarias', 'Cafes & Bakeries', 'Cafés y Panaderías'),
                             icon: <Coffee size={18} className="text-amber-700" />,
                             places: mergePlaces([], 'cafes'),
-                            visible: hasContent([], 'cafes')
-                        }
+                            visible: hasContent([], 'cafes'),
+                        },
                     ]}
-                    initialOpenId="cafes" // Auto-open since it is the only one? Or let it be closed? User said "menus close others". If only one, maybe better open? 
-                // Let's stick to default behavior (first open).
+                    initialOpenId="cafes" // Auto-open since it is the only one? Or let it be closed? User said "menus close others". If only one, maybe better open?
+                    // Let's stick to default behavior (first open).
                 />
             </BottomSheet>
 
@@ -320,25 +381,41 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                     categories={[
                         {
                             id: 'attractions',
-                            title: t('Passeios Imperdíveis', 'Must-See Tours', 'Paseos Imperdibles'),
+                            title: t(
+                                'Passeios Imperdíveis',
+                                'Must-See Tours',
+                                'Paseos Imperdibles'
+                            ),
                             icon: <Map size={18} className="text-blue-600" />,
                             places: mergePlaces([], 'attractions'),
-                            visible: hasContent([], 'attractions')
+                            visible: hasContent([], 'attractions'),
                         },
                         {
                             id: 'bikes',
-                            title: t('Aluguel de Bicicletas', 'Bicycle Rental', 'Alquiler de Bicicletas'),
-                            icon: <span role="img" aria-label="bike">🚲</span>,
+                            title: t(
+                                'Aluguel de Bicicletas',
+                                'Bicycle Rental',
+                                'Alquiler de Bicicletas'
+                            ),
+                            icon: (
+                                <span role="img" aria-label="bike">
+                                    🚲
+                                </span>
+                            ),
                             places: mergePlaces([], 'bikes'),
-                            visible: hasContent([], 'bikes')
+                            visible: hasContent([], 'bikes'),
                         },
                         {
                             id: 'souvenirs',
                             title: t('Lembrancinhas', 'Souvenirs', 'Recuerdos'),
-                            icon: <span role="img" aria-label="gift">🎁</span>,
+                            icon: (
+                                <span role="img" aria-label="gift">
+                                    🎁
+                                </span>
+                            ),
                             places: mergePlaces([], 'souvenirs'),
-                            visible: hasContent([], 'souvenirs')
-                        }
+                            visible: hasContent([], 'souvenirs'),
+                        },
                     ]}
                 />
             </BottomSheet>
@@ -354,7 +431,13 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                     <ExpandablePlaceList places={activeEvents} />
                 ) : (
                     <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                        <p className="text-xs">{t('Nenhum evento programado para os próximos dias.', 'No events scheduled for the next few days.', 'No hay eventos programados para los próximos días.')}</p>
+                        <p className="text-xs">
+                            {t(
+                                'Nenhum evento programado para os próximos dias.',
+                                'No events scheduled for the next few days.',
+                                'No hay eventos programados para los próximos días.'
+                            )}
+                        </p>
                     </div>
                 )}
             </BottomSheet>
@@ -376,9 +459,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 title={t('Meus Favoritos', 'My Favorites', 'Mis Favoritos')}
                 icon={Heart}
             >
-                <FavoritesSheet
-                    allPlaces={places}
-                />
+                <FavoritesSheet allPlaces={places} />
             </BottomSheet>
         </>
     );

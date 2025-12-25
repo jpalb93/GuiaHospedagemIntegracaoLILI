@@ -2,19 +2,24 @@ import React, { useState } from 'react';
 import { Languages, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { translateBatch } from '../../../services/translation';
 import {
-    getDynamicPlaces, updateDynamicPlace,
-    getTips, updateTip,
-    getCuriosities, saveCuriosities
+    getDynamicPlaces,
+    updateDynamicPlace,
+    getTips,
+    updateTip,
+    getCuriosities,
+    saveCuriosities,
 } from '../../../services/firebase';
 import { PlaceRecommendation, Tip } from '../../../types';
 
 export const TranslationManager: React.FC = () => {
-    const [status, setStatus] = useState<'idle' | 'scanning' | 'translating' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'scanning' | 'translating' | 'success' | 'error'>(
+        'idle'
+    );
     const [progress, setProgress] = useState(0);
     const [total, setTotal] = useState(0);
     const [logs, setLogs] = useState<string[]>([]);
 
-    const addLog = (msg: string) => setLogs(prev => [msg, ...prev].slice(0, 5));
+    const addLog = (msg: string) => setLogs((prev) => [msg, ...prev].slice(0, 5));
 
     const handleTranslateAll = async () => {
         setStatus('scanning');
@@ -27,15 +32,20 @@ export const TranslationManager: React.FC = () => {
             const [places, tips, curiosities] = await Promise.all([
                 getDynamicPlaces(),
                 getTips(),
-                getCuriosities()
+                getCuriosities(),
             ]);
 
             // 2. Identify Pending Translations
-            const pendingPlaces = places.filter((p) => !p.description_en || !p.name_en || !p.description_es || !p.name_es);
-            const pendingTips = tips.filter((t) => !t.content_en || !t.title_en || !t.content_es || !t.title_es);
+            const pendingPlaces = places.filter(
+                (p) => !p.description_en || !p.name_en || !p.description_es || !p.name_es
+            );
+            const pendingTips = tips.filter(
+                (t) => !t.content_en || !t.title_en || !t.content_es || !t.title_es
+            );
             const pendingCuriosities = curiosities.filter((c) => !c.text_en || !c.text_es);
 
-            const totalItems = pendingPlaces.length + pendingTips.length + pendingCuriosities.length;
+            const totalItems =
+                pendingPlaces.length + pendingTips.length + pendingCuriosities.length;
             setTotal(totalItems);
 
             if (totalItems === 0) {
@@ -50,18 +60,23 @@ export const TranslationManager: React.FC = () => {
             // 3. Process Places
             if (pendingPlaces.length > 0) {
                 addLog(`Traduzindo ${pendingPlaces.length} lugares...`);
-                // Explicitly type and map only necessary fields to avoid 'any' error if possible, 
+                // Explicitly type and map only necessary fields to avoid 'any' error if possible,
                 // but translateBatch handles 'any[]'. We cast for safety.
-                const translatedPlaces = await translateBatch(pendingPlaces, [
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const translatedPlaces = await translateBatch(pendingPlaces as any[], [
                     { source: 'name', targetEn: 'name_en', targetEs: 'name_es' },
-                    { source: 'description', targetEn: 'description_en', targetEs: 'description_es' },
-                    { source: 'distance', targetEn: 'distance_en', targetEs: 'distance_es' }
+                    {
+                        source: 'description',
+                        targetEn: 'description_en',
+                        targetEs: 'description_es',
+                    },
+                    { source: 'distance', targetEn: 'distance_en', targetEs: 'distance_es' },
                 ]);
 
                 for (const item of translatedPlaces) {
                     if (item.id) {
                         // Fallback: If AI didn't translate name (proper noun), use original
-                        const original = places.find(p => p.id === item.id);
+                        const original = places.find((p) => p.id === item.id);
                         if (original && !item.name_en) {
                             item.name_en = original.name; // Use PT name as EN name
                         }
@@ -70,27 +85,30 @@ export const TranslationManager: React.FC = () => {
                         }
 
                         // Cast to Partial<PlaceRecommendation> for update
-                        console.log(`[TRANSLATE] Saving to ${item.id}:`, item); // DEBUG
-                        await updateDynamicPlace(item.id, item as Partial<PlaceRecommendation>);
+                        await updateDynamicPlace(
+                            item['id'] as string,
+                            item as Partial<PlaceRecommendation>
+                        );
                     }
-                    setProgress(prev => prev + 1);
+                    setProgress((prev) => prev + 1);
                 }
             }
 
             // 4. Process Tips
             if (pendingTips.length > 0) {
                 addLog(`Traduzindo ${pendingTips.length} dicas...`);
-                const translatedTips = await translateBatch(pendingTips, [
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const translatedTips = await translateBatch(pendingTips as any[], [
                     { source: 'title', targetEn: 'title_en', targetEs: 'title_es' },
                     { source: 'subtitle', targetEn: 'subtitle_en', targetEs: 'subtitle_es' },
-                    { source: 'content', targetEn: 'content_en', targetEs: 'content_es' }
+                    { source: 'content', targetEn: 'content_en', targetEs: 'content_es' },
                 ]);
 
                 for (const item of translatedTips) {
                     if (item.id) {
-                        await updateTip(item.id, item as Partial<Tip>);
+                        await updateTip(item['id'] as string, item as Partial<Tip>);
                     }
-                    setProgress(prev => prev + 1);
+                    setProgress((prev) => prev + 1);
                 }
             }
 
@@ -98,10 +116,10 @@ export const TranslationManager: React.FC = () => {
             if (pendingCuriosities.length > 0) {
                 addLog(`Traduzindo ${pendingCuriosities.length} curiosidades...`);
 
-                // Curiosities don't have IDs usually if they are simple objects in an array, 
+                // Curiosities don't have IDs usually if they are simple objects in an array,
                 // but my helper added IDs? let's check getCuriosities in content.ts.
                 // It returns { text: string, visible: true } or CityCuriosity validation.
-                // It does NOT add IDs unless they were stored. 
+                // It does NOT add IDs unless they were stored.
                 // We need to map indexes for batch translation.
 
                 // Correction: translateBatch uses _id (index) internally to map back.
@@ -112,17 +130,18 @@ export const TranslationManager: React.FC = () => {
                 // "pendingCuriosities" is a subset.
 
                 // Strategy: Translate pending ones, then merge back into the MAIN list, then save ALL.
-                const translatedSubset = await translateBatch(pendingCuriosities, [
-                    { source: 'text', targetEn: 'text_en', targetEs: 'text_es' }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const translatedSubset = await translateBatch(pendingCuriosities as any[], [
+                    { source: 'text', targetEn: 'text_en', targetEs: 'text_es' },
                 ]);
 
                 addLog(`Recebido ${translatedSubset.length} curiosidades traduzidas.`);
 
                 // Update the main list
                 let matchCount = 0;
-                const updatedCuriosities = curiosities.map(original => {
+                const updatedCuriosities = curiosities.map((original) => {
                     // Match by ID
-                    const match = translatedSubset.find(t => t.id === original.id);
+                    const match = translatedSubset.find((t) => t.id === original.id);
                     if (match) {
                         matchCount++;
                         return { ...original, ...match };
@@ -137,12 +156,11 @@ export const TranslationManager: React.FC = () => {
                 }
 
                 await saveCuriosities(updatedCuriosities);
-                setProgress(prev => prev + pendingCuriosities.length);
+                setProgress((prev) => prev + pendingCuriosities.length);
             }
 
             setStatus('success');
             addLog('Tradução concluída com sucesso!');
-
         } catch (error) {
             console.error(error);
             setStatus('error');
@@ -151,7 +169,12 @@ export const TranslationManager: React.FC = () => {
     };
 
     const handleResetTranslations = async () => {
-        if (!confirm('Tem certeza? Isso vai APAGAR todas as traduções atuais e você precisará traduzir tudo do zero. (Recomendado se as traduções estiverem erradas ou travadas).')) return;
+        if (
+            !confirm(
+                'Tem certeza? Isso vai APAGAR todas as traduções atuais e você precisará traduzir tudo do zero. (Recomendado se as traduções estiverem erradas ou travadas).'
+            )
+        )
+            return;
 
         setStatus('scanning');
         addLog('Resetando traduções...');
@@ -164,16 +187,24 @@ export const TranslationManager: React.FC = () => {
             // Limit concurrency
             for (const p of places) {
                 if (p.id && (p.description_en || p.name_en)) {
-                    // @ts-ignore - Explicitly setting null to force clear
-                    await updateDynamicPlace(p.id, { description_en: null, name_en: null, distance_en: null });
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    await updateDynamicPlace(p.id, {
+                        description_en: null,
+                        name_en: null,
+                        distance_en: null,
+                    } as any);
                     count++;
                 }
             }
 
             for (const t of tips) {
                 if (t.id && (t.content_en || t.title_en)) {
-                    // @ts-ignore
-                    await updateTip(t.id, { content_en: null, title_en: null, subtitle_en: null });
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    await updateTip(t.id, {
+                        content_en: null,
+                        title_en: null,
+                        subtitle_en: null,
+                    } as any);
                     count++;
                 }
             }
@@ -194,7 +225,7 @@ export const TranslationManager: React.FC = () => {
         addLog('Reparando nomes faltantes...');
         try {
             const places = await getDynamicPlaces(true); // Force refresh
-            const brokenPlaces = places.filter(p => !p.name_en);
+            const brokenPlaces = places.filter((p) => !p.name_en);
 
             if (brokenPlaces.length === 0) {
                 addLog('Nenhum nome precisando de reparo.');
@@ -207,10 +238,9 @@ export const TranslationManager: React.FC = () => {
             for (const p of brokenPlaces) {
                 if (p.id) {
                     const payload = { name_en: p.name };
-                    console.log(`[REPAIR] Saving to ${p.id}:`, payload); // DEBUG
                     await updateDynamicPlace(p.id, payload);
                 }
-                setProgress(prev => prev + 1);
+                setProgress((prev) => prev + 1);
             }
             setStatus('success');
             addLog('Nomes corrigidos com sucesso!');
@@ -241,8 +271,14 @@ export const TranslationManager: React.FC = () => {
                                 onClick={handleTranslateAll}
                                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
                             >
-                                {status === 'success' ? <CheckCircle size={20} /> : <Languages size={20} />}
-                                {status === 'success' ? 'Tudo Traduzido' : 'Traduzir Todo o Conteúdo'}
+                                {status === 'success' ? (
+                                    <CheckCircle size={20} />
+                                ) : (
+                                    <Languages size={20} />
+                                )}
+                                {status === 'success'
+                                    ? 'Tudo Traduzido'
+                                    : 'Traduzir Todo o Conteúdo'}
                             </button>
 
                             <button
@@ -268,7 +304,9 @@ export const TranslationManager: React.FC = () => {
                             <div className="h-2 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-blue-600 transition-all duration-300 ease-out"
-                                    style={{ width: `${total > 0 ? (progress / total) * 100 : 0}%` }}
+                                    style={{
+                                        width: `${total > 0 ? (progress / total) * 100 : 0}%`,
+                                    }}
                                 />
                             </div>
                         </div>

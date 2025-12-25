@@ -40,7 +40,7 @@ export const subscribeToAppSettings = (callback: (config: AppConfig | null) => v
             }
         },
         (error) => {
-            logger.error('Erro no listener de configs:', error);
+            logger.error('Erro no listener de configs:', { error });
         }
     );
 };
@@ -108,7 +108,7 @@ export const subscribeToSmartSuggestions = (
             }
         },
         (error) => {
-            logger.error('Erro no listener de sugestões:', error);
+            logger.error('Erro no listener de sugestões:', { error });
         }
     );
 };

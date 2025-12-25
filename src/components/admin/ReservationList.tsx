@@ -66,11 +66,17 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
 
     // Advanced Filters State
     const [showFilters, setShowFilters] = React.useState(false);
-    const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'pending' | 'cancelled'>('all');
-    const [dateRange, setDateRange] = React.useState<{ start: string; end: string; type: 'checkin' | 'checkout' }>({
+    const [statusFilter, setStatusFilter] = React.useState<
+        'all' | 'active' | 'pending' | 'cancelled'
+    >('all');
+    const [dateRange, setDateRange] = React.useState<{
+        start: string;
+        end: string;
+        type: 'checkin' | 'checkout';
+    }>({
         start: '',
         end: '',
-        type: 'checkin'
+        type: 'checkin',
     });
 
     const toggleSelection = (id: string) => {
@@ -86,108 +92,121 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     );
 
     // Optimized filtering and grouping
-    const { leavingToday, staying, upcoming, historyList, tomorrowStr, groupedHistory, allFiltered } =
-        useMemo(() => {
-            const allReservations = [...activeReservations, ...historyReservations];
-            const uniqueReservations = Array.from(
-                new Map(allReservations.map((item: Reservation) => [item.id, item])).values()
-            );
+    const {
+        leavingToday,
+        staying,
+        upcoming,
+        historyList,
+        tomorrowStr,
+        groupedHistory,
+        allFiltered,
+    } = useMemo(() => {
+        const allReservations = [...activeReservations, ...historyReservations];
+        const uniqueReservations = Array.from(
+            new Map(allReservations.map((item: Reservation) => [item.id, item])).values()
+        );
 
-            const today = new Date();
-            const todayStr = today.toLocaleDateString('en-CA');
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStrVal = tomorrow.toLocaleDateString('en-CA');
+        const today = new Date();
+        const todayStr = today.toLocaleDateString('en-CA');
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStrVal = tomorrow.toLocaleDateString('en-CA');
 
-            const filteredList = uniqueReservations.filter((res: Reservation) => {
-                // 1. Search Term
-                const term = searchTerm.toLowerCase();
-                const nameMatch = res.guestName.toLowerCase().includes(term);
-                const notesMatch = res.adminNotes?.toLowerCase().includes(term);
+        const filteredList = uniqueReservations.filter((res: Reservation) => {
+            // 1. Search Term
+            const term = searchTerm.toLowerCase();
+            const nameMatch = res.guestName.toLowerCase().includes(term);
+            const notesMatch = res.adminNotes?.toLowerCase().includes(term);
 
-                // 2. Property Filter
-                const propertyMatch =
-                    propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
+            // 2. Property Filter
+            const propertyMatch =
+                propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
 
-                // 3. Status Filter
-                const statusMatch = statusFilter === 'all' || res.status === statusFilter;
+            // 3. Status Filter
+            const statusMatch = statusFilter === 'all' || res.status === statusFilter;
 
-                // 4. Date Range Filter
-                let dateMatch = true;
-                if (dateRange.start || dateRange.end) {
-                    const targetDate = dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
-                    if (targetDate) {
-                        if (dateRange.start && targetDate < dateRange.start) dateMatch = false;
-                        if (dateRange.end && targetDate > dateRange.end) dateMatch = false;
-                    } else {
-                        dateMatch = false; // Se não tem data, não passa no filtro de data
-                    }
-                }
-
-                return (nameMatch || notesMatch) && propertyMatch && statusMatch && dateMatch;
-            });
-
-            const leavingTodayArr: Reservation[] = [];
-            const stayingArr: Reservation[] = [];
-            const upcomingArr: Reservation[] = [];
-            const historyListArr: Reservation[] = [];
-
-            filteredList.forEach((res: Reservation) => {
-                if (!res.checkoutDate || !res.checkInDate) return;
-
-                if (res.checkoutDate < todayStr) {
-                    historyListArr.push(res);
-                } else if (res.checkoutDate === todayStr) {
-                    leavingTodayArr.push(res);
-                } else if (res.checkInDate > todayStr) {
-                    upcomingArr.push(res);
+            // 4. Date Range Filter
+            let dateMatch = true;
+            if (dateRange.start || dateRange.end) {
+                const targetDate =
+                    dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
+                if (targetDate) {
+                    if (dateRange.start && targetDate < dateRange.start) dateMatch = false;
+                    if (dateRange.end && targetDate > dateRange.end) dateMatch = false;
                 } else {
-                    stayingArr.push(res);
+                    dateMatch = false; // Se não tem data, não passa no filtro de data
                 }
-            });
-
-            leavingTodayArr.sort((a, b) => a.guestName.localeCompare(b.guestName));
-            stayingArr.sort((a, b) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
-            upcomingArr.sort((a, b) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
-            historyListArr.sort((a, b) =>
-                (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? '')
-            );
-
-            interface HistoryGroup {
-                label: string;
-                items: Reservation[];
             }
-            const groupedHistoryArr = historyListArr.reduce(
-                (groups: HistoryGroup[], res: Reservation) => {
-                    if (!res.checkoutDate) return groups;
-                    const [y, m] = res.checkoutDate.split('-');
-                    const date = new Date(parseInt(y), parseInt(m) - 1, 1);
-                    const labelRaw = date.toLocaleDateString('pt-BR', {
-                        month: 'long',
-                        year: 'numeric',
-                    });
-                    const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
-                    const lastGroup = groups[groups.length - 1];
-                    if (lastGroup && lastGroup.label === label) {
-                        lastGroup.items.push(res);
-                    } else {
-                        groups.push({ label, items: [res] });
-                    }
-                    return groups;
-                },
-                []
-            );
 
-            return {
-                leavingToday: leavingTodayArr,
-                staying: stayingArr,
-                upcoming: upcomingArr,
-                historyList: historyListArr,
-                tomorrowStr: tomorrowStrVal,
-                groupedHistory: groupedHistoryArr,
-                allFiltered: filteredList, // Expose for CSV Export
-            };
-        }, [activeReservations, historyReservations, searchTerm, propertyFilter]);
+            return (nameMatch || notesMatch) && propertyMatch && statusMatch && dateMatch;
+        });
+
+        const leavingTodayArr: Reservation[] = [];
+        const stayingArr: Reservation[] = [];
+        const upcomingArr: Reservation[] = [];
+        const historyListArr: Reservation[] = [];
+
+        filteredList.forEach((res: Reservation) => {
+            if (!res.checkoutDate || !res.checkInDate) return;
+
+            if (res.checkoutDate < todayStr) {
+                historyListArr.push(res);
+            } else if (res.checkoutDate === todayStr) {
+                leavingTodayArr.push(res);
+            } else if (res.checkInDate > todayStr) {
+                upcomingArr.push(res);
+            } else {
+                stayingArr.push(res);
+            }
+        });
+
+        leavingTodayArr.sort((a, b) => a.guestName.localeCompare(b.guestName));
+        stayingArr.sort((a, b) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
+        upcomingArr.sort((a, b) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
+        historyListArr.sort((a, b) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
+
+        interface HistoryGroup {
+            label: string;
+            items: Reservation[];
+        }
+        const groupedHistoryArr = historyListArr.reduce(
+            (groups: HistoryGroup[], res: Reservation) => {
+                if (!res.checkoutDate) return groups;
+                const [y, m] = res.checkoutDate.split('-');
+                const date = new Date(parseInt(y), parseInt(m) - 1, 1);
+                const labelRaw = date.toLocaleDateString('pt-BR', {
+                    month: 'long',
+                    year: 'numeric',
+                });
+                const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
+                const lastGroup = groups[groups.length - 1];
+                if (lastGroup && lastGroup.label === label) {
+                    lastGroup.items.push(res);
+                } else {
+                    groups.push({ label, items: [res] });
+                }
+                return groups;
+            },
+            []
+        );
+
+        return {
+            leavingToday: leavingTodayArr,
+            staying: stayingArr,
+            upcoming: upcomingArr,
+            historyList: historyListArr,
+            tomorrowStr: tomorrowStrVal,
+            groupedHistory: groupedHistoryArr,
+            allFiltered: filteredList, // Expose for CSV Export
+        };
+    }, [
+        activeReservations,
+        historyReservations,
+        searchTerm,
+        propertyFilter,
+        statusFilter,
+        dateRange,
+    ]);
 
     const getLinkForReservation = (res: Reservation) => {
         const baseUrl = window.location.origin + '/';
@@ -264,10 +283,20 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             return;
         }
 
-        const headers = ['Hóspede', 'Property', 'Flat', 'Status', 'Check-in', 'Check-out', 'Telefone', 'Email', 'Link'];
+        const headers = [
+            'Hóspede',
+            'Property',
+            'Flat',
+            'Status',
+            'Check-in',
+            'Check-out',
+            'Telefone',
+            'Email',
+            'Link',
+        ];
         const csvContent = [
             headers.join(','),
-            ...allFiltered.map(res => {
+            ...allFiltered.map((res) => {
                 const link = getLinkForReservation(res);
                 return [
                     `"${res.guestName}"`,
@@ -278,16 +307,19 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     res.checkoutDate || '',
                     `"${res.guestPhone || ''}"`,
                     res.email || '',
-                    link
+                    link,
                 ].join(',');
-            })
+            }),
         ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `reservas_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute(
+            'download',
+            `reservas_export_${new Date().toISOString().split('T')[0]}.csv`
+        );
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -334,8 +366,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                                             statusLabel === 'Checkout Hoje'
                                                 ? 'orange'
                                                 : statusLabel === 'Hospedado'
-                                                    ? 'green'
-                                                    : 'gray'
+                                                  ? 'green'
+                                                  : 'gray'
                                         }
                                     >
                                         {statusLabel}
@@ -446,7 +478,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                             e.stopPropagation();
                             handleCopyListLink(res);
                         }}
-                        leftIcon={listCopiedId === res.id ? <Check size={14} /> : <LinkIcon size={14} />}
+                        leftIcon={
+                            listCopiedId === res.id ? <Check size={14} /> : <LinkIcon size={14} />
+                        }
                         className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors border ${listCopiedId === res.id ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'}`}
                     >
                         {listCopiedId === res.id ? 'Copiado' : 'Link'}
@@ -516,10 +550,10 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                                     statusLabel === 'Checkout Hoje'
                                         ? 'orange'
                                         : statusLabel === 'Hospedado'
-                                            ? 'green'
-                                            : res.status === 'pending'
-                                                ? 'yellow'
-                                                : 'gray'
+                                          ? 'green'
+                                          : res.status === 'pending'
+                                            ? 'yellow'
+                                            : 'gray'
                                 }
                             >
                                 {statusLabel}
@@ -681,32 +715,32 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             {(!userPermission ||
                 userPermission.role === 'super_admin' ||
                 userPermission.allowedProperties.length > 1) && (
-                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                        <button
-                            onClick={() => setPropertyFilter('all')}
-                            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${propertyFilter === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
-                        >
-                            Todos
-                        </button>
-                        {Object.values(PROPERTIES).map((prop) => {
-                            if (
-                                userPermission &&
-                                userPermission.role !== 'super_admin' &&
-                                !userPermission.allowedProperties.includes(prop.id)
-                            )
-                                return null;
-                            return (
-                                <button
-                                    key={prop.id}
-                                    onClick={() => setPropertyFilter(prop.id)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${propertyFilter === prop.id ? (prop.id === 'lili' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/30') : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
-                                >
-                                    <Building2 size={12} /> {prop.name}
-                                </button>
-                            );
-                        })}
-                    </div>
-                )}
+                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <button
+                        onClick={() => setPropertyFilter('all')}
+                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${propertyFilter === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
+                    >
+                        Todos
+                    </button>
+                    {Object.values(PROPERTIES).map((prop) => {
+                        if (
+                            userPermission &&
+                            userPermission.role !== 'super_admin' &&
+                            !userPermission.allowedProperties.includes(prop.id)
+                        )
+                            return null;
+                        return (
+                            <button
+                                key={prop.id}
+                                onClick={() => setPropertyFilter(prop.id)}
+                                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${propertyFilter === prop.id ? (prop.id === 'lili' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/30') : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'}`}
+                            >
+                                <Building2 size={12} /> {prop.name}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* EXPORT BUTTON */}
             <div className="flex justify-end mb-2">
@@ -752,9 +786,12 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {/* Status Filter */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Status
+                            </label>
                             <select
                                 value={statusFilter}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 onChange={(e) => setStatusFilter(e.target.value as any)}
                                 className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             >
@@ -767,10 +804,17 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
 
                         {/* Date Type */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Filtrar Data</label>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Filtrar Data
+                            </label>
                             <select
                                 value={dateRange.type}
-                                onChange={(e) => setDateRange(prev => ({ ...prev, type: e.target.value as 'checkin' | 'checkout' }))}
+                                onChange={(e) =>
+                                    setDateRange((prev) => ({
+                                        ...prev,
+                                        type: e.target.value as 'checkin' | 'checkout',
+                                    }))
+                                }
                                 className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             >
                                 <option value="checkin">Data de Check-in</option>
@@ -780,22 +824,30 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
 
                         {/* Start Date */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">De</label>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                De
+                            </label>
                             <input
                                 type="date"
                                 value={dateRange.start}
-                                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                onChange={(e) =>
+                                    setDateRange((prev) => ({ ...prev, start: e.target.value }))
+                                }
                                 className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                         </div>
 
                         {/* End Date */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Até</label>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Até
+                            </label>
                             <input
                                 type="date"
                                 value={dateRange.end}
-                                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                onChange={(e) =>
+                                    setDateRange((prev) => ({ ...prev, end: e.target.value }))
+                                }
                                 className="w-full p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                         </div>
@@ -813,7 +865,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                         <div className="h-4 w-px bg-gray-700"></div>
                         <button
                             onClick={() => {
-                                if (window.confirm(`Deseja excluir ${selectedIds.length} reservas?`)) {
+                                if (
+                                    window.confirm(`Deseja excluir ${selectedIds.length} reservas?`)
+                                ) {
                                     selectedIds.forEach((id) => handleDeleteReservation(id));
                                     setSelectedIds([]);
                                 }

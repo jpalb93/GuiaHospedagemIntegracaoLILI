@@ -62,6 +62,7 @@ const TipItemCard: React.FC<TipItemCardProps> = ({
 
             {/* Ícone */}
             <div className="w-12 h-12 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-yellow-600 dark:text-yellow-400 flex-shrink-0">
+                {/* eslint-disable-next-line */}
                 <Icon size={24} />
             </div>
 

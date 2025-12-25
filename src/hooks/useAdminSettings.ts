@@ -79,7 +79,7 @@ export const useAdminSettings = () => {
             }
             setReviews(revs);
         } catch (error) {
-            logger.error('Erro ao carregar configurações:', error);
+            logger.error('Erro ao carregar configurações:', { error });
         } finally {
             setLoading(false);
         }
@@ -112,8 +112,9 @@ export const useAdminSettings = () => {
 
     // --- ACTIONS: REVIEWS ---
     const addReview = async (review: { name: string; text: string }) => {
-        const id = await addGuestReview(review);
-        setReviews((prev) => [...prev, { id, ...review }]);
+        const newReview = { ...review, visible: true };
+        const id = await addGuestReview(newReview);
+        setReviews((prev) => [...prev, { id, ...newReview }]);
         return id;
     };
 

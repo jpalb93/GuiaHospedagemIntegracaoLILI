@@ -50,14 +50,15 @@ export const useSpeechRecognition = () => {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
     const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
-    const [isSupported, setIsSupported] = useState(false);
+    const isSupported =
+        typeof window !== 'undefined' &&
+        !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
     useEffect(() => {
         // Verifica suporte do navegador
         const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         if (SpeechRecognitionAPI) {
-            setIsSupported(true);
             const recognitionInstance = new SpeechRecognitionAPI();
             recognitionInstance.continuous = false; // Para ao terminar de falar
             recognitionInstance.interimResults = true; // Mostra resultados enquanto fala
@@ -71,8 +72,9 @@ export const useSpeechRecognition = () => {
                 setTranscript(currentTranscript);
             };
 
-            recognitionInstance.onerror = (event: any) => {
-                console.error('Speech recognition error', event.error);
+            recognitionInstance.onerror = (event: Event) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                console.error('Speech recognition error', (event as any).error);
                 setIsListening(false);
             };
 
@@ -80,6 +82,7 @@ export const useSpeechRecognition = () => {
                 setIsListening(false);
             };
 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setRecognition(recognitionInstance);
         }
     }, []);

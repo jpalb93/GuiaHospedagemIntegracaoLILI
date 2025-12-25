@@ -32,7 +32,7 @@ export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecom
         saveToCache('cached_places', data);
         return data;
     } catch (error) {
-        logger.error('Erro ao buscar locais:', error);
+        logger.error('Erro ao buscar locais:', { error });
         return [];
     }
 };
@@ -46,7 +46,7 @@ export const subscribeToPlaces = (callback: (places: PlaceRecommendation[]) => v
             callback(data);
         },
         (error) => {
-            logger.error('Erro no listener de locais:', error);
+            logger.error('Erro no listener de locais:', { error });
         }
     );
 };
@@ -92,6 +92,6 @@ export const cleanupExpiredEvents = async () => {
             await batch.commit();
         }
     } catch (error) {
-        logger.error('Erro na limpeza automática de eventos:', error);
+        logger.error('Erro na limpeza automática de eventos:', { error });
     }
 };

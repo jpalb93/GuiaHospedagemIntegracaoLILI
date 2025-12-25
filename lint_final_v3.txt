@@ -1,0 +1,133 @@
+
+> petrolina-flat-guide@0.0.0 lint
+> eslint .
+
+
+D:\copy-of-react-project-workspace01\src\components\ChatWidget.tsx
+  58:8  warning  React Hook useEffect has missing dependencies: 'messages.length' and 't'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\copy-of-react-project-workspace01\src\components\LiveVoiceWidget.tsx
+  177:25  error  's' is never reassigned. Use 'const' instead  prefer-const
+
+D:\copy-of-react-project-workspace01\src\components\SmartSuggestion.tsx
+  150:17  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\copy-of-react-project-workspace01\src\components\SmartSuggestion.tsx:150:17
+  148 |             if (suggestionsList && Array.isArray(suggestionsList) && suggestionsList.length > 0) {
+  149 |                 const randomIndex = Math.floor(Math.random() * suggestionsList.length);
+> 150 |                 setRandomSuggestion(suggestionsList[randomIndex]);
+      |                 ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  151 |             } else {
+  152 |                 setRandomSuggestion(null);
+  153 |             }  react-hooks/set-state-in-effect
+
+D:\copy-of-react-project-workspace01\src\components\admin\AdminDashboard.tsx
+  23:11  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+
+D:\copy-of-react-project-workspace01\src\components\admin\ReservationList.tsx
+  758:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\copy-of-react-project-workspace01\src\components\admin\TipsManager.tsx
+   72:8   warning  React Hook useEffect has missing dependencies: 'curiosities' and 'tips'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  134:13  error    Expected an assignment or function call and instead saw an expression                                                        @typescript-eslint/no-unused-expressions
+
+D:\copy-of-react-project-workspace01\src\components\admin\places\PlacesManager.tsx
+  55:8  warning  React Hook useEffect has a missing dependency: 'places'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\copy-of-react-project-workspace01\src\components\admin\tips\TipItemCard.tsx
+  33:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/static-components')
+  66:18  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\copy-of-react-project-workspace01\src\components\admin\tips\TipItemCard.tsx:66:18
+  64 |             {/* ├ìcone */}
+  65 |             <div className="w-12 h-12 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-yellow-600 dark:text-yellow-400 flex-shrink-0">
+> 66 |                 <Icon size={24} />
+     |                  ^^^^ This component is created during render
+  67 |             </div>
+  68 |
+  69 |             {/* Conte├║do */}
+
+D:\copy-of-react-project-workspace01\src\components\admin\tips\TipItemCard.tsx:34:18
+  32 | }) => {
+  33 |     // eslint-disable-next-line react-hooks/static-components
+> 34 |     const Icon = getIcon(tip.iconName);
+     |                  ^^^^^^^^^^^^^^^^^^^^^ The component is created during render here
+  35 |
+  36 |     return (
+  37 |         <div  react-hooks/static-components
+
+D:\copy-of-react-project-workspace01\src\components\guest\modals\CouponBoardingPass.tsx
+   20:28  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\copy-of-react-project-workspace01\src\components\guest\modals\CouponBoardingPass.tsx:20:28
+  18 |     const { couponCode, ticketNumber, validityText } = React.useMemo(() => {
+  19 |         const firstName = guestName.split(' ')[0].toUpperCase();
+> 20 |         const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+     |                            ^^^^^^^^^^^^^ Cannot call impure function
+  21 |         const cCode = `LILI2024-${firstName}`;
+  22 |         const tNumber = `#${randomCode}`;
+  23 |       react-hooks/purity
+  167:26  error  React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/rules-of-hooks
+  172:48  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\copy-of-react-project-workspace01\src\components\guest\modals\CouponBoardingPass.tsx:172:48
+  170 |                                 className="w-1 bg-gray-800 dark:bg-gray-600"
+  171 |                                 style={{
+> 172 |                                     height: `${Math.random() * 20 + 10}px`,
+      |                                                ^^^^^^^^^^^^^ Cannot call impure function
+  173 |                                 }}
+  174 |                             />
+  175 |                         )), [])}  react-hooks/purity
+
+D:\copy-of-react-project-workspace01\src\components\modals\VoiceModeModal.tsx
+   62:18  error    'error' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                            @typescript-eslint/no-unused-vars
+  103:8   warning  React Hook useEffect has missing dependencies: 'cancel', 'currentLang', 'guestName', 'speak', 'stopListening', and 't'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  116:8   warning  React Hook useEffect has a missing dependency: 'status'. Either include it or remove the dependency array                                                                   react-hooks/exhaustive-deps
+  137:8   warning  React Hook useEffect has a missing dependency: 'handleSend'. Either include it or remove the dependency array                                                               react-hooks/exhaustive-deps
+
+D:\copy-of-react-project-workspace01\src\components\ui\Toast.tsx
+  28:8  warning  React Hook React.useEffect has a missing dependency: 'handleClose'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\copy-of-react-project-workspace01\src\contexts\FavoritesContext.tsx
+  91:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\copy-of-react-project-workspace01\src\contexts\LanguageContext.tsx
+  63:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\copy-of-react-project-workspace01\src\contexts\ThemeContext.tsx
+  85:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\copy-of-react-project-workspace01\src\contexts\ToastContext.tsx
+  21:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\copy-of-react-project-workspace01\src\hooks\useAdminDashboard.ts
+  21:11  warning  The 'showToast' function makes the dependencies of useEffect Hook (at line 166) change on every render. To fix this, wrap the definition of 'showToast' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+D:\copy-of-react-project-workspace01\src\hooks\useBlockedDates.ts
+  68:18  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  80:18  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+D:\copy-of-react-project-workspace01\src\hooks\useSpeechRecognition.ts
+  74:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\copy-of-react-project-workspace01\src\services\firebase\reservations.ts
+  111:9  error  'q' is never reassigned. Use 'const' instead  prefer-const
+
+Ô£û 27 problems (14 errors, 13 warnings)
+  2 errors and 1 warning potentially fixable with the `--fix` option.
+

@@ -1,57 +1,83 @@
-// Simple Analytics Wrapper
-// In a real app, this would integrate with GA, Firebase Analytics, or Mixpanel
+import ReactGA from 'react-ga4';
+import { GA_MEASUREMENT_ID, ANALYTICS_CONFIG } from '../config/analyticsConfig';
+
+// Initialize GA4
+// This should be called once at the root of your app
+export const initAnalytics = () => {
+    ReactGA.initialize(GA_MEASUREMENT_ID, {
+        testMode: ANALYTICS_CONFIG.debug,
+    });
+
+    if (ANALYTICS_CONFIG.debug) {
+        console.log('[Analytics] Initialized with ID:', GA_MEASUREMENT_ID);
+    }
+};
 
 export const analytics = {
-    trackEvent: (eventName: string, params?: Record<string, any>) => {
+    trackEvent: (eventName: string, params?: Record<string, string | number | boolean>) => {
         // Log to console in development
-        if (import.meta.env.DEV) {
+        if (ANALYTICS_CONFIG.debug) {
             console.log(`[Analytics] ${eventName}`, params);
         }
 
-        // Implementation for Google Analytics 4 (example)
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', eventName, params);
-        }
+        // Send to GA4
+        ReactGA.event(eventName, params);
     },
 
     trackView: (viewName: string) => {
-        if (import.meta.env.DEV) {
+        if (ANALYTICS_CONFIG.debug) {
             console.log(`[Analytics] View: ${viewName}`);
         }
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'page_view', {
-                page_title: viewName
-            });
-        }
+
+        // GA4 automatically tracks pages if connected to the router,
+        // but for manual view tracking (like modals):
+        ReactGA.send({
+            hitType: 'pageview',
+            page: window.location.pathname + window.location.search,
+            title: viewName,
+        });
     },
 
     trackCouponGenerated: (params: { guestName: string; couponCode: string }) => {
-        if (import.meta.env.DEV) {
+        if (ANALYTICS_CONFIG.debug) {
             console.log(`[Analytics] Coupon Generated`, params);
         }
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'coupon_generated', params);
-        }
+
+        ReactGA.event({
+            category: 'Conversion',
+            action: 'coupon_generated',
+            label: params.couponCode,
+            value: 1, // Assign a value if suitable
+        });
     },
 
     trackReviewModalOpened: () => {
-        if (import.meta.env.DEV) console.log(`[Analytics] Review Modal Opened`);
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'review_modal_opened');
-        }
+        if (ANALYTICS_CONFIG.debug) console.log(`[Analytics] Review Modal Opened`);
+
+        ReactGA.event({
+            category: 'Engagement',
+            action: 'review_modal_opened',
+        });
     },
 
     trackReviewLinkClicked: () => {
-        if (import.meta.env.DEV) console.log(`[Analytics] Review Link Clicked`);
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'review_link_clicked');
-        }
+        if (ANALYTICS_CONFIG.debug) console.log(`[Analytics] Review Link Clicked`);
+
+        ReactGA.event({
+            category: 'Engagement',
+            action: 'review_link_clicked',
+        });
     },
 
-    trackStoryViewed: (params: { type: string; storyId?: string } & Record<string, any>) => {
-        if (import.meta.env.DEV) console.log(`[Analytics] Story Viewed`, params);
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'story_viewed', params);
-        }
-    }
+    trackStoryViewed: (
+        params: { type: string; storyId?: string } & Record<string, string | number | boolean>
+    ) => {
+        if (ANALYTICS_CONFIG.debug) console.log(`[Analytics] Story Viewed`, params);
+
+        ReactGA.event({
+            category: 'Content',
+            action: 'story_viewed',
+            label: params.type,
+        });
+    },
 };

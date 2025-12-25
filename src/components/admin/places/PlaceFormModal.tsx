@@ -37,6 +37,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
     // Preenche o formulário quando editando
     useEffect(() => {
         if (editingPlace) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData(editingPlace);
             setTagInput('');
         } else {

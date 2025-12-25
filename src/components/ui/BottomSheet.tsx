@@ -22,6 +22,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsVisible(true);
             // Pequeno delay para permitir que o navegador renderize antes de animar
             requestAnimationFrame(() => setIsAnimating(true));

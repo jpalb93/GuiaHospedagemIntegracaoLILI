@@ -20,6 +20,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShowKeyDetails(!!startOnKeyDetails);
         }
     }, [isOpen, startOnKeyDetails]);

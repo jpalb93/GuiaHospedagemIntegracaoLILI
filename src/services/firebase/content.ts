@@ -36,7 +36,7 @@ export const getTips = async (): Promise<Tip[]> => {
                 }) as Tip
         );
     } catch (error) {
-        logger.error('Erro ao buscar dicas:', error);
+        logger.error('Erro ao buscar dicas:', { error });
         return [];
     }
 };
@@ -87,7 +87,9 @@ export const getCuriosities = async (): Promise<CityCuriosity[]> => {
 
                 // Generates ID if missing
                 if (!normItem.id) {
-                    normItem.id = crypto.randomUUID ? crypto.randomUUID() : `curiosity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    normItem.id = crypto.randomUUID
+                        ? crypto.randomUUID()
+                        : `curiosity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                     needsUpdate = true;
                 }
                 return normItem;
@@ -95,7 +97,7 @@ export const getCuriosities = async (): Promise<CityCuriosity[]> => {
 
             // Self-heal: Persist generated IDs so they remain stable
             if (needsUpdate) {
-                logger.log('Self-healing: Assigning IDs to Curiosities...');
+                logger.info('Self-healing: Assigning IDs to Curiosities...');
                 await updateDoc(docRef, { items });
             }
 
@@ -110,7 +112,7 @@ export const getCuriosities = async (): Promise<CityCuriosity[]> => {
 export const saveCuriosities = async (items: CityCuriosity[]) => {
     // Sanitize data: Firestore throws "Unsupported field value: undefined"
     // We must ensure no undefined fields exist in the array objects.
-    const cleanItems = items.map(item => cleanData(item));
+    const cleanItems = items.map((item) => cleanData(item));
     await setDoc(doc(db, 'app_config', 'curiosities'), { items: cleanItems });
 };
 

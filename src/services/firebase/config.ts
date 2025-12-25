@@ -78,7 +78,7 @@ export const saveToCache = (key: string, data: unknown) => {
         const cacheObj = { data, timestamp: Date.now() };
         localStorage.setItem(key, JSON.stringify(cacheObj));
     } catch (e) {
-        logger.warn('Erro ao salvar cache local', e);
+        logger.warn('Erro ao salvar cache local', { error: e });
     }
 };
 

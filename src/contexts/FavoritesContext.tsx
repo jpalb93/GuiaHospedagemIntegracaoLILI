@@ -10,7 +10,6 @@ const FavoritesContext = createContext<FavoritesContextData>({} as FavoritesCont
 
 const STORAGE_KEY = 'lili_db_favorites';
 
-
 import { toggleFavoritePlace } from '../services/firebase/reservations';
 
 export const FavoritesProvider: React.FC<{
@@ -38,6 +37,7 @@ export const FavoritesProvider: React.FC<{
         if (initialFavorites) {
             // Mescla com locais para não perder dados offline?
             // Simplificação: Se veio do banco, confia no banco.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFavorites((current) => {
                 // Opção: Mesclar
                 const merged = Array.from(new Set([...current, ...initialFavorites]));
@@ -57,26 +57,26 @@ export const FavoritesProvider: React.FC<{
         }
     }, [favorites]);
 
-    const toggleFavorite = useCallback(async (id: string) => {
-        // Optimistic UI Update
-        setFavorites((prev) => {
-            const isRemoved = prev.includes(id);
-            const next = isRemoved
-                ? prev.filter((favId) => favId !== id)
-                : [...prev, id];
+    const toggleFavorite = useCallback(
+        async (id: string) => {
+            // Optimistic UI Update
+            setFavorites((prev) => {
+                const isRemoved = prev.includes(id);
+                const next = isRemoved ? prev.filter((favId) => favId !== id) : [...prev, id];
 
-            // Trigger Background Sync (Fire & Forget logic handled here for responsiveness)
-            if (reservationId) {
-                toggleFavoritePlace(reservationId, id, prev)
-                    .catch(err => {
-                        console.error("Failed to sync favorite:", err);
+                // Trigger Background Sync (Fire & Forget logic handled here for responsiveness)
+                if (reservationId) {
+                    toggleFavoritePlace(reservationId, id, prev).catch((err) => {
+                        console.error('Failed to sync favorite:', err);
                         // Opcional: Reverter estado em caso de erro
                     });
-            }
+                }
 
-            return next;
-        });
-    }, [reservationId]);
+                return next;
+            });
+        },
+        [reservationId]
+    );
 
     const isFavorite = useCallback((id: string) => favorites.includes(id), [favorites]);
 

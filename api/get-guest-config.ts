@@ -192,6 +192,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             isReleased: isReleased, // Helper for frontend UI
             propertyId: reservationData.propertyId || 'lili',
             flatNumber: reservationData.flatNumber,
+            manualDeactivation: reservationData.manualDeactivation || false,
         };
 
         return res.status(200).json(safeConfig);

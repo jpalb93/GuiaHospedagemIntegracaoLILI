@@ -18,10 +18,18 @@ export const useAdminDashboard = () => {
     const { showSuccess, showError, showWarning, showInfo } = useToast();
 
     // Compatibility wrapper for old showToast call signature
-    const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
-        const toastFunctions = { success: showSuccess, error: showError, warning: showWarning, info: showInfo };
-        toastFunctions[type](message);
-    };
+    const showToast = useCallback(
+        (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+            const toastFunctions = {
+                success: showSuccess,
+                error: showError,
+                warning: showWarning,
+                info: showInfo,
+            };
+            toastFunctions[type](message);
+        },
+        [showSuccess, showError, showWarning, showInfo]
+    );
 
     // Use extracted reservations hook
     const {
@@ -30,6 +38,7 @@ export const useAdminDashboard = () => {
         loadingHistory,
         hasMoreHistory,
         loadMoreHistory,
+        refreshHistory,
         removeReservation,
     } = useReservations({ userPermission, showToast });
 
@@ -37,38 +46,62 @@ export const useAdminDashboard = () => {
     const reservationForm = useReservationForm();
     const {
         editingId,
-        guestName, setGuestName,
-        guestPhone, setGuestPhone,
-        propertyId, setPropertyId,
-        flatNumber, setFlatNumber,
-        lockCode, setLockCode,
-        welcomeMessage, setWelcomeMessage,
-        adminNotes, setAdminNotes,
-        guestAlertActive, setGuestAlertActive,
-        guestAlertText, setGuestAlertText,
-        checkInDate, setCheckInDate,
-        checkoutDate, setCheckoutDate,
-        checkInTime, setCheckInTime,
-        checkOutTime, setCheckOutTime,
-        guestCount, setGuestCount,
-        paymentMethod, setPaymentMethod,
+        guestName,
+        setGuestName,
+        guestPhone,
+        setGuestPhone,
+        propertyId,
+        setPropertyId,
+        flatNumber,
+        setFlatNumber,
+        lockCode,
+        setLockCode,
+        welcomeMessage,
+        setWelcomeMessage,
+        adminNotes,
+        setAdminNotes,
+        guestAlertActive,
+        setGuestAlertActive,
+        guestAlertText,
+        setGuestAlertText,
+        checkInDate,
+        setCheckInDate,
+        checkoutDate,
+        setCheckoutDate,
+        checkInTime,
+        setCheckInTime,
+        checkOutTime,
+        setCheckOutTime,
+        guestCount,
+        setGuestCount,
+        paymentMethod,
+        setPaymentMethod,
         shortId,
-        generatedLink, setGeneratedLink,
-        isSaving, setIsSaving,
+        manualDeactivation,
+        setManualDeactivation,
+        generatedLink,
+        setGeneratedLink,
+        isSaving,
+        setIsSaving,
         resetForm: resetReservationForm,
         loadReservation,
         getFormValues,
-        guestRating, setGuestRating,
-        guestFeedback, setGuestFeedback,
+        guestRating,
+        setGuestRating,
+        guestFeedback,
+        setGuestFeedback,
     } = reservationForm;
 
     // Use extracted blocked dates hook
     const blockedDatesHook = useBlockedDates({ showToast });
     const {
         blockedDates,
-        blockedStartDate, setBlockedStartDate,
-        blockedEndDate, setBlockedEndDate,
-        blockedReason, setBlockedReason,
+        blockedStartDate,
+        setBlockedStartDate,
+        blockedEndDate,
+        setBlockedEndDate,
+        blockedReason,
+        setBlockedReason,
         isBlocking,
         subscribe: subscribeToBlockedDates,
         resetBlockedForm,
@@ -77,7 +110,19 @@ export const useAdminDashboard = () => {
     } = blockedDatesHook;
 
     // UI State
-    type AdminTab = 'home' | 'create' | 'list' | 'calendar' | 'blocks' | 'places' | 'tips' | 'reviews' | 'suggestions' | 'settings' | 'analytics' | 'logs';
+    type AdminTab =
+        | 'home'
+        | 'create'
+        | 'list'
+        | 'calendar'
+        | 'blocks'
+        | 'places'
+        | 'tips'
+        | 'reviews'
+        | 'suggestions'
+        | 'settings'
+        | 'analytics'
+        | 'logs';
 
     const [activeTab, setActiveTab] = useState<AdminTab>(() => {
         const saved = localStorage.getItem('admin_active_tab');
@@ -97,7 +142,7 @@ export const useAdminDashboard = () => {
         title: '',
         message: '',
         isDestructive: false,
-        onConfirm: async () => { },
+        onConfirm: async () => {},
     });
 
     // Reset form wrapper that also resets blocked dates
@@ -143,7 +188,7 @@ export const useAdminDashboard = () => {
 
                     reloadTimeout = setTimeout(() => {
                         // Força reload do histórico
-                        loadMoreHistory(true);
+                        refreshHistory();
 
                         // Mostra feedback ao usuário
                         showToast('Dados atualizados', 'info');
@@ -161,7 +206,7 @@ export const useAdminDashboard = () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             if (reloadTimeout) clearTimeout(reloadTimeout);
         };
-    }, [user, userPermission, loadMoreHistory, showToast]);
+    }, [user, userPermission, loadMoreHistory, showToast, refreshHistory]);
 
     // --- API KEY CHECK ---
     useEffect(() => {
@@ -185,7 +230,7 @@ export const useAdminDashboard = () => {
         }
     };
 
-    const handleSaveReservation = async () => {
+    const handleSaveReservation = async (overrides?: Partial<Reservation>) => {
         if (!guestName.trim()) {
             showToast('Preencha o nome do hóspede.', 'warning');
             return;
@@ -238,10 +283,17 @@ export const useAdminDashboard = () => {
             const formValues = getFormValues();
             const payload: Reservation = {
                 ...formValues,
+                ...overrides, // Apply overrides here (e.g. manualDeactivation: true)
                 status: 'active',
                 createdAt: '',
                 shortId: finalShortId,
-                paymentMethod: formValues.paymentMethod as 'pix' | 'money' | 'card' | undefined,
+                paymentMethod: (overrides?.paymentMethod ?? formValues.paymentMethod) as
+                    | 'pix'
+                    | 'money'
+                    | 'card'
+                    | undefined,
+                manualDeactivation:
+                    overrides?.manualDeactivation ?? formValues.manualDeactivation ?? false,
             };
 
             if (editingId) {
@@ -258,7 +310,7 @@ export const useAdminDashboard = () => {
             }
         } catch (e) {
             showToast('Erro ao salvar reserva.', 'error');
-            logger.error(e);
+            logger.error('Erro ao salvar reserva.', { error: e });
         } finally {
             setIsSaving(false);
         }
@@ -350,6 +402,8 @@ export const useAdminDashboard = () => {
             handleStartEdit,
             resetForm,
             isSaving,
+            manualDeactivation,
+            setManualDeactivation,
         },
         blocks: {
             blockedStartDate,

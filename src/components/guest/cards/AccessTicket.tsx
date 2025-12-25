@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Key, Bell, Eye, Lock } from 'lucide-react';
 import { PropertyId } from '../../../types';
 import { ThemeColors } from '../../../hooks/useGuestTheme';
@@ -30,7 +30,7 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
     // We use the code itself in the key so if the password changes, it resets
     const storageKey = `access_revealed_${propertyId}_${code}`;
 
-    const [isRevealed, setIsRevealed] = useState(() => {
+    const [internalIsRevealed, setInternalIsRevealed] = useState(() => {
         if (alwaysVisible) return true;
         if (propertyId === 'integracao') return true;
 
@@ -39,14 +39,11 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
         return saved === 'true';
     });
 
+    const isRevealed = alwaysVisible || internalIsRevealed;
+
     const [isAnimating, setIsAnimating] = useState(false);
 
     // Update state if alwaysVisible changes
-    useEffect(() => {
-        if (alwaysVisible) {
-            setIsRevealed(true);
-        }
-    }, [alwaysVisible]);
 
     const handleReveal = () => {
         if (isRevealed) return;
@@ -55,11 +52,11 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
         setIsAnimating(true);
 
         setTimeout(() => {
-            setIsRevealed(true);
+            setInternalIsRevealed(true);
             setIsAnimating(false);
             localStorage.setItem(storageKey, 'true'); // Save to localStorage
             triggerConfetti(document.getElementById('access-ticket') as HTMLElement);
-        }, 800); // Animation duration
+        }, 800);
     };
 
     const handleCopyCode = useCallback(() => {
@@ -92,10 +89,11 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
 
             {/* Top Decoration Line */}
             <div
-                className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${propertyId === 'integracao'
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
-                    : 'bg-gradient-to-r from-orange-500 to-purple-600'
-                    }`}
+                className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${
+                    propertyId === 'integracao'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
+                        : 'bg-gradient-to-r from-orange-500 to-purple-600'
+                }`}
             />
 
             <div
@@ -129,12 +127,14 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                             </div>
                             <button
                                 onClick={handleReveal}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${propertyId === 'integracao'
-                                    ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
-                                    }`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${
+                                    propertyId === 'integracao'
+                                        ? 'bg-cyan-600 text-white hover:bg-cyan-500'
+                                        : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                                }`}
                             >
-                                <Eye size={14} /> {t('Revelar Senha', 'Reveal Password', 'Revelar Contraseña')}
+                                <Eye size={14} />{' '}
+                                {t('Revelar Senha', 'Reveal Password', 'Revelar Contraseña')}
                             </button>
                         </div>
                     )}
@@ -145,7 +145,9 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                             <div className="mb-2 p-3 bg-amber-500/20 rounded-full animate-spin">
                                 <Key size={24} className="text-amber-500" />
                             </div>
-                            <p className="text-xs text-amber-400 font-bold">{t('Desbloqueando...', 'Unlocking...', 'Desbloqueando...')}</p>
+                            <p className="text-xs text-amber-400 font-bold">
+                                {t('Desbloqueando...', 'Unlocking...', 'Desbloqueando...')}
+                            </p>
                         </div>
                     )}
 
@@ -158,8 +160,9 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                         >
                             <div className="flex items-center justify-center gap-2 mb-0.5">
                                 <p
-                                    className={`text-center font-mono font-bold tracking-widest transition-all ${isSmall ? 'text-lg' : 'text-2xl'
-                                        }`}
+                                    className={`text-center font-mono font-bold tracking-widest transition-all ${
+                                        isSmall ? 'text-lg' : 'text-2xl'
+                                    }`}
                                     style={{ color: theme.text.primary }}
                                 >
                                     {code}

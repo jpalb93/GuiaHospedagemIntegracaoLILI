@@ -19,22 +19,16 @@ import {
     Award,
     Heart,
 } from 'lucide-react';
-import {
-    subscribeToFutureReservations,
-} from '../../services/firebase/reservations';
-import {
-    getGuestReviews,
-} from '../../services/firebase/content';
-import {
-    subscribeToFutureBlockedDates,
-} from '../../services/firebase/blockedDates';
+import { subscribeToFutureReservations } from '../../services/firebase/reservations';
+import { subscribeToFutureBlockedDates } from '../../services/firebase/blockedDates';
+import { useGuestReviews } from '../../hooks/useGuestReviews';
 import { Reservation, GuestReview, BlockedDateRange } from '../../types';
 import SimpleGallery from '../SimpleGallery';
 import {
     LANDING_GALLERY_IMAGES,
     LANDING_HERO_SLIDES,
     FLAT_ADDRESS,
-    HOST_PHONE,
+    LILI_PHONE,
 } from '../../constants';
 import LogoLili from '../LogoLili';
 import ScrollReveal from '../ui/ScrollReveal';
@@ -175,12 +169,13 @@ const AvailabilityCalendar = () => {
                             key={idx}
                             className={`
                         aspect-square flex items-center justify-center rounded-xl text-sm font-semibold relative transition-all duration-300
-                        ${isOccupied
-                                    ? 'bg-gradient-to-br from-red-100 to-rose-100 text-red-500 cursor-not-allowed shadow-sm'
-                                    : isPast
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 hover:from-emerald-100 hover:to-teal-100 cursor-pointer hover:scale-110 hover:shadow-lg font-bold'
-                                } 
+                        ${
+                            isOccupied
+                                ? 'bg-gradient-to-br from-red-100 to-rose-100 text-red-500 cursor-not-allowed shadow-sm'
+                                : isPast
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700 hover:from-emerald-100 hover:to-teal-100 cursor-pointer hover:scale-110 hover:shadow-lg font-bold'
+                        } 
                         ${isToday ? 'ring-2 ring-amber-400 ring-offset-2 shadow-xl' : ''}
                      `}
                             title={isOccupied ? 'Ocupado' : isPast ? 'Passado' : 'Disponível'}
@@ -214,7 +209,7 @@ const LandingLili: React.FC = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-    const [reviews, setReviews] = useState<GuestReview[]>([]);
+
     const [scrollY, setScrollY] = useState(0);
     const [showNotification, setShowNotification] = useState(false);
 
@@ -228,7 +223,7 @@ const LandingLili: React.FC = () => {
     // --- SEO & METADATA CONFIGURATION ---
     useEffect(() => {
         // 1. Update Title
-        document.title = 'Flat de Lili | Experiência Premium em Petrolina';
+        document.title = 'Flat de Lili em Petrolina | Flat Mobiliado para Hospedagem';
 
         // 2. Update Meta Tags
         const updateMeta = (name: string, content: string) => {
@@ -259,7 +254,7 @@ const LandingLili: React.FC = () => {
             'Flat Petrolina, Hospedagem Premium, Flat de Lili, Aluguel Temporada, Hotel Petrolina'
         );
 
-        updateOgMeta('og:title', 'Flat de Lili | Experiência Premium em Petrolina 🌵');
+        updateOgMeta('og:title', 'Flat de Lili em Petrolina | Flat Mobiliado para Hospedagem');
         updateOgMeta('og:description', description);
         updateOgMeta('og:url', window.location.href);
 
@@ -270,7 +265,7 @@ const LandingLili: React.FC = () => {
             name: 'Flat de Lili',
             image: ['https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg'],
             url: window.location.href,
-            telephone: `+${HOST_PHONE}`,
+            telephone: `+${LILI_PHONE}`,
             address: {
                 '@type': 'PostalAddress',
                 streetAddress: FLAT_ADDRESS.split(',')[0],
@@ -298,7 +293,7 @@ const LandingLili: React.FC = () => {
         }
         script.text = JSON.stringify(schema);
 
-        return () => { };
+        return () => {};
     }, []);
 
     // Parallax effect
@@ -317,28 +312,49 @@ const LandingLili: React.FC = () => {
     }, []);
 
     // Fetch reviews
-    useEffect(() => {
-        getGuestReviews(3).then((data: GuestReview[]) => {
-            if (data.length > 0) {
-                setReviews(data);
-            } else {
-                setReviews([
-                    {
-                        name: 'Joana S.',
-                        text: 'Um lugar incrível! Extremamente limpo, organizado e com uma localização perfeita. A Lili foi muito atenciosa. Voltarei com certeza!',
-                    },
-                    {
-                        name: 'Ricardo F.',
-                        text: 'O flat é exatamente como nas fotos. Muito bem equipado, não faltou nada. O processo de check-in foi super fácil.',
-                    },
-                    {
-                        name: 'Mariana L.',
-                        text: 'Silencioso, confortável e muito bonito. A TV com streaming foi um diferencial. Recomendo!',
-                    },
-                ]);
-            }
-        });
-    }, []);
+    const { data: fetchedReviews, isLoading: isLoadingReviews } = useGuestReviews(3);
+
+    // Initial reviews state (with fallback)
+    // Memoized reviews to prevent render loops
+    const reviews = React.useMemo(() => {
+        if (fetchedReviews && fetchedReviews.length > 0) {
+            return fetchedReviews;
+        }
+
+        if (!isLoadingReviews && (!fetchedReviews || fetchedReviews.length === 0)) {
+            return [
+                {
+                    id: '1',
+                    name: 'Ana Silva',
+                    text: 'Lugar incrível, super limpo e aconchegante. A localização é perfeita!',
+                    date: '2024-01-15',
+                    rating: 5,
+                    source: 'google',
+                    visible: true,
+                },
+                {
+                    id: '2',
+                    name: 'Carlos Oliveira',
+                    text: 'Ótima estadia, anfitriões muito atenciosos. Recomendo para todos!',
+                    date: '2024-02-10',
+                    rating: 5,
+                    source: 'booking',
+                    visible: true,
+                },
+                {
+                    id: '3',
+                    name: 'Mariana Costa',
+                    text: 'Tudo impecável, desde a decoração até o conforto da cama. Voltarei com certeza!',
+                    date: '2024-03-05',
+                    rating: 5,
+                    source: 'airbnb',
+                    visible: true,
+                },
+            ] as GuestReview[];
+        }
+
+        return [] as GuestReview[];
+    }, [fetchedReviews, isLoadingReviews]);
 
     const toggleAccordion = (id: string) => {
         setOpenAccordion((prev) => (prev === id ? null : id));
@@ -348,7 +364,7 @@ const LandingLili: React.FC = () => {
         <div className="font-sans bg-white text-gray-800 scroll-smooth overflow-x-hidden">
             {/* SEO Meta Tags - Using Helmet for React */}
             <Helmet>
-                <title>Flat da Lili - Guia Digital do Hóspede | Petrolina, PE</title>
+                <title>Flat de Lili em Petrolina | Flat Mobiliado para Hospedagem</title>
                 <meta
                     name="description"
                     content="Guia interativo do Flat da Lili com senhas Wi-Fi, dicas de Petrolina, informações da estadia e atendimento 24h. Reserve agora!"
@@ -363,7 +379,10 @@ const LandingLili: React.FC = () => {
                 {/* Open Graph / Facebook */}
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="https://guia-digital-flatlili.vercel.app/lili" />
-                <meta property="og:title" content="Flat da Lili - Guia Digital do Hóspede" />
+                <meta
+                    property="og:title"
+                    content="Flat de Lili em Petrolina | Flat Mobiliado para Hospedagem"
+                />
                 <meta
                     property="og:description"
                     content="Sua estadia facilitada com guia digital interativo. Wi-Fi, dicas locais e atendimento completo."
@@ -376,8 +395,14 @@ const LandingLili: React.FC = () => {
 
                 {/* Twitter */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Flat da Lili - Guia Digital" />
-                <meta name="twitter:description" content="Guia interativo para uma estadia perfeita em Petrolina" />
+                <meta
+                    name="twitter:title"
+                    content="Flat de Lili em Petrolina | Flat Mobiliado para Hospedagem"
+                />
+                <meta
+                    name="twitter:description"
+                    content="Guia interativo para uma estadia perfeita em Petrolina"
+                />
                 <meta
                     name="twitter:image"
                     content="https://i.postimg.cc/JnkG03mm/5930cc64_fdef_4d4a_b6ba_a8380fde40de.jpg"
@@ -520,6 +545,8 @@ const LandingLili: React.FC = () => {
                                 src={img}
                                 className="w-full h-full object-cover scale-110"
                                 alt="Flat de Lili"
+                                loading={index === 0 ? 'eager' : 'lazy'}
+                                fetchPriority={index === 0 ? 'high' : 'auto'}
                             />
                         </div>
                     ))}
@@ -536,18 +563,19 @@ const LandingLili: React.FC = () => {
                         {/* Badge Premium */}
                         <div className="inline-flex items-center gap-2 bg-yellow-500/20 backdrop-blur-md px-4 py-1.5 rounded-full border border-yellow-500/30 mb-6 shadow-lg animate-fade-up">
                             <Sparkles size={14} className="text-yellow-400" />
-                            <span className="text-yellow-100 text-xs sm:text-sm font-semibold tracking-wide uppercase">
-                                Experiência Premium em Petrolina
+                            <span className="text-yellow-100 text-xs sm:text-sm font-bold tracking-widest uppercase">
+                                Hospedagem Premium
                             </span>
                         </div>
 
-                        <LogoLili
-                            className="h-32 sm:h-48 w-auto drop-shadow-2xl mb-4"
-                            sunClassName="text-yellow-400 animate-pulse-slow"
-                            textClassName="text-white animate-reveal-curtain"
-                        />
+                        <h1 className="text-5xl sm:text-7xl md:text-8xl font-heading font-extrabold text-white mb-6 tracking-tight drop-shadow-2xl text-center leading-tight animate-fade-up animation-delay-100">
+                            FLAT DE{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400">
+                                LILI
+                            </span>
+                        </h1>
 
-                        <p className="text-lg sm:text-2xl text-white/90 font-light tracking-wide max-w-2xl drop-shadow-md font-sans mt-2">
+                        <p className="text-lg sm:text-2xl text-white/90 font-light tracking-wide max-w-2xl drop-shadow-md font-sans mt-2 animate-fade-up animation-delay-200">
                             Seu refúgio de{' '}
                             <span className="text-amber-400 font-semibold">
                                 conforto sofisticado

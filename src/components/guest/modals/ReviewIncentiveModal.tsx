@@ -31,14 +31,14 @@ const ReviewIncentiveModal: React.FC<ReviewIncentiveModalProps> = ({
         disabled: showCoupon, // Disable if coupon is showing
     });
 
-    if (!isOpen) return null;
-
     // Track modal open
     React.useEffect(() => {
         if (isOpen) {
             analytics.trackReviewModalOpened();
         }
     }, [isOpen]);
+
+    if (!isOpen) return null;
 
     const handleGoToReview = () => {
         analytics.trackReviewLinkClicked();
@@ -47,12 +47,12 @@ const ReviewIncentiveModal: React.FC<ReviewIncentiveModalProps> = ({
     };
 
     const modalContent = (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn" style={{ isolation: 'isolate' }}>
+        <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn"
+            style={{ isolation: 'isolate' }}
+        >
             {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                onClick={onClose}
-            />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
             <div
@@ -60,7 +60,10 @@ const ReviewIncentiveModal: React.FC<ReviewIncentiveModalProps> = ({
                 className="relative bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl border-2 border-amber-300 dark:border-amber-600 animate-scaleIn"
                 style={{
                     transform: `translateY(${swipeToDismiss.dragY}px)`,
-                    transition: swipeToDismiss.dragY === 0 ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+                    transition:
+                        swipeToDismiss.dragY === 0
+                            ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                            : 'none',
                 }}
             >
                 {/* Close Button */}
@@ -89,7 +92,11 @@ const ReviewIncentiveModal: React.FC<ReviewIncentiveModalProps> = ({
 
                 {/* Message */}
                 <p className="text-center text-gray-700 dark:text-gray-300 mb-4 text-sm leading-relaxed">
-                    {t('Compartilhe sua experiência no', 'Share your experience at', 'Comparte tu experiencia en')}{' '}
+                    {t(
+                        'Compartilhe sua experiência no',
+                        'Share your experience at',
+                        'Comparte tu experiencia en'
+                    )}{' '}
                     <span className="font-bold text-amber-700 dark:text-amber-400">
                         {propertyName}
                     </span>{' '}
@@ -106,14 +113,23 @@ const ReviewIncentiveModal: React.FC<ReviewIncentiveModalProps> = ({
                         <Star size={24} className="text-amber-500 fill-amber-500" />
                     </div>
                     <p className="text-center text-sm text-gray-600 dark:text-gray-400 font-medium">
-                        {t('na sua próxima reserva!', 'on your next booking!', 'en tu próxima reserva!')}
+                        {t(
+                            'na sua próxima reserva!',
+                            'on your next booking!',
+                            'en tu próxima reserva!'
+                        )}
                     </p>
                 </div>
 
                 {/* Details */}
                 <div className="bg-amber-100 dark:bg-amber-900/30 rounded-xl p-3 mb-4">
                     <p className="text-xs text-center text-amber-800 dark:text-amber-300 leading-relaxed">
-                        <strong>{t('Como funciona:', 'How it works:', 'Cómo funciona:')}</strong> {t('Avalie-nos no Google e ganhe seu cupom printável! 📱', 'Rate us on Google and get your printable coupon! 📱', '¡Califícanos en Google y obtén tu cupón imprimible! 📱')}
+                        <strong>{t('Como funciona:', 'How it works:', 'Cómo funciona:')}</strong>{' '}
+                        {t(
+                            'Avalie-nos no Google e ganhe seu cupom printável! 📱',
+                            'Rate us on Google and get your printable coupon! 📱',
+                            '¡Califícanos en Google y obtén tu cupón imprimible! 📱'
+                        )}
                     </p>
                 </div>
 
@@ -130,7 +146,11 @@ const ReviewIncentiveModal: React.FC<ReviewIncentiveModalProps> = ({
                         onClick={() => setShowCoupon(true)}
                         className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
                     >
-                        {t('✅ Já Avaliei! Quero Meu Cupom', '✅ I Rated! Get My Coupon', '✅ ¡Ya Califiqué! Quiero mi Cupón')}
+                        {t(
+                            '✅ Já Avaliei! Quero Meu Cupom',
+                            '✅ I Rated! Get My Coupon',
+                            '✅ ¡Ya Califiqué! Quiero mi Cupón'
+                        )}
                     </button>
                     <button
                         onClick={onClose}

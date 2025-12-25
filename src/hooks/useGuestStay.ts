@@ -92,7 +92,7 @@ export const useGuestStay = (config: GuestConfig) => {
                 }
                 setIsTimeVerified(true);
             } catch (e) {
-                logger.warn('Usando horário do dispositivo (falha na rede)', e);
+                logger.warn('Usando horário do dispositivo (falha na rede)', { error: e });
                 setCurrentDate(new Date());
                 setIsTimeVerified(true);
             }

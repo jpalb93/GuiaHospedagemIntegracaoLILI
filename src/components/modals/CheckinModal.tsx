@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Video, Lock, Key } from 'lucide-react';
-import { SAFE_VIDEO_URL } from '../../constants';
+import { SAFE_VIDEO_URL, LOCK_VIDEO_URL } from '../../constants';
 import { Button } from '../ui';
 
 interface CheckinModalProps {
@@ -149,7 +149,7 @@ const CheckinModal: React.FC<CheckinModalProps> = ({
                                 )}
 
                                 <Button
-                                    onClick={() => onOpenVideo(SAFE_VIDEO_URL, true)}
+                                    onClick={() => onOpenVideo(LOCK_VIDEO_URL, true)}
                                     fullWidth
                                     size="sm"
                                     leftIcon={<Video size={16} />}

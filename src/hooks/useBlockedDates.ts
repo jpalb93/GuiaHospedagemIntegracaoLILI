@@ -65,7 +65,7 @@ export const useBlockedDates = ({ showToast }: UseBlockedDatesOptions) => {
             });
             showToast('Período bloqueado com sucesso!', 'success');
             await resetBlockedForm();
-        } catch (error) {
+        } catch (_error) {
             showToast('Erro ao bloquear período.', 'error');
         } finally {
             setIsBlocking(false);
@@ -73,14 +73,17 @@ export const useBlockedDates = ({ showToast }: UseBlockedDatesOptions) => {
     }, [blockedStartDate, blockedEndDate, blockedReason, showToast, resetBlockedForm]);
 
     // Delete a blocked date range
-    const handleDeleteBlock = useCallback(async (id: string) => {
-        try {
-            await deleteBlockedDate(id);
-            showToast('Bloqueio removido.', 'success');
-        } catch (error) {
-            showToast('Erro ao remover bloqueio.', 'error');
-        }
-    }, [showToast]);
+    const handleDeleteBlock = useCallback(
+        async (id: string) => {
+            try {
+                await deleteBlockedDate(id);
+                showToast('Bloqueio removido.', 'success');
+            } catch (_error) {
+                showToast('Erro ao remover bloqueio.', 'error');
+            }
+        },
+        [showToast]
+    );
 
     return {
         // Data

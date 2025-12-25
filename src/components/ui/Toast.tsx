@@ -14,6 +14,11 @@ export interface ToastProps {
 const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
     const [isExiting, setIsExiting] = React.useState(false);
 
+    const handleClose = () => {
+        setIsExiting(true);
+        setTimeout(() => onClose(id), 300); // Wait for exit animation
+    };
+
     React.useEffect(() => {
         const timer = setTimeout(() => {
             handleClose();
@@ -21,11 +26,6 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
 
         return () => clearTimeout(timer);
     }, []);
-
-    const handleClose = () => {
-        setIsExiting(true);
-        setTimeout(() => onClose(id), 300); // Wait for exit animation
-    };
 
     const typeConfig = {
         success: {

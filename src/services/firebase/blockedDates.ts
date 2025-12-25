@@ -29,7 +29,7 @@ export const subscribeToBlockedDates = (callback: (blocks: BlockedDateRange[]) =
             callback(data);
         },
         (error) => {
-            logger.error('Erro no listener de datas bloqueadas:', error);
+            logger.error('Erro no listener de datas bloqueadas:', { error });
         }
     );
 };
@@ -52,7 +52,7 @@ export const subscribeToFutureBlockedDates = (callback: (blocks: BlockedDateRang
             callback(data);
         },
         (error) => {
-            logger.error('Erro no listener de datas bloqueadas futuras:', error);
+            logger.error('Erro no listener de datas bloqueadas futuras:', { error });
         }
     );
 };

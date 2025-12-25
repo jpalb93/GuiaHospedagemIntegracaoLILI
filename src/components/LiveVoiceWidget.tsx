@@ -149,7 +149,11 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
             });
             mediaStreamRef.current = stream;
 
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
+            const audioContext = new (
+                window.AudioContext ||
+                (window as unknown as { webkitAudioContext: typeof AudioContext })
+                    .webkitAudioContext
+            )({
                 sampleRate: 16000,
             });
             audioContextRef.current = audioContext;
@@ -174,7 +178,7 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
                 // Convert Float32 to Int16 (PCM)
                 const pcmData = new Int16Array(inputData.length);
                 for (let i = 0; i < inputData.length; i++) {
-                    let s = Math.max(-1, Math.min(1, inputData[i]));
+                    const s = Math.max(-1, Math.min(1, inputData[i]));
                     pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
                 }
 
@@ -250,7 +254,9 @@ const LiveVoiceWidget: React.FC<LiveVoiceWidgetProps> = ({ guestName, systemInst
         // Ensure playback context exists
         if (!playbackContextRef.current) {
             playbackContextRef.current = new (
-                window.AudioContext || (window as any).webkitAudioContext
+                window.AudioContext ||
+                (window as unknown as { webkitAudioContext: typeof AudioContext })
+                    .webkitAudioContext
             )({ sampleRate: 24000 });
         }
         const ctx = playbackContextRef.current;

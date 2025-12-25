@@ -1,5 +1,15 @@
 import React from 'react';
+
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    import('react-scan').then(({ scan }) => {
+        scan({
+            enabled: true,
+        });
+    });
+}
+
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
@@ -11,15 +21,21 @@ if (!rootElement) {
 import { HelmetProvider } from 'react-helmet-async';
 import { Analytics } from '@vercel/analytics/react';
 import { ToastProvider } from './contexts/ToastContext';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/react-query';
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
     <React.StrictMode>
         <HelmetProvider>
-            <ToastProvider>
-                <App />
-                <Analytics />
-            </ToastProvider>
+            <QueryClientProvider client={queryClient}>
+                <ToastProvider>
+                    <BrowserRouter>
+                        <App />
+                    </BrowserRouter>
+                    <Analytics />
+                </ToastProvider>
+            </QueryClientProvider>
         </HelmetProvider>
     </React.StrictMode>
 );

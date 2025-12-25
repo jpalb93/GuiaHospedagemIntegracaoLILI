@@ -58,7 +58,8 @@ export const WIFI_SSID = 'Flat_Petrolina_5G';
 export const FLAT_ADDRESS = 'R. São José, 475 - Centro, Petrolina - PE, 56302-270'; // Endereço Real
 export const GOOGLE_REVIEW_LINK =
     'https://search.google.com/local/writereview?placeid=ChIJz0sHkXpxcwcRwekJL9cyLjY';
-export const HOST_PHONE = '5587988342138'; // Número da Lili
+export const HOST_PHONE = '5587988283273'; // Flats Integração (Geral)
+export const LILI_PHONE = '5587988342138'; // Número da Lili (Específico para o Flat da Lili)
 
 // TOKEN DO TINYURL (ENCURTADOR) - REMOVIDO (Sistema próprio de Short Links)
 // export const TINY_URL_TOKEN = import.meta.env?.VITE_TINY_URL_TOKEN || "";

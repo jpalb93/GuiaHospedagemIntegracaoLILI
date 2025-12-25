@@ -5,7 +5,6 @@ import { fetchOfficialTime } from '../constants';
 
 // ReservationFormState removed - now using ReservationFormData from types.ts
 
-
 export const useReservationForm = () => {
     // Form State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -25,6 +24,7 @@ export const useReservationForm = () => {
     const [guestCount, setGuestCount] = useState<number>(1);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
     const [shortId, setShortId] = useState('');
+    const [manualDeactivation, setManualDeactivation] = useState(false);
 
     // Rating / Quality Control (Internal)
     const [guestRating, setGuestRating] = useState<number>(5);
@@ -65,6 +65,7 @@ export const useReservationForm = () => {
         setGuestCount(1);
         setPaymentMethod('');
         setShortId('');
+        setManualDeactivation(false);
         setGuestRating(5);
         setGuestFeedback('');
     }, [propertyId]);
@@ -88,63 +89,105 @@ export const useReservationForm = () => {
         setGuestCount(res.guestCount || 1);
         setPaymentMethod(res.paymentMethod || '');
         setShortId(res.shortId || '');
+        setManualDeactivation(res.manualDeactivation || false);
         setGuestRating(res.guestRating || 5);
         setGuestFeedback(res.guestFeedback || '');
         setGeneratedLink('');
     }, []);
 
     // Get current form values as object
-    const getFormValues = useCallback((): Omit<Reservation, 'id' | 'createdAt' | 'status'> => ({
-        guestName: guestName.trim(),
-        guestPhone: guestPhone.replace(/\D/g, ''),
-        propertyId,
-        flatNumber: flatNumber.trim(),
-        lockCode: lockCode.trim(),
-        welcomeMessage: welcomeMessage.trim(),
-        adminNotes: adminNotes.trim(),
-        guestAlertActive,
-        guestAlertText: guestAlertText.trim(),
-        checkInDate,
-        checkoutDate,
-        checkInTime,
-        checkOutTime,
-        guestCount,
-        paymentMethod: paymentMethod as PaymentMethod | undefined,
-        shortId,
-        guestRating,
-        guestFeedback,
-    }), [
-        guestName, guestPhone, propertyId, flatNumber, lockCode,
-        welcomeMessage, adminNotes, guestAlertActive, guestAlertText,
-        checkInDate, checkoutDate, checkInTime, checkOutTime,
-        guestCount, paymentMethod, shortId, guestRating, guestFeedback
-    ]);
+    const getFormValues = useCallback(
+        (): Omit<Reservation, 'id' | 'createdAt' | 'status'> => ({
+            guestName: guestName.trim(),
+            guestPhone: guestPhone.replace(/\D/g, ''),
+            propertyId,
+            flatNumber: flatNumber.trim(),
+            lockCode: lockCode.trim(),
+            welcomeMessage: welcomeMessage.trim(),
+            adminNotes: adminNotes.trim(),
+            guestAlertActive,
+            guestAlertText: guestAlertText.trim(),
+            checkInDate,
+            checkoutDate,
+            checkInTime,
+            checkOutTime,
+            guestCount,
+            paymentMethod: paymentMethod as PaymentMethod | undefined,
+            shortId,
+            manualDeactivation,
+            guestRating,
+            guestFeedback,
+        }),
+        [
+            guestName,
+            guestPhone,
+            propertyId,
+            flatNumber,
+            lockCode,
+            welcomeMessage,
+            adminNotes,
+            guestAlertActive,
+            guestAlertText,
+            checkInDate,
+            checkoutDate,
+            checkInTime,
+            checkOutTime,
+            guestCount,
+            paymentMethod,
+            shortId,
+            manualDeactivation,
+            guestRating,
+            guestFeedback,
+        ]
+    );
 
     return {
         // State
         editingId,
-        guestName, setGuestName,
-        guestPhone, setGuestPhone,
-        propertyId, setPropertyId,
-        flatNumber, setFlatNumber,
-        lockCode, setLockCode,
-        welcomeMessage, setWelcomeMessage,
-        adminNotes, setAdminNotes,
-        guestAlertActive, setGuestAlertActive,
-        guestAlertText, setGuestAlertText,
-        checkInDate, setCheckInDate,
-        checkoutDate, setCheckoutDate,
-        checkInTime, setCheckInTime,
-        checkOutTime, setCheckOutTime,
-        guestCount, setGuestCount,
-        paymentMethod, setPaymentMethod,
-        shortId, setShortId,
-        guestRating, setGuestRating,
-        guestFeedback, setGuestFeedback,
+        guestName,
+        setGuestName,
+        guestPhone,
+        setGuestPhone,
+        propertyId,
+        setPropertyId,
+        flatNumber,
+        setFlatNumber,
+        lockCode,
+        setLockCode,
+        welcomeMessage,
+        setWelcomeMessage,
+        adminNotes,
+        setAdminNotes,
+        guestAlertActive,
+        setGuestAlertActive,
+        guestAlertText,
+        setGuestAlertText,
+        checkInDate,
+        setCheckInDate,
+        checkoutDate,
+        setCheckoutDate,
+        checkInTime,
+        setCheckInTime,
+        checkOutTime,
+        setCheckOutTime,
+        guestCount,
+        setGuestCount,
+        paymentMethod,
+        setPaymentMethod,
+        shortId,
+        setShortId,
+        manualDeactivation,
+        setManualDeactivation,
+        guestRating,
+        setGuestRating,
+        guestFeedback,
+        setGuestFeedback,
 
         // UI State
-        generatedLink, setGeneratedLink,
-        isSaving, setIsSaving,
+        generatedLink,
+        setGeneratedLink,
+        isSaving,
+        setIsSaving,
 
         // Actions
         resetForm,

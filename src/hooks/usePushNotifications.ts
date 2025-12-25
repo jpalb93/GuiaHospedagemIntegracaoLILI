@@ -24,7 +24,7 @@ export const usePushNotifications = () => {
                 showInfo('Você precisa permitir as notificações para receber alertas.');
             }
         } catch (error) {
-            logger.error('Erro ao pedir permissão de notificação', error);
+            logger.error('Erro ao pedir permissão de notificação', { error });
             showError('Erro ao solicitar permissão.');
         }
     };
@@ -38,19 +38,19 @@ export const usePushNotifications = () => {
             }
 
             const currentToken = await getToken(messaging, {
-                vapidKey: VAPID_KEY
+                vapidKey: VAPID_KEY,
             });
 
             if (currentToken) {
                 setToken(currentToken);
-                logger.info('FCM Token Generated:', currentToken);
+                logger.info('FCM Token Generated:', { token: currentToken });
                 // Here you would typically send this token to your server/database
                 // along with the userId to target specific users.
             } else {
                 logger.warn('No registration token available. Request permission to generate one.');
             }
         } catch (err) {
-            logger.error('An error occurred while retrieving token.', err);
+            logger.error('An error occurred while retrieving token.', { error: err });
             showError('Erro ao gerar token de notificação.');
         }
     };
@@ -58,7 +58,7 @@ export const usePushNotifications = () => {
     // Listen for foreground messages
     useEffect(() => {
         const unsubscribe = onMessage(messaging, (payload) => {
-            logger.info('Message received in foreground: ', payload);
+            logger.info('Message received in foreground: ', { payload });
             showInfo(`${payload.notification?.title}: ${payload.notification?.body}`);
         });
 
@@ -69,6 +69,6 @@ export const usePushNotifications = () => {
         token,
         notificationPermission,
         requestPermission,
-        generateToken
+        generateToken,
     };
 };

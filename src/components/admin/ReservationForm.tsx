@@ -29,7 +29,13 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import { PROPERTIES } from '../../config/properties';
-import { PropertyId, UserPermission, PaymentMethod, Reservation, ReservationTemplate } from '../../types';
+import {
+    PropertyId,
+    UserPermission,
+    PaymentMethod,
+    Reservation,
+    ReservationTemplate,
+} from '../../types';
 
 interface ReservationFormProps {
     form: {
@@ -68,9 +74,11 @@ interface ReservationFormProps {
         guestFeedback: string;
         setGuestFeedback: (v: string) => void;
         editingId: string | null;
-        handleSaveReservation: () => void;
+        handleSaveReservation: (overrides?: Partial<Reservation>) => void;
         resetForm: () => void;
         isSaving: boolean;
+        manualDeactivation: boolean;
+        setManualDeactivation: (v: boolean) => void;
     };
     ui: {
         generatedLink: string | null;
@@ -132,6 +140,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         handleSaveReservation,
         resetForm,
         isSaving,
+        manualDeactivation,
+        setManualDeactivation,
     } = form;
 
     const { generatedLink, apiKeyStatus, showToast } = ui;
@@ -142,6 +152,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         userPermission.allowedProperties.length > 1;
 
     const [showSuggestions, setShowSuggestions] = React.useState(false);
+    const [confirmAction, setConfirmAction] = React.useState<'deactivate' | 'reactivate' | null>(
+        null
+    );
 
     // --- TEMPLATE LOGIC ---
     const handleApplyTemplate = (template: ReservationTemplate) => {
@@ -190,7 +203,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             const term = value.toLowerCase();
 
             // 1. Agrupar visitas por Nome + Telefone (chave única aproximada)
-            const guestMap = new Map<string, { item: GuestHistoryItem; totalRating: number; ratingCount: number }>();
+            const guestMap = new Map<
+                string,
+                { item: GuestHistoryItem; totalRating: number; ratingCount: number }
+            >();
 
             previousGuests.forEach((g) => {
                 // Remove espaços extras e normaliza
@@ -209,10 +225,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                 reservation: g,
                                 visitCount: 0,
                                 lastVisit: '',
-                                averageRating: 0 // Will calculate at the end
+                                averageRating: 0, // Will calculate at the end
                             },
                             totalRating: 0,
-                            ratingCount: 0
+                            ratingCount: 0,
                         };
                         guestMap.set(uniqueKey, entry);
                     }
@@ -221,7 +237,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     entry.item.visitCount += 1;
 
                     // Update Last Visit
-                    if (g.checkoutDate && (!entry.item.lastVisit || g.checkoutDate > entry.item.lastVisit)) {
+                    if (
+                        g.checkoutDate &&
+                        (!entry.item.lastVisit || g.checkoutDate > entry.item.lastVisit)
+                    ) {
                         entry.item.lastVisit = g.checkoutDate;
                     }
 
@@ -235,15 +254,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
             // 2. Converter para array e calcular médias finais
             const results: GuestHistoryItem[] = Array.from(guestMap.values())
-                .map(entry => {
+                .map((entry) => {
                     // Calculate Average Rating (Default to 5 if no ratings yet)
-                    const avg = entry.ratingCount > 0
-                        ? entry.totalRating / entry.ratingCount
-                        : 5;
+                    const avg = entry.ratingCount > 0 ? entry.totalRating / entry.ratingCount : 5;
 
                     return {
                         ...entry.item,
-                        averageRating: avg
+                        averageRating: avg,
                     };
                 })
                 .sort((a, b) => b.visitCount - a.visitCount)
@@ -326,7 +343,11 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     <div
                         className={`p-3 flex-1 rounded-2xl border flex items-center gap-3 text-xs ${apiKeyStatus === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400' : 'bg-red-50 border-red-200 text-red-700'}`}
                     >
-                        {apiKeyStatus === 'ok' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                        {apiKeyStatus === 'ok' ? (
+                            <CheckCircle2 size={16} />
+                        ) : (
+                            <AlertCircle size={16} />
+                        )}
                         <span className="font-bold">
                             {apiKeyStatus === 'ok' ? 'IA Concierge Ativa' : 'IA Inativa'}
                         </span>
@@ -340,7 +361,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                 Modelos
                             </button>
                             <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-1 hidden group-hover/templates:block z-30">
-                                {templates.map(t => (
+                                {templates.map((t) => (
                                     <button
                                         key={t.id}
                                         onClick={() => handleApplyTemplate(t)}
@@ -351,7 +372,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                             <span
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (window.confirm('Excluir modelo?')) onDeleteTemplate(t.id);
+                                                    if (window.confirm('Excluir modelo?'))
+                                                        onDeleteTemplate(t.id);
                                                 }}
                                                 className="text-gray-300 hover:text-red-500 p-1"
                                             >
@@ -385,10 +407,11 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                         <button
                             key={prop.id}
                             onClick={() => setPropertyId(prop.id)}
-                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${propertyId === prop.id
-                                ? 'bg-white dark:bg-gray-700 text-orange-600 shadow-sm'
-                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                                }`}
+                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${
+                                propertyId === prop.id
+                                    ? 'bg-white dark:bg-gray-700 text-orange-600 shadow-sm'
+                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                            }`}
                         >
                             <Building2 size={14} /> {prop.name}
                         </button>
@@ -429,7 +452,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                                 </span>
                                                 {item.visitCount > 1 && (
                                                     <span className="text-[10px] bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded-md font-bold flex items-center gap-1">
-                                                        <Sparkles size={10} /> {item.visitCount}ª vez
+                                                        <Sparkles size={10} /> {item.visitCount}ª
+                                                        vez
                                                     </span>
                                                 )}
                                                 {item.visitCount === 1 && (
@@ -441,12 +465,17 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                             <div className="flex items-center gap-3 text-xs text-gray-400">
                                                 {item.reservation.guestPhone && (
                                                     <span className="flex items-center gap-1">
-                                                        <Phone size={10} /> {item.reservation.guestPhone}
+                                                        <Phone size={10} />{' '}
+                                                        {item.reservation.guestPhone}
                                                     </span>
                                                 )}
                                                 {item.lastVisit && (
                                                     <span className="flex items-center gap-1">
-                                                        <CalendarDays size={10} /> Última: {item.lastVisit.split('-').reverse().join('/')}
+                                                        <CalendarDays size={10} /> Última:{' '}
+                                                        {item.lastVisit
+                                                            .split('-')
+                                                            .reverse()
+                                                            .join('/')}
                                                     </span>
                                                 )}
                                             </div>
@@ -455,11 +484,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                             <div className="flex gap-2 mt-1">
                                                 {item.averageRating < 3 ? (
                                                     <span className="text-[10px] bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-1.5 py-0.5 rounded-md font-bold flex items-center gap-1">
-                                                        <AlertTriangle size={10} /> Cuidado ({item.averageRating.toFixed(1)})
+                                                        <AlertTriangle size={10} /> Cuidado (
+                                                        {item.averageRating.toFixed(1)})
                                                     </span>
                                                 ) : item.averageRating >= 4.5 ? (
                                                     <span className="text-[10px] bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-1.5 py-0.5 rounded-md font-bold flex items-center gap-1">
-                                                        <Star size={10} fill="currentColor" /> VIP ({item.averageRating.toFixed(1)})
+                                                        <Star size={10} fill="currentColor" /> VIP (
+                                                        {item.averageRating.toFixed(1)})
                                                     </span>
                                                 ) : null}
                                             </div>
@@ -696,7 +727,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                                         onClick={() => setGuestRating(star)}
                                         className={`p-1 transition-transform hover:scale-110 ${guestRating >= star ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
                                     >
-                                        <Star size={24} fill={guestRating >= star ? "currentColor" : "none"} />
+                                        <Star
+                                            size={24}
+                                            fill={guestRating >= star ? 'currentColor' : 'none'}
+                                        />
                                     </button>
                                 ))}
                             </div>
@@ -733,11 +767,105 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                 />
             </div>
 
+            {/* DANGER ZONE - EMERGENCY DEACTIVATION */}
+            {editingId && (
+                <div
+                    className={`p-4 rounded-2xl border transition-all ${manualDeactivation ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'}`}
+                >
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h3
+                                className={`text-xs font-bold uppercase flex items-center gap-2 ${manualDeactivation ? 'text-red-700 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}
+                            >
+                                <AlertTriangle
+                                    size={14}
+                                    className={
+                                        manualDeactivation ? 'text-red-600' : 'text-gray-400'
+                                    }
+                                />
+                                {manualDeactivation ? 'Reserva Desativada' : 'Zona de Perigo'}
+                            </h3>
+                            <p className="text-[10px] text-gray-400 mt-1 max-w-[250px]">
+                                {manualDeactivation
+                                    ? 'O link deste hóspede está bloqueado. Ele verá uma tela de "Acesso Revogado".'
+                                    : 'Desativar o link imediatamente (emergência) sem excluir a reserva.'}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (manualDeactivation) {
+                                    // LOGICA DE REATIVACAO
+                                    if (confirmAction === 'reactivate') {
+                                        setManualDeactivation(false);
+                                        setConfirmAction(null);
+                                        // Pass EXPLICIT value to avoid closure/state race condition
+                                        setTimeout(
+                                            () =>
+                                                handleSaveReservation({
+                                                    manualDeactivation: false,
+                                                }),
+                                            100
+                                        );
+                                    } else {
+                                        setConfirmAction('reactivate');
+                                        // Auto-reset after 3s if not confirmed
+                                        setTimeout(() => setConfirmAction(null), 3000);
+                                    }
+                                } else {
+                                    // LOGICA DE DESATIVACAO (DANGER)
+                                    if (confirmAction === 'deactivate') {
+                                        setManualDeactivation(true);
+                                        setConfirmAction(null);
+                                        // Pass EXPLICIT value to avoid closure/state race condition
+                                        setTimeout(
+                                            () =>
+                                                handleSaveReservation({ manualDeactivation: true }),
+                                            100
+                                        );
+                                    } else {
+                                        setConfirmAction('deactivate');
+                                        // Auto-reset after 3s if not confirmed
+                                        setTimeout(() => setConfirmAction(null), 3000);
+                                    }
+                                }
+                            }}
+                            type="button"
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border duration-200 ${
+                                // ESTILOS DINÂMICOS
+                                manualDeactivation
+                                    ? confirmAction === 'reactivate'
+                                        ? 'bg-green-500 text-white border-green-600 scale-105 shadow-md'
+                                        : 'bg-white text-green-600 border-green-200 hover:bg-green-50'
+                                    : confirmAction === 'deactivate'
+                                      ? 'bg-red-600 text-white border-red-700 scale-105 shadow-md animate-pulse'
+                                      : 'bg-white dark:bg-gray-800 text-red-600 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20'
+                            }`}
+                        >
+                            {manualDeactivation
+                                ? confirmAction === 'reactivate'
+                                    ? 'CONFIRMAR REATIVAÇÃO?'
+                                    : 'Reativar Acesso'
+                                : confirmAction === 'deactivate'
+                                  ? 'TEM CERTEZA? CLIQUE P/ CONFIRMAR'
+                                  : 'Desativar Link'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <Button
-                onClick={handleSaveReservation}
+                onClick={() => handleSaveReservation()}
                 disabled={isSaving}
                 fullWidth
-                leftIcon={isSaving ? <Loader2 className="animate-spin" /> : editingId ? <Save size={20} /> : <Sparkles className="text-yellow-400" />}
+                leftIcon={
+                    isSaving ? (
+                        <Loader2 className="animate-spin" />
+                    ) : editingId ? (
+                        <Save size={20} />
+                    ) : (
+                        <Sparkles className="text-yellow-400" />
+                    )
+                }
                 className={`py-4 text-lg shadow-xl ${editingId ? 'bg-orange-500' : 'bg-gray-900 dark:bg-white dark:text-gray-900'}`}
             >
                 {isSaving ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Gerar Magic Link'}

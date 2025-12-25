@@ -43,7 +43,7 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => { },
+        onConfirm: () => {},
         isDestructive: false,
     });
 
@@ -87,17 +87,21 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
             showSuccess(isEdit ? 'Local atualizado!' : 'Local adicionado!');
 
             // AUTO-TRANSLATE (Option 1)
-            const placeId = (isEdit && editingPlace?.id) ? editingPlace.id : (typeof resultId === 'string' ? resultId : null);
+            const placeId =
+                isEdit && editingPlace?.id
+                    ? editingPlace.id
+                    : typeof resultId === 'string'
+                      ? resultId
+                      : null;
 
             if (placeId) {
                 const placeToTranslate: PlaceRecommendation = {
                     ...(formData as PlaceRecommendation),
-                    id: placeId
+                    id: placeId,
                 };
                 // Trigger silent translation
                 handleTranslatePlaces([placeToTranslate], true);
             }
-
         } else {
             showError('Erro ao salvar local.');
         }
@@ -132,7 +136,10 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
     };
 
     // --- TRANSLATION LOGIC ---
-    const handleTranslatePlaces = async (itemsToTranslate?: PlaceRecommendation[], silent = false) => {
+    const handleTranslatePlaces = async (
+        itemsToTranslate?: PlaceRecommendation[],
+        silent = false
+    ) => {
         const placesToCheck = itemsToTranslate || places.data;
 
         const untranslated = placesToCheck.filter(
@@ -163,14 +170,20 @@ const PlacesManager: React.FC<PlacesManagerProps> = ({ places }) => {
                 })),
                 [
                     { source: 'name', targetEn: 'name_en', targetEs: 'name_es' },
-                    { source: 'description', targetEn: 'description_en', targetEs: 'description_es' },
+                    {
+                        source: 'description',
+                        targetEn: 'description_en',
+                        targetEs: 'description_es',
+                    },
                     { source: 'distance', targetEn: 'distance_en', targetEs: 'distance_es' },
                 ],
                 'gemini-2.5-flash-lite'
             );
 
             // Apply updates
-            for (const res of results) {
+            for (const item of results) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const res = item as any;
                 if (res.id) {
                     // translateBatch returns the patch object directly now
                     await places.update(res.id, res);

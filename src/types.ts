@@ -15,8 +15,6 @@ export interface GuideSection {
     content: React.ReactNode;
 }
 
-
-
 // Tipos de categorias para o CMS
 export type PlaceCategory =
     | 'burgers'
@@ -100,6 +98,7 @@ export interface GuestConfig {
     checkInTime?: string; // Horário de Check-in
     checkOutTime?: string; // Horário de Check-out
     isReleased?: boolean; // Indica se o acesso foi liberado (pela API)
+    manualDeactivation?: boolean; // Novo: Desativação manual de emergência
 }
 
 // Interface para Reserva Salva no Banco de Dados
@@ -137,6 +136,7 @@ export type ReservationFormData = Pick<
     | 'email'
     | 'guestRating'
     | 'guestFeedback'
+    | 'manualDeactivation'
 > & {
     editingId: string | null; // Form-specific field
 };
@@ -145,28 +145,23 @@ export type ReservationFormData = Pick<
  * Guest access credentials (WiFi, codes)
  * Derived from GuestConfig for type safety
  */
-export type GuestAccessData = Pick<
-    GuestConfig,
-    'lockCode' | 'safeCode' | 'wifiSSID' | 'wifiPass'
->;
+export type GuestAccessData = Pick<GuestConfig, 'lockCode' | 'safeCode' | 'wifiSSID' | 'wifiPass'>;
 
 /**
  * Guest contact information
  * Derived from GuestConfig for consistency
  */
-export type GuestContactData = Pick<
-    GuestConfig,
-    'guestName' | 'guestPhone' | 'email'
->;
-
+export type GuestContactData = Pick<GuestConfig, 'guestName' | 'guestPhone' | 'email'>;
 
 // Interface para Avaliações (Reviews)
 export interface GuestReview {
     id?: string;
     name: string;
     text: string;
-    rating?: number; // 1 a 5 (Opcional, default 5)
-    date?: string; // Data aproximada (ex: "Out 2023")
+    rating?: number; // 1-5
+    date?: string; // ISO String
+    visible: boolean; // Approved for display
+    source?: 'google' | 'booking' | 'airbnb';
 }
 
 // NOVA INTERFACE: Bloqueio de Datas (Calendário)

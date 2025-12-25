@@ -32,15 +32,18 @@ const SectionCard: React.FC<SectionCardProps> = ({
     // Determina se está aberto (controlado ou interno)
     const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
+    // Ajuste de estado durante renderização (sem effect) para evitar "setState in effect" warnings
+    if (forceOpen && !isTrigger && !onToggle && !internalIsOpen) {
+        setInternalIsOpen(true);
+    }
+
     useEffect(() => {
         if (forceOpen && !isTrigger) {
             if (onToggle && !isOpen) {
                 onToggle();
-            } else if (!onToggle && !internalIsOpen) {
-                setInternalIsOpen(true);
             }
         }
-    }, [forceOpen, isOpen, onToggle, internalIsOpen, isTrigger]);
+    }, [forceOpen, isOpen, onToggle, isTrigger]);
 
     const handleToggle = () => {
         if (onToggle) {

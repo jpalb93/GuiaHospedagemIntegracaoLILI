@@ -18,12 +18,21 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     fallbackIcon: FallbackIcon = ImageOff,
     ...props
 }) => {
-    const [isLoading, setIsLoading] = useState(true);
+    // Check if image should be loaded eagerly (LCP optimization)
+    // If so, we bypass the loading state to show the image immediately
+    const isEager = props.loading === 'eager' || props.fetchPriority === 'high';
+    const [isLoading, setIsLoading] = useState(!isEager);
     const [hasError, setHasError] = useState(false);
 
     return (
-        <div className={cn("relative overflow-hidden bg-gray-200 dark:bg-gray-800", containerClassName, className)}>
-            {/* Skeleton Loader - Visible while loading */}
+        <div
+            className={cn(
+                'relative overflow-hidden bg-gray-200 dark:bg-gray-800',
+                containerClassName,
+                className
+            )}
+        >
+            {/* Skeleton Loader - Visible while loading (unless eager) */}
             {isLoading && (
                 <div className="absolute inset-0 z-10 overflow-hidden bg-gray-200 dark:bg-gray-700">
                     {/* Shimmer Effect */}
@@ -50,16 +59,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             <img
                 src={src}
                 alt={alt}
-                loading="lazy"
+                loading={isEager ? 'eager' : 'lazy'}
                 onLoad={() => setIsLoading(false)}
                 onError={() => {
                     setIsLoading(false);
                     setHasError(true);
                 }}
                 className={cn(
-                    "transition-opacity duration-700 ease-in-out block h-full w-full object-cover",
-                    isLoading ? "opacity-0" : "opacity-100",
-                    // Reset className here because we aplied it to container too? 
+                    'transition-opacity duration-700 ease-in-out block h-full w-full object-cover',
+                    isLoading ? 'opacity-0' : 'opacity-100',
+                    // Reset className here because we aplied it to container too?
                     // Actually usually we want className on the IMG if it controls object-fit etc.
                     // But if className has dimensions (w-full h-full), it should be on container too?
                     // Let's keep it simple: className goes to IMG, containerClassName handles wrapper.

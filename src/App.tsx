@@ -1,9 +1,24 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
 
-import { AppMode, GuestConfig } from './types';
+import { AppMode } from './types';
+import { useAppInitialization } from './hooks/useAppInitialization';
+import { useManualAuth } from './hooks/useManualAuth';
+import { Routes, Route } from 'react-router-dom';
+import MainLayout from './components/layout/MainLayout';
+import Home from './pages/Home';
+import GuideList from './pages/GuideList';
+import WineRouteArticle from './pages/articles/WineRoute';
+import GuideArticleLoader from './components/GuideArticleLoader';
+import BododromoArticle from './pages/articles/Bododromo';
+import RioSaoFranciscoArticle from './pages/articles/RioSaoFrancisco';
+import CorporateArticle from './pages/articles/Corporate';
+
+import ScrollToTop from './components/ScrollToTop';
+import CookieConsent from './components/CookieConsent';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { Button, Input } from './components/ui';
 import { logger } from './utils/logger';
 import {
@@ -16,8 +31,8 @@ import {
     ArrowRight,
 } from 'lucide-react';
 
-import { HOST_PHONE, USE_OFFICIAL_TIME, fetchOfficialTime } from './constants';
-import { fetchGuestConfig } from './services/guest';
+import { HOST_PHONE } from './constants';
+import { initAnalytics } from './services/analytics';
 import ErrorBoundary from './components/ErrorBoundary';
 import { GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/LoadingSkeletons';
 import ModernLoadingScreen from './components/ModernLoadingScreen';
@@ -35,11 +50,6 @@ const GuestView = lazy(() => import(/* webpackChunkName: "guest" */ './component
 const LandingPageLili = lazy(
     () => import(/* webpackChunkName: "landing-lili" */ './components/LandingLili')
 );
-const LandingFlatsIntegracao = lazy(
-    () => import(/* webpackChunkName: "landing-flats" */ './components/LandingFlats')
-);
-
-// --- FUNÇÃO DE SEGURANÇA: REMOVIDA (Agora é Server-Side) ---
 
 const App: React.FC = () => {
     // --- CAPACITOR ANDROID BACK BUTTON ---
@@ -58,7 +68,7 @@ const App: React.FC = () => {
                     });
                 }
             } catch (e) {
-                logger.warn('Capacitor App plugin error', e);
+                logger.warn('Capacitor App plugin error', { error: e });
             }
         };
         setupBack();
@@ -68,226 +78,74 @@ const App: React.FC = () => {
         };
     }, []);
 
-    // Detect Native Platform using Capacitor Global or Plugin
-    const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform();
+    // --- ESTADO DO APP (Refatorado para Hook) ---
+    const { appState, setAppState } = useAppInitialization();
 
-    // --- ESTADO DO APP ---
-    const [appState, setAppState] = useState<{
-        mode:
-        | AppMode
-        | 'LANDING'
-        | 'LILI_LANDING'
-        | 'EXPIRED'
-        | 'BLOCKED'
-        | 'LOADING'
-        | 'RECONNECTING';
-        config: GuestConfig;
-    }>(() => {
-        // SE FOR APP NATIVO -> JÁ INICIA COMO ADMIN
-        if (isNative) {
-            return { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } };
-        }
-        return { mode: 'LOADING', config: { guestName: '', lockCode: '' } };
-    });
+    // --- MANUAL AUTH (Refatorado para Hook) ---
+    const {
+        showManualLogin,
+        setShowManualLogin,
+        manualInput,
+        setManualInput,
+        handleManualSubmit,
+        handleResetApp,
+    } = useManualAuth(setAppState);
 
-    const [showManualLogin, setShowManualLogin] = useState(false);
-    const [manualInput, setManualInput] = useState('');
-
-    // --- MONITORAMENTO (AGORA VIA API) ---
+    // --- ANALYTICS INIT ---
     useEffect(() => {
-        const initApp = async () => {
-            // Inicia o timer de delay mínimo (2 segundos) para a animação de loading
-            const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 2000));
-
-            const path = window.location.pathname;
-            const params = new URLSearchParams(window.location.search);
-            let reservationId = params.get('rid');
-
-            const isCMS = path === '/cms' || params.get('mode') === 'cms';
-            const isLiliPage = path === '/lili' || path === '/flat-lili';
-
-            if (isCMS) {
-                await minLoadingTime;
-                setAppState({ mode: AppMode.CMS, config: { guestName: '', lockCode: '' } });
-                return;
-            }
-
-            // SE FOR APP NATIVO ->GARANTE MODO ADMIN
-            if (isNative) {
-                setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
-                return;
-            }
-
-            // ADMIN ROUTE SECURITY:
-            if (path === '/admin') {
-                await minLoadingTime;
-                setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
-                return;
-            }
-
-            if (isLiliPage) {
-                await minLoadingTime;
-                setAppState({ mode: 'LILI_LANDING', config: { guestName: '', lockCode: '' } });
-                return;
-            }
-
-            if (!reservationId) {
-                // SHORT CODE SUPPORT: /ABC1234
-                if (path.length > 1 && !['/admin', '/cms', '/lili', '/flat-lili'].includes(path)) {
-                    const potentialCode = path.substring(1);
-                    // Basic validation: 6 chars alphanumeric
-                    if (/^[A-Z0-9]{6}$/i.test(potentialCode)) {
-                        reservationId = potentialCode;
-                    }
-                }
-            }
-
-            if (!reservationId) {
-                // Prevent auto-redirect on root path (Landing Page)
-                if (path !== '/') {
-                    reservationId = localStorage.getItem('flat_lili_last_rid');
-                }
-            } else {
-                localStorage.setItem('flat_lili_last_rid', reservationId);
-            }
-
-            if (reservationId) {
-                const fetchWithRetry = async () => {
-                    try {
-                        const [safeConfig] = await Promise.all([
-                            fetchGuestConfig(reservationId!),
-                            minLoadingTime,
-                        ]);
-
-                        if (!safeConfig) {
-                            // 404 - Não encontrado (Definitivo)
-                            localStorage.removeItem('flat_lili_last_rid');
-                            setAppState({
-                                mode: 'BLOCKED',
-                                config: { guestName: '', lockCode: '' },
-                            });
-                            return;
-                        }
-
-                        // Verificação de Expiração
-                        if (safeConfig.checkoutDate) {
-                            let now = new Date();
-                            if (USE_OFFICIAL_TIME) {
-                                try {
-                                    now = await fetchOfficialTime();
-                                } catch (_e) { }
-                            }
-                            const [year, month, day] = safeConfig.checkoutDate
-                                .split('-')
-                                .map(Number);
-                            const expirationDate = new Date(year, month - 1, day);
-                            expirationDate.setDate(expirationDate.getDate() + 1); // Allow access for 1 day after checkout
-                            expirationDate.setHours(23, 59, 59, 999);
-
-                            if (now > expirationDate) {
-                                localStorage.removeItem('flat_lili_last_rid');
-                                setAppState({
-                                    mode: 'EXPIRED',
-                                    config: { guestName: '', lockCode: '' },
-                                });
-                                return;
-                            }
-                        }
-
-                        // Sucesso!
-                        setAppState({ mode: AppMode.GUEST, config: safeConfig });
-
-                        // Limpeza de URL
-                        if (reservationId && window.history.replaceState) {
-                            const newUrl = window.location.pathname;
-                            window.history.replaceState({}, '', newUrl);
-                        }
-                    } catch (error) {
-                        // Erro de Rede (Temporário)
-                        logger.warn('Erro de conexão. Entrando em modo de reconexão...', error);
-                        setAppState({
-                            mode: 'RECONNECTING',
-                            config: { guestName: '', lockCode: '' },
-                        });
-
-                        // Tenta novamente em 2 segundos
-                        setTimeout(fetchWithRetry, 2000);
-                    }
-                };
-
-                fetchWithRetry();
-                return;
-            }
-
-            await minLoadingTime;
-            setAppState({ mode: 'LANDING', config: { guestName: '', lockCode: '' } });
-        };
-
-        initApp();
+        initAnalytics();
     }, []);
 
-    const handleResetApp = () => {
-        localStorage.removeItem('flat_lili_last_rid');
-        window.location.href = '/';
-    };
-
-    const handleManualSubmit = async () => {
-        if (!manualInput.trim()) return;
-        let rid = manualInput.trim();
-
-        try {
-            // 1. Tenta extrair de URLs completas
-            if (rid.includes('http') || rid.includes('.com') || rid.includes('.app')) {
-                const urlString = rid.startsWith('http') ? rid : `https://${rid}`;
-                const urlObj = new URL(urlString);
-                const idParam = urlObj.searchParams.get('rid');
-                if (idParam) {
-                    rid = idParam;
-                } else {
-                    const textSegments = urlObj.pathname
-                        .split('/')
-                        .filter((s) => s && s.length > 0);
-                    if (textSegments.length > 0) {
-                        const potentialCode = textSegments[textSegments.length - 1];
-                        if (/^[a-zA-Z0-9]{3,20}$/.test(potentialCode)) rid = potentialCode;
-                    }
-                }
-            }
-        } catch (e) {
-            logger.warn('Erro ao parsear input manual', e);
-        }
-
-        setAppState({ mode: 'LOADING', config: { guestName: '', lockCode: '' } });
-
-        try {
-            const config = await fetchGuestConfig(rid);
-            if (config) {
-                localStorage.setItem('flat_lili_last_rid', rid);
-                setAppState({ mode: AppMode.GUEST, config });
-                setShowManualLogin(false);
-            } else {
-                setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
-            }
-        } catch (error) {
-            console.error('Erro manual:', error);
-            setAppState({ mode: 'BLOCKED', config: { guestName: '', lockCode: '' } });
-        }
-    };
+    // --- ROTEAMENTO PÚBLICO (Guia) ---
+    // REMOVIDO: Unificado no bloco LANDING abaixo
 
     // --- RENDERIZAÇÃO ---
 
     // 1. Tela de Carregamento
     if (appState.mode === 'LOADING') {
-        let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
         const path = window.location.pathname;
+
+        // OTIMIZAÇÃO: Se for a Landing Page (raiz), não mostra tela de loading,
+        // renderiza direto (o Suspense cuidará do esqueleto se necessário).
+        if (path === '/') {
+            return (
+                <ErrorBoundary>
+                    <ThemeProvider>
+                        <Suspense fallback={<LandingSkeleton />}>
+                            <PageTransition>
+                                <MainLayout>
+                                    <Home />
+                                </MainLayout>
+                            </PageTransition>
+                        </Suspense>
+                    </ThemeProvider>
+                </ErrorBoundary>
+            );
+        }
+
+        // OTIMIZAÇÃO: Se for a Landing Page da Lili (/lili ou /flat-lili),
+        // também não mostra loading, renderiza direto.
+        if (path === '/lili' || path === '/flat-lili') {
+            return (
+                <ErrorBoundary>
+                    <ThemeProvider>
+                        <Suspense fallback={<LandingSkeleton />}>
+                            <PageTransition>
+                                <LandingPageLili />
+                            </PageTransition>
+                        </Suspense>
+                    </ThemeProvider>
+                </ErrorBoundary>
+            );
+        }
+
+        let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
         const params = new URLSearchParams(window.location.search);
         const hasStoredRid =
             typeof localStorage !== 'undefined' && !!localStorage.getItem('flat_lili_last_rid');
 
         if (path === '/admin') {
             loadingVariant = 'admin';
-        } else if (path === '/') {
-            loadingVariant = 'landing';
         } else if (
             params.get('rid') ||
             (path.length > 1 && !['/cms', '/lili', '/flat-lili'].includes(path)) ||
@@ -319,7 +177,7 @@ const App: React.FC = () => {
     }
 
     // 2. Modo Admin e CMS
-    if (appState.mode === (AppMode.ADMIN as any) || appState.mode === AppMode.CMS) {
+    if (appState.mode === (AppMode.ADMIN as AppMode) || appState.mode === AppMode.CMS) {
         return (
             <ErrorBoundary>
                 <ThemeProvider>
@@ -351,28 +209,35 @@ const App: React.FC = () => {
     }
 
     // 4. Telas de Bloqueio / Expirado
-    if (appState.mode === 'BLOCKED' || appState.mode === 'EXPIRED') {
+    if (appState.mode === 'BLOCKED' || appState.mode === 'EXPIRED' || appState.mode === 'REVOKED') {
         const isExpired = appState.mode === 'EXPIRED';
+        const isRevoked = appState.mode === 'REVOKED';
         return (
             <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
                 <PageTransition>
                     <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-red-500/30 shadow-2xl max-w-md animate-fadeIn w-full">
                         <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            {isExpired ? (
+                            {isExpired || isRevoked ? (
                                 <CalendarX className="text-red-400" size={32} />
                             ) : (
                                 <AlertTriangle className="text-red-400" size={32} />
                             )}
                         </div>
                         <h1 className="text-2xl font-bold text-white mb-2 font-heading">
-                            {isExpired ? 'Acesso Expirado' : 'Reserva Não Encontrada'}
+                            {isRevoked
+                                ? 'Link desativado'
+                                : isExpired
+                                  ? 'Acesso Expirado'
+                                  : 'Reserva Não Encontrada'}
                         </h1>
                         {!showManualLogin ? (
                             <>
                                 <p className="text-gray-300 text-sm mb-8 leading-relaxed font-medium">
-                                    {isExpired
-                                        ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
-                                        : 'Este link não está mais disponível ou a reserva foi cancelada.'}
+                                    {isRevoked
+                                        ? 'Link indisponível. Entre em contato com a anfitriã.'
+                                        : isExpired
+                                          ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
+                                          : 'Este link não está mais disponível ou a reserva foi cancelada.'}
                                 </p>
                                 <div className="flex flex-col gap-3">
                                     <Button
@@ -440,9 +305,43 @@ const App: React.FC = () => {
             <ErrorBoundary>
                 <ThemeProvider>
                     <Suspense fallback={<LandingSkeleton />}>
-                        <PageTransition>
-                            <LandingFlatsIntegracao />
-                        </PageTransition>
+                        <MainLayout>
+                            <ScrollToTop />
+                            <Routes>
+                                <Route
+                                    path="/"
+                                    element={
+                                        <PageTransition>
+                                            <Home />
+                                        </PageTransition>
+                                    }
+                                />
+                                <Route path="/guia" element={<GuideList />} />
+                                {/* Rotas Explícitas para Artigos (Melhor SEO e evita redirects) */}
+                                <Route
+                                    path="/guia/roteiro-vinho-petrolina"
+                                    element={<WineRouteArticle />}
+                                />
+                                <Route
+                                    path="/guia/onde-comer-petrolina-bododromo"
+                                    element={<BododromoArticle />}
+                                />
+                                <Route
+                                    path="/guia/rio-sao-francisco-rodeadouro-barquinha"
+                                    element={<RioSaoFranciscoArticle />}
+                                />
+                                <Route
+                                    path="/guia/hospedagem-corporativa-empresas-petrolina"
+                                    element={<CorporateArticle />}
+                                />
+
+                                {/* Fallback para carregamento dinâmico ou links legados */}
+                                <Route path="/guia/:slug" element={<GuideArticleLoader />} />
+                                <Route path="/politica-privacidade" element={<PrivacyPolicy />} />
+                                <Route path="*" element={<Home />} />
+                            </Routes>
+                            <CookieConsent />
+                        </MainLayout>
                     </Suspense>
                 </ThemeProvider>
             </ErrorBoundary>
@@ -456,20 +355,27 @@ const App: React.FC = () => {
                 <LanguageProvider>
                     <FavoritesProvider
                         // Cast config to Reservation to access sync props
-                        reservationId={(appState.config as any).id}
-                        initialFavorites={(appState.config as any).favoritePlaces}
+                        reservationId={(appState.config as unknown as { id: string }).id}
+                        initialFavorites={
+                            (appState.config as unknown as { favoritePlaces: string[] })
+                                .favoritePlaces
+                        }
                     >
                         <Suspense
-                            fallback={appState.mode === AppMode.ADMIN ? <AdminSkeleton /> : <GuestSkeleton />}
+                            fallback={
+                                appState.mode === AppMode.ADMIN ? (
+                                    <AdminSkeleton />
+                                ) : (
+                                    <GuestSkeleton />
+                                )
+                            }
                         >
                             <PageTransition>
                                 <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
                                     {appState.mode === AppMode.ADMIN ? (
                                         <AdminDashboard />
                                     ) : (
-                                        <GuestView
-                                            config={appState.config}
-                                        />
+                                        <GuestView config={appState.config} />
                                     )}
                                 </div>
                             </PageTransition>
