@@ -1,10 +1,32 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Star } from 'lucide-react';
 import { useGuestReviews } from '../../hooks/useGuestReviews';
 import { GuestReview } from '../../types';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const Reviews: React.FC = () => {
     const { data: fetchedReviews, isLoading: isLoadingReviews } = useGuestReviews(3);
+    const gridRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            const items = gridRef.current?.children;
+            if (items && items.length > 0) {
+                gsap.from(items, {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    stagger: 0.2,
+                    scrollTrigger: {
+                        trigger: gridRef.current,
+                        start: 'top 80%',
+                    },
+                });
+            }
+        },
+        { scope: gridRef, dependencies: [fetchedReviews, isLoadingReviews] }
+    );
 
     const reviews = useMemo(() => {
         if (fetchedReviews && fetchedReviews.length > 0) return fetchedReviews;
@@ -54,7 +76,7 @@ const Reviews: React.FC = () => {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {reviews.map((review) => (
                         <div
                             key={review.id}

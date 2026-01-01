@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import OptimizedImage from '../ui/OptimizedImage';
 import { LANDING_HERO_SLIDES } from '../../constants';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Hero: React.FC = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const bgRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -12,14 +20,54 @@ const Hero: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
+    useGSAP(
+        () => {
+            // Parallax Effect on Background
+            gsap.to(bgRef.current, {
+                yPercent: 30,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: true,
+                },
+            });
+
+            // Text Entrance Animation
+            const elements = textRef.current?.children;
+            if (elements) {
+                gsap.fromTo(
+                    elements,
+                    { y: 50, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1.5,
+                        stagger: 0.2,
+                        ease: 'power3.out',
+                        delay: 0.2,
+                    }
+                );
+            }
+        },
+        { scope: containerRef }
+    );
+
     return (
-        <section id="inicio" className="relative h-[100dvh] min-h-[700px] w-full overflow-hidden">
+        <section
+            id="inicio"
+            ref={containerRef}
+            className="relative h-[100dvh] min-h-[700px] w-full overflow-hidden"
+        >
             {/* Background Slider */}
-            <div className="absolute inset-0 z-0">
+            <div ref={bgRef} className="absolute inset-0 z-0">
                 {LANDING_HERO_SLIDES.map((img, index) => (
                     <div
                         key={index}
-                        className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${currentSlide === index ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
+                        className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${
+                            currentSlide === index ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
+                        }`}
                     >
                         <OptimizedImage
                             src={img}
@@ -34,7 +82,7 @@ const Hero: React.FC = () => {
 
             {/* Content: Bottom Left Alignment */}
             <div className="absolute inset-0 z-10 container mx-auto px-6 md:px-12 pb-12 md:pb-24 flex flex-col justify-end items-start text-white">
-                <div className="animate-fade-up max-w-4xl">
+                <div ref={textRef} className="max-w-4xl">
                     <span className="block text-orange-400 font-bold tracking-[0.2em] uppercase text-sm mb-6 flex items-center gap-3">
                         <span className="w-12 h-[1px] bg-orange-400"></span>
                         Flat de Lili Apresenta

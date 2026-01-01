@@ -1,14 +1,47 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import AvailabilityCalendar from './AvailabilityCalendar';
 import { LILI_PHONE } from '../../constants';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const Location: React.FC = () => {
+    const containerRef = useRef<HTMLElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
+    const calendarRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            // Text Slide In
+            gsap.from(textRef.current, {
+                x: -50,
+                opacity: 0,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: textRef.current,
+                    start: 'top 80%',
+                },
+            });
+
+            // Calendar Slide In
+            gsap.from(calendarRef.current, {
+                x: 50,
+                opacity: 0,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: calendarRef.current,
+                    start: 'top 80%',
+                },
+            });
+        },
+        { scope: containerRef }
+    );
+
     return (
-        <section id="localizacao" className="py-24 bg-white">
+        <section id="localizacao" ref={containerRef} className="py-24 bg-white">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24">
                     {/* Location Text */}
-                    <div>
+                    <div ref={textRef}>
                         <span className="text-orange-600 font-bold uppercase tracking-widest text-xs mb-4 block">
                             A Localização
                         </span>
@@ -57,7 +90,7 @@ const Location: React.FC = () => {
                     </div>
 
                     {/* Calendar Block */}
-                    <div id="calendario" className="relative">
+                    <div id="calendario" ref={calendarRef} className="relative">
                         <div className="absolute -inset-4 bg-orange-100 rotate-2 rounded-[2.5rem] -z-10"></div>
                         <div className="bg-white p-2 rounded-[2rem] shadow-xl">
                             <AvailabilityCalendar />

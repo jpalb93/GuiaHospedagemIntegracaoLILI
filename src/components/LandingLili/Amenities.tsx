@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
     UtensilsCrossed,
     Monitor,
@@ -9,8 +9,32 @@ import {
     Snowflake,
 } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const Amenities: React.FC = () => {
+    const gridRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            const items = gridRef.current?.children;
+            if (items) {
+                gsap.from(items, {
+                    y: 100,
+                    opacity: 0,
+                    duration: 1,
+                    stagger: 0.1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: gridRef.current,
+                        start: 'top 85%',
+                    },
+                });
+            }
+        },
+        { scope: gridRef }
+    );
+
     return (
         <section id="comodidades" className="py-24 bg-white border-y border-gray-100">
             <div className="container mx-auto px-6 md:px-12">
@@ -23,7 +47,7 @@ const Amenities: React.FC = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+                <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                     {/* 1. Cozinha (Large) */}
                     <div className="md:col-span-2 group relative bg-stone-900 overflow-hidden rounded-sm hover:shadow-lg transition-all min-h-[320px]">
                         {/* Imagem de Fundo (Opcional ou Gradiente) */}

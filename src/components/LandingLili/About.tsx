@@ -1,14 +1,47 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Star } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const About: React.FC = () => {
+    const containerRef = useRef<HTMLElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
+    const imageRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            // Text Animation
+            gsap.from(textRef.current, {
+                opacity: 0,
+                x: -50,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: textRef.current,
+                    start: 'top 80%',
+                },
+            });
+
+            // Image Animation
+            gsap.from(imageRef.current, {
+                opacity: 0,
+                x: 50,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: imageRef.current,
+                    start: 'top 80%',
+                },
+            });
+        },
+        { scope: containerRef }
+    );
+
     return (
-        <section id="sobre" className="py-24 md:py-32 bg-stone-50">
+        <section id="sobre" ref={containerRef} className="py-24 md:py-32 bg-stone-50">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-24 items-start">
                     {/* Coluna de Texto (Esquerda) */}
-                    <div className="md:col-span-7">
+                    <div ref={textRef} className="md:col-span-7">
                         <h2 className="text-4xl md:text-6xl font-heading font-medium text-gray-900 leading-tight mb-12">
                             30m² de <span className="text-orange-600 italic">personalidade.</span>
                         </h2>
@@ -59,7 +92,7 @@ const About: React.FC = () => {
                     </div>
 
                     {/* Coluna Visual (Direita) - Floating Card */}
-                    <div className="md:col-span-5 relative mt-12 md:mt-0">
+                    <div ref={imageRef} className="md:col-span-5 relative mt-12 md:mt-0">
                         <div className="aspect-[3/4] overflow-hidden rounded-sm">
                             <OptimizedImage
                                 src="https://i.postimg.cc/nzDCrKZn/aca338a7-c3f0-4838-90bf-4639fde2d2c4.jpg"

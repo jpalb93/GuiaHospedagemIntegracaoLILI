@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LILI_PHONE, FLAT_ADDRESS } from '../../constants';
 import Header from './Header';
 import Hero from './Hero';
@@ -9,6 +11,8 @@ import Reviews from './Reviews';
 import Gallery from './Gallery';
 import Location from './Location';
 import Footer from './Footer';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const LandingLili: React.FC = () => {
     useEffect(() => {
