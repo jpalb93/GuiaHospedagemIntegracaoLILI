@@ -1,70 +1,104 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Shield, Sparkles, UtensilsCrossed, Wifi } from 'lucide-react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const FeaturesSection: React.FC = () => {
-    return (
-        <section id="features" className="py-24 bg-white relative overflow-hidden">
-            {/* Background Pattern */}
-            <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{
-                    backgroundImage: 'radial-gradient(#d97706 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
-                }}
-            ></div>
+    const sectionRef = useRef<HTMLElement>(null);
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="text-center mb-16">
-                    <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block">
-                        Por que escolher a Flats Integração?
+    useGSAP(
+        () => {
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse',
+                },
+            });
+
+            tl.fromTo(
+                '.feature-card',
+                { y: 50, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    stagger: 0.15,
+                    ease: 'power2.out',
+                }
+            );
+        },
+        { scope: sectionRef }
+    );
+
+    return (
+        <section ref={sectionRef} id="features" className="py-32 bg-stone-950">
+            <div className="container mx-auto px-6 md:px-12">
+                <div className="mb-20 max-w-2xl">
+                    <span className="text-stone-500 font-bold tracking-[0.2em] uppercase text-xs mb-4 block">
+                        Comodidades
                     </span>
-                    <h2 className="text-4xl sm:text-5xl font-heading font-bold text-gray-900">
-                        Comodidades que fazem a diferença
+                    <h2 className="text-4xl md:text-5xl font-heading font-light text-white leading-tight">
+                        Essencial & Sofisticado
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                        <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-6 text-orange-600">
-                            <Sparkles size={28} />
+                {/* Grid Clássico de 4 Colunas - Redesign Layered Luxury Dark */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-16 border-t border-stone-800">
+                    {/* Card 1: Conforto Total */}
+                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-orange-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
+                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-orange-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
+                            <Sparkles className="stroke-1 w-7 h-7" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3">Conforto Total</h3>
-                        <p className="text-gray-600 leading-relaxed text-sm">
+                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-orange-400 transition-colors">
+                            Conforto Total
+                        </h3>
+                        <p className="text-stone-400 font-light text-sm leading-relaxed">
                             Ar-condicionado split em todas as unidades, roupas de cama premium e
                             banheiros privativos modernos.
                         </p>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                        <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6 text-blue-600">
-                            <UtensilsCrossed size={28} />
+                    {/* Card 2: Cozinha Equipada */}
+                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
+                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
+                            <UtensilsCrossed className="stroke-1 w-7 h-7" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3">Cozinha Equipada</h3>
-                        <p className="text-gray-600 leading-relaxed text-sm">
+                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-blue-400 transition-colors">
+                            Cozinha Equipada
+                        </h3>
+                        <p className="text-stone-400 font-light text-sm leading-relaxed">
                             Micro-ondas, mesa de jantar e utensílios completos. Prepare suas
                             refeições como se estivesse em casa.
                         </p>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                        <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6 text-green-600">
-                            <Wifi size={28} />
+                    {/* Card 3: Conectividade & Lazer */}
+                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-green-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
+                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-green-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
+                            <Wifi className="stroke-1 w-7 h-7" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-green-400 transition-colors">
                             Conectividade & Lazer
                         </h3>
-                        <p className="text-gray-600 leading-relaxed text-sm">
+                        <p className="text-stone-400 font-light text-sm leading-relaxed">
                             Wi-Fi gratuito de alta velocidade e TV de tela plana para seu
                             entretenimento e trabalho remoto.
                         </p>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                        <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6 text-purple-600">
-                            <Shield size={28} />
+                    {/* Card 4: Segurança 24h */}
+                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-purple-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
+                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-purple-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
+                            <Shield className="stroke-1 w-7 h-7" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3">Segurança 24h</h3>
-                        <p className="text-gray-600 leading-relaxed text-sm">
+                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-purple-400 transition-colors">
+                            Segurança 24h
+                        </h3>
+                        <p className="text-stone-400 font-light text-sm leading-relaxed">
                             Monitoramento por câmeras nas áreas comuns e extintores de incêndio para
                             sua tranquilidade.
                         </p>

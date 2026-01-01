@@ -55,7 +55,7 @@ export const LOCK_VIDEO_URL = 'https://www.youtube.com/embed/d05nDY1YIEQ'; // NO
 
 export const WIFI_SSID = 'Flat_Petrolina_5G';
 // export const WIFI_PASS = "REMOVIDO_POR_SEGURANCA"; // Agora vem do Banco de Dados via API
-export const FLAT_ADDRESS = 'R. São José, 475 - Centro, Petrolina - PE, 56302-270'; // Endereço Real
+export const FLAT_ADDRESS = 'R. São José, 475 B - Centro, Petrolina - PE, 56302-270'; // Endereço Real
 export const GOOGLE_REVIEW_LINK =
     'https://search.google.com/local/writereview?placeid=ChIJz0sHkXpxcwcRwekJL9cyLjY';
 export const HOST_PHONE = '5587988283273'; // Flats Integração (Geral)

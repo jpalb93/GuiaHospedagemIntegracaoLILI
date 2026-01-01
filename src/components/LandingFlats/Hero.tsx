@@ -1,32 +1,71 @@
-import React, { useEffect, useState } from 'react';
-import { ChevronRight, MapPin, CalendarDays, MessageCircle } from 'lucide-react';
+import React, { useRef } from 'react';
+import { ChevronRight, ArrowRight } from 'lucide-react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Hero: React.FC = () => {
-    const [scrollY, setScrollY] = useState(() => {
-        if (typeof window !== 'undefined') return window.scrollY;
-        return 0;
-    });
+    const containerRef = useRef<HTMLDivElement>(null);
+    const bgRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const handleScroll = () => setScrollY(window.scrollY);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    useGSAP(
+        () => {
+            // Parallax Effect
+            gsap.to(bgRef.current, {
+                yPercent: 30,
+                scale: 1.2,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: true,
+                },
+            });
+
+            // Entrance Animations
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1.5 } });
+
+            // Elementos de texto
+            const elements = textRef.current?.children;
+
+            if (elements) {
+                tl.fromTo(
+                    elements,
+                    { y: 100, opacity: 0 },
+                    { y: 0, opacity: 1, stagger: 0.2, duration: 1.2 }
+                );
+            }
+        },
+        { scope: containerRef }
+    );
 
     return (
         <section
             id="inicio"
-            className="relative h-screen min-h-[700px] w-full overflow-hidden bg-gray-900"
+            ref={containerRef}
+            className="relative h-[100dvh] md:h-screen min-h-[600px] md:min-h-[700px] w-full overflow-hidden bg-stone-950"
         >
-            {/* Background com Parallax */}
-            <div
-                className="absolute inset-0"
-                style={{ transform: `translateY(${scrollY * 0.5}px)` }}
-            >
+            {/* 
+            SEO OTIMIZAÇÃO:
+            <title>Flats Integração Petrolina (Centro) – Hospedagem Flat Mobiliado</title>
+            <meta name="description" content="Flat em Petrolina (Centro) próximo hospitais e orla do São Francisco. Hospedagem profissional para trabalho, consultas e turismo. Reservar agora!">
+            
+            OPEN GRAPH:
+            <meta property="og:title" content="Flats Integração Petrolina (Centro) – Hospedagem Flat Mobiliado" />
+            <meta property="og:description" content="Flat em Petrolina (Centro) próximo hospitais e orla do São Francisco. Hospedagem profissional para trabalho, consultas e turismo. Reservar agora!" />
+            <meta property="og:image" content="/hero-bg.jpg" />
+            */}
+
+            {/* Background com Parallax via GSAP */}
+            <div ref={bgRef} className="absolute inset-0">
                 <img
                     src="/hero-bg.jpg"
-                    className="w-full h-full object-cover scale-110 opacity-60"
-                    alt="Flats Integração"
+                    className="w-full h-full object-cover opacity-60"
+                    alt="Flats Integração hospedagem centro Petrolina PE próximos hospitais"
                     fetchPriority="high"
                     loading="eager"
                     width="1920"
@@ -35,68 +74,102 @@ const Hero: React.FC = () => {
                 />
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80"></div>
+            {/* Overlay Gradient - Dark Theme */}
+            <div className="absolute inset-0 bg-stone-950/40 z-10"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent z-10"></div>
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 to-transparent z-10"></div>
 
-            {/* Conteúdo */}
-            <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 z-10">
-                <div className="flex flex-col items-center">
-                    <div className="mb-4 inline-flex items-center gap-2 bg-orange-500/20 backdrop-blur-md px-4 py-1.5 rounded-full border border-orange-500/30 animate-fadeIn">
-                        <MapPin size={16} className="text-orange-400" />
-                        <span className="text-orange-100 text-xs font-bold tracking-widest uppercase">
-                            LOCALIZAÇÃO PRIVILEGIADA
-                        </span>
+            <div className="container mx-auto px-4 h-full flex flex-col justify-center relative z-20 pt-24 md:pt-32">
+                <div ref={textRef} className="max-w-4xl">
+                    <div className="flex items-center gap-4 mb-6">
+                        <img
+                            src="https://flatsintegracao.com.br/assets/flats-integracao-logo.png"
+                            alt="Logo Flats Integração"
+                            className="h-16 md:h-20 w-auto opacity-0 hidden" // Ocultando pois já está no header, mantendo estrutura se for necessário
+                        />
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-tight tracking-tight drop-shadow-lg">
+                            Hospedagem <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
+                                em Petrolina
+                            </span>
+                        </h1>
                     </div>
-
-                    <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-2xl text-center max-w-4xl leading-tight">
-                        HOSPEDAGEM EM{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">
-                            PETROLINA
-                        </span>
-                    </h1>
+                    <span className="text-xl md:text-3xl font-light text-stone-300 block mt-6 mb-8">
+                        Flat para hospedagem em Petrolina (Centro) – próximos a hospitais e orla.
+                    </span>
                 </div>
 
-                {/* Gradient Overlay */}
+                {/* Schema LocalBusiness (LodgingBusiness) */}
+                <script type="application/ld+json">
+                    {`
+                {
+                    "@context": "https://schema.org",
+                    "@type": "LodgingBusiness",
+                    "name": "Flats Integração Petrolina (Centro)",
+                    "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": "R. São José, 475 B",
+                        "addressLocality": "Petrolina",
+                        "addressRegion": "PE",
+                        "postalCode": "56302-270",
+                        "addressCountry": "BR"
+                    },
+                    "telephone": "+5587988283273",
+                    "description": "Flat mobiliado centro Petrolina próximo hospitais orla",
+                    "url": "https://flatsintegracao.com.br",
+                    "image": "https://flatsintegracao.com.br/hero-bg.jpg",
+                    "priceRange": "$$"
+                }
+                `}
+                </script>
 
-                <p className="text-xl sm:text-2xl md:text-3xl font-light text-white/95 mb-10 max-w-3xl drop-shadow-lg leading-relaxed">
-                    Flats completos e mobiliados no{' '}
-                    <strong className="font-semibold text-orange-300">Centro de Petrolina</strong>.
-                    A liberdade de um apartamento com a{' '}
-                    <strong className="font-semibold text-orange-300">
-                        localização estratégica
-                    </strong>{' '}
-                    para curtas ou longas temporadas.
+                {/* Subheadline de Valor */}
+                <p className="text-lg md:text-xl text-stone-400 mb-6 max-w-2xl leading-relaxed border-l-4 border-orange-500 pl-6">
+                    Apartamentos completos que unem a liberdade de um lar ao serviço de uma
+                    hospedagem profissional.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <a
-                        href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="group bg-orange-600 hover:bg-orange-700 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-xl"
-                    >
-                        <CalendarDays size={20} />
-                        Verificar Disponibilidade
-                    </a>
+                {/* Microcopy de Localização Rico */}
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 mb-10 text-stone-500 text-sm md:text-base">
+                    <div className="flex items-center gap-2 text-stone-200 font-bold bg-white/5 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        Centro de Petrolina – PE
+                    </div>
+                    <span className="hidden md:block text-stone-600">•</span>
+                    <span>
+                        Próximo a hospitais, orla do São Francisco e principais vias de Petrolina.
+                    </span>
+                </div>
+
+                {/* Botões de Ação - Alto Contraste */}
+                <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
                     <a
                         href="https://wa.me/5587988283273"
                         target="_blank"
                         rel="noreferrer"
-                        className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-full text-lg font-bold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        className="group bg-stone-100 hover:bg-white text-stone-950 px-8 py-5 rounded-none text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                     >
-                        <MessageCircle size={20} />
-                        Falar conosco no Whatsapp
+                        Reservar Agora
+                        <ArrowRight
+                            size={18}
+                            className="group-hover:translate-x-1 transition-transform"
+                        />
                     </a>
-                </div>
-
-                <div className="mt-16 flex items-center justify-center gap-2 text-white/70 text-sm font-medium">
-                    <MapPin className="text-orange-400" size={18} />
-                    <span>Petrolina, Pernambuco</span>
+                    <a
+                        href="#galeria"
+                        className="group bg-transparent border border-white/20 hover:border-white/50 text-stone-300 hover:text-white px-8 py-5 rounded-none text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center hover:bg-white/5"
+                    >
+                        Ver Ambientes
+                    </a>
                 </div>
             </div>
 
-            {/* Scroll Indicator */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-                <ChevronRight className="text-white/50 rotate-90" size={32} />
+            {/* Indicador de Scroll Minimalista */}
+            <div className="absolute bottom-8 right-8 hidden md:flex items-center gap-4 animate-bounce text-stone-600">
+                <span className="vertical-rl text-xs tracking-widest uppercase rotate-180 writing-mode-vertical">
+                    Scroll
+                </span>
+                <ChevronRight className="rotate-90" size={24} />
             </div>
         </section>
     );

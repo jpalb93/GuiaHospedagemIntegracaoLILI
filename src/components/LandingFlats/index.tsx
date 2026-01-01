@@ -1,5 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Hero from './Hero';
 import FeaturesSection from './FeaturesSection';
 import InfoSection from './InfoSection';
@@ -11,9 +13,22 @@ import { Phone, Instagram } from 'lucide-react';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 import logoEximus from '../../assets/logo-eximus.png';
 
+gsap.registerPlugin(ScrollTrigger);
+
 const LandingFlatsIntegracao: React.FC = () => {
+    const [isScrolled, setIsScrolled] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <div className="font-sans antialiased bg-white text-gray-900">
+        <div className="font-sans antialiased bg-stone-950 text-stone-300">
             {/* SEO Meta Tags */}
             <Helmet>
                 <title>Flats Integração - Hospedagem em Petrolina</title>
@@ -50,31 +65,39 @@ const LandingFlatsIntegracao: React.FC = () => {
                 <link rel="canonical" href="https://flatsintegracao.com.br" />
             </Helmet>
 
-            {/* Header Transparente */}
-            <nav className="absolute top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+            {/* Header Sticky - Permanent Glass Look */}
+            <nav
+                className={`fixed top-0 w-full z-50 px-6 transition-all duration-300 flex justify-between items-center border-b ${
+                    isScrolled
+                        ? 'bg-stone-950/95 backdrop-blur-md py-3 shadow-lg border-stone-800'
+                        : 'bg-stone-950/50 backdrop-blur-sm py-5 border-white/10'
+                }`}
+            >
                 <a href="#inicio" className="hover:opacity-80 transition-opacity">
                     <img
                         src={flatsLogo}
                         alt="Flats Integração"
-                        className="h-12 md:h-14 w-auto drop-shadow-lg"
+                        className={`w-auto drop-shadow-lg transition-all duration-300 ${
+                            isScrolled ? 'h-10' : 'h-12 md:h-14'
+                        }`}
                     />
                 </a>
 
                 <div className="flex items-center gap-6">
                     <a
                         href="#galeria"
-                        className="text-white/90 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
+                        className="text-stone-300 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
                     >
                         Galeria
                     </a>
                     <a
                         href="#features"
-                        className="text-white/90 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
+                        className="text-stone-300 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
                     >
                         Diferenciais
                     </a>
                     <a
-                        href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
+                        href="https://wa.me/5587988283273"
                         target="_blank"
                         rel="noreferrer"
                         className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-orange-500/30"

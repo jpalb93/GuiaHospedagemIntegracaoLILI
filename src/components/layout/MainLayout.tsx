@@ -8,15 +8,32 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+    const [isScrolled, setIsScrolled] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <div className="font-sans antialiased bg-white text-gray-900 flex flex-col min-h-screen">
-            {/* Header Transparente */}
-            <nav className="absolute top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+            {/* Header Sticky */}
+            <nav
+                className={`fixed top-0 w-full z-50 px-6 transition-all duration-300 flex justify-between items-center ${
+                    isScrolled
+                        ? 'bg-black/95 backdrop-blur-md py-3 shadow-lg border-b border-white/10'
+                        : 'bg-gradient-to-b from-black/80 to-transparent py-4'
+                }`}
+            >
                 <Link to="/" className="hover:opacity-80 transition-opacity">
                     <img
                         src={flatsLogo}
                         alt="Flats Integração"
-                        className="h-12 md:h-14 w-auto drop-shadow-lg"
+                        className={`w-auto drop-shadow-lg transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12 md:h-14'}`}
                     />
                 </Link>
 
@@ -40,7 +57,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         Diferenciais
                     </a>
                     <a
-                        href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
+                        href="https://wa.me/5587988283273"
                         target="_blank"
                         rel="noreferrer"
                         className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-orange-500/30"

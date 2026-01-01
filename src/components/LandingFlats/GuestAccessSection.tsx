@@ -1,11 +1,36 @@
-import React, { useState } from 'react';
-import { ArrowRight, KeyRound, Loader2, RefreshCw } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowRight, KeyRound, Loader2 } from 'lucide-react';
 import { fetchGuestConfig } from '../../services/guest';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const GuestAccessSection: React.FC = () => {
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const sectionRef = useRef<HTMLElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            gsap.from(contentRef.current, {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out',
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: 'top 80%',
+                    toggleActions: 'play none none reverse',
+                },
+            });
+        },
+        { scope: sectionRef }
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -15,7 +40,6 @@ const GuestAccessSection: React.FC = () => {
         setError('');
 
         try {
-            // Lógica de extração similar ao App.tsx
             let rid = code.trim();
             if (rid.includes('http') || rid.includes('.com')) {
                 const urlObj = new URL(rid.startsWith('http') ? rid : `https://${rid}`);
@@ -25,80 +49,80 @@ const GuestAccessSection: React.FC = () => {
 
             const config = await fetchGuestConfig(rid);
             if (config) {
-                // Salvar no localStorage para persistência
                 localStorage.setItem('flat_lili_last_rid', rid);
-                // Callback para o App.tsx atualizar o estado
-                // Como este componente está "dentro" do Landing, precisamos recarregar ou passar o estado para cima.
-                // A maneira mais simples de forçar o App a "re-verificar" é recarregar a página ou atualizar um contexto.
-                // Dado a estrutura atual do App.tsx que lê do localStorage no mount/update,
-                // vamos redirecionar para a raiz com ?rid=CODE para forçar o loading state do App.
                 window.location.href = `/?rid=${rid}`;
             } else {
-                setError('Código inválido ou reserva não encontrada.');
+                setError('Código inválido.');
             }
         } catch (err) {
             console.error(err);
-            setError('Erro ao verificar código. Tente novamente.');
+            setError('Erro ao verificar.');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <section className="py-20 bg-gray-900 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-900/20 to-black/50"></div>
-
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="max-w-4xl mx-auto bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-white/10 flex flex-col md:flex-row items-center gap-12">
-                    <div className="flex-1">
-                        <div className="w-14 h-14 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-6 text-orange-400">
-                            <KeyRound size={28} />
+        <section ref={sectionRef} className="py-24 bg-stone-900 text-stone-200">
+            <div className="container mx-auto px-6 md:px-12">
+                <div
+                    ref={contentRef}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
+                >
+                    {/* Text Side */}
+                    <div className="space-y-8">
+                        <div className="w-12 h-12 border border-stone-700 rounded-full flex items-center justify-center text-stone-400">
+                            <KeyRound size={20} className="stroke-1" />
                         </div>
-                        <h2 className="text-3xl font-heading font-bold mb-4">
-                            Já tem uma reserva?
+                        <h2 className="text-4xl font-heading font-light text-white leading-tight">
+                            Exclusivo <br />
+                            <span className="italic font-serif text-stone-500">
+                                Área do Hóspede
+                            </span>
                         </h2>
-                        <p className="text-gray-300 leading-relaxed">
-                            Acesse seu Guia Digital exclusivo com todas as informações do flat,
-                            senhas, Wi-Fi e dicas da cidade. Basta inserir o código enviado por
-                            WhatsApp.
+                        <p className="font-light text-stone-400 max-w-md leading-relaxed">
+                            Já possui uma reserva? Digite seu código de acesso para desbloquear o
+                            Guia Digital completo da propriedade.
                         </p>
                     </div>
 
-                    <div className="w-full md:w-96 bg-black/40 p-6 rounded-2xl border border-white/10">
-                        <form onSubmit={handleSubmit}>
-                            <label className="block text-sm font-bold text-gray-300 mb-2">
-                                Código de Acesso ou Link
+                    {/* Form Side - Minimalist */}
+                    <div className="lg:pl-12">
+                        <form onSubmit={handleSubmit} className="relative">
+                            <label className="block text-xs font-bold tracking-[0.2em] text-stone-500 uppercase mb-6">
+                                Código da Reserva
                             </label>
-                            <div className="flex flex-col gap-3 mb-4">
+
+                            <div className="relative group">
                                 <input
                                     type="text"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
-                                    placeholder="Ex: ABC1234"
-                                    className="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                    placeholder="Digite seu código..."
+                                    className="w-full bg-transparent border-b border-stone-700 text-3xl font-light text-white pb-4 focus:outline-none focus:border-stone-400 transition-colors placeholder:text-stone-700"
                                 />
                                 <button
                                     type="submit"
                                     disabled={isLoading || !code}
-                                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:scale-[1.02] active:scale-95 shadow-md"
+                                    className="absolute right-0 top-0 bottom-4 text-stone-400 hover:text-white disabled:text-stone-800 transition-colors"
                                 >
                                     {isLoading ? (
-                                        <Loader2 className="animate-spin" size={20} />
+                                        <Loader2 className="animate-spin" size={24} />
                                     ) : (
-                                        <>
-                                            <span>Acessar</span>
-                                            <ArrowRight size={20} />
-                                        </>
+                                        <ArrowRight size={28} className="stroke-1" />
                                     )}
                                 </button>
                             </div>
+
                             {error && (
-                                <p className="text-red-400 text-sm flex items-center gap-1">
-                                    <RefreshCw size={12} /> {error}
+                                <p className="text-red-400/80 text-sm mt-4 flex items-center gap-2 font-light animate-fadeIn">
+                                    <span className="w-1 h-1 bg-red-400 rounded-full"></span>{' '}
+                                    {error}
                                 </p>
                             )}
-                            <p className="text-xs text-gray-500 mt-2">
-                                O código está no link enviado na confirmação da reserva.
+
+                            <p className="text-stone-600 text-xs mt-6 font-light">
+                                Encontre o código na confirmação enviada via WhatsApp.
                             </p>
                         </form>
                     </div>

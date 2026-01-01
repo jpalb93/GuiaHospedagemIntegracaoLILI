@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const FAQS = [
     {
@@ -22,20 +27,45 @@ const FAQS = [
 
 const FAQSection: React.FC = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const sectionRef = useRef<HTMLElement>(null);
 
     const toggleFAQ = (index: number) => {
         setOpenIndex(openIndex === index ? null : index);
     };
 
+    useGSAP(
+        () => {
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse',
+                },
+            });
+
+            tl.fromTo(
+                '.faq-header',
+                { y: 30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
+            ).fromTo(
+                '.faq-item',
+                { y: 30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
+                '-=0.4'
+            );
+        },
+        { scope: sectionRef }
+    );
+
     return (
-        <section className="py-16 bg-white" id="faq">
+        <section ref={sectionRef} className="py-24 bg-stone-950" id="faq">
             <div className="container mx-auto px-4 max-w-4xl">
-                <div className="text-center mb-12">
-                    <span className="text-orange-500 font-bold uppercase tracking-wider text-sm mb-2 flex items-center justify-center gap-2">
+                <div className="faq-header text-center mb-16">
+                    <span className="text-orange-500 font-bold uppercase tracking-wider text-sm mb-3 flex items-center justify-center gap-2">
                         <HelpCircle size={18} />
                         Dúvidas
                     </span>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-heading">
+                    <h2 className="text-3xl md:text-5xl font-bold text-white font-heading font-light">
                         Perguntas Frequentes
                     </h2>
                 </div>
@@ -44,10 +74,10 @@ const FAQSection: React.FC = () => {
                     {FAQS.map((faq, index) => (
                         <div
                             key={index}
-                            className={`border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 ${
+                            className={`faq-item border rounded-2xl overflow-hidden transition-all duration-300 ${
                                 openIndex === index
-                                    ? 'shadow-lg border-orange-200 bg-orange-50/10'
-                                    : 'bg-gray-50 hover:bg-white'
+                                    ? 'border-orange-500/30 bg-stone-900 shadow-lg shadow-orange-900/10'
+                                    : 'border-stone-800 bg-stone-900/50 hover:bg-stone-900 hover:border-stone-700'
                             }`}
                         >
                             <button
@@ -55,14 +85,14 @@ const FAQSection: React.FC = () => {
                                 className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
                             >
                                 <span
-                                    className={`font-bold text-lg ${openIndex === index ? 'text-orange-600' : 'text-gray-800'}`}
+                                    className={`font-bold text-lg transition-colors ${openIndex === index ? 'text-orange-500' : 'text-stone-300 group-hover:text-white'}`}
                                 >
                                     {faq.question}
                                 </span>
                                 {openIndex === index ? (
                                     <ChevronUp className="text-orange-500 flex-shrink-0" />
                                 ) : (
-                                    <ChevronDown className="text-gray-400 flex-shrink-0" />
+                                    <ChevronDown className="text-stone-500 flex-shrink-0" />
                                 )}
                             </button>
                             <div
@@ -72,7 +102,7 @@ const FAQSection: React.FC = () => {
                                         : 'max-h-0 opacity-0'
                                 }`}
                             >
-                                <div className="p-6 pt-0 text-gray-600 leading-relaxed">
+                                <div className="p-6 pt-0 text-stone-400 leading-relaxed border-t border-stone-800/50 mt-2">
                                     {faq.answer}
                                 </div>
                             </div>

@@ -1,82 +1,168 @@
-import React from 'react';
-import { Star, ThumbsUp, MapPin, ShieldCheck, Heart } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Star, MapPin, ShieldCheck, Heart } from 'lucide-react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const ReputationSection: React.FC = () => {
+    const sectionRef = useRef<HTMLElement>(null);
+    const scoreRef = useRef<HTMLSpanElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: 'top 70%',
+                    toggleActions: 'play none none reverse',
+                },
+            });
+
+            // 1. Reveal Text & Headline
+            tl.from('.reputation-text', {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: 'power3.out',
+            });
+
+            // 2. Animate Score Number (Count up)
+            tl.from(
+                scoreRef.current,
+                {
+                    textContent: 0,
+                    duration: 2,
+                    ease: 'power1.out',
+                    snap: { textContent: 0.1 },
+                    stagger: 1,
+                    onUpdate: function () {
+                        if (scoreRef.current) {
+                            scoreRef.current.innerHTML = parseFloat(
+                                this.targets()[0].textContent
+                            ).toFixed(1);
+                        }
+                    },
+                },
+                '-=0.5'
+            );
+
+            // 3. Reveal Bottom Values
+            tl.from(
+                '.reputation-value',
+                {
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.8,
+                    stagger: 0.1,
+                    ease: 'power2.out',
+                },
+                '-=1.5'
+            );
+        },
+        { scope: sectionRef }
+    );
+
     return (
-        <section className="py-24 bg-gray-50 overflow-hidden">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-6xl mx-auto">
-                    {/* Left: Score Highlight */}
-                    <div className="flex-1 text-center md:text-left">
-                        <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-bold text-sm mb-6 animate-fadeIn">
-                            <Star size={16} className="fill-orange-600" />
-                            <span>Recomendado pelos hóspedes</span>
-                        </div>
+        <section ref={sectionRef} className="py-32 bg-stone-950 relative overflow-hidden">
+            {/* Decorative Background Number */}
+            <div className="absolute top-0 right-0 text-[400px] font-heading font-bold text-white/5 leading-none select-none -z-0 pointer-events-none">
+                9
+            </div>
 
-                        <h2 className="text-4xl sm:text-5xl font-heading font-bold text-gray-900 mb-6 leading-tight">
-                            Uma experiência <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-                                aprovada e reconhecida.
-                            </span>
+            <div className="container mx-auto px-6 md:px-12 relative z-10">
+                <div
+                    ref={contentRef}
+                    className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center border-b border-stone-800 pb-20"
+                >
+                    {/* Editorial Headline */}
+                    <div className="lg:col-span-6">
+                        <span className="reputation-text text-stone-500 font-bold tracking-[0.2em] uppercase text-xs mb-6 block">
+                            Experiência
+                        </span>
+                        <h2 className="reputation-text text-5xl md:text-7xl font-heading font-light text-white leading-tight tracking-tight mb-8">
+                            Aprovado por <br />
+                            <span className="italic font-serif text-stone-500">quem viveu.</span>
                         </h2>
-
-                        <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
-                            Nossa dedicação ao conforto e a qualidade do serviço reflete na
-                            satisfação de quem passa por aqui.
+                        <p className="reputation-text text-xl text-stone-400 font-light max-w-lg leading-relaxed">
+                            A excelência não é um ato, mas um hábito. Nossa pontuação reflete o
+                            compromisso diário com seu conforto absoluto.
                         </p>
-
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-                                <MapPin className="text-blue-500" size={24} />
-                                <div className="text-left">
-                                    <span className="block font-bold text-gray-900">
-                                        Localização
-                                    </span>
-                                    <span className="text-xs text-gray-500">Privilegiada</span>
-                                </div>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-                                <ShieldCheck className="text-green-500" size={24} />
-                                <div className="text-left">
-                                    <span className="block font-bold text-gray-900">Segurança</span>
-                                    <span className="text-xs text-gray-500">Monitorada</span>
-                                </div>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-                                <Heart className="text-red-500" size={24} />
-                                <div className="text-left">
-                                    <span className="block font-bold text-gray-900">Conforto</span>
-                                    <span className="text-xs text-gray-500">Garantido</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    {/* Right: The Score Card */}
-                    <div className="relative">
-                        {/* Decorative Blob */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-orange-200/50 rounded-full blur-3xl -z-10"></div>
-
-                        <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl text-center border-4 border-white transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg rotate-12">
-                                <ThumbsUp className="text-white" size={32} />
+                    {/* Framed Score Card */}
+                    <div className="lg:col-span-6 flex justify-end reputation-text">
+                        <a
+                            href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="group relative bg-stone-900/50 backdrop-blur-md p-10 rounded-[2.5rem] shadow-2xl shadow-black/50 hover:shadow-orange-900/20 hover:-translate-y-2 transition-all duration-500 border border-white/5 hover:border-orange-500/30"
+                        >
+                            <div className="flex items-start gap-4">
+                                <span
+                                    ref={scoreRef}
+                                    className="text-[140px] leading-none font-heading font-medium text-white tracking-tighter group-hover:text-orange-500 transition-colors"
+                                >
+                                    9.0
+                                </span>
+                                <div className="pt-8">
+                                    <Star className="w-10 h-10 text-orange-500 fill-orange-500 animate-pulse" />
+                                </div>
                             </div>
-
-                            <div className="text-7xl font-black text-gray-900 mb-2 tracking-tighter">
-                                9.0
+                            <div className="flex items-center justify-between mt-4 border-t border-stone-800 pt-6">
+                                <div className="flex flex-col">
+                                    <span className="uppercase text-sm tracking-widest font-bold text-stone-200">
+                                        Excepcional
+                                    </span>
+                                    <span className="text-stone-500 text-xs mt-1">
+                                        Baseado em avaliações reais
+                                    </span>
+                                </div>
+                                <span className="text-stone-400 text-sm italic group-hover:text-orange-400 transition-colors">
+                                    Ver no Booking &rarr;
+                                </span>
                             </div>
-                            <div className="text-xl font-bold text-blue-600 uppercase tracking-widest mb-6">
-                                Ótimo
-                            </div>
+                        </a>
+                    </div>
+                </div>
 
-                            <div className="w-full h-px bg-gray-100 mb-6"></div>
+                {/* Values Layout - Clean & Dividers */}
+                <div className="grid grid-cols-1 md:grid-cols-3 pt-16 gap-12">
+                    <div className="reputation-value space-y-4">
+                        <div className="w-full h-px bg-stone-800 mb-6"></div>
+                        <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
+                            <MapPin className="stroke-1 text-stone-500" size={20} /> Localização
+                        </h3>
+                        <p className="text-stone-500 font-light leading-relaxed text-sm">
+                            No epicentro de Petrolina. A poucos passos de tudo o que importa,
+                            mantendo a privacidade que você precisa.
+                        </p>
+                    </div>
 
-                            <div className="flex items-center justify-center gap-2 text-gray-500 text-sm font-bold bg-gray-50 px-4 py-2 rounded-full">
-                                <span className="text-blue-600">Booking.com</span>
-                                <span>•</span>
-                                <span>Avaliação Verificada</span>
-                            </div>
-                        </div>
+                    <div className="reputation-value space-y-4">
+                        <div className="w-full h-px bg-stone-800 mb-6"></div>
+                        <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
+                            <ShieldCheck className="stroke-1 text-stone-500" size={20} />{' '}
+                            Privacidade & Segurança
+                        </h3>
+                        <p className="text-stone-500 font-light leading-relaxed text-sm">
+                            Monitoramento discreto e sistemas de segurança de última geração para
+                            sua total tranquilidade.
+                        </p>
+                    </div>
+
+                    <div className="reputation-value space-y-4">
+                        <div className="w-full h-px bg-stone-800 mb-6"></div>
+                        <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
+                            <Heart className="stroke-1 text-stone-500" size={20} /> Conforto Premium
+                        </h3>
+                        <p className="text-stone-500 font-light leading-relaxed text-sm">
+                            Cada detalhe, do lençol ao chuveiro, pensado para proporcionar uma
+                            experiência de descanso superior.
+                        </p>
                     </div>
                 </div>
             </div>

@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, XCircle } from 'lucide-react';
-import {
-    subscribeToFutureReservations,
-    subscribeToFutureBlockedDates,
-} from '../../services/firebase';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { subscribeToFutureReservations } from '../../services/firebase/reservations';
+import { subscribeToFutureBlockedDates } from '../../services/firebase/blockedDates';
 import { Reservation, BlockedDateRange } from '../../types';
 
-interface AvailabilityCalendarProps {
-    onRangeSelect?: (start: Date | null, end: Date | null) => void;
-    selectedStart?: Date | null;
-    selectedEnd?: Date | null;
-}
-
-const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
-    onRangeSelect,
-    selectedStart,
-    selectedEnd,
-}) => {
+const AvailabilityCalendar: React.FC = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [blockedDates, setBlockedDates] = useState<BlockedDateRange[]>([]);
@@ -39,7 +27,6 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         target.setHours(0, 0, 0, 0);
         const targetTime = target.getTime();
 
-        // 1. Checa Reservas
         const isReserved = reservations.some((res) => {
             if (!res.checkInDate || !res.checkoutDate || res.status === 'cancelled') return false;
             const [inY, inM, inD] = res.checkInDate.split('-').map(Number);
@@ -53,7 +40,6 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
 
         if (isReserved) return true;
 
-        // 2. Checa Bloqueios Administrativos
         const isBlocked = blockedDates.some((block) => {
             if (!block.startDate || !block.endDate) return false;
             const [inY, inM, inD] = block.startDate.split('-').map(Number);
@@ -66,51 +52,6 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         });
 
         return isBlocked;
-    };
-
-    const handleDateClick = (date: Date) => {
-        if (!onRangeSelect) return;
-        if (isDateOccupied(date)) return;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (date < today) return;
-
-        // Se já tiver start e end, ou nenhum, começa novo range
-        if ((selectedStart && selectedEnd) || (!selectedStart && !selectedEnd)) {
-            onRangeSelect(date, null);
-            return;
-        }
-
-        // Se só tem start
-        if (selectedStart && !selectedEnd) {
-            if (date < selectedStart) {
-                // Clicou antes do start, vira novo start
-                onRangeSelect(date, null);
-            } else if (date.getTime() === selectedStart.getTime()) {
-                // Clicou no mesmo dia, deseleciona
-                onRangeSelect(null, null);
-            } else {
-                // Clicou depois, fecha o range
-                // Verifica se tem dias ocupados no meio
-                let hasOccupied = false;
-                const check = new Date(selectedStart);
-                while (check < date) {
-                    check.setDate(check.getDate() + 1);
-                    if (isDateOccupied(check)) {
-                        hasOccupied = true;
-                        break;
-                    }
-                }
-
-                if (hasOccupied) {
-                    alert('O período selecionado contém datas indisponíveis.');
-                    onRangeSelect(date, null); // Reinicia no clique
-                } else {
-                    onRangeSelect(selectedStart, date);
-                }
-            }
-        }
     };
 
     const nextMonth = () =>
@@ -143,39 +84,39 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     ];
 
     return (
-        <div className="w-full">
-            {/* Header do Calendário */}
-            <div className="flex justify-between items-center mb-4">
+        <div className="w-full bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-8">
                 <button
                     onClick={prevMonth}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-3 hover:bg-gray-100 rounded-full transition-all"
                     aria-label="Mês anterior"
                 >
                     <ChevronLeft size={20} className="text-gray-600" />
                 </button>
-                <h4 className="font-bold text-gray-800 capitalize">
-                    {monthNames[month]} {year}
+                <h4 className="font-heading font-bold text-gray-900 capitalize text-xl md:text-2xl">
+                    {monthNames[month]} <span className="text-gray-400 font-light">{year}</span>
                 </h4>
                 <button
                     onClick={nextMonth}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-3 hover:bg-gray-100 rounded-full transition-all"
                     aria-label="Próximo mês"
                 >
                     <ChevronRight size={20} className="text-gray-600" />
                 </button>
             </div>
 
-            {/* Grid Dias da Semana */}
-            <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+            <div className="grid grid-cols-7 gap-1 md:gap-2 mb-4 text-center">
                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-                    <div key={i} className="text-xs font-bold text-gray-400">
+                    <div
+                        key={i}
+                        className="text-xs font-bold text-gray-400 uppercase tracking-widest"
+                    >
                         {day}
                     </div>
                 ))}
             </div>
 
-            {/* Grid Dias */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
                 {daysArray.map((date, idx) => {
                     if (!date) return <div key={idx} className="aspect-square"></div>;
 
@@ -183,58 +124,35 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                     const isToday = date.toDateString() === new Date().toDateString();
                     const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
 
-                    // Lógica de Seleção Visual
-                    const isSelectedStart =
-                        selectedStart && date.getTime() === selectedStart.getTime();
-                    const isSelectedEnd = selectedEnd && date.getTime() === selectedEnd.getTime();
-                    const isInRange =
-                        selectedStart && selectedEnd && date > selectedStart && date < selectedEnd;
-                    const isSelected = isSelectedStart || isSelectedEnd || isInRange;
-
                     return (
                         <div
                             key={idx}
-                            onClick={() => !isOccupied && !isPast && handleDateClick(date)}
                             className={`
-                        aspect-square flex items-center justify-center rounded-lg text-sm font-medium relative transition-all
+                        aspect-square flex items-center justify-center rounded-xl text-sm font-medium relative transition-all duration-300
                         ${
                             isOccupied
-                                ? 'bg-red-100 text-red-400 cursor-not-allowed'
+                                ? 'bg-red-50 text-red-300 cursor-not-allowed'
                                 : isPast
-                                  ? 'text-gray-300 cursor-not-allowed'
-                                  : 'cursor-pointer hover:scale-105 font-bold'
+                                  ? 'text-gray-200 cursor-not-allowed'
+                                  : 'bg-gray-50 text-gray-700 hover:bg-gray-900 hover:text-white cursor-pointer'
                         } 
-                        ${!isOccupied && !isPast && !isSelected ? 'bg-green-50 text-green-700 hover:bg-green-100' : ''}
-                        ${isSelectedStart ? 'bg-amber-600 text-white shadow-md z-10' : ''}
-                        ${isSelectedEnd ? 'bg-amber-600 text-white shadow-md z-10' : ''}
-                        ${isInRange ? 'bg-amber-100 text-amber-800' : ''}
-                        ${isToday && !isSelected ? 'ring-2 ring-orange-400 ring-offset-2' : ''}
+                        ${isToday ? 'ring-1 ring-gray-900 font-bold' : ''}
                      `}
-                            title={isOccupied ? 'Ocupado' : isPast ? 'Passado' : 'Disponível'}
                         >
                             {date.getDate()}
-                            {isOccupied && (
-                                <XCircle
-                                    size={12}
-                                    className="absolute top-0.5 right-0.5 opacity-50"
-                                />
-                            )}
                         </div>
                     );
                 })}
             </div>
 
-            {/* Legenda */}
-            <div className="flex justify-center gap-4 mt-4 text-xs font-medium text-gray-500">
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded bg-green-100 border border-green-200"></div>{' '}
+            <div className="flex justify-center gap-6 mt-8 text-xs font-medium text-gray-500 uppercase tracking-widest">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-900"></div>
                     Disponível
                 </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded bg-red-100 border border-red-200"></div> Ocupado
-                </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded bg-amber-600"></div> Selecionado
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-100"></div>
+                    Ocupado
                 </div>
             </div>
         </div>
