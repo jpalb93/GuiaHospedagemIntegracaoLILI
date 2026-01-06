@@ -1,17 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchGuestConfig } from './guest';
-import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { GuestConfig } from '../types';
-
-// Mock Capacitor
-vi.mock('@capacitor/core', () => ({
-    Capacitor: {
-        isNativePlatform: vi.fn(),
-    },
-    CapacitorHttp: {
-        get: vi.fn(),
-    },
-}));
 
 // Mock logger
 vi.mock('../utils/logger', () => ({
@@ -50,63 +39,8 @@ describe('Guest Service', () => {
         vi.clearAllMocks();
     });
 
-    describe('fetchGuestConfig - Native Platform', () => {
-        beforeEach(() => {
-            (Capacitor.isNativePlatform as any).mockReturnValue(true);
-        });
-
-        it('should fetch config successfully on native', async () => {
-            (CapacitorHttp.get as any).mockResolvedValue({
-                status: 200,
-                data: mockGuestConfig,
-            });
-
-            const result = await fetchGuestConfig('ABC123');
-
-            expect(CapacitorHttp.get).toHaveBeenCalledWith({
-                url: 'https://flatsintegracao.com.br/api/get-guest-config?rid=ABC123',
-            });
-            expect(result).toEqual(mockGuestConfig);
-        });
-
-        it('should return null for 404 on native', async () => {
-            const { logger } = await import('../utils/logger');
-
-            (CapacitorHttp.get as any).mockResolvedValue({
-                status: 404,
-            });
-
-            const result = await fetchGuestConfig('NOTFOUND');
-
-            expect(result).toBeNull();
-            expect(logger.warn).toHaveBeenCalledWith('Reserva não encontrada na API (Native).');
-        });
-
-        it('should throw error for non-200 status on native', async () => {
-            (CapacitorHttp.get as any).mockResolvedValue({
-                status: 500,
-            });
-
-            await expect(fetchGuestConfig('ERROR')).rejects.toThrow('Erro na API (Native): 500');
-        });
-
-        it('should throw error on network failure (native)', async () => {
-            (CapacitorHttp.get as any).mockRejectedValue(new Error('Network error'));
-
-            await expect(fetchGuestConfig('NETWORK_ERR')).rejects.toThrow('Network error');
-            expect(console.error).toHaveBeenCalledWith(
-                'Erro ao buscar configuração do hóspede:',
-                expect.any(Error)
-            );
-        });
-    });
-
-    describe('fetchGuestConfig - Web Platform', () => {
-        beforeEach(() => {
-            (Capacitor.isNativePlatform as any).mockReturnValue(false);
-        });
-
-        it('should fetch config successfully on web', async () => {
+    describe('fetchGuestConfig', () => {
+        it('should fetch config successfully', async () => {
             (global.fetch as any).mockResolvedValue({
                 ok: true,
                 status: 200,
@@ -119,7 +53,7 @@ describe('Guest Service', () => {
             expect(result).toEqual(mockGuestConfig);
         });
 
-        it('should return null for 404 on web', async () => {
+        it('should return null for 404', async () => {
             const { logger } = await import('../utils/logger');
 
             (global.fetch as any).mockResolvedValue({
@@ -127,25 +61,25 @@ describe('Guest Service', () => {
                 status: 404,
             });
 
-            const result = await fetchGuestConfig('NOTFOUND_WEB');
+            const result = await fetchGuestConfig('NOTFOUND');
 
             expect(result).toBeNull();
             expect(logger.warn).toHaveBeenCalledWith('Reserva não encontrada na API.');
         });
 
-        it('should throw error for non-ok response on web', async () => {
+        it('should throw error for non-ok response', async () => {
             (global.fetch as any).mockResolvedValue({
                 ok: false,
                 status: 500,
                 statusText: 'Internal Server Error',
             });
 
-            await expect(fetchGuestConfig('ERROR_WEB')).rejects.toThrow(
+            await expect(fetchGuestConfig('ERROR')).rejects.toThrow(
                 'Erro na API: Internal Server Error'
             );
         });
 
-        it('should throw error on network failure (web)', async () => {
+        it('should throw error on network failure', async () => {
             (global.fetch as any).mockRejectedValue(new Error('Fetch failed'));
 
             await expect(fetchGuestConfig('FETCH_FAIL')).rejects.toThrow('Fetch failed');
@@ -168,11 +102,8 @@ describe('Guest Service', () => {
 
             expect(result?.guestName).toBe('Custom Name');
         });
-    });
 
-    describe('fetchGuestConfig - Edge Cases', () => {
         it('should handle empty rid parameter', async () => {
-            (Capacitor.isNativePlatform as any).mockReturnValue(false);
             (global.fetch as any).mockResolvedValue({
                 ok: false,
                 status: 404,
@@ -184,7 +115,6 @@ describe('Guest Service', () => {
         });
 
         it('should handle special characters in rid', async () => {
-            (Capacitor.isNativePlatform as any).mockReturnValue(false);
             (global.fetch as any).mockResolvedValue({
                 ok: true,
                 json: async () => mockGuestConfig,

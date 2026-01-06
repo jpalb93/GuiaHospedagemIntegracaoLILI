@@ -17,32 +17,39 @@ const Amenities: React.FC = () => {
 
     useGSAP(
         () => {
-            const items = gridRef.current?.children;
-            if (items) {
-                gsap.from(items, {
-                    y: 100,
-                    opacity: 0,
-                    duration: 1,
-                    stagger: 0.1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: gridRef.current,
-                        start: 'top 85%',
+            const items = gsap.utils.toArray(gridRef.current?.children || []);
+            if (items.length > 0) {
+                gsap.fromTo(
+                    items,
+                    {
+                        y: 50,
+                        opacity: 0,
                     },
-                });
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1,
+                        stagger: 0.1,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: gridRef.current,
+                            start: 'top 85%',
+                        },
+                    }
+                );
             }
         },
         { scope: gridRef }
     );
 
     return (
-        <section id="comodidades" className="py-24 bg-white border-y border-gray-100">
+        <section id="comodidades" className="py-24 bg-stone-950 border-y border-stone-800">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="mb-16 md:mb-24 flex flex-col md:flex-row justify-between items-end gap-6">
-                    <h2 className="text-4xl md:text-5xl font-heading font-medium text-gray-900 max-w-lg">
-                        Comodidades <br /> <span className="italic text-gray-400">Exclusivas</span>
+                    <h2 className="text-4xl md:text-5xl font-heading font-medium text-white max-w-lg">
+                        Comodidades <br /> <span className="italic text-stone-500">Exclusivas</span>
                     </h2>
-                    <p className="text-gray-500 max-w-xs text-sm">
+                    <p className="text-stone-400 max-w-xs text-sm">
                         Tudo o que você espera de um hotel, com a liberdade de um apartamento.
                     </p>
                 </div>
@@ -59,13 +66,13 @@ const Amenities: React.FC = () => {
                             />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent p-8 flex flex-col justify-end">
-                            <div className="flex items-center gap-3 mb-4 text-orange-400">
+                            <div className="flex items-center gap-3 mb-4 text-orange-500">
                                 <UtensilsCrossed size={28} />
                                 <h3 className="text-2xl font-heading font-medium text-white">
                                     Cozinha & Jantar
                                 </h3>
                             </div>
-                            <ul className="text-gray-50 text-sm space-y-1 columns-2">
+                            <ul className="text-stone-300 text-sm space-y-1 columns-2">
                                 <li>Geladeira, Fogão e Microondas</li>
                                 <li>Air Fryer e Liquidificador</li>
                                 <li>Cafeteira e Sanduicheira</li>
@@ -85,13 +92,13 @@ const Amenities: React.FC = () => {
                             />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent p-8 flex flex-col justify-end">
-                            <div className="flex items-center gap-3 mb-4 text-orange-400">
+                            <div className="flex items-center gap-3 mb-4 text-orange-500">
                                 <Monitor size={28} />
                                 <h3 className="text-2xl font-heading font-medium text-white">
                                     Entretenimento
                                 </h3>
                             </div>
-                            <ul className="text-gray-50 text-sm space-y-1 columns-2">
+                            <ul className="text-stone-300 text-sm space-y-1 columns-2">
                                 <li>HDTV 50" com Streaming</li>
                                 <li>Sistema de som</li>
                                 <li>Jogos de tabuleiro</li>
@@ -102,20 +109,22 @@ const Amenities: React.FC = () => {
                     </div>
 
                     {/* 3. Banheiro */}
-                    <div className="relative group overflow-hidden bg-stone-900 min-h-[250px] p-6 flex flex-col justify-end rounded-sm transition-all hover:shadow-lg">
-                        <div className="absolute inset-0 opacity-60 group-hover:opacity-50 transition-opacity">
+                    <div className="relative group overflow-hidden bg-stone-900 min-h-[250px] rounded-sm transition-all hover:shadow-lg">
+                        <div className="absolute inset-0 opacity-50 group-hover:opacity-40 transition-opacity">
                             <OptimizedImage
                                 src="/images/banheiro.jpg"
                                 className="w-full h-full object-cover"
                                 alt="Banheiro"
                             />
                         </div>
-                        <div className="relative z-10 text-white">
-                            <div className="flex items-center gap-2 mb-2 text-orange-400">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 flex flex-col justify-end">
+                            <div className="flex items-center gap-2 mb-2 text-orange-500">
                                 <Droplets size={22} />
-                                <h3 className="text-lg font-heading font-bold">Banheiro</h3>
+                                <h3 className="text-lg font-heading font-bold text-white">
+                                    Banheiro
+                                </h3>
                             </div>
-                            <ul className="text-gray-50 text-xs space-y-1">
+                            <ul className="text-stone-300 text-xs space-y-1">
                                 <li>Secador de cabelo</li>
                                 <li>Produtos de limpeza</li>
                                 <li>Xampu e Condicionador</li>
@@ -126,22 +135,22 @@ const Amenities: React.FC = () => {
                     </div>
 
                     {/* 4. Quarto e Lavanderia (Expanded to 2 cols) */}
-                    <div className="md:col-span-2 relative group overflow-hidden bg-stone-900 min-h-[250px] p-6 flex flex-col justify-end rounded-sm transition-all hover:shadow-lg">
-                        <div className="absolute inset-0 opacity-60 group-hover:opacity-50 transition-opacity">
+                    <div className="md:col-span-2 relative group overflow-hidden bg-stone-900 min-h-[250px] rounded-sm transition-all hover:shadow-lg">
+                        <div className="absolute inset-0 opacity-50 group-hover:opacity-40 transition-opacity">
                             <OptimizedImage
                                 src="/images/quarto-lavanderia.jpg"
                                 className="w-full h-full object-cover"
                                 alt="Quarto e Lavanderia"
                             />
                         </div>
-                        <div className="relative z-10 text-white">
-                            <div className="flex items-center gap-2 mb-2 text-orange-400">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 flex flex-col justify-end">
+                            <div className="flex items-center gap-2 mb-2 text-orange-500">
                                 <BedDouble size={22} />
-                                <h3 className="text-lg font-heading font-bold">
+                                <h3 className="text-lg font-heading font-bold text-white">
                                     Quarto & Lavanderia
                                 </h3>
                             </div>
-                            <ul className="text-gray-50 text-xs space-y-1 columns-2">
+                            <ul className="text-stone-300 text-xs space-y-1 columns-2">
                                 <li>Enxoval completo</li>
                                 <li>Cabides e Guarda-roupa</li>
                                 <li>Blackout nas cortinas</li>
@@ -152,20 +161,22 @@ const Amenities: React.FC = () => {
                     </div>
 
                     {/* 6. Internet e Escritório */}
-                    <div className="relative group overflow-hidden bg-stone-900 min-h-[250px] p-6 flex flex-col justify-end rounded-sm transition-all hover:shadow-lg">
-                        <div className="absolute inset-0 opacity-60 group-hover:opacity-50 transition-opacity">
+                    <div className="relative group overflow-hidden bg-stone-900 min-h-[250px] rounded-sm transition-all hover:shadow-lg">
+                        <div className="absolute inset-0 opacity-50 group-hover:opacity-40 transition-opacity">
                             <OptimizedImage
                                 src="/images/home-office.jpg"
                                 className="w-full h-full object-cover"
                                 alt="Home Office"
                             />
                         </div>
-                        <div className="relative z-10 text-white">
-                            <div className="flex items-center gap-2 mb-2 text-orange-400">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 flex flex-col justify-end">
+                            <div className="flex items-center gap-2 mb-2 text-orange-500">
                                 <Wifi size={22} />
-                                <h3 className="text-lg font-heading font-bold">Home Office</h3>
+                                <h3 className="text-lg font-heading font-bold text-white">
+                                    Home Office
+                                </h3>
                             </div>
-                            <ul className="text-gray-50 text-xs space-y-1">
+                            <ul className="text-stone-300 text-xs space-y-1">
                                 <li>Wi-Fi de alta velocidade</li>
                                 <li>Espaço de trabalho (Escrivaninha)</li>
                             </ul>
@@ -173,37 +184,37 @@ const Amenities: React.FC = () => {
                     </div>
 
                     {/* 5. Climatização (Moved and Expanded) */}
-                    <div className="md:col-span-2 bg-white border border-gray-100 p-8 flex flex-col justify-between hover:border-orange-200 transition-colors min-h-[160px]">
-                        <div className="flex items-center gap-3 mb-4 text-gray-900">
+                    <div className="md:col-span-2 bg-stone-900 border border-stone-800 p-8 flex flex-col justify-between hover:border-orange-500/30 transition-colors min-h-[160px]">
+                        <div className="flex items-center gap-3 mb-4 text-white">
                             <Snowflake size={24} />
                             <h3 className="text-xl font-heading font-bold">Climatização</h3>
                         </div>
                         <div className="flex gap-4">
-                            <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                            <div className="flex items-center gap-2 text-stone-400 text-sm">
+                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
                                 Ar-condicionado split
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                            <div className="flex items-center gap-2 text-stone-400 text-sm">
+                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
                                 Ventiladores portáteis
                             </div>
                         </div>
                     </div>
 
                     {/* 7. Segurança (Reduced visual size or shared row) */}
-                    <div className="md:col-span-2 bg-gray-50 p-8 flex flex-col justify-between rounded-sm border border-gray-200 min-h-[160px]">
+                    <div className="md:col-span-2 bg-stone-900 p-8 flex flex-col justify-between rounded-sm border border-stone-800 min-h-[160px]">
                         <div className="flex items-center gap-4 mb-4">
-                            <Shield className="text-green-600" size={24} />
-                            <h3 className="text-xl font-bold text-gray-700 font-heading">
+                            <Shield className="text-green-500" size={24} />
+                            <h3 className="text-xl font-bold text-white font-heading">
                                 Segurança Doméstica
                             </h3>
                         </div>
                         <div className="flex gap-4 flex-wrap">
-                            <span className="flex items-center gap-2 text-sm text-gray-500">
+                            <span className="flex items-center gap-2 text-sm text-stone-400">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>{' '}
                                 Câmeras áreas comuns
                             </span>
-                            <span className="flex items-center gap-2 text-sm text-gray-500">
+                            <span className="flex items-center gap-2 text-sm text-stone-400">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>{' '}
                                 Extintor de incêndio
                             </span>

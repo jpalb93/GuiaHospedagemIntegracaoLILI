@@ -55,7 +55,7 @@ const ModernLoadingScreen: React.FC<ModernLoadingScreenProps> = ({ variant = 'gu
             <div className="relative flex items-center justify-center w-full max-w-md px-10 mb-8">
                 {/* Left Line */}
                 <motion.div
-                    initial={{ x: "-100%", opacity: 0 }}
+                    initial={{ x: '-100%', opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className={`h-[2px] flex-1 bg-gradient-to-r ${current.gradientLeft} rounded-full`}
@@ -64,14 +64,12 @@ const ModernLoadingScreen: React.FC<ModernLoadingScreenProps> = ({ variant = 'gu
                 {/* Icon Container */}
                 <motion.div
                     className="mx-4 relative"
-                    initial={{ scale: 0, rotate: -10, opacity: 0 }}
-                    animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     transition={{
-                        duration: 0.8,
-                        delay: 0.4,
-                        type: "spring",
-                        stiffness: 200,
-                        damping: 20
+                        duration: 0.5,
+                        delay: 0.2,
+                        ease: 'easeOut',
                     }}
                 >
                     <div className={`absolute inset-0 ${current.glow} blur-xl rounded-full`} />
@@ -83,7 +81,7 @@ const ModernLoadingScreen: React.FC<ModernLoadingScreenProps> = ({ variant = 'gu
 
                 {/* Right Line */}
                 <motion.div
-                    initial={{ x: "100%", opacity: 0 }}
+                    initial={{ x: '100%', opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className={`h-[2px] flex-1 bg-gradient-to-l ${current.gradientRight} rounded-full`}
@@ -94,7 +92,7 @@ const ModernLoadingScreen: React.FC<ModernLoadingScreenProps> = ({ variant = 'gu
                 className="flex flex-col items-center gap-2"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.8, ease: "easeOut" }}
+                transition={{ delay: 0.8, duration: 0.8, ease: 'easeOut' }}
             >
                 <h2
                     className={`text-2xl font-bold font-heading tracking-wide bg-clip-text text-transparent bg-gradient-to-r ${current.titleGradient} animate-pulse`}

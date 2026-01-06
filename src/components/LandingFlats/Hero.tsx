@@ -13,32 +13,58 @@ const Hero: React.FC = () => {
 
     useGSAP(
         () => {
+            // Entrance Animations are now handled by CSS Classes for faster FCP
+            // Only keeping parallax/scroll-logic here if needed
             // Parallax Effect
-            gsap.to(bgRef.current, {
-                yPercent: 30,
-                scale: 1.2,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: true,
+            // Mobile-Safe Entrance Animation (Runs once on mount)
+            const tl = gsap.timeline();
+            if (textRef.current) {
+                // Animate Title, Subtitle, and Description
+                tl.from(textRef.current.children, {
+                    y: 30,
+                    opacity: 0,
+                    duration: 1,
+                    stagger: 0.15,
+                    ease: 'power3.out',
+                    delay: 0.2, // Small delay to allow App Shell to fade out smoothly
+                });
+            }
+
+            // Animate Buttons separately if needed, or included in children
+            // The buttons are inside textRef's sibling, so let's animate that too
+            tl.from(
+                '.hero-btn-animate',
+                {
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power2.out',
                 },
+                '-=0.6'
+            );
+
+            // Parallax Effect - Desktop Only to save Mobile CPU (TBT)
+            const mm = gsap.matchMedia();
+
+            mm.add('(min-width: 801px)', () => {
+                if (bgRef.current && containerRef.current) {
+                    gsap.to(bgRef.current, {
+                        yPercent: 30,
+                        scale: 1.2,
+                        ease: 'none',
+                        scrollTrigger: {
+                            trigger: containerRef.current,
+                            start: 'top top',
+                            end: 'bottom top',
+                            scrub: true,
+                        },
+                    });
+                }
             });
 
-            // Entrance Animations
-            const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1.5 } });
+            return () => mm.revert();
 
-            // Elementos de texto
-            const elements = textRef.current?.children;
-
-            if (elements) {
-                tl.fromTo(
-                    elements,
-                    { y: 100, opacity: 0 },
-                    { y: 0, opacity: 1, stagger: 0.2, duration: 1.2 }
-                );
-            }
+            return () => mm.revert();
         },
         { scope: containerRef }
     );
@@ -60,18 +86,25 @@ const Hero: React.FC = () => {
             <meta property="og:image" content="/hero-bg.jpg" />
             */}
 
-            {/* Background com Parallax via GSAP */}
+            {/* Background com Picture para Imagens Responsivas */}
             <div ref={bgRef} className="absolute inset-0">
-                <img
-                    src="/hero-bg.jpg"
-                    className="w-full h-full object-cover opacity-60"
-                    alt="Flats Integração hospedagem centro Petrolina PE próximos hospitais"
-                    fetchPriority="high"
-                    loading="eager"
-                    width="1920"
-                    height="1080"
-                    decoding="sync"
-                />
+                <picture>
+                    <source
+                        media="(max-width: 800px)"
+                        srcSet="/hero-bg-mobile.webp"
+                        type="image/webp"
+                    />
+                    <img
+                        src="/hero-bg-nova.webp"
+                        className="w-full h-full object-cover opacity-60"
+                        alt="Flats Integração hospedagem centro Petrolina PE próximos hospitais"
+                        // removed loading="eager" to avoid conflict with preload
+                        // removed decoding="sync" to free up main thread
+                        fetchPriority="high"
+                        width="1920"
+                        height="1080"
+                    />
+                </picture>
             </div>
 
             {/* Overlay Gradient - Dark Theme */}
@@ -82,11 +115,6 @@ const Hero: React.FC = () => {
             <div className="container mx-auto px-4 h-full flex flex-col justify-center relative z-20 pt-24 md:pt-32">
                 <div ref={textRef} className="max-w-4xl">
                     <div className="flex items-center gap-4 mb-6">
-                        <img
-                            src="https://flatsintegracao.com.br/assets/flats-integracao-logo.png"
-                            alt="Logo Flats Integração"
-                            className="h-16 md:h-20 w-auto opacity-0 hidden" // Ocultando pois já está no header, mantendo estrutura se for necessário
-                        />
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-tight tracking-tight drop-shadow-lg">
                             Hospedagem <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
@@ -142,7 +170,7 @@ const Hero: React.FC = () => {
                 </div>
 
                 {/* Botões de Ação - Alto Contraste */}
-                <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto hero-btn-animate">
                     <a
                         href="https://wa.me/5587988283273"
                         target="_blank"

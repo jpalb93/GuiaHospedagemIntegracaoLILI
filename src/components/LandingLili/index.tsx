@@ -56,7 +56,7 @@ const LandingLili: React.FC = () => {
     }, []);
 
     return (
-        <div className="font-sans bg-stone-50 text-gray-900 selection:bg-orange-200 selection:text-orange-900">
+        <div className="font-sans bg-stone-950 text-stone-50 selection:bg-orange-900 selection:text-white">
             <Helmet>
                 <title>Flat de Lili | Boutique em Petrolina</title>
             </Helmet>

@@ -27,36 +27,47 @@ const GallerySection: React.FC = () => {
 
     useGSAP(
         () => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 85%',
-                    toggleActions: 'play none none reverse',
-                },
+            const mm = gsap.matchMedia();
+
+            mm.add('(min-width: 801px)', () => {
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse',
+                    },
+                });
+
+                tl.fromTo(
+                    '.gallery-header',
+                    { y: 30, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.8,
+                        stagger: 0.2,
+                        ease: 'power2.out',
+                    }
+                ).fromTo(
+                    '.gallery-item',
+                    { y: 50, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.8,
+                        stagger: 0.1,
+                        ease: 'power2.out',
+                    },
+                    '-=0.4'
+                );
             });
 
-            tl.fromTo(
-                '.gallery-header',
-                { y: 30, opacity: 0 },
-                {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.8,
-                    stagger: 0.2,
-                    ease: 'power2.out',
-                }
-            ).fromTo(
-                '.gallery-item',
-                { y: 50, opacity: 0 },
-                {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.8,
-                    stagger: 0.1,
-                    ease: 'power2.out',
-                },
-                '-=0.4'
-            );
+            mm.add('(max-width: 800px)', () => {
+                gsap.set('.gallery-header', { opacity: 1, y: 0 });
+                gsap.set('.gallery-item', { opacity: 1, y: 0 });
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );
@@ -88,10 +99,11 @@ const GallerySection: React.FC = () => {
             <div className="container mx-auto px-4 md:px-8 pb-20">
                 <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {PHOTOS.map((photo, index) => (
-                        <div
+                        <button
                             key={index}
                             onClick={() => openLightbox(photo)}
-                            className="gallery-item aspect-[3/4] group relative overflow-hidden cursor-pointer bg-stone-900 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-800"
+                            aria-label={`Ver foto ampliada do ambiente ${index + 1}`}
+                            className="gallery-item aspect-[3/4] group relative overflow-hidden bg-stone-900 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-800"
                         >
                             <img
                                 src={photo}
@@ -101,7 +113,7 @@ const GallerySection: React.FC = () => {
                             />
                             {/* Overlay sutil apenas no hover para indicar interatividade */}
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                        </div>
+                        </button>
                     ))}
                 </div>
             </div>
@@ -111,16 +123,20 @@ const GallerySection: React.FC = () => {
                 <div
                     className="fixed inset-0 z-[60] bg-black/98 flex items-center justify-center p-4 animate-fadeIn backdrop-blur-sm"
                     onClick={closeLightbox}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Visualização de imagem"
                 >
                     <button
                         onClick={closeLightbox}
-                        className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2"
+                        aria-label="Fechar galeria"
+                        className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full"
                     >
                         <X size={40} />
                     </button>
                     <img
                         src={selectedImage}
-                        alt="Zoom"
+                        alt="Foto do ambiente em tamanho ampliado"
                         className="max-w-full max-h-[90vh] object-contain shadow-2xl animate-scaleIn border border-stone-800 rounded-md"
                         onClick={(e) => e.stopPropagation()}
                     />

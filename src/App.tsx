@@ -1,7 +1,4 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { App as CapacitorApp } from '@capacitor/app';
-import type { PluginListenerHandle } from '@capacitor/core';
 
 import { AppMode } from './types';
 import { useAppInitialization } from './hooks/useAppInitialization';
@@ -20,7 +17,6 @@ import ScrollToTop from './components/ScrollToTop';
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import { Button, Input } from './components/ui';
-import { logger } from './utils/logger';
 import {
     CalendarX,
     MessageCircle,
@@ -34,11 +30,17 @@ import {
 import { HOST_PHONE } from './constants';
 import { initAnalytics } from './services/analytics';
 import ErrorBoundary from './components/ErrorBoundary';
-import { GuestSkeleton, AdminSkeleton, LandingSkeleton } from './components/LoadingSkeletons';
+import {
+    GuestSkeleton,
+    AdminSkeleton,
+    LandingSkeleton,
+    LiliSkeleton,
+} from './components/LoadingSkeletons';
 import ModernLoadingScreen from './components/ModernLoadingScreen';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LanguageProvider } from './hooks/useLanguage';
 import { ThemeProvider } from './contexts/ThemeContext';
+import SmoothScroll from './components/SmoothScroll';
 import { PageTransition } from './components/ui/PageTransition';
 
 // --- LAZY LOADING (CODE SPLITTING) ---
@@ -52,32 +54,6 @@ const LandingPageLili = lazy(
 );
 
 const App: React.FC = () => {
-    // --- CAPACITOR ANDROID BACK BUTTON ---
-    useEffect(() => {
-        let backListener: PluginListenerHandle | undefined;
-        const setupBack = async () => {
-            try {
-                const isNative = Capacitor.isNativePlatform();
-                if (isNative) {
-                    backListener = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-                        if (canGoBack) {
-                            window.history.back();
-                        } else {
-                            CapacitorApp.exitApp();
-                        }
-                    });
-                }
-            } catch (e) {
-                logger.warn('Capacitor App plugin error', { error: e });
-            }
-        };
-        setupBack();
-
-        return () => {
-            if (backListener) backListener.remove();
-        };
-    }, []);
-
     // --- ESTADO DO APP (Refatorado para Hook) ---
     const { appState, setAppState } = useAppInitialization();
 
@@ -107,16 +83,51 @@ const App: React.FC = () => {
 
         // OTIMIZAÇÃO: Se for a Landing Page (raiz), não mostra tela de loading,
         // renderiza direto (o Suspense cuidará do esqueleto se necessário).
-        if (path === '/') {
+        // OTIMIZAÇÃO: Se for rota pública (Landing, Blog/Guia),
+        // não mostra tela de loading, renderiza direto para SEO e Performance.
+        if (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade') {
             return (
                 <ErrorBoundary>
                     <ThemeProvider>
                         <Suspense fallback={<LandingSkeleton />}>
-                            <PageTransition>
-                                <MainLayout>
-                                    <Home />
-                                </MainLayout>
-                            </PageTransition>
+                            <MainLayout>
+                                <ScrollToTop />
+                                <Routes>
+                                    <Route
+                                        path="/"
+                                        element={
+                                            <PageTransition>
+                                                <Home />
+                                            </PageTransition>
+                                        }
+                                    />
+                                    <Route path="/guia" element={<GuideList />} />
+                                    {/* Rotas Explícitas para Artigos */}
+                                    <Route
+                                        path="/guia/roteiro-vinho-petrolina"
+                                        element={<WineRouteArticle />}
+                                    />
+                                    <Route
+                                        path="/guia/onde-comer-petrolina-bododromo"
+                                        element={<BododromoArticle />}
+                                    />
+                                    <Route
+                                        path="/guia/rio-sao-francisco-rodeadouro-barquinha"
+                                        element={<RioSaoFranciscoArticle />}
+                                    />
+                                    <Route
+                                        path="/guia/hospedagem-corporativa-empresas-petrolina"
+                                        element={<CorporateArticle />}
+                                    />
+                                    <Route path="/guia/:slug" element={<GuideArticleLoader />} />
+                                    <Route
+                                        path="/politica-privacidade"
+                                        element={<PrivacyPolicy />}
+                                    />
+                                    <Route path="*" element={<Home />} />
+                                </Routes>
+                                <CookieConsent />
+                            </MainLayout>
                         </Suspense>
                     </ThemeProvider>
                 </ErrorBoundary>
@@ -129,7 +140,8 @@ const App: React.FC = () => {
             return (
                 <ErrorBoundary>
                     <ThemeProvider>
-                        <Suspense fallback={<LandingSkeleton />}>
+                        <SmoothScroll />
+                        <Suspense fallback={<LiliSkeleton />}>
                             <PageTransition>
                                 <LandingPageLili />
                             </PageTransition>
@@ -198,7 +210,8 @@ const App: React.FC = () => {
         return (
             <ErrorBoundary>
                 <ThemeProvider>
-                    <Suspense fallback={<LandingSkeleton />}>
+                    <SmoothScroll />
+                    <Suspense fallback={<LiliSkeleton />}>
                         <PageTransition>
                             <LandingPageLili />
                         </PageTransition>

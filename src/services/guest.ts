@@ -1,50 +1,30 @@
-import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { GuestConfig } from '../types';
 import { GuestConfigSchema } from '../schemas';
 import { logger } from '../utils/logger';
 
 export const fetchGuestConfig = async (rid: string): Promise<GuestConfig | null> => {
     try {
-        const isNative = Capacitor.isNativePlatform();
-        let data: unknown;
+        // Web Fetch
+        const response = await fetch(`/api/get-guest-config?rid=${rid}`);
 
-        if (isNative) {
-            const targetUrl = `https://flatsintegracao.com.br/api/get-guest-config?rid=${rid}`;
-            const response = await CapacitorHttp.get({ url: targetUrl });
-
+        if (!response.ok) {
             if (response.status === 404) {
-                logger.warn('Reserva não encontrada na API (Native).');
+                logger.warn('Reserva não encontrada na API.');
                 return null;
             }
+            throw new Error(`Erro na API: ${response.statusText}`);
+        }
 
-            if (response.status !== 200) {
-                throw new Error(`Erro na API (Native): ${response.status}`);
-            }
+        const data: unknown = await response.json();
 
-            data = response.data;
-        } else {
-            // Web Fallback
-            const response = await fetch(`/api/get-guest-config?rid=${rid}`);
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    logger.warn('Reserva não encontrada na API.');
-                    return null;
-                }
-                throw new Error(`Erro na API: ${response.statusText}`);
-            }
-
-            data = await response.json();
-
-            // Check for SW offline response
-            if (
-                data &&
-                typeof data === 'object' &&
-                'error' in data &&
-                (data as { error: unknown }).error === 'offline'
-            ) {
-                throw new Error('Offline (Service Worker)');
-            }
+        // Check for SW offline response
+        if (
+            data &&
+            typeof data === 'object' &&
+            'error' in data &&
+            (data as { error: unknown }).error === 'offline'
+        ) {
+            throw new Error('Offline (Service Worker)');
         }
 
         // Validação Zod com tratamento de erro amigável

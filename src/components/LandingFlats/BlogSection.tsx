@@ -12,24 +12,35 @@ const BlogSection: React.FC = () => {
 
     useGSAP(
         () => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 85%',
-                    toggleActions: 'play none none reverse',
-                },
+            const mm = gsap.matchMedia();
+
+            mm.add('(min-width: 801px)', () => {
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse',
+                    },
+                });
+
+                tl.fromTo(
+                    '.blog-header',
+                    { y: 30, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
+                ).fromTo(
+                    '.blog-card',
+                    { y: 50, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power2.out' },
+                    '-=0.4'
+                );
             });
 
-            tl.fromTo(
-                '.blog-header',
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
-            ).fromTo(
-                '.blog-card',
-                { y: 50, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power2.out' },
-                '-=0.4'
-            );
+            mm.add('(max-width: 800px)', () => {
+                gsap.set('.blog-header', { opacity: 1, y: 0 });
+                gsap.set('.blog-card', { opacity: 1, y: 0 });
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );
@@ -55,7 +66,7 @@ const BlogSection: React.FC = () => {
                     <div className="blog-card bg-stone-900 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group border border-stone-800 flex flex-col">
                         <div className="h-48 overflow-hidden relative">
                             <img
-                                src="/assets/blog/vapor-do-vinho-montagem.jpg"
+                                src="/assets/blog/vapor-do-vinho-montagem.webp"
                                 alt="Roteiro do Vinho em Petrolina"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />
@@ -83,7 +94,7 @@ const BlogSection: React.FC = () => {
                     <div className="blog-card bg-stone-900 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group border border-stone-800 flex flex-col">
                         <div className="h-48 overflow-hidden relative">
                             <img
-                                src="/assets/blog/bododromo-petrolina.jpg"
+                                src="/assets/blog/bododromo-petrolina.webp"
                                 alt="Complexo Gastronômico Bodódromo"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />
@@ -111,7 +122,7 @@ const BlogSection: React.FC = () => {
                     <div className="blog-card bg-stone-900 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group border border-stone-800 flex flex-col">
                         <div className="h-48 overflow-hidden relative">
                             <img
-                                src="/assets/blog/rio-sao-francisco-rodeadouro.jpg"
+                                src="/assets/blog/rio-sao-francisco-rodeadouro.webp"
                                 alt="Ilha do Rodeadouro"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />

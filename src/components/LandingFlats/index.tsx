@@ -66,24 +66,28 @@ const LandingFlatsIntegracao: React.FC = () => {
             </Helmet>
 
             {/* Header Sticky - Permanent Glass Look */}
-            <nav
+            <header
                 className={`fixed top-0 w-full z-50 px-6 transition-all duration-300 flex justify-between items-center border-b ${
                     isScrolled
                         ? 'bg-stone-950/95 backdrop-blur-md py-3 shadow-lg border-stone-800'
                         : 'bg-stone-950/50 backdrop-blur-sm py-5 border-white/10'
                 }`}
             >
-                <a href="#inicio" className="hover:opacity-80 transition-opacity">
+                <a
+                    href="#inicio"
+                    className="hover:opacity-80 transition-opacity"
+                    aria-label="Ir para o topo"
+                >
                     <img
                         src={flatsLogo}
-                        alt="Flats Integração"
+                        alt="Logo Flats Integração"
                         className={`w-auto drop-shadow-lg transition-all duration-300 ${
                             isScrolled ? 'h-10' : 'h-12 md:h-14'
                         }`}
                     />
                 </a>
 
-                <div className="flex items-center gap-6">
+                <nav className="flex items-center gap-6" aria-label="Navegação principal">
                     <a
                         href="#galeria"
                         className="text-stone-300 hover:text-white font-semibold text-sm uppercase tracking-wider transition-colors hidden sm:inline-block"
@@ -104,22 +108,24 @@ const LandingFlatsIntegracao: React.FC = () => {
                     >
                         Reservar
                     </a>
-                </div>
-            </nav>
+                </nav>
+            </header>
 
-            <Hero />
+            <main>
+                <Hero />
 
-            <ReputationSection />
+                <ReputationSection />
 
-            <GallerySection />
+                <GallerySection />
 
-            <InfoSection />
+                <InfoSection />
 
-            <FeaturesSection />
+                <FeaturesSection />
 
-            <LocationSection />
+                <LocationSection />
 
-            <GuestAccessSection />
+                <GuestAccessSection />
+            </main>
 
             {/* Footer Simples */}
             <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
@@ -134,12 +140,14 @@ const LandingFlatsIntegracao: React.FC = () => {
                             href="https://www.instagram.com/flatintegracao/"
                             target="_blank"
                             rel="noreferrer"
+                            aria-label="Seguir no Instagram"
                             className="hover:text-orange-500 transition-colors"
                         >
                             <Instagram size={20} />
                         </a>
                         <a
                             href="https://wa.me/5587988283273"
+                            aria-label="Falar conosco via WhatsApp"
                             className="hover:text-orange-500 transition-colors"
                         >
                             <Phone size={20} />

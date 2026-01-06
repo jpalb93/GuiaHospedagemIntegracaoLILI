@@ -11,25 +11,36 @@ const FeaturesSection: React.FC = () => {
 
     useGSAP(
         () => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 85%',
-                    toggleActions: 'play none none reverse',
-                },
+            const mm = gsap.matchMedia();
+
+            mm.add('(min-width: 801px)', () => {
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse',
+                    },
+                });
+
+                tl.fromTo(
+                    '.feature-card',
+                    { y: 50, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.8,
+                        stagger: 0.15,
+                        ease: 'power2.out',
+                    }
+                );
             });
 
-            tl.fromTo(
-                '.feature-card',
-                { y: 50, opacity: 0 },
-                {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.8,
-                    stagger: 0.15,
-                    ease: 'power2.out',
-                }
-            );
+            // Mobile Fallback: Ensure visibility immediately
+            mm.add('(max-width: 800px)', () => {
+                gsap.set('.feature-card', { opacity: 1, y: 0 });
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );

@@ -17,17 +17,27 @@ const GuestAccessSection: React.FC = () => {
 
     useGSAP(
         () => {
-            gsap.from(contentRef.current, {
-                y: 50,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out',
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 80%',
-                    toggleActions: 'play none none reverse',
-                },
+            const mm = gsap.matchMedia();
+
+            mm.add('(min-width: 801px)', () => {
+                gsap.from(contentRef.current, {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 80%',
+                        toggleActions: 'play none none reverse',
+                    },
+                });
             });
+
+            mm.add('(max-width: 800px)', () => {
+                gsap.set(contentRef.current, { opacity: 1, y: 0 });
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );

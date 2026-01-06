@@ -1,13 +1,4 @@
 import React from 'react';
-
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    import('react-scan').then(({ scan }) => {
-        scan({
-            enabled: true,
-        });
-    });
-}
-
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
@@ -41,15 +32,15 @@ root.render(
 );
 
 // Register Service Worker for offline support
+// DISABLE Service Worker to prevent Index.html caching on /lili route
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker
-            .register('/sw.js')
-            .then((registration) => {
-                console.log('✅ Service Worker registered:', registration.scope);
-            })
-            .catch((error) => {
-                console.log('❌ Service Worker registration failed:', error);
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+            registration.unregister().then(() => {
+                console.log('🧹 Service Worker unregistered to fix routing issues.');
+                // Force reload if we just unregistered (optional, but good for immediate fix)
+                // window.location.reload();
             });
+        }
     });
 }

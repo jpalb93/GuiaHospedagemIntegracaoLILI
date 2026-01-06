@@ -35,21 +35,6 @@ const Hero: React.FC = () => {
             });
 
             // Text Entrance Animation
-            const elements = textRef.current?.children;
-            if (elements) {
-                gsap.fromTo(
-                    elements,
-                    { y: 50, opacity: 0 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 1.5,
-                        stagger: 0.2,
-                        ease: 'power3.out',
-                        delay: 0.2,
-                    }
-                );
-            }
         },
         { scope: containerRef }
     );

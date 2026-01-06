@@ -5,7 +5,11 @@
             "destination": "/lili.html"
         },
         {
-            "source": "/((?!api/.*|sitemap.xml|robots.txt).*)",
+            "source": "/lili/",
+            "destination": "/lili.html"
+        },
+        {
+            "source": "/(.*)",
             "destination": "/index.html"
         }
     ]

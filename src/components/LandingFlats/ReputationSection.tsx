@@ -13,55 +13,69 @@ const ReputationSection: React.FC = () => {
 
     useGSAP(
         () => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 70%',
-                    toggleActions: 'play none none reverse',
-                },
-            });
+            const mm = gsap.matchMedia();
 
-            // 1. Reveal Text & Headline
-            tl.from('.reputation-text', {
-                y: 50,
-                opacity: 0,
-                duration: 1,
-                stagger: 0.2,
-                ease: 'power3.out',
-            });
-
-            // 2. Animate Score Number (Count up)
-            tl.from(
-                scoreRef.current,
-                {
-                    textContent: 0,
-                    duration: 2,
-                    ease: 'power1.out',
-                    snap: { textContent: 0.1 },
-                    stagger: 1,
-                    onUpdate: function () {
-                        if (scoreRef.current) {
-                            scoreRef.current.innerHTML = parseFloat(
-                                this.targets()[0].textContent
-                            ).toFixed(1);
-                        }
+            // Desktop Animation
+            mm.add('(min-width: 801px)', () => {
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 70%',
+                        toggleActions: 'play none none reverse',
                     },
-                },
-                '-=0.5'
-            );
+                });
 
-            // 3. Reveal Bottom Values
-            tl.from(
-                '.reputation-value',
-                {
-                    y: 30,
+                // 1. Reveal Text & Headline
+                tl.from('.reputation-text', {
+                    y: 50,
                     opacity: 0,
-                    duration: 0.8,
-                    stagger: 0.1,
-                    ease: 'power2.out',
-                },
-                '-=1.5'
-            );
+                    duration: 1,
+                    stagger: 0.2,
+                    ease: 'power3.out',
+                });
+
+                // 2. Animate Score Number (Count up)
+                tl.from(
+                    scoreRef.current,
+                    {
+                        textContent: 0,
+                        duration: 2,
+                        ease: 'power1.out',
+                        snap: { textContent: 0.1 },
+                        stagger: 1,
+                        onUpdate: function () {
+                            if (scoreRef.current) {
+                                scoreRef.current.innerHTML = parseFloat(
+                                    this.targets()[0].textContent
+                                ).toFixed(1);
+                            }
+                        },
+                    },
+                    '-=0.5'
+                );
+
+                // 3. Reveal Bottom Values
+                tl.from(
+                    '.reputation-value',
+                    {
+                        y: 30,
+                        opacity: 0,
+                        duration: 0.8,
+                        stagger: 0.1,
+                        ease: 'power2.out',
+                    },
+                    '-=1.5'
+                );
+            });
+
+            // Mobile Fallback
+            mm.add('(max-width: 800px)', () => {
+                gsap.set('.reputation-text', { opacity: 1, y: 0 });
+                gsap.set('.reputation-value', { opacity: 1, y: 0 });
+                if (scoreRef.current) scoreRef.current.innerHTML = '9.0';
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );

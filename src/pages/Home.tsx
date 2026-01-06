@@ -9,7 +9,6 @@ import LocationSection from '../components/LandingFlats/LocationSection';
 import GuestAccessSection from '../components/LandingFlats/GuestAccessSection';
 import FAQSection from '../components/LandingFlats/FAQSection';
 import FinalCTA from '../components/LandingFlats/FinalCTA';
-
 import BlogSection from '../components/LandingFlats/BlogSection';
 
 const Home: React.FC = () => {
@@ -69,9 +68,7 @@ const Home: React.FC = () => {
             <GallerySection />
             <InfoSection />
             <FeaturesSection />
-
             <BlogSection />
-
             <FAQSection />
             <GuestAccessSection />
             <LocationSection />

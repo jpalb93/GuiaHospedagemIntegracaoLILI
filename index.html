@@ -12,9 +12,14 @@
         content="Flat Petrolina, Hospedagem Petrolina, Hotel Petrolina, Aluguel por Temporada, Flats Integração, Apartamento Mobiliado, Onde ficar em Petrolina" />
     <meta name="google-site-verification" content="qjbXF979Yk1RnDV2vczvoG3UhIGe3cyVT55eCxVxIQ0" />
 
-    <!-- PWA Manifest & Icons -->
-    <!-- PWA Manifest & Icons -->
+    <!-- Performance Optimizations -->
+    <link rel="preload" as="image" href="/hero-bg-nova.webp" media="(min-width: 801px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/hero-bg-mobile.webp" media="(max-width: 800px)" fetchpriority="high" />
+    <!-- Reduced preconnects to prioritize bandwidth -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
+    <!-- PWA Manifest & Icons -->
     <meta name="theme-color" content="#111827" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -24,7 +29,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
-
     <link rel="manifest" href="/site.webmanifest">
 
     <meta property="og:type" content="website" />
@@ -40,78 +44,317 @@
 
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
-            {
-                "@context": "https://schema.org",
-                "@type": "LodgingBusiness",
-                "name": "Flats Integração",
-                "image": [
-                    "https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
-                ],
-                "@id": "https://flatsintegracao.com.br",
-                "url": "https://flatsintegracao.com.br",
-                "telephone": "+5587988283273",
-                "address": {
-                    "@type": "PostalAddress",
-                    "streetAddress": "Rua do Flat",
-                    "addressLocality": "Petrolina",
-                    "addressRegion": "PE",
-                    "postalCode": "56300-000",
-                    "addressCountry": "BR"
-                },
-                "geo": {
-                    "@type": "GeoCoordinates",
-                    "latitude": -9.3833,
-                    "longitude": -40.5
-                },
-                "description": "Flats modernos e equipados no coração de Petrolina. Wi-Fi e conforto para estadias curtas ou longas."
-            }
-        </script>
+        {
+            "@context": "https://schema.org",
+            "@type": "LodgingBusiness",
+            "name": "Flats Integração",
+            "image": [
+                "https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg"
+            ],
+            "@id": "https://flatsintegracao.com.br",
+            "url": "https://flatsintegracao.com.br",
+            "telephone": "+5587988283273",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Rua do Flat",
+                "addressLocality": "Petrolina",
+                "addressRegion": "PE",
+                "postalCode": "56300-000",
+                "addressCountry": "BR"
+            },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": -9.3833,
+                "longitude": -40.5
+            },
+            "description": "Flats modernos e equipados no coração de Petrolina. Wi-Fi e conforto para estadias curtas ou longas."
+        }
+    </script>
 
-    <!-- Fontes Google: Inter e Montserrat -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Montserrat:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
-        rel="stylesheet" />
+        rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Montserrat:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+            rel="stylesheet" />
+    </noscript>
 
     <style>
+        /* CRITICAL CSS - Immediate Render */
+
+        /* 1. Base Reset with HARDCODED Colors for Speed */
+        html,
         body {
+            background-color: #0c0a09 !important;
+            /* Hardcoded stone-950 */
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
             font-family: 'Inter', sans-serif;
-            color: #374151;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background-color: #f9fafb;
         }
 
-        html.dark body {
-            background-color: #111827;
+        #root {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background-color: #0c0a09;
         }
 
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            font-family: 'Playfair Display', 'Montserrat', serif;
+        /* 2. Critical Utilities */
+        .bg-stone-950 {
+            background-color: #0c0a09;
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .text-white {
+            color: #ffffff;
         }
 
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .text-stone-300 {
+            color: #d6d3d1;
+        }
+
+        .text-stone-400 {
+            color: #a8a29e;
+        }
+
+        /* Positioning & Layout */
+        .relative {
+            position: relative;
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .inset-0 {
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .container {
+            width: 100%;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .max-w-4xl {
+            max-width: 56rem;
+        }
+
+        /* Spacing */
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .pl-6 {
+            padding-left: 1.5rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem;
+        }
+
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+
+        .pt-24 {
+            padding-top: 6rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        /* Visuals */
+        .object-cover {
+            object-fit: cover;
+        }
+
+        .opacity-60 {
+            opacity: 0.6;
+        }
+
+        .z-0 {
+            z-index: 0;
+        }
+
+        .z-10 {
+            z-index: 10;
+        }
+
+        .z-20 {
+            z-index: 20;
+        }
+
+        /* Overlays Hardcoded */
+        .bg-stone-950-40 {
+            background-color: rgba(12, 10, 9, 0.4);
+        }
+
+        .bg-gradient-hero-main {
+            background-image: linear-gradient(to top, #0c0a09, rgba(12, 10, 9, 0.2), transparent);
+        }
+
+        .bg-gradient-hero-bottom {
+            background-image: linear-gradient(to top, #0c0a09, transparent);
+        }
+
+        .inset-x-0 {
+            left: 0;
+            right: 0;
+        }
+
+        .bottom-0 {
+            bottom: 0;
+        }
+
+        .h-32 {
+            height: 8rem;
+        }
+
+        /* Typography */
+        .font-heading {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-light {
+            font-weight: 300;
+        }
+
+        .leading-tight {
+            line-height: 1.25;
+        }
+
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+
+        .drop-shadow-lg {
+            filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
+        }
+
+        .text-5xl {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+
+        .leading-relaxed {
+            line-height: 1.625;
+        }
+
+        .block {
+            display: block;
+        }
+
+        /* Gradient Text */
+        .text-transparent {
+            color: transparent;
+        }
+
+        .bg-clip-text {
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .bg-gradient-to-r {
+            background-image: linear-gradient(to right, #fb923c, #ea580c);
+        }
+
+        .border-l-4-orange {
+            border-left: 4px solid #fb923c;
+        }
+
+        /* Breakpoints */
+        @media (min-width: 768px) {
+            .md\:pt-32 {
+                padding-top: 8rem;
+            }
+
+            .md\:text-7xl {
+                font-size: 4.5rem;
+                line-height: 1;
+            }
+
+            .md\:text-3xl {
+                font-size: 1.875rem;
+                line-height: 2.25rem;
+            }
+
+            .md\:h-screen {
+                height: 100vh;
+            }
+
+            .md\:min-h-\[700px\] {
+                min-height: 700px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:text-8xl {
+                font-size: 6rem;
+                line-height: 1;
+            }
         }
     </style>
 </head>
 
 <body>
     <div id="root"></div>
-
-
-
     <script type="module" src="src/index.tsx"></script>
 </body>
 

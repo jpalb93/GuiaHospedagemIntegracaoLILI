@@ -13,29 +13,41 @@ const LocationSection: React.FC = () => {
 
     useGSAP(
         () => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 75%',
-                    toggleActions: 'play none none reverse',
-                },
-            });
+            const mm = gsap.matchMedia();
 
-            tl.from(textBlockRef.current, {
-                x: -50,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out',
-            }).from(
-                mapBlockRef.current,
-                {
-                    x: 50,
+            mm.add('(min-width: 801px)', () => {
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 75%',
+                        toggleActions: 'play none none reverse',
+                    },
+                });
+
+                tl.from(textBlockRef.current, {
+                    x: -50,
                     opacity: 0,
                     duration: 1,
                     ease: 'power3.out',
-                },
-                '-=0.8'
-            );
+                }).from(
+                    mapBlockRef.current,
+                    {
+                        x: 50,
+                        opacity: 0,
+                        duration: 1,
+                        ease: 'power3.out',
+                    },
+                    '-=0.8'
+                );
+            });
+
+            mm.add('(max-width: 800px)', () => {
+                console.log('Mobile Location Fallback Triggered');
+                gsap.set(textBlockRef.current, { opacity: 1, x: 0 });
+                gsap.set(mapBlockRef.current, { opacity: 1, x: 0 });
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );

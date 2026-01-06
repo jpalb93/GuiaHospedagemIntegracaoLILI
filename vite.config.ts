@@ -80,11 +80,33 @@ export default defineConfig({
                 main: 'index.html',
                 lili: 'lili.html',
             },
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('gsap') || id.includes('framer-motion')) {
+                            return 'animations';
+                        }
+                        if (id.includes('lucide-react')) {
+                            return 'icons';
+                        }
+                        if (id.includes('firebase')) {
+                            return 'firebase';
+                        }
+                        if (
+                            id.includes('react') ||
+                            id.includes('react-dom') ||
+                            id.includes('react-router')
+                        ) {
+                            return 'vendor';
+                        }
+                        return 'others';
+                    }
+                },
+            },
         },
         // Vite já faz code splitting automático excelente com lazy imports
-        // Deixamos ele lidar com isso automaticamente
-        chunkSizeWarningLimit: 500,
+        chunkSizeWarningLimit: 800,
         sourcemap: false,
-        minify: 'esbuild', // esbuild é mais rápido e já vem com Vite
+        minify: 'esbuild',
     },
 });

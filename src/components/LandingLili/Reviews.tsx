@@ -11,18 +11,25 @@ const Reviews: React.FC = () => {
 
     useGSAP(
         () => {
-            const items = gridRef.current?.children;
-            if (items && items.length > 0) {
-                gsap.from(items, {
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    stagger: 0.2,
-                    scrollTrigger: {
-                        trigger: gridRef.current,
-                        start: 'top 80%',
+            const items = gsap.utils.toArray(gridRef.current?.children || []);
+            if (items.length > 0) {
+                gsap.fromTo(
+                    items,
+                    {
+                        y: 50,
+                        opacity: 0,
                     },
-                });
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1,
+                        stagger: 0.2,
+                        scrollTrigger: {
+                            trigger: gridRef.current,
+                            start: 'top 80%',
+                        },
+                    }
+                );
             }
         },
         { scope: gridRef, dependencies: [fetchedReviews, isLoadingReviews] }
@@ -65,13 +72,13 @@ const Reviews: React.FC = () => {
     }, [fetchedReviews, isLoadingReviews]);
 
     return (
-        <section id="avaliacoes" className="py-24 bg-stone-100">
+        <section id="avaliacoes" className="py-24 bg-stone-950 border-t border-stone-800">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="text-center mb-16">
                     <span className="text-orange-600 font-bold uppercase tracking-widest text-xs mb-4 block">
                         O que dizem nossos hóspedes
                     </span>
-                    <h2 className="text-4xl font-heading font-medium text-gray-900">
+                    <h2 className="text-4xl font-heading font-medium text-white">
                         Experiências Reais
                     </h2>
                 </div>
@@ -80,27 +87,26 @@ const Reviews: React.FC = () => {
                     {reviews.map((review) => (
                         <div
                             key={review.id}
-                            className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                            className="bg-stone-900 p-8 rounded-xl shadow-sm border border-stone-800 hover:border-orange-500/30 transition-all hover:shadow-lg hover:-translate-y-1"
                         >
                             <div className="flex gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
                                     <Star
                                         key={i}
                                         size={16}
+                                        fill={i < (Number(review.rating) || 5) ? '#facc15' : 'none'}
                                         className={
-                                            i < Number(review.rating)
-                                                ? 'fill-orange-400 text-orange-400'
-                                                : 'text-gray-200'
+                                            i < (Number(review.rating) || 5)
+                                                ? 'text-yellow-400'
+                                                : 'text-stone-700'
                                         }
                                     />
                                 ))}
                             </div>
-                            <p className="text-gray-600 italic mb-6">"{review.text}"</p>
+                            <p className="text-stone-300 italic mb-6">"{review.text}"</p>
                             <div className="flex justify-between items-center mt-auto">
-                                <span className="font-bold text-gray-900 text-sm">
-                                    {review.name}
-                                </span>
-                                <span className="text-xs text-gray-400 capitalize">
+                                <span className="font-bold text-white text-sm">{review.name}</span>
+                                <span className="text-xs text-stone-500 capitalize">
                                     {review.source}
                                 </span>
                             </div>

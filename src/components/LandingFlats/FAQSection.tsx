@@ -35,24 +35,35 @@ const FAQSection: React.FC = () => {
 
     useGSAP(
         () => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: 'top 85%',
-                    toggleActions: 'play none none reverse',
-                },
+            const mm = gsap.matchMedia();
+
+            mm.add('(min-width: 801px)', () => {
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse',
+                    },
+                });
+
+                tl.fromTo(
+                    '.faq-header',
+                    { y: 30, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
+                ).fromTo(
+                    '.faq-item',
+                    { y: 30, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
+                    '-=0.4'
+                );
             });
 
-            tl.fromTo(
-                '.faq-header',
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
-            ).fromTo(
-                '.faq-item',
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
-                '-=0.4'
-            );
+            mm.add('(max-width: 800px)', () => {
+                gsap.set('.faq-header', { opacity: 1, y: 0 });
+                gsap.set('.faq-item', { opacity: 1, y: 0 });
+            });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );
@@ -82,9 +93,12 @@ const FAQSection: React.FC = () => {
                         >
                             <button
                                 onClick={() => toggleFAQ(index)}
+                                aria-expanded={openIndex === index}
+                                aria-controls={`faq-answer-${index}`}
                                 className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
                             >
                                 <span
+                                    id={`faq-question-${index}`}
                                     className={`font-bold text-lg transition-colors ${openIndex === index ? 'text-orange-500' : 'text-stone-300 group-hover:text-white'}`}
                                 >
                                     {faq.question}
@@ -96,6 +110,9 @@ const FAQSection: React.FC = () => {
                                 )}
                             </button>
                             <div
+                                id={`faq-answer-${index}`}
+                                role="region"
+                                aria-labelledby={`faq-question-${index}`}
                                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
                                     openIndex === index
                                         ? 'max-h-40 opacity-100'

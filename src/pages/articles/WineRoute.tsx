@@ -46,7 +46,7 @@ const WineRouteArticle: React.FC = () => {
             {/* Imagem Principal */}
             <div className="w-full h-[400px] md:h-[500px] mb-12 overflow-hidden">
                 <img
-                    src="/assets/blog/vapor-do-vinho-montagem.jpg"
+                    src="/assets/blog/vapor-do-vinho-montagem.webp"
                     alt="Turistas visitando parreirais de uva no Vale do São Francisco"
                     className="w-full h-full object-cover"
                 />
@@ -232,7 +232,7 @@ const WineRouteArticle: React.FC = () => {
                         <div className="flex gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all">
                             <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                                 <img
-                                    src="/assets/blog/bododromo-petrolina.jpg"
+                                    src="/assets/blog/bododromo-petrolina.webp"
                                     alt="Comida Regional"
                                     className="w-full h-full object-cover"
                                 />
