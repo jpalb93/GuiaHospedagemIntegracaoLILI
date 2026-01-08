@@ -12,7 +12,6 @@ import {
     deleteDoc,
     setDoc,
     query,
-    orderBy,
     limit,
     writeBatch,
     Query,
@@ -27,15 +26,19 @@ import { logger } from '../../utils/logger';
 export const getTips = async (): Promise<Tip[]> => {
     try {
         const db = await getFirestoreInstance();
-        const q = query(collection(db, 'tips'), orderBy('order', 'asc'));
+        // REMOVED orderBy('order') to avoid excluding docs without the field
+        const q = query(collection(db, 'tips'));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(
+        const tips = snapshot.docs.map(
             (doc) =>
                 ({
                     id: doc.id,
                     ...(doc.data() as Record<string, unknown>),
                 }) as Tip
         );
+
+        // Client-side sort
+        return tips.sort((a, b) => (a.order || 0) - (b.order || 0));
     } catch (error) {
         logger.error('Erro ao buscar dicas:', { error });
         return [];

@@ -52,12 +52,13 @@ export const useGuestData = (config: GuestConfig) => {
                 }
 
                 const fetchedTips = await getTips();
+                console.log('[useGuestData] fetchTips result:', fetchedTips?.length);
                 if (fetchedTips && fetchedTips.length > 0) {
-                    if (config.propertyId === 'integracao') {
-                        setTips([]);
-                    } else {
-                        setTips(fetchedTips.filter((t) => t.visible !== false));
-                    }
+                    const visibleTips = fetchedTips.filter((t) => t.visible !== false);
+                    console.log('[useGuestData] setting tips:', visibleTips.length);
+                    setTips(visibleTips);
+                } else {
+                    console.log('[useGuestData] no tips found or empty');
                 }
 
                 const fetchedCuriosities = await getCuriosities();
@@ -77,6 +78,7 @@ export const useGuestData = (config: GuestConfig) => {
 
         const setupSubscriptions = async () => {
             unsubscribePlaces = await subscribeToPlaces((places) => {
+                console.log('[useGuestData] places update:', places.length);
                 setDynamicPlaces(places.filter((p) => p.visible !== false));
             });
 

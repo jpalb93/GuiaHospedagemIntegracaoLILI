@@ -18,14 +18,14 @@ const containerVariants: Variants = {
         opacity: 1,
         transition: {
             staggerChildren: 0.15,
-            delayChildren: 0.2
-        }
-    }
+            delayChildren: 0.2,
+        },
+    },
 };
 
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 import StoriesBar from './guest/StoriesBar';
 import GuestHeader from './guest/GuestHeader';
@@ -117,7 +117,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
         const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
         const today = localDate.toISOString().split('T')[0];
 
-        return events
+        const filtered = events
             .filter((event) => {
                 if (!event.eventDate) return true;
                 const expiryDate = event.eventEndDate || event.eventDate;
@@ -128,11 +128,21 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 const dateB = b.eventDate || '9999-99-99';
                 return dateA.localeCompare(dateB);
             });
+
+        console.log(
+            '[GuestView] Calculated activeEvents:',
+            filtered.length,
+            'from total events:',
+            events.length
+        );
+        return filtered;
     }, [mergePlaces]);
 
     // Lógica de Stories (ainda um pouco acoplada, mas simplificada)
     const [currentStories, setCurrentStories] = React.useState<StoryItem[]>([]);
-    const [currentStoriesType, setCurrentStoriesType] = React.useState<'agenda' | 'curiosities' | 'tips' | null>(null);
+    const [currentStoriesType, setCurrentStoriesType] = React.useState<
+        'agenda' | 'curiosities' | 'tips' | null
+    >(null);
 
     const handleOpenStories = useCallback(
         (type: 'agenda' | 'curiosities' | 'tips') => {
@@ -329,6 +339,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
             </div>
 
             {/* STORIES BAR */}
+            {/* DEBUG LOG: {console.log(...)} */}
             <div className="animate-fade-up" style={{ animationDelay: '200ms' }}>
                 <StoriesBar
                     activeEvents={activeEvents}
@@ -345,7 +356,10 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 animate="visible"
             >
                 {/* GRID SUPERIOR: ACESSO RÁPIDO + SMART SUGGESTION + LOCALIZAÇÃO */}
-                <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" variants={itemVariants}>
+                <motion.div
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+                    variants={itemVariants}
+                >
                     <div className="h-full animate-fade-up" style={{ animationDelay: '300ms' }}>
                         <GuestStatusCard
                             stayStage={stayStage}
@@ -414,7 +428,9 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                                     aria-label="Copiar endereço"
                                     className="mb-4 px-4 py-1.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wide rounded-full border border-purple-100 dark:border-purple-900/30 hover:bg-purple-50 dark:hover:bg-purple-900/20 active:scale-95 transition-all shadow-sm"
                                 >
-                                    {clipboard.addressCopied ? t('Copiado!', 'Copied!') : t('Toque p/ Copiar', 'Tap to Copy')}
+                                    {clipboard.addressCopied
+                                        ? t('Copiado!', 'Copied!')
+                                        : t('Toque p/ Copiar', 'Tap to Copy')}
                                 </button>
 
                                 <div className="flex gap-3 w-full justify-center">
@@ -464,7 +480,11 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                                 {t('Sua opinião vale ouro! ⭐', 'Your opinion is gold! ⭐')}
                             </h3>
                             <p className="text-blue-50 text-sm mb-6 leading-relaxed font-medium opacity-90">
-                                {t('Olá', 'Hello')}, {config.guestName}! {t('Espero que tenha amado a estadia. Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!', 'Hope you loved your stay. Leaving a quick review on Google helps us a lot!')}
+                                {t('Olá', 'Hello')}, {config.guestName}!{' '}
+                                {t(
+                                    'Espero que tenha amado a estadia. Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!',
+                                    'Hope you loved your stay. Leaving a quick review on Google helps us a lot!'
+                                )}
                             </p>
                             <motion.a
                                 href={property.googleReviewLink || GOOGLE_REVIEW_LINK}
@@ -484,7 +504,11 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
 
             <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
                 {/* CORREÇÃO: Lógica de seleção do prompt para evitar misturar personas */}
-                <React.Suspense fallback={<div className="h-14 w-14 rounded-full bg-white/10 animate-pulse fixed bottom-4 right-4" />}>
+                <React.Suspense
+                    fallback={
+                        <div className="h-14 w-14 rounded-full bg-white/10 animate-pulse fixed bottom-4 right-4" />
+                    }
+                >
                     <ChatWidget
                         guestName={config.guestName}
                         systemInstruction={(() => {
@@ -526,7 +550,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 }
                 propertyId={config.propertyId}
             />
-        </div >
+        </div>
     );
 };
 
