@@ -5,7 +5,6 @@ import { useGuestStay } from '../hooks/useGuestStay';
 import { useGuestData } from '../hooks/useGuestData';
 import { useGuestUI } from '../hooks/useGuestUI';
 import { useLanguage } from '../hooks/useLanguage';
-import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 import { motion, Variants } from 'framer-motion';
 
@@ -40,7 +39,6 @@ import OfflineCardModal from './modals/OfflineCardModal';
 import DriverModeModal from './modals/DriverModeModal';
 import VideoModal from './modals/VideoModal';
 import SupportModal from './modals/SupportModal';
-import PullRefreshIndicator from './ui/PullRefreshIndicator';
 
 import { CURIOSITY_STORY_IMAGES, DRONE_VIDEO_URL } from '../constants';
 import { PROPERTIES } from '../config/properties';
@@ -87,15 +85,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
 
     // State local para idioma (agora via hook)
     const { t, currentLang, toggleLanguage } = useLanguage();
-
-    // Pull to  refresh
-    const pullToRefresh = usePullToRefresh({
-        threshold: 80,
-        onRefresh: async () => {
-            // Simple refresh - reload the page
-            window.location.reload();
-        },
-    });
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -319,13 +308,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 startIndex={stories.storyStartIndex}
                 // Adiciona música apenas para as Dicas/Curiosidades
                 audioSrc={currentStoriesType === 'curiosities' ? '/music/juazeiro.mp3' : undefined}
-            />
-
-            {/* Pull to Refresh Indicator */}
-            <PullRefreshIndicator
-                pullDistance={pullToRefresh.pullDistance}
-                isRefreshing={pullToRefresh.isRefreshing}
-                progress={pullToRefresh.progress}
             />
 
             {/* HERO SECTION */}
