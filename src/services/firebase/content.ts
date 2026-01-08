@@ -17,6 +17,7 @@ import {
     Query,
     DocumentData,
     QueryDocumentSnapshot,
+    onSnapshot,
 } from 'firebase/firestore';
 import { getFirestoreInstance, cleanData } from './config';
 import { Tip, CityCuriosity, GuestReview } from '../../types';
@@ -43,6 +44,30 @@ export const getTips = async (): Promise<Tip[]> => {
         logger.error('Erro ao buscar dicas:', { error });
         return [];
     }
+};
+
+export const subscribeToTips = async (callback: (tips: Tip[]) => void) => {
+    const db = await getFirestoreInstance();
+    const q = query(collection(db, 'tips'));
+
+    return onSnapshot(
+        q,
+        (snapshot) => {
+            const tips = snapshot.docs.map(
+                (doc) =>
+                    ({
+                        id: doc.id,
+                        ...(doc.data() as Record<string, unknown>),
+                    }) as Tip
+            );
+            // Client-side sort
+            callback(tips.sort((a, b) => (a.order || 0) - (b.order || 0)));
+        },
+        (error) => {
+            logger.error('Erro no subscribeToTips:', { error });
+            callback([]);
+        }
+    );
 };
 
 export const addTip = async (tip: Tip): Promise<string> => {

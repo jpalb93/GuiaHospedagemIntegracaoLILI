@@ -12,9 +12,9 @@ import {
     getHeroImages,
     subscribeToAppSettings,
     subscribeToSmartSuggestions,
-    getTips,
     getCuriosities,
     subscribeToPlaces,
+    subscribeToTips,
 } from '../services/firebase';
 import { DEFAULT_SLIDES, DEFAULT_CITY_CURIOSITIES } from '../constants';
 
@@ -51,15 +51,7 @@ export const useGuestData = (config: GuestConfig) => {
                     setHeroSlides(images);
                 }
 
-                const fetchedTips = await getTips();
-                console.log('[useGuestData] fetchTips result:', fetchedTips?.length);
-                if (fetchedTips && fetchedTips.length > 0) {
-                    const visibleTips = fetchedTips.filter((t) => t.visible !== false);
-                    console.log('[useGuestData] setting tips:', visibleTips.length);
-                    setTips(visibleTips);
-                } else {
-                    console.log('[useGuestData] no tips found or empty');
-                }
+                // Tips are now handled by subscription below
 
                 const fetchedCuriosities = await getCuriosities();
                 if (fetchedCuriosities && fetchedCuriosities.length > 0) {
@@ -75,11 +67,19 @@ export const useGuestData = (config: GuestConfig) => {
         let unsubscribePlaces: (() => void) | undefined;
         let unsubscribeSettings: (() => void) | undefined;
         let unsubscribeSuggestions: (() => void) | undefined;
+        let unsubscribeTips: (() => void) | undefined;
 
         const setupSubscriptions = async () => {
             unsubscribePlaces = await subscribeToPlaces((places) => {
                 console.log('[useGuestData] places update:', places.length);
                 setDynamicPlaces(places.filter((p) => p.visible !== false));
+            });
+
+            // NEW: Real-time Tips
+            unsubscribeTips = await subscribeToTips((fetchedTips: Tip[]) => {
+                console.log('[useGuestData] tips update:', fetchedTips.length);
+                const visibleTips = fetchedTips.filter((t) => t.visible !== false);
+                setTips(visibleTips);
             });
 
             unsubscribeSettings = await subscribeToAppSettings((settings) => {
@@ -97,6 +97,7 @@ export const useGuestData = (config: GuestConfig) => {
             if (unsubscribePlaces) unsubscribePlaces();
             if (unsubscribeSettings) unsubscribeSettings();
             if (unsubscribeSuggestions) unsubscribeSuggestions();
+            if (unsubscribeTips) unsubscribeTips();
         };
     }, [config.guestName, config.propertyId]);
 

@@ -4,11 +4,15 @@
  */
 
 // Config e inicialização
-export { getFirestoreInstance, getStorageInstance, isFirebaseConfigured, validateFirebaseConfig } from './config';
+export {
+    getFirestoreInstance,
+    getStorageInstance,
+    isFirebaseConfigured,
+    validateFirebaseConfig,
+} from './config';
 
 // DEPRECATED COMPATIBILITY LAYER - REMOVED
 // All consumers must use getFirestoreInstance()
-
 
 // Places (Lugares)
 export {
@@ -54,6 +58,7 @@ export {
     saveTipsOrder,
     getCuriosities,
     saveCuriosities,
+    subscribeToTips,
     getGuestReviews,
     addGuestReview,
     deleteGuestReview,
