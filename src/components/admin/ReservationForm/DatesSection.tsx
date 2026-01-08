@@ -32,7 +32,7 @@ const DatesSection: React.FC<DatesSectionProps> = ({
                     type="date"
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-gray-100"
                 />
             </div>
             <div className="space-y-1">
@@ -43,7 +43,7 @@ const DatesSection: React.FC<DatesSectionProps> = ({
                     type="time"
                     value={checkInTime}
                     onChange={(e) => setCheckInTime(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-green-500 font-mono tracking-wider"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-green-500 font-mono tracking-wider text-gray-900 dark:text-gray-100"
                 />
             </div>
             <div className="h-px bg-gray-200 dark:bg-gray-700 my-2 border-dashed"></div>
@@ -55,7 +55,7 @@ const DatesSection: React.FC<DatesSectionProps> = ({
                     type="date"
                     value={checkoutDate}
                     onChange={(e) => setCheckoutDate(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-gray-100"
                 />
             </div>
             <div className="space-y-1">
@@ -66,7 +66,7 @@ const DatesSection: React.FC<DatesSectionProps> = ({
                     type="time"
                     value={checkOutTime}
                     onChange={(e) => setCheckOutTime(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-wider"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-wider text-gray-900 dark:text-gray-100"
                 />
             </div>
         </div>

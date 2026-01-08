@@ -1,73 +1,59 @@
-import React, { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { ChevronRight, ArrowRight } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP is now dynamically imported to save initial bundle size
 
 const Hero: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const bgRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(
-        () => {
-            // Entrance Animations are now handled by CSS Classes for faster FCP
-            // Only keeping parallax/scroll-logic here if needed
-            // Parallax Effect
-            // Mobile-Safe Entrance Animation (Runs once on mount)
-            const tl = gsap.timeline();
-            if (textRef.current) {
-                // Animate Title, Subtitle, and Description
-                tl.from(textRef.current.children, {
-                    y: 30,
-                    opacity: 0,
-                    duration: 1,
-                    stagger: 0.15,
-                    ease: 'power3.out',
-                    delay: 0.2, // Small delay to allow App Shell to fade out smoothly
-                });
-            }
+    useEffect(() => {
+        let ctx: gsap.Context | undefined;
 
-            // Animate Buttons separately if needed, or included in children
-            // The buttons are inside textRef's sibling, so let's animate that too
-            tl.from(
-                '.hero-btn-animate',
-                {
-                    y: 20,
-                    opacity: 0,
-                    duration: 0.8,
-                    ease: 'power2.out',
-                },
-                '-=0.6'
-            );
+        const initGsap = async () => {
+            // Dynamic import GSAP modules
+            const gsapModule = await import('gsap');
+            const scrollTriggerModule = await import('gsap/ScrollTrigger');
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+
+            gsap.registerPlugin(ScrollTrigger);
 
             // Parallax Effect - Desktop Only to save Mobile CPU (TBT)
+            // Entrance animations are now handled by pure CSS (animate-fade-up) for best LCP
             const mm = gsap.matchMedia();
 
             mm.add('(min-width: 801px)', () => {
-                if (bgRef.current && containerRef.current) {
-                    gsap.to(bgRef.current, {
-                        yPercent: 30,
-                        scale: 1.2,
-                        ease: 'none',
-                        scrollTrigger: {
-                            trigger: containerRef.current,
-                            start: 'top top',
-                            end: 'bottom top',
-                            scrub: true,
-                        },
-                    });
-                }
+                // Context for cleanup
+                ctx = gsap.context(() => {
+                    if (bgRef.current && containerRef.current) {
+                        gsap.to(bgRef.current, {
+                            yPercent: 30,
+                            scale: 1.2,
+                            ease: 'none',
+                            scrollTrigger: {
+                                trigger: containerRef.current,
+                                start: 'top top',
+                                end: 'bottom top',
+                                scrub: true,
+                            },
+                        });
+                    }
+                }, containerRef);
             });
+        };
 
-            return () => mm.revert();
+        // Delay slightly to prioritize LCP
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
 
-            return () => mm.revert();
-        },
-        { scope: containerRef }
-    );
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+        };
+    }, []);
 
     return (
         <section
@@ -122,7 +108,10 @@ const Hero: React.FC = () => {
                             </span>
                         </h1>
                     </div>
-                    <span className="text-xl md:text-3xl font-light text-stone-300 block mt-6 mb-8">
+                    {/* CSS Animation: Delay 150ms */}
+                    <span
+                        className="text-xl md:text-3xl font-light text-stone-300 block mt-6 mb-8"
+                    >
                         Flat para hospedagem em Petrolina (Centro) – próximos a hospitais e orla.
                     </span>
                 </div>
@@ -152,25 +141,28 @@ const Hero: React.FC = () => {
                 </script>
 
                 {/* Subheadline de Valor */}
-                <p className="text-lg md:text-xl text-stone-400 mb-6 max-w-2xl leading-relaxed border-l-4 border-orange-500 pl-6">
+                <p
+                    className="text-lg md:text-xl text-stone-400 mb-6 max-w-2xl leading-relaxed border-l-4 border-orange-500 pl-6"
+                >
                     Apartamentos completos que unem a liberdade de um lar ao serviço de uma
                     hospedagem profissional.
                 </p>
 
                 {/* Microcopy de Localização Rico */}
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 mb-10 text-stone-500 text-sm md:text-base">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 mb-10 text-stone-400 text-sm md:text-base">
                     <div className="flex items-center gap-2 text-stone-200 font-bold bg-white/5 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
                         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                         Centro de Petrolina – PE
                     </div>
-                    <span className="hidden md:block text-stone-600">•</span>
+                    <span className="hidden md:block text-stone-500">•</span>
                     <span>
                         Próximo a hospitais, orla do São Francisco e principais vias de Petrolina.
                     </span>
                 </div>
 
                 {/* Botões de Ação - Alto Contraste */}
-                <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto hero-btn-animate">
+                {/* CSS Animation: Delay 300ms */}
+                <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
                     <a
                         href="https://wa.me/5587988283273"
                         target="_blank"

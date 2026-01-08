@@ -1,84 +1,105 @@
-import React, { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Star, MapPin, ShieldCheck, Heart } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const ReputationSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const scoreRef = useRef<HTMLSpanElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             // Desktop Animation
             mm.add('(min-width: 801px)', () => {
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 70%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
-
-                // 1. Reveal Text & Headline
-                tl.from('.reputation-text', {
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    stagger: 0.2,
-                    ease: 'power3.out',
-                });
-
-                // 2. Animate Score Number (Count up)
-                tl.from(
-                    scoreRef.current,
-                    {
-                        textContent: 0,
-                        duration: 2,
-                        ease: 'power1.out',
-                        snap: { textContent: 0.1 },
-                        stagger: 1,
-                        onUpdate: function () {
-                            if (scoreRef.current) {
-                                scoreRef.current.innerHTML = parseFloat(
-                                    this.targets()[0].textContent
-                                ).toFixed(1);
-                            }
+                ctx = gsap.context(() => {
+                    const tl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 70%',
+                            toggleActions: 'play none none reverse',
                         },
-                    },
-                    '-=0.5'
-                );
+                    });
 
-                // 3. Reveal Bottom Values
-                tl.from(
-                    '.reputation-value',
-                    {
-                        y: 30,
+                    // 1. Reveal Text & Headline
+                    tl.from('.reputation-text', {
+                        y: 50,
                         opacity: 0,
-                        duration: 0.8,
-                        stagger: 0.1,
-                        ease: 'power2.out',
-                    },
-                    '-=1.5'
-                );
+                        duration: 1,
+                        stagger: 0.2,
+                        ease: 'power3.out',
+                    });
+
+                    // 2. Animate Score Number (Count up)
+                    tl.from(
+                        scoreRef.current,
+                        {
+                            textContent: 0,
+                            duration: 2,
+                            ease: 'power1.out',
+                            snap: { textContent: 0.1 },
+                            stagger: 1,
+                            onUpdate: function () {
+                                if (scoreRef.current) {
+                                    scoreRef.current.innerHTML = parseFloat(
+                                        this.targets()[0].textContent
+                                    ).toFixed(1);
+                                }
+                            },
+                        },
+                        '-=0.5'
+                    );
+
+                    // 3. Reveal Bottom Values
+                    tl.from(
+                        '.reputation-value',
+                        {
+                            y: 30,
+                            opacity: 0,
+                            duration: 0.8,
+                            stagger: 0.1,
+                            ease: 'power2.out',
+                        },
+                        '-=1.5'
+                    );
+                }, sectionRef);
             });
 
             // Mobile Fallback
             mm.add('(max-width: 800px)', () => {
-                gsap.set('.reputation-text', { opacity: 1, y: 0 });
-                gsap.set('.reputation-value', { opacity: 1, y: 0 });
+                if (sectionRef.current) {
+                    const texts = sectionRef.current.querySelectorAll('.reputation-text');
+                    const values = sectionRef.current.querySelectorAll('.reputation-value');
+                    texts.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                    values.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                }
                 if (scoreRef.current) scoreRef.current.innerHTML = '9.0';
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+            if (mm) mm.revert();
+        };
+    }, []);
 
     return (
         <section ref={sectionRef} className="py-32 bg-stone-950 relative overflow-hidden">
@@ -94,12 +115,12 @@ const ReputationSection: React.FC = () => {
                 >
                     {/* Editorial Headline */}
                     <div className="lg:col-span-6">
-                        <span className="reputation-text text-stone-500 font-bold tracking-[0.2em] uppercase text-xs mb-6 block">
+                        <span className="reputation-text text-stone-400 font-bold tracking-[0.2em] uppercase text-xs mb-6 block">
                             Experiência
                         </span>
                         <h2 className="reputation-text text-5xl md:text-7xl font-heading font-light text-white leading-tight tracking-tight mb-8">
                             Aprovado por <br />
-                            <span className="italic font-serif text-stone-500">quem viveu.</span>
+                            <span className="italic font-serif text-stone-400">quem viveu.</span>
                         </h2>
                         <p className="reputation-text text-xl text-stone-400 font-light max-w-lg leading-relaxed">
                             A excelência não é um ato, mas um hábito. Nossa pontuação reflete o
@@ -131,7 +152,7 @@ const ReputationSection: React.FC = () => {
                                     <span className="uppercase text-sm tracking-widest font-bold text-stone-200">
                                         Excepcional
                                     </span>
-                                    <span className="text-stone-500 text-xs mt-1">
+                                    <span className="text-stone-400 text-xs mt-1">
                                         Baseado em avaliações reais
                                     </span>
                                 </div>
@@ -148,9 +169,9 @@ const ReputationSection: React.FC = () => {
                     <div className="reputation-value space-y-4">
                         <div className="w-full h-px bg-stone-800 mb-6"></div>
                         <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
-                            <MapPin className="stroke-1 text-stone-500" size={20} /> Localização
+                            <MapPin className="stroke-1 text-stone-400" size={20} /> Localização
                         </h3>
-                        <p className="text-stone-500 font-light leading-relaxed text-sm">
+                        <p className="text-stone-400 font-light leading-relaxed text-sm">
                             No epicentro de Petrolina. A poucos passos de tudo o que importa,
                             mantendo a privacidade que você precisa.
                         </p>
@@ -159,10 +180,10 @@ const ReputationSection: React.FC = () => {
                     <div className="reputation-value space-y-4">
                         <div className="w-full h-px bg-stone-800 mb-6"></div>
                         <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
-                            <ShieldCheck className="stroke-1 text-stone-500" size={20} />{' '}
+                            <ShieldCheck className="stroke-1 text-stone-400" size={20} />{' '}
                             Privacidade & Segurança
                         </h3>
-                        <p className="text-stone-500 font-light leading-relaxed text-sm">
+                        <p className="text-stone-400 font-light leading-relaxed text-sm">
                             Monitoramento discreto e sistemas de segurança de última geração para
                             sua total tranquilidade.
                         </p>
@@ -171,9 +192,9 @@ const ReputationSection: React.FC = () => {
                     <div className="reputation-value space-y-4">
                         <div className="w-full h-px bg-stone-800 mb-6"></div>
                         <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
-                            <Heart className="stroke-1 text-stone-500" size={20} /> Conforto Premium
+                            <Heart className="stroke-1 text-stone-400" size={20} /> Conforto Premium
                         </h3>
-                        <p className="text-stone-500 font-light leading-relaxed text-sm">
+                        <p className="text-stone-400 font-light leading-relaxed text-sm">
                             Cada detalhe, do lençol ao chuveiro, pensado para proporcionar uma
                             experiência de descanso superior.
                         </p>

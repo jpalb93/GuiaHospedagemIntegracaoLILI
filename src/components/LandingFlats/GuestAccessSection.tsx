@@ -1,11 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, KeyRound, Loader2 } from 'lucide-react';
 import { fetchGuestConfig } from '../../services/guest';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP is dynamically imported
 
 const GuestAccessSection: React.FC = () => {
     const [code, setCode] = useState('');
@@ -15,32 +11,58 @@ const GuestAccessSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const gsapModule = await import('gsap');
+            const scrollTriggerModule = await import('gsap/ScrollTrigger');
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             mm.add('(min-width: 801px)', () => {
-                gsap.from(contentRef.current, {
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 80%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
+                // Context for cleanup
+                ctx = gsap.context(() => {
+                    const timer = setTimeout(() => {
+                        if (contentRef.current && sectionRef.current) {
+                            gsap.from(contentRef.current, {
+                                y: 50,
+                                opacity: 0,
+                                duration: 1,
+                                ease: 'power3.out',
+                                scrollTrigger: {
+                                    trigger: sectionRef.current,
+                                    start: 'top 80%',
+                                    toggleActions: 'play none none reverse',
+                                },
+                            });
+                        }
+                    }, 100);
+                    return () => clearTimeout(timer);
+                }, sectionRef);
             });
 
             mm.add('(max-width: 800px)', () => {
-                gsap.set(contentRef.current, { opacity: 1, y: 0 });
+                // Manual fallback if needed, but CSS handles opacity usually or we set it here
+                if (contentRef.current) {
+                    contentRef.current.style.opacity = '1';
+                    contentRef.current.style.transform = 'translateY(0)';
+                }
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        initGsap();
+
+        return () => {
+            if (mm) mm.revert();
+            if (ctx) ctx.revert();
+        };
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -99,7 +121,7 @@ const GuestAccessSection: React.FC = () => {
                     {/* Form Side - Minimalist */}
                     <div className="lg:pl-12">
                         <form onSubmit={handleSubmit} className="relative">
-                            <label className="block text-xs font-bold tracking-[0.2em] text-stone-500 uppercase mb-6">
+                            <label className="block text-xs font-bold tracking-[0.2em] text-stone-400 uppercase mb-6">
                                 Código da Reserva
                             </label>
 
@@ -113,6 +135,7 @@ const GuestAccessSection: React.FC = () => {
                                 />
                                 <button
                                     type="submit"
+                                    aria-label="Verificar código de reserva"
                                     disabled={isLoading || !code}
                                     className="absolute right-0 top-0 bottom-4 text-stone-400 hover:text-white disabled:text-stone-800 transition-colors"
                                 >
@@ -131,7 +154,7 @@ const GuestAccessSection: React.FC = () => {
                                 </p>
                             )}
 
-                            <p className="text-stone-600 text-xs mt-6 font-light">
+                            <p className="text-stone-400 text-xs mt-6 font-light">
                                 Encontre o código na confirmação enviada via WhatsApp.
                             </p>
                         </form>

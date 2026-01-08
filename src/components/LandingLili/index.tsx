@@ -1,16 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet-async';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LILI_PHONE, FLAT_ADDRESS } from '../../constants';
 import Header from './Header';
 import Hero from './Hero';
-import About from './About';
-import Amenities from './Amenities';
-import Reviews from './Reviews';
-import Gallery from './Gallery';
-import Location from './Location';
-import Footer from './Footer';
+// Lazy Load Sections
+const About = lazy(() => import('./About'));
+const Amenities = lazy(() => import('./Amenities'));
+const Reviews = lazy(() => import('./Reviews'));
+const Gallery = lazy(() => import('./Gallery'));
+const Location = lazy(() => import('./Location'));
+const Footer = lazy(() => import('./Footer'));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -63,12 +64,16 @@ const LandingLili: React.FC = () => {
 
             <Header />
             <Hero />
-            <About />
-            <Amenities />
-            <Reviews />
-            <Gallery />
-            <Location />
-            <Footer />
+            <Hero />
+
+            <Suspense fallback={<div className="min-h-[50vh]" />}>
+                <About />
+                <Amenities />
+                <Reviews />
+                <Gallery />
+                <Location />
+                <Footer />
+            </Suspense>
 
             {/* Floating WhatsApp Button */}
             <a

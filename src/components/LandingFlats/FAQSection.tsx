@@ -1,10 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const FAQS = [
     {
@@ -33,40 +29,65 @@ const FAQSection: React.FC = () => {
         setOpenIndex(openIndex === index ? null : index);
     };
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             mm.add('(min-width: 801px)', () => {
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 85%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
+                ctx = gsap.context(() => {
+                    const tl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 85%',
+                            toggleActions: 'play none none reverse',
+                        },
+                    });
 
-                tl.fromTo(
-                    '.faq-header',
-                    { y: 30, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
-                ).fromTo(
-                    '.faq-item',
-                    { y: 30, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
-                    '-=0.4'
-                );
+                    tl.fromTo(
+                        '.faq-header',
+                        { y: 30, opacity: 0 },
+                        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
+                    ).fromTo(
+                        '.faq-item',
+                        { y: 30, opacity: 0 },
+                        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
+                        '-=0.4'
+                    );
+                }, sectionRef);
             });
 
             mm.add('(max-width: 800px)', () => {
-                gsap.set('.faq-header', { opacity: 1, y: 0 });
-                gsap.set('.faq-item', { opacity: 1, y: 0 });
+                if (sectionRef.current) {
+                    const headers = sectionRef.current.querySelectorAll('.faq-header');
+                    const items = sectionRef.current.querySelectorAll('.faq-item');
+                    headers.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                    items.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                }
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+            if (mm) mm.revert();
+        };
+    }, []);
 
     return (
         <section ref={sectionRef} className="py-24 bg-stone-950" id="faq">
@@ -85,11 +106,10 @@ const FAQSection: React.FC = () => {
                     {FAQS.map((faq, index) => (
                         <div
                             key={index}
-                            className={`faq-item border rounded-2xl overflow-hidden transition-all duration-300 ${
-                                openIndex === index
-                                    ? 'border-orange-500/30 bg-stone-900 shadow-lg shadow-orange-900/10'
-                                    : 'border-stone-800 bg-stone-900/50 hover:bg-stone-900 hover:border-stone-700'
-                            }`}
+                            className={`faq-item border rounded-2xl overflow-hidden transition-all duration-300 ${openIndex === index
+                                ? 'border-orange-500/30 bg-stone-900 shadow-lg shadow-orange-900/10'
+                                : 'border-stone-800 bg-stone-900/50 hover:bg-stone-900 hover:border-stone-700'
+                                }`}
                         >
                             <button
                                 onClick={() => toggleFAQ(index)}
@@ -113,11 +133,10 @@ const FAQSection: React.FC = () => {
                                 id={`faq-answer-${index}`}
                                 role="region"
                                 aria-labelledby={`faq-question-${index}`}
-                                className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                                    openIndex === index
-                                        ? 'max-h-40 opacity-100'
-                                        : 'max-h-0 opacity-0'
-                                }`}
+                                className={`transition-all duration-300 ease-in-out overflow-hidden ${openIndex === index
+                                    ? 'max-h-40 opacity-100'
+                                    : 'max-h-0 opacity-0'
+                                    }`}
                             >
                                 <div className="p-6 pt-0 text-stone-400 leading-relaxed border-t border-stone-800/50 mt-2">
                                     {faq.answer}

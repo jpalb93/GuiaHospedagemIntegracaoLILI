@@ -1,5 +1,5 @@
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { getFirestoreInstance } from './firebase/config';
 import { UserPermission, PropertyId, UserRole } from '../types';
 import { logger } from '../utils/logger';
 
@@ -7,6 +7,7 @@ export const getUserPermission = async (email: string): Promise<UserPermission |
     try {
         // Normaliza email para minúsculo para evitar erros de case-sensitivity
         const normalizedEmail = email.toLowerCase();
+        const db = await getFirestoreInstance();
         const docRef = doc(db, 'admin_users', normalizedEmail);
         const docSnap = await getDoc(docRef);
 

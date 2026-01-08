@@ -1,4 +1,4 @@
-import { db } from '../firebase';
+import { getFirestoreInstance } from './config';
 import { collection, addDoc, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { SystemLog } from '../../types';
 
@@ -20,6 +20,7 @@ export const logAction = async (
             targetName,
             timestamp: new Date().toISOString(),
         };
+        const db = await getFirestoreInstance();
         await addDoc(collection(db, COLLECTION_NAME), log);
     } catch (error) {
         console.error('Error logging action:', error);
@@ -29,6 +30,7 @@ export const logAction = async (
 
 export const fetchLogs = async (max = 50): Promise<SystemLog[]> => {
     try {
+        const db = await getFirestoreInstance();
         const q = query(
             collection(db, COLLECTION_NAME),
             orderBy('timestamp', 'desc'),

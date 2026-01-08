@@ -14,7 +14,7 @@ import {
     where,
     writeBatch,
 } from 'firebase/firestore';
-import { db, cleanData, getFromCache, saveToCache } from './config';
+import { getFirestoreInstance, cleanData, getFromCache, saveToCache } from './config';
 import { PlaceRecommendation } from '../../types';
 import { logger } from '../../utils/logger';
 import { mapFirestoreDocs } from './mappers';
@@ -26,6 +26,7 @@ export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecom
     }
 
     try {
+        const db = await getFirestoreInstance();
         const querySnapshot = await getDocs(collection(db, 'places'));
         const data = mapFirestoreDocs<PlaceRecommendation>(querySnapshot);
 
@@ -37,7 +38,8 @@ export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecom
     }
 };
 
-export const subscribeToPlaces = (callback: (places: PlaceRecommendation[]) => void) => {
+export const subscribeToPlaces = async (callback: (places: PlaceRecommendation[]) => void) => {
+    const db = await getFirestoreInstance();
     const q = query(collection(db, 'places'));
     return onSnapshot(
         q,
@@ -52,16 +54,19 @@ export const subscribeToPlaces = (callback: (places: PlaceRecommendation[]) => v
 };
 
 export const addDynamicPlace = async (place: Omit<PlaceRecommendation, 'id'>): Promise<string> => {
+    const db = await getFirestoreInstance();
     const docRef = await addDoc(collection(db, 'places'), cleanData(place));
     return docRef.id;
 };
 
 export const updateDynamicPlace = async (id: string, place: Partial<PlaceRecommendation>) => {
     const { id: _discard, ...dataToUpdate } = place as PlaceRecommendation;
+    const db = await getFirestoreInstance();
     await updateDoc(doc(db, 'places', id), cleanData(dataToUpdate));
 };
 
 export const deleteDynamicPlace = async (id: string) => {
+    const db = await getFirestoreInstance();
     await deleteDoc(doc(db, 'places', id));
 };
 
@@ -70,6 +75,7 @@ export const cleanupExpiredEvents = async () => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
     try {
+        const db = await getFirestoreInstance();
         const q = query(collection(db, 'places'), where('category', '==', 'events'));
         const snapshot = await getDocs(q);
 

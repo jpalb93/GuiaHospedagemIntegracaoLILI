@@ -67,11 +67,10 @@ const LandingFlatsIntegracao: React.FC = () => {
 
             {/* Header Sticky - Permanent Glass Look */}
             <header
-                className={`fixed top-0 w-full z-50 px-6 transition-all duration-300 flex justify-between items-center border-b ${
-                    isScrolled
-                        ? 'bg-stone-950/95 backdrop-blur-md py-3 shadow-lg border-stone-800'
-                        : 'bg-stone-950/50 backdrop-blur-sm py-5 border-white/10'
-                }`}
+                className={`fixed top-0 w-full z-50 px-6 transition-all duration-300 flex justify-between items-center border-b ${isScrolled
+                    ? 'bg-stone-950/95 backdrop-blur-md py-3 shadow-lg border-stone-800'
+                    : 'bg-stone-950/50 backdrop-blur-sm py-5 border-white/10'
+                    }`}
             >
                 <a
                     href="#inicio"
@@ -81,9 +80,10 @@ const LandingFlatsIntegracao: React.FC = () => {
                     <img
                         src={flatsLogo}
                         alt="Logo Flats Integração"
-                        className={`w-auto drop-shadow-lg transition-all duration-300 ${
-                            isScrolled ? 'h-10' : 'h-12 md:h-14'
-                        }`}
+                        width="180"
+                        height="48"
+                        className={`w-auto drop-shadow-lg transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12 md:h-14'
+                            }`}
                     />
                 </a>
 
@@ -167,6 +167,8 @@ const LandingFlatsIntegracao: React.FC = () => {
                             <img
                                 src={logoEximus}
                                 alt="Eximus Digital"
+                                width="100"
+                                height="25"
                                 className="h-5 w-auto opacity-70 hover:opacity-100 transition-opacity"
                             />
                         </a>

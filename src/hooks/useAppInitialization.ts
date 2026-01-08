@@ -6,14 +6,14 @@ import { USE_OFFICIAL_TIME, fetchOfficialTime } from '../constants';
 
 export type AppState = {
     mode:
-        | AppMode
-        | 'LANDING'
-        | 'LILI_LANDING'
-        | 'EXPIRED'
-        | 'BLOCKED'
-        | 'REVOKED'
-        | 'LOADING'
-        | 'RECONNECTING';
+    | AppMode
+    | 'LANDING'
+    | 'LILI_LANDING'
+    | 'EXPIRED'
+    | 'BLOCKED'
+    | 'REVOKED'
+    | 'LOADING'
+    | 'RECONNECTING';
     config: GuestConfig;
 };
 
@@ -46,15 +46,17 @@ export const useAppInitialization = () => {
 
     useEffect(() => {
         const initApp = async () => {
-            // Delay mínimo para animação de loading aprimorada
-            const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 2000));
-
             const path = window.location.pathname;
             const params = new URLSearchParams(window.location.search);
+
+            // Delay mínimo reduzido para landing page para acelerar FCP/LCP
+            const isLiliPage = path === '/lili' || path === '/flat-lili';
+            const isLanding = path === '/' || isLiliPage;
+            const minLoadingTime = new Promise((resolve) => setTimeout(resolve, isLanding ? 0 : 800));
+
             let reservationId = params.get('rid');
 
             const isCMS = path === '/cms' || params.get('mode') === 'cms';
-            const isLiliPage = path === '/lili' || path === '/flat-lili';
 
             if (isCMS) {
                 await minLoadingTime;
@@ -130,7 +132,7 @@ export const useAppInitialization = () => {
                             if (USE_OFFICIAL_TIME) {
                                 try {
                                     now = await fetchOfficialTime();
-                                } catch (_e) {}
+                                } catch (_e) { }
                             }
                             const [year, month, day] = safeConfig.checkoutDate
                                 .split('-')

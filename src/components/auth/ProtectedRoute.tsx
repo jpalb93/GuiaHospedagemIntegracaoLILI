@@ -12,11 +12,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = subscribeToAuth((u) => {
-            setUser(u);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+        let unsubscribe: (() => void) | undefined;
+        const init = async () => {
+            unsubscribe = await subscribeToAuth((u) => {
+                setUser(u);
+                setLoading(false);
+            });
+        };
+        init();
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     if (loading) {

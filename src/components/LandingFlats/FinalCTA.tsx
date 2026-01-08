@@ -25,7 +25,7 @@ const FinalCTA: React.FC = () => {
                         href="https://wa.me/5587988283273"
                         target="_blank"
                         rel="noreferrer"
-                        className="group bg-orange-600 hover:bg-orange-700 text-white px-8 py-5 rounded-full text-lg font-bold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1"
+                        className="group bg-orange-700 hover:bg-orange-800 text-white px-8 py-5 rounded-full text-lg font-bold transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1"
                     >
                         <MessageCircle size={24} />
                         Reservar pelo WhatsApp

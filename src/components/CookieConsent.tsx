@@ -48,7 +48,7 @@ const CookieConsent: React.FC = () => {
                         <div className="flex gap-3 w-full sm:w-auto">
                             <button
                                 onClick={handleAccept}
-                                className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-lg shadow-amber-900/20 text-sm whitespace-nowrap"
+                                className="flex-1 sm:flex-none bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-2.5 px-6 rounded-xl transition-colors shadow-lg shadow-black/20 text-sm whitespace-nowrap"
                             >
                                 Aceitar e Fechar
                             </button>

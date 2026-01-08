@@ -10,7 +10,7 @@ const FavoritesContext = createContext<FavoritesContextData>({} as FavoritesCont
 
 const STORAGE_KEY = 'lili_db_favorites';
 
-import { toggleFavoritePlace } from '../services/firebase/reservations';
+// import { toggleFavoritePlace } from '../services/firebase/reservations';
 
 export const FavoritesProvider: React.FC<{
     children: React.ReactNode;
@@ -65,10 +65,12 @@ export const FavoritesProvider: React.FC<{
                 const next = isRemoved ? prev.filter((favId) => favId !== id) : [...prev, id];
 
                 // Trigger Background Sync (Fire & Forget logic handled here for responsiveness)
+                // Trigger Background Sync (Fire & Forget logic handled here for responsiveness)
                 if (reservationId) {
-                    toggleFavoritePlace(reservationId, id, prev).catch((err) => {
-                        console.error('Failed to sync favorite:', err);
-                        // Opcional: Reverter estado em caso de erro
+                    import('../services/firebase/reservations').then(({ toggleFavoritePlace }) => {
+                        toggleFavoritePlace(reservationId, id, next).catch((err) => {
+                            console.error('Failed to sync favorite:', err);
+                        });
                     });
                 }
 

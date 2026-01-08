@@ -1,62 +1,83 @@
-import React, { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Clock, UserCheck } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const InfoSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             // Desktop Animation
             mm.add('(min-width: 801px)', () => {
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 80%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
+                ctx = gsap.context(() => {
+                    const tl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 80%',
+                            toggleActions: 'play none none reverse',
+                        },
+                    });
 
-                tl.fromTo(
-                    cardRef.current,
-                    { y: 50, opacity: 0 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 1.2,
-                        ease: 'power3.out',
-                    }
-                ).fromTo(
-                    '.info-item',
-                    { y: 20, opacity: 0 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 0.8,
-                        stagger: 0.1,
-                        ease: 'power2.out',
-                    },
-                    '-=0.8'
-                );
+                    tl.fromTo(
+                        cardRef.current,
+                        { y: 50, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 1.2,
+                            ease: 'power3.out',
+                        }
+                    ).fromTo(
+                        '.info-item',
+                        { y: 20, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.8,
+                            stagger: 0.1,
+                            ease: 'power2.out',
+                        },
+                        '-=0.8'
+                    );
+                }, sectionRef);
             });
 
             // Mobile Fallback: Ensure visibility immediately
             mm.add('(max-width: 800px)', () => {
-                gsap.set(cardRef.current, { opacity: 1, y: 0 });
-                gsap.set('.info-item', { opacity: 1, y: 0 });
+                if (cardRef.current) {
+                    cardRef.current.style.opacity = '1';
+                    cardRef.current.style.transform = 'translateY(0)';
+                    const items = sectionRef.current?.querySelectorAll('.info-item');
+                    items?.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                }
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+            if (mm) mm.revert();
+        };
+    }, []);
 
     return (
         <section ref={sectionRef} className="py-24 bg-stone-950 relative overflow-hidden">
@@ -66,7 +87,7 @@ const InfoSection: React.FC = () => {
             <div className="container mx-auto px-6 md:px-12 max-w-6xl relative z-10">
                 {/* Header Integrado */}
                 <div className="text-center mb-16">
-                    <span className="text-xs font-bold tracking-[0.2em] text-stone-500 uppercase">
+                    <span className="text-xs font-bold tracking-[0.2em] text-stone-400 uppercase">
                         Informações
                     </span>
                     <h2 className="text-3xl md:text-4xl font-heading font-light text-white mt-3">
@@ -96,30 +117,30 @@ const InfoSection: React.FC = () => {
 
                             <div className="space-y-8 pl-4 border-l border-stone-800">
                                 <div className="info-item flex justify-between items-end border-b border-stone-800 pb-2 border-dashed">
-                                    <span className="text-sm tracking-widest uppercase text-stone-500 font-bold">
+                                    <span className="text-sm tracking-widest uppercase text-stone-400 font-bold">
                                         Chegada
                                     </span>
                                     <span className="font-heading text-2xl text-white">
                                         15:00{' '}
-                                        <span className="text-sm text-stone-500 font-sans">
+                                        <span className="text-sm text-stone-400 font-sans">
                                             - 18:30
                                         </span>
                                     </span>
                                 </div>
 
                                 <div className="info-item flex justify-between items-end border-b border-stone-800 pb-2 border-dashed">
-                                    <span className="text-sm tracking-widest uppercase text-stone-500 font-bold">
+                                    <span className="text-sm tracking-widest uppercase text-stone-400 font-bold">
                                         Saída
                                     </span>
                                     <span className="font-heading text-2xl text-white">
                                         08:00{' '}
-                                        <span className="text-sm text-stone-500 font-sans">
+                                        <span className="text-sm text-stone-400 font-sans">
                                             - 13:00
                                         </span>
                                     </span>
                                 </div>
 
-                                <p className="info-item text-xs text-stone-500 italic text-right mt-2 flex items-center justify-end gap-2">
+                                <p className="info-item text-xs text-stone-400 italic text-right mt-2 flex items-center justify-end gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>{' '}
                                     Por favor, informe seu horário.
                                 </p>

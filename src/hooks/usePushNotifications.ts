@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getToken, onMessage } from 'firebase/messaging';
-import { messaging } from '../services/firebase/config';
+import { getMessagingInstance } from '../services/firebase/config';
 import { useToast } from '../contexts/ToastContext';
 import { logger } from '../utils/logger';
 
@@ -37,6 +37,7 @@ export const usePushNotifications = () => {
                 return;
             }
 
+            const messaging = await getMessagingInstance();
             const currentToken = await getToken(messaging, {
                 vapidKey: VAPID_KEY,
             });
@@ -57,12 +58,21 @@ export const usePushNotifications = () => {
 
     // Listen for foreground messages
     useEffect(() => {
-        const unsubscribe = onMessage(messaging, (payload) => {
-            logger.info('Message received in foreground: ', { payload });
-            showInfo(`${payload.notification?.title}: ${payload.notification?.body}`);
-        });
+        let unsubscribe: (() => void) | undefined;
 
-        return () => unsubscribe();
+        const setupListener = async () => {
+            const messaging = await getMessagingInstance();
+            unsubscribe = onMessage(messaging, (payload) => {
+                logger.info('Message received in foreground: ', { payload });
+                showInfo(`${payload.notification?.title}: ${payload.notification?.body}`);
+            });
+        };
+
+        setupListener();
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, [showInfo]);
 
     return {

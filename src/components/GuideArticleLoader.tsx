@@ -4,6 +4,7 @@ import WineRouteArticle from '../pages/articles/WineRoute';
 import BododromoArticle from '../pages/articles/Bododromo';
 import RioSaoFranciscoArticle from '../pages/articles/RioSaoFrancisco';
 import CorporateArticle from '../pages/articles/Corporate';
+import ArticleScrollReset from './ArticleScrollReset';
 
 // Simple map for now, can be expanded or dynamic
 export const ARTICLES_MAP: Record<string, React.FC> = {
@@ -22,7 +23,12 @@ const GuideArticleLoader: React.FC = () => {
     // Check if we have a component for this slug
     if (sanitizedSlug && ARTICLES_MAP[sanitizedSlug]) {
         const Component = ARTICLES_MAP[sanitizedSlug];
-        return <Component />;
+        return (
+            <>
+                <ArticleScrollReset />
+                <Component />
+            </>
+        );
     }
 
     // Check if valid slug in data but component missing (shouldn't happen if maintained)

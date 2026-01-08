@@ -1,56 +1,79 @@
-import React, { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Navigation } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const LocationSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const textBlockRef = useRef<HTMLDivElement>(null);
     const mapBlockRef = useRef<HTMLDivElement>(null);
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             mm.add('(min-width: 801px)', () => {
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 75%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
+                ctx = gsap.context(() => {
+                    const tl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 75%',
+                            toggleActions: 'play none none reverse',
+                        },
+                    });
 
-                tl.from(textBlockRef.current, {
-                    x: -50,
-                    opacity: 0,
-                    duration: 1,
-                    ease: 'power3.out',
-                }).from(
-                    mapBlockRef.current,
-                    {
-                        x: 50,
+                    tl.from(textBlockRef.current, {
+                        x: -50,
                         opacity: 0,
                         duration: 1,
                         ease: 'power3.out',
-                    },
-                    '-=0.8'
-                );
+                    }).from(
+                        mapBlockRef.current,
+                        {
+                            x: 50,
+                            opacity: 0,
+                            duration: 1,
+                            ease: 'power3.out',
+                        },
+                        '-=0.8'
+                    );
+                }, sectionRef);
             });
 
             mm.add('(max-width: 800px)', () => {
                 console.log('Mobile Location Fallback Triggered');
-                gsap.set(textBlockRef.current, { opacity: 1, x: 0 });
-                gsap.set(mapBlockRef.current, { opacity: 1, x: 0 });
+                if (textBlockRef.current) {
+                    textBlockRef.current.style.opacity = '1';
+                    textBlockRef.current.style.transform = 'translateX(0)';
+                }
+                if (mapBlockRef.current) {
+                    mapBlockRef.current.style.opacity = '1';
+                    mapBlockRef.current.style.transform = 'translateX(0)';
+                }
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+            if (mm) mm.revert();
+        };
+    }, []);
 
     return (
         <section ref={sectionRef} id="localizacao" className="py-0 bg-stone-950 relative">
@@ -63,12 +86,12 @@ const LocationSection: React.FC = () => {
                     {/* Decorative detail */}
                     <div className="w-20 h-1 bg-orange-500 mb-10"></div>
 
-                    <span className="text-stone-500 font-bold tracking-[0.2em] uppercase text-xs mb-8 block">
+                    <span className="text-stone-400 font-bold tracking-[0.2em] uppercase text-xs mb-8 block">
                         Localização
                     </span>
                     <h2 className="text-4xl lg:text-5xl font-heading font-light text-white mb-8 leading-none">
                         Petrolina <br />
-                        <span className="italic font-serif text-stone-500">Centro</span>
+                        <span className="italic font-serif text-stone-400">Centro</span>
                     </h2>
 
                     <div className="space-y-6 mb-12 border-l border-stone-700 pl-6">
@@ -76,7 +99,7 @@ const LocationSection: React.FC = () => {
                             R. São José, 475 B <br />
                             Centro, 56302-270
                         </p>
-                        <p className="text-stone-500 font-light text-sm max-w-xs">
+                        <p className="text-stone-400 font-light text-sm max-w-xs">
                             No coração da cidade, onde tudo acontece. A conveniência de estar a
                             passos dos principais pontos de interesse.
                         </p>

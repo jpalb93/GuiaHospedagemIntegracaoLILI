@@ -51,11 +51,10 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                         <button
                             key={prop.id}
                             onClick={() => setPropertyId(prop.id)}
-                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${
-                                propertyId === prop.id
-                                    ? 'bg-white dark:bg-gray-700 text-orange-600 shadow-sm'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                            }`}
+                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${propertyId === prop.id
+                                ? 'bg-white dark:bg-gray-700 text-orange-600 shadow-sm'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                }`}
                         >
                             <Building2 size={14} /> {prop.name}
                         </button>
@@ -125,7 +124,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                             inputMode="numeric"
                             value={lockCode}
                             onChange={handleNumericInput(setLockCode)}
-                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest"
+                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest text-gray-900 dark:text-gray-100"
                             placeholder="123456"
                         />
                     </div>
@@ -147,7 +146,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                             type="text"
                             value={flatNumber}
                             onChange={(e) => setFlatNumber(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-900 dark:text-gray-100"
                             placeholder="Ex: 101"
                         />
                     </div>

@@ -36,7 +36,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                             value={welcomeMessage}
                             onChange={(e) => setWelcomeMessage(e.target.value)}
                             onBlur={() => setWelcomeMessage((prev: string) => prev.trim())}
-                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-orange-500 text-sm h-20 resize-none"
+                            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-orange-500 text-sm h-20 resize-none text-gray-900 dark:text-gray-100"
                             placeholder="Mensagem personalizada..."
                         />
                     </div>
@@ -75,7 +75,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                             <textarea
                                 value={guestFeedback}
                                 onChange={(e) => setGuestFeedback(e.target.value)}
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm min-h-[60px]"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm min-h-[60px] text-gray-900 dark:text-gray-100"
                                 placeholder="Ex: Deixou o quarto muito sujo, quebrou algo..."
                             />
                             <p className="text-[10px] text-gray-400 mt-1">
@@ -94,7 +94,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                     value={adminNotes}
                     onChange={(e) => setAdminNotes(e.target.value)}
                     onBlur={() => setAdminNotes((prev: string) => prev.trim())}
-                    className="w-full bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-yellow-500 text-sm h-20 resize-none text-gray-700 dark:text-gray-300"
+                    className="w-full bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/30 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-yellow-500 text-sm h-20 resize-none text-gray-900 dark:text-gray-100"
                     placeholder="Ex: Falta pagar 50%, pediu berço extra..."
                 />
             </div>

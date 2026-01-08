@@ -71,22 +71,30 @@ export const useGuestData = (config: GuestConfig) => {
         loadStaticData();
 
         // 2. Assinaturas em Tempo Real (Real-time)
-        const unsubscribePlaces = subscribeToPlaces((places) => {
-            setDynamicPlaces(places.filter((p) => p.visible !== false));
-        });
+        let unsubscribePlaces: (() => void) | undefined;
+        let unsubscribeSettings: (() => void) | undefined;
+        let unsubscribeSuggestions: (() => void) | undefined;
 
-        const unsubscribeSettings = subscribeToAppSettings((settings) => {
-            setAppSettings(settings);
-        });
+        const setupSubscriptions = async () => {
+            unsubscribePlaces = await subscribeToPlaces((places) => {
+                setDynamicPlaces(places.filter((p) => p.visible !== false));
+            });
 
-        const unsubscribeSuggestions = subscribeToSmartSuggestions((suggestions) => {
-            setSmartSuggestions(suggestions);
-        });
+            unsubscribeSettings = await subscribeToAppSettings((settings) => {
+                setAppSettings(settings);
+            });
+
+            unsubscribeSuggestions = await subscribeToSmartSuggestions((suggestions) => {
+                setSmartSuggestions(suggestions);
+            });
+        };
+
+        setupSubscriptions();
 
         return () => {
-            unsubscribePlaces();
-            unsubscribeSettings();
-            unsubscribeSuggestions();
+            if (unsubscribePlaces) unsubscribePlaces();
+            if (unsubscribeSettings) unsubscribeSettings();
+            if (unsubscribeSuggestions) unsubscribeSuggestions();
         };
     }, [config.guestName, config.propertyId]);
 

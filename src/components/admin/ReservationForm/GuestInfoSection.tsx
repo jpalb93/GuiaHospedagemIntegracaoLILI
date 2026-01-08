@@ -80,7 +80,7 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
                         value={guestName}
                         onChange={handleNameChange}
                         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-gray-100"
                         placeholder="Nome Completo"
                     />
                     {showSuggestions && filteredGuests.length > 0 && (
@@ -161,7 +161,7 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
                         type="tel"
                         value={guestPhone}
                         onChange={handlePhoneChange}
-                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-gray-100"
                         placeholder="(87) 99999-8888"
                     />
                 </div>

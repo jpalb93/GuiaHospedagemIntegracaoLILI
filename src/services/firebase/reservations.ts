@@ -19,7 +19,7 @@ import {
     QueryDocumentSnapshot,
     DocumentData,
 } from 'firebase/firestore';
-import { db, cleanData, auth } from './config'; // Import auth
+import { getFirestoreInstance, cleanData, getFirebaseAuth } from './config'; // Import auth
 import { Reservation } from '../../types';
 import { logger } from '../../utils/logger';
 import { generateShortId } from '../../utils/helpers';
@@ -33,10 +33,12 @@ export const saveReservation = async (reservation: Reservation): Promise<string>
         createdAt: new Date().toISOString(),
         status: reservation.status || 'active',
     };
+    const db = await getFirestoreInstance();
     const docRef = await addDoc(collection(db, 'reservations'), cleanData(data));
 
     // Log Action
-    const userEmail = auth.currentUser?.email || 'admin';
+    const auth = await getFirebaseAuth();
+    const userEmail = auth?.currentUser?.email || 'admin';
     await logAction(
         'create',
         userEmail,
@@ -50,6 +52,7 @@ export const saveReservation = async (reservation: Reservation): Promise<string>
 
 export const getReservation = async (id: string): Promise<Reservation | null> => {
     try {
+        const db = await getFirestoreInstance();
         const docSnap = await getDoc(doc(db, 'reservations', id));
         if (docSnap.exists()) {
             return {
@@ -65,10 +68,12 @@ export const getReservation = async (id: string): Promise<Reservation | null> =>
 
 export const updateReservation = async (id: string, data: Partial<Reservation>) => {
     const { id: _discard, ...updateData } = data as Record<string, unknown>;
+    const db = await getFirestoreInstance();
     await updateDoc(doc(db, 'reservations', id), updateData);
 
     // Log Action
-    const userEmail = auth.currentUser?.email || 'admin';
+    const auth = await getFirebaseAuth();
+    const userEmail = auth?.currentUser?.email || 'admin';
     const guestName = data.guestName ? data.guestName : 'Reserva';
     await logAction('update', userEmail, `Reserva atualizada`, id, guestName);
 
@@ -76,17 +81,20 @@ export const updateReservation = async (id: string, data: Partial<Reservation>) 
 };
 
 export const deleteReservation = async (id: string) => {
+    const db = await getFirestoreInstance();
     await deleteDoc(doc(db, 'reservations', id));
 
     // Log Action
-    const userEmail = auth.currentUser?.email || 'admin';
+    const auth = await getFirebaseAuth();
+    const userEmail = auth?.currentUser?.email || 'admin';
     await logAction('delete', userEmail, `Reserva excluída`, id, 'Reserva');
 };
 
-export const subscribeToSingleReservation = (
+export const subscribeToSingleReservation = async (
     id: string,
     callback: (res: Reservation | null) => void
 ) => {
+    const db = await getFirestoreInstance();
     return onSnapshot(
         doc(db, 'reservations', id),
         (docSnap) => {
@@ -106,7 +114,7 @@ export const subscribeToSingleReservation = (
 };
 
 // --- OTIMIZAÇÃO: Apenas Ativas em Tempo Real ---
-export const subscribeToActiveReservations = (
+export const subscribeToActiveReservations = async (
     callback: (reservations: Reservation[]) => void,
     allowedProperties?: string[]
 ) => {
@@ -114,6 +122,7 @@ export const subscribeToActiveReservations = (
     const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD Local
 
     // Query base: checkout >= hoje, ordenado por checkout
+    const db = await getFirestoreInstance();
     const q = query(
         collection(db, 'reservations'),
         where('checkoutDate', '>=', today),
@@ -145,9 +154,10 @@ export const subscribeToActiveReservations = (
 };
 
 // --- LANDING PAGE: Pega só o FUTURO ---
-export const subscribeToFutureReservations = (callback: (reservations: Reservation[]) => void) => {
+export const subscribeToFutureReservations = async (callback: (reservations: Reservation[]) => void) => {
     const now = new Date();
     const today = now.toLocaleDateString('en-CA');
+    const db = await getFirestoreInstance();
     const q = query(collection(db, 'reservations'), where('checkoutDate', '>=', today));
 
     return onSnapshot(
@@ -187,6 +197,7 @@ export const fetchHistoryReservations = async (
         constraints.push(where('propertyId', 'in', allowedProperties));
     }
 
+    const db = await getFirestoreInstance();
     let q = query(collection(db, 'reservations'), ...constraints);
 
     if (lastDoc) {
@@ -210,10 +221,11 @@ export const fetchHistoryReservations = async (
 };
 
 // LEGACY (Mantido para compatibilidade)
-export const subscribeToReservations = (
+export const subscribeToReservations = async (
     callback: (reservations: Reservation[]) => void,
     limitCount: number = 300
 ) => {
+    const db = await getFirestoreInstance();
     const q = query(
         collection(db, 'reservations'),
         orderBy('createdAt', 'desc'),
@@ -238,6 +250,7 @@ export const toggleFavoritePlace = async (
     currentFavorites: string[] = []
 ): Promise<string[]> => {
     try {
+        const db = await getFirestoreInstance();
         const docRef = doc(db, 'reservations', reservationId);
         let newFavorites = [...currentFavorites];
 

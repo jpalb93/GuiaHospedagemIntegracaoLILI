@@ -1,20 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const PHOTOS = [
-    'https://i.postimg.cc/W4TFSxSR/305095874.jpg',
-    'https://i.postimg.cc/5tbYpDp1/305095888.jpg',
-    'https://i.postimg.cc/1zsnMbBJ/334290310.jpg',
-    'https://i.postimg.cc/9QGwdcP3/334290394.jpg',
-    'https://i.postimg.cc/tgpZD8kK/334291651.jpg',
-    'https://i.postimg.cc/YSMG8TRP/334291852.jpg',
-    'https://i.postimg.cc/wBgyFn2w/334715657.jpg',
-    'https://i.postimg.cc/1zsnMbBJ/334290310.jpg',
+    '/assets/gallery/gallery-1.webp',
+    '/assets/gallery/gallery-2.webp',
+    '/assets/gallery/gallery-3.webp',
+    '/assets/gallery/gallery-4.webp',
+    '/assets/gallery/gallery-5.webp', // Corpoartivo
+    '/assets/gallery/gallery-6.webp',
+    '/assets/gallery/gallery-7.webp',
+    '/assets/gallery/gallery-3.webp', // Repeat for grid balance
 ];
 
 const GallerySection: React.FC = () => {
@@ -25,52 +21,77 @@ const GallerySection: React.FC = () => {
     const openLightbox = (img: string) => setSelectedImage(img);
     const closeLightbox = () => setSelectedImage(null);
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             mm.add('(min-width: 801px)', () => {
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 85%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
+                ctx = gsap.context(() => {
+                    const tl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 85%',
+                            toggleActions: 'play none none reverse',
+                        },
+                    });
 
-                tl.fromTo(
-                    '.gallery-header',
-                    { y: 30, opacity: 0 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 0.8,
-                        stagger: 0.2,
-                        ease: 'power2.out',
-                    }
-                ).fromTo(
-                    '.gallery-item',
-                    { y: 50, opacity: 0 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 0.8,
-                        stagger: 0.1,
-                        ease: 'power2.out',
-                    },
-                    '-=0.4'
-                );
+                    tl.fromTo(
+                        '.gallery-header',
+                        { y: 30, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.8,
+                            stagger: 0.2,
+                            ease: 'power2.out',
+                        }
+                    ).fromTo(
+                        '.gallery-item',
+                        { y: 50, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.8,
+                            stagger: 0.1,
+                            ease: 'power2.out',
+                        },
+                        '-=0.4'
+                    );
+                }, sectionRef);
             });
 
             mm.add('(max-width: 800px)', () => {
-                gsap.set('.gallery-header', { opacity: 1, y: 0 });
-                gsap.set('.gallery-item', { opacity: 1, y: 0 });
+                if (sectionRef.current) {
+                    const headers = sectionRef.current.querySelectorAll('.gallery-header');
+                    const items = sectionRef.current.querySelectorAll('.gallery-item');
+                    headers.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                    items.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                }
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+            if (mm) mm.revert();
+        };
+    }, []);
 
     return (
         <section
@@ -81,7 +102,7 @@ const GallerySection: React.FC = () => {
             {/* Header com padding, mas galeria sangrada */}
             <div className="container mx-auto px-8 pt-32 pb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="gallery-header">
-                    <span className="text-stone-500 font-bold tracking-widest uppercase text-xs mb-4 block">
+                    <span className="text-stone-400 font-bold tracking-widest uppercase text-xs mb-4 block">
                         TOUR VISUAL
                     </span>
                     <h2 className="text-4xl md:text-6xl font-heading font-black text-white tracking-tighter">

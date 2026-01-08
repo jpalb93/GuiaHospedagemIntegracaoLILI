@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import Lenis from 'lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type Lenis from 'lenis';
+import type gsap from 'gsap';
+// Dynamic imports used instead
 
 /**
  * SmoothScroll Component
@@ -10,35 +10,56 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
  */
 const SmoothScroll = () => {
     useEffect(() => {
-        // Initialize Lenis
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Default easing
-            orientation: 'vertical',
-            gestureOrientation: 'vertical',
-            smoothWheel: true,
-            wheelMultiplier: 1,
-            touchMultiplier: 2,
-        });
+        let lenis: Lenis;
+        let gsapVal: typeof gsap;
+        let rafUpdate: (time: number) => void;
 
-        // Sync Lenis with GSAP ScrollTrigger
-        lenis.on('scroll', ScrollTrigger.update);
+        const init = async () => {
+            const [gsapModule, scrollTriggerModule, lenisModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger'),
+                import('lenis')
+            ]);
 
-        // Add Lenis to GSAP Ticker for smooth animation frame updates
-        // Note: We use gsap.ticker to ensure Lenis updates in sync with GSAP animations
-        const update = (time: number) => {
-            lenis.raf(time * 1000);
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            const Lenis = lenisModule.default;
+            gsapVal = gsap;
+
+            // Initialize Lenis
+            lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Default easing
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1,
+                touchMultiplier: 2,
+            });
+
+            // Sync Lenis with GSAP ScrollTrigger
+            lenis.on('scroll', ScrollTrigger.update);
+
+            // Add Lenis to GSAP Ticker for smooth animation frame updates
+            rafUpdate = (time: number) => {
+                lenis.raf(time * 1000);
+            };
+
+            gsap.ticker.add(rafUpdate);
+
+            // Disable lag smoothing in GSAP to prevent jumps during heavy scrolling
+            gsap.ticker.lagSmoothing(0);
         };
 
-        gsap.ticker.add(update);
-
-        // Disable lag smoothing in GSAP to prevent jumps during heavy scrolling
-        gsap.ticker.lagSmoothing(0);
+        const timer = setTimeout(() => {
+            init();
+        }, 100);
 
         // Cleanup function
         return () => {
-            lenis.destroy();
-            gsap.ticker.remove(update);
+            clearTimeout(timer);
+            if (lenis) lenis.destroy();
+            if (gsapVal && rafUpdate) gsapVal.ticker.remove(rafUpdate);
         };
     }, []);
 

@@ -1,15 +1,11 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Hero from '../components/LandingFlats/Hero';
-import FeaturesSection from '../components/LandingFlats/FeaturesSection';
-import InfoSection from '../components/LandingFlats/InfoSection';
 import ReputationSection from '../components/LandingFlats/ReputationSection';
 import GallerySection from '../components/LandingFlats/GallerySection';
-import LocationSection from '../components/LandingFlats/LocationSection';
-import GuestAccessSection from '../components/LandingFlats/GuestAccessSection';
-import FAQSection from '../components/LandingFlats/FAQSection';
-import FinalCTA from '../components/LandingFlats/FinalCTA';
-import BlogSection from '../components/LandingFlats/BlogSection';
+
+// Lazy Load Sections below the fold as a single chunk to reduce request chaining
+const BelowTheFoldSections = lazy(() => import('./BelowTheFoldSections'));
 
 const Home: React.FC = () => {
     return (
@@ -66,13 +62,10 @@ const Home: React.FC = () => {
             <Hero />
             <ReputationSection />
             <GallerySection />
-            <InfoSection />
-            <FeaturesSection />
-            <BlogSection />
-            <FAQSection />
-            <GuestAccessSection />
-            <LocationSection />
-            <FinalCTA />
+
+            <Suspense fallback={<div className="h-screen bg-stone-950" />}>
+                <BelowTheFoldSections />
+            </Suspense>
         </>
     );
 };

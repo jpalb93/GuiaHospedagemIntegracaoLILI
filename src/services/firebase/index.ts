@@ -4,7 +4,11 @@
  */
 
 // Config e inicialização
-export { db, storage, isFirebaseConfigured, validateFirebaseConfig } from './config';
+export { getFirestoreInstance, getStorageInstance, isFirebaseConfigured, validateFirebaseConfig } from './config';
+
+// DEPRECATED COMPATIBILITY LAYER - REMOVED
+// All consumers must use getFirestoreInstance()
+
 
 // Places (Lugares)
 export {

@@ -1,55 +1,72 @@
-import React, { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Shield, Sparkles, UtensilsCrossed, Wifi } from 'lucide-react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const FeaturesSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
 
-    useGSAP(
-        () => {
-            const mm = gsap.matchMedia();
+    useEffect(() => {
+        let ctx: any;
+        let mm: any;
+
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            mm = gsap.matchMedia();
 
             mm.add('(min-width: 801px)', () => {
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: sectionRef.current,
-                        start: 'top 85%',
-                        toggleActions: 'play none none reverse',
-                    },
-                });
+                ctx = gsap.context(() => {
+                    const tl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 85%',
+                            toggleActions: 'play none none reverse',
+                        },
+                    });
 
-                tl.fromTo(
-                    '.feature-card',
-                    { y: 50, opacity: 0 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 0.8,
-                        stagger: 0.15,
-                        ease: 'power2.out',
-                    }
-                );
+                    tl.fromTo(
+                        '.feature-card',
+                        { y: 50, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.8,
+                            stagger: 0.15,
+                            ease: 'power2.out',
+                        }
+                    );
+                }, sectionRef);
             });
 
             // Mobile Fallback: Ensure visibility immediately
             mm.add('(max-width: 800px)', () => {
-                gsap.set('.feature-card', { opacity: 1, y: 0 });
+                if (sectionRef.current) {
+                    const cards = sectionRef.current.querySelectorAll('.feature-card');
+                    cards.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                }
             });
+        };
 
-            return () => mm.revert();
-        },
-        { scope: sectionRef }
-    );
+        initGsap();
+
+        return () => {
+            if (ctx) ctx.revert();
+            if (mm) mm.revert();
+        };
+    }, []);
 
     return (
         <section ref={sectionRef} id="features" className="py-32 bg-stone-950">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="mb-20 max-w-2xl">
-                    <span className="text-stone-500 font-bold tracking-[0.2em] uppercase text-xs mb-4 block">
+                    <span className="text-stone-400 font-bold tracking-[0.2em] uppercase text-xs mb-4 block">
                         Comodidades
                     </span>
                     <h2 className="text-4xl md:text-5xl font-heading font-light text-white leading-tight">

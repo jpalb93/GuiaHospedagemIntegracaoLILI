@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import OptimizedImage from '../ui/OptimizedImage';
 import { LANDING_HERO_SLIDES } from '../../constants';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+// GSAP dynamically imported
 
 const Hero: React.FC = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -20,24 +16,43 @@ const Hero: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
-    useGSAP(
-        () => {
-            // Parallax Effect on Background
-            gsap.to(bgRef.current, {
-                yPercent: 30,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: true,
-                },
-            });
+    useEffect(() => {
+        let ctx: any;
 
-            // Text Entrance Animation
-        },
-        { scope: containerRef }
-    );
+        const initGsap = async () => {
+            const [gsapModule, scrollTriggerModule] = await Promise.all([
+                import('gsap'),
+                import('gsap/ScrollTrigger')
+            ]);
+
+            const gsap = gsapModule.default;
+            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+            gsap.registerPlugin(ScrollTrigger);
+
+            ctx = gsap.context(() => {
+                // Parallax Effect on Background
+                gsap.to(bgRef.current, {
+                    yPercent: 30,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top',
+                        end: 'bottom top',
+                        scrub: true,
+                    },
+                });
+            }, containerRef);
+        };
+
+        const timer = setTimeout(() => {
+            initGsap();
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (ctx) ctx.revert();
+        };
+    }, []);
 
     return (
         <section
@@ -50,9 +65,8 @@ const Hero: React.FC = () => {
                 {LANDING_HERO_SLIDES.map((img, index) => (
                     <div
                         key={index}
-                        className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${
-                            currentSlide === index ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
-                        }`}
+                        className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${currentSlide === index ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
+                            }`}
                     >
                         <OptimizedImage
                             src={img}

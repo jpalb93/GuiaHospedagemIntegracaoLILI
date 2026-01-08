@@ -19,17 +19,26 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
 
     // Auth Listener
     useEffect(() => {
-        const unsubscribe = subscribeToAuth(async (u) => {
-            setUser(u);
-            if (u && u.email) {
-                const perm = await getUserPermission(u.email);
-                setUserPermission(perm);
-            } else {
-                setUserPermission(null);
-            }
-            setAuthLoading(false);
-        });
-        return () => unsubscribe();
+        let unsubscribe: (() => void) | undefined;
+
+        const initAuth = async () => {
+            unsubscribe = await subscribeToAuth(async (u) => {
+                setUser(u);
+                if (u && u.email) {
+                    const perm = await getUserPermission(u.email);
+                    setUserPermission(perm);
+                } else {
+                    setUserPermission(null);
+                }
+                setAuthLoading(false);
+            });
+        };
+
+        initAuth();
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     const login = async (

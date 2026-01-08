@@ -142,7 +142,7 @@ export const useAdminDashboard = () => {
         title: '',
         message: '',
         isDestructive: false,
-        onConfirm: async () => {},
+        onConfirm: async () => { },
     });
 
     // Reset form wrapper that also resets blocked dates
@@ -162,8 +162,14 @@ export const useAdminDashboard = () => {
                 setPropertyId(userPermission.allowedProperties[0]);
             }
 
-            const unsubBlocked = subscribeToBlockedDates();
-            return () => unsubBlocked();
+            let unsubBlocked: (() => void) | undefined;
+            subscribeToBlockedDates().then((unsub) => {
+                unsubBlocked = unsub;
+            });
+
+            return () => {
+                if (unsubBlocked) unsubBlocked();
+            };
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, userPermission, subscribeToBlockedDates]);

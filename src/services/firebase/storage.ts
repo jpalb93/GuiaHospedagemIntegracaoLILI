@@ -3,13 +3,14 @@
  * Upload de imagens para Firebase Storage
  */
 import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
-import { storage } from './config';
+import { getStorageInstance } from './config';
 
-export const uploadImage = (
+export const uploadImage = async (
     file: File,
     path: string,
     onProgress?: (progress: number) => void
 ): Promise<string> => {
+    const storage = await getStorageInstance();
     return new Promise((resolve, reject) => {
         const storageRef = ref(storage, path);
         const uploadTask = uploadBytesResumable(storageRef, file);

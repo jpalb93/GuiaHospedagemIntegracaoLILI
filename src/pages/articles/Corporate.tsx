@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import {
     Briefcase,
     Wifi,
@@ -12,6 +12,7 @@ import {
     ChevronRight,
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
+import ArticleScrollReset from '../../components/ArticleScrollReset';
 
 const PHOTOS = [
     'https://i.postimg.cc/W4TFSxSR/305095874.jpg',
@@ -35,6 +36,7 @@ const CorporateArticle: React.FC = () => {
 
     return (
         <article className="pt-24 pb-16 min-h-screen bg-white">
+            <ArticleScrollReset />
             <Helmet>
                 <title>Hotel ou Flat em Petrolina? A melhor escolha para Empresas</title>
                 <meta
@@ -96,11 +98,10 @@ const CorporateArticle: React.FC = () => {
                             <button
                                 key={idx}
                                 onClick={() => setCurrentSlide(idx)}
-                                className={`w-2 h-2 rounded-full transition-all ${
-                                    currentSlide === idx
-                                        ? 'bg-white w-6'
-                                        : 'bg-white/50 hover:bg-white/80'
-                                }`}
+                                className={`w-2 h-2 rounded-full transition-all ${currentSlide === idx
+                                    ? 'bg-white w-6'
+                                    : 'bg-white/50 hover:bg-white/80'
+                                    }`}
                             />
                         ))}
                     </div>
@@ -228,7 +229,7 @@ const CorporateArticle: React.FC = () => {
             {/* Veja Também Interlinking */}
             <div className="container mx-auto px-4 max-w-[800px] mt-12 pt-8 border-t border-gray-200">
                 <h3 className="text-xl font-bold mb-4">Aproveite sua folga:</h3>
-                <Link to="/guia/roteiro-vinho-petrolina" className="block group">
+                <a href="/guia/roteiro-vinho-petrolina" className="block group">
                     <div className="flex gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-slate-200 hover:shadow-md transition-all">
                         <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                             <img
@@ -247,7 +248,7 @@ const CorporateArticle: React.FC = () => {
                         </div>
                         <ArrowRight className="ml-auto text-gray-400 group-hover:text-slate-500" />
                     </div>
-                </Link>
+                </a>
             </div>
 
             {/* CTA Final */}

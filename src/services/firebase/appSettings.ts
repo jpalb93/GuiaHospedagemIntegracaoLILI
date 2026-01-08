@@ -3,13 +3,14 @@
  * Settings gerais, hero images e sugestões inteligentes
  */
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { db, getFromCache, saveToCache } from './config';
+import { getFirestoreInstance, getFromCache, saveToCache } from './config';
 import { AppConfig, SmartSuggestionsConfig } from '../../types';
 import { logger } from '../../utils/logger';
 
 // --- CONFIGURAÇÕES GERAIS ---
 export const getAppSettings = async (): Promise<AppConfig | null> => {
     try {
+        const db = await getFirestoreInstance();
         const docSnap = await getDoc(doc(db, 'app_config', 'general'));
         if (docSnap.exists()) {
             return docSnap.data() as AppConfig;
@@ -21,6 +22,7 @@ export const getAppSettings = async (): Promise<AppConfig | null> => {
 };
 
 export const saveAppSettings = async (config: AppConfig) => {
+    const db = await getFirestoreInstance();
     await setDoc(doc(db, 'app_config', 'general'), config, { merge: true });
 
     // Sync curiosities to its own document for GuestView
@@ -29,7 +31,8 @@ export const saveAppSettings = async (config: AppConfig) => {
     }
 };
 
-export const subscribeToAppSettings = (callback: (config: AppConfig | null) => void) => {
+export const subscribeToAppSettings = async (callback: (config: AppConfig | null) => void) => {
+    const db = await getFirestoreInstance();
     return onSnapshot(
         doc(db, 'app_config', 'general'),
         (docSnap) => {
@@ -57,6 +60,7 @@ export const getHeroImages = async (
     }
 
     try {
+        const db = await getFirestoreInstance();
         const docSnap = await getDoc(doc(db, 'app_config', 'hero_images'));
         let data: string[] = [];
         if (docSnap.exists()) {
@@ -75,12 +79,14 @@ export const updateHeroImages = async (
     propertyId: 'lili' | 'integracao' = 'lili'
 ) => {
     const field = propertyId === 'integracao' ? 'integracao_urls' : 'urls';
+    const db = await getFirestoreInstance();
     await setDoc(doc(db, 'app_config', 'hero_images'), { [field]: urls }, { merge: true });
 };
 
 // --- SUGESTÕES INTELIGENTES ---
 export const getSmartSuggestions = async (): Promise<SmartSuggestionsConfig | null> => {
     try {
+        const db = await getFirestoreInstance();
         const docSnap = await getDoc(doc(db, 'app_config', 'suggestions'));
         if (docSnap.exists()) {
             return docSnap.data() as SmartSuggestionsConfig;
@@ -92,12 +98,14 @@ export const getSmartSuggestions = async (): Promise<SmartSuggestionsConfig | nu
 };
 
 export const saveSmartSuggestions = async (config: SmartSuggestionsConfig) => {
+    const db = await getFirestoreInstance();
     await setDoc(doc(db, 'app_config', 'suggestions'), config);
 };
 
-export const subscribeToSmartSuggestions = (
+export const subscribeToSmartSuggestions = async (
     callback: (config: SmartSuggestionsConfig | null) => void
 ) => {
+    const db = await getFirestoreInstance();
     return onSnapshot(
         doc(db, 'app_config', 'suggestions'),
         (docSnap) => {

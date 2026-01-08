@@ -1,16 +1,8 @@
-/**
- * Configuração e inicialização do Firebase
- * Módulo central que exporta db, storage e helpers de cache
- */
 import { initializeApp } from 'firebase/app';
-import {
-    initializeFirestore,
-    persistentLocalCache,
-    persistentMultipleTabManager,
-} from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getAuth } from 'firebase/auth';
-import { getMessaging } from 'firebase/messaging';
+import type { Firestore } from 'firebase/firestore';
+import type { Auth } from 'firebase/auth';
+import type { FirebaseStorage } from 'firebase/storage';
+import type { Messaging } from 'firebase/messaging';
 import { logger } from '../../utils/logger';
 
 // Configuração
@@ -23,17 +15,50 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Inicialização Segura
+// Inicialização Segura (App is lightweight)
 const app = initializeApp(firebaseConfig);
 
-// Firestore com persistência (cache offline)
-export const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-});
+// Firestore Lazy
+let dbInstance: Firestore | null = null;
+export const getFirestoreInstance = async (): Promise<Firestore> => {
+    if (!dbInstance) {
+        const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } = await import('firebase/firestore');
+        dbInstance = initializeFirestore(app, {
+            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+        });
+    }
+    return dbInstance;
+};
 
-export const auth = getAuth(app);
-export const storage = getStorage(app);
-export const messaging = getMessaging(app);
+// Auth Lazy
+let authInstance: Auth | null = null;
+export const getFirebaseAuth = async (): Promise<Auth> => {
+    if (!authInstance) {
+        const { getAuth } = await import('firebase/auth');
+        authInstance = getAuth(app);
+    }
+    return authInstance;
+};
+
+// Storage Lazy
+let storageInstance: FirebaseStorage | null = null;
+export const getStorageInstance = async (): Promise<FirebaseStorage> => {
+    if (!storageInstance) {
+        const { getStorage } = await import('firebase/storage');
+        storageInstance = getStorage(app);
+    }
+    return storageInstance;
+};
+
+// Messaging Lazy
+let messagingInstance: Messaging | null = null;
+export const getMessagingInstance = async (): Promise<Messaging> => {
+    if (!messagingInstance) {
+        const { getMessaging } = await import('firebase/messaging');
+        messagingInstance = getMessaging(app);
+    }
+    return messagingInstance;
+};
 
 export const isFirebaseConfigured = () => !!app;
 

@@ -10,15 +10,23 @@ const AvailabilityCalendar: React.FC = () => {
     const [blockedDates, setBlockedDates] = useState<BlockedDateRange[]>([]);
 
     useEffect(() => {
-        const unsubscribeRes = subscribeToFutureReservations((data) => {
-            setReservations(data);
-        });
-        const unsubscribeBlocked = subscribeToFutureBlockedDates((data) => {
-            setBlockedDates(data);
-        });
+        let unsubscribeRes: (() => void) | undefined;
+        let unsubscribeBlocked: (() => void) | undefined;
+
+        const setupSubs = async () => {
+            unsubscribeRes = await subscribeToFutureReservations((data) => {
+                setReservations(data);
+            });
+            unsubscribeBlocked = await subscribeToFutureBlockedDates((data) => {
+                setBlockedDates(data);
+            });
+        };
+
+        setupSubs();
+
         return () => {
-            unsubscribeRes();
-            unsubscribeBlocked();
+            if (unsubscribeRes) unsubscribeRes();
+            if (unsubscribeBlocked) unsubscribeBlocked();
         };
     }, []);
 
@@ -129,13 +137,12 @@ const AvailabilityCalendar: React.FC = () => {
                             key={idx}
                             className={`
                         aspect-square flex items-center justify-center rounded-xl text-sm font-medium relative transition-all duration-300
-                        ${
-                            isOccupied
-                                ? 'bg-red-50 text-red-300 cursor-not-allowed'
-                                : isPast
-                                  ? 'text-gray-200 cursor-not-allowed'
-                                  : 'bg-gray-50 text-gray-700 hover:bg-gray-900 hover:text-white cursor-pointer'
-                        } 
+                        ${isOccupied
+                                    ? 'bg-red-50 text-red-300 cursor-not-allowed'
+                                    : isPast
+                                        ? 'text-gray-200 cursor-not-allowed'
+                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-900 hover:text-white cursor-pointer'
+                                } 
                         ${isToday ? 'ring-1 ring-gray-900 font-bold' : ''}
                      `}
                         >

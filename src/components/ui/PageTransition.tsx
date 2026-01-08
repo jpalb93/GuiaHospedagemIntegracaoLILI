@@ -8,9 +8,9 @@ interface PageTransitionProps {
 
 const variants = {
     initial: {
-        opacity: 0,
-        y: 8,
-        scale: 0.98
+        opacity: 1, // WAS: 0 (This caused the white screen!)
+        y: 0,       // WAS: 8
+        scale: 1    // WAS: 0.98
     },
     enter: {
         opacity: 1,
@@ -40,7 +40,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children, classN
                 animate="enter"
                 exit="exit"
                 variants={variants}
-                className={className}
+                className={`${className} min-h-screen`}
             >
                 {children}
             </motion.div>

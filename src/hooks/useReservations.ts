@@ -30,11 +30,19 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         const allowedProperties =
             userPermission.role === 'super_admin' ? undefined : userPermission.allowedProperties;
 
-        const unsubscribe = subscribeToActiveReservations((data) => {
-            setActiveReservations(data);
-        }, allowedProperties);
+        let unsubscribe: (() => void) | undefined;
 
-        return () => unsubscribe();
+        const setupSubscription = async () => {
+            unsubscribe = await subscribeToActiveReservations((data) => {
+                setActiveReservations(data);
+            }, allowedProperties);
+        };
+
+        setupSubscription();
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, [userPermission]);
 
     // --- 2. History Reservations (Infinite Query) ---

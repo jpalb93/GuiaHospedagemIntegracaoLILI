@@ -13,7 +13,7 @@ import BododromoArticle from './pages/articles/Bododromo';
 import RioSaoFranciscoArticle from './pages/articles/RioSaoFrancisco';
 import CorporateArticle from './pages/articles/Corporate';
 
-import ScrollToTop from './components/ScrollToTop';
+import ScrollManager from './components/ScrollManager';
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import { Button, Input } from './components/ui';
@@ -69,7 +69,11 @@ const App: React.FC = () => {
 
     // --- ANALYTICS INIT ---
     useEffect(() => {
-        initAnalytics();
+        // Defer loaded scripts to avoid TBT impact (Time Blocking Time)
+        const timer = setTimeout(() => {
+            initAnalytics();
+        }, 5000); // 5 seconds delay is safe for analytics
+        return () => clearTimeout(timer);
     }, []);
 
     // --- ROTEAMENTO PÚBLICO (Guia) ---
@@ -91,7 +95,7 @@ const App: React.FC = () => {
                     <ThemeProvider>
                         <Suspense fallback={<LandingSkeleton />}>
                             <MainLayout>
-                                <ScrollToTop />
+                                <ScrollManager />
                                 <Routes>
                                     <Route
                                         path="/"
@@ -101,30 +105,30 @@ const App: React.FC = () => {
                                             </PageTransition>
                                         }
                                     />
-                                    <Route path="/guia" element={<GuideList />} />
+                                    <Route path="/guia" element={<PageTransition><GuideList /></PageTransition>} />
                                     {/* Rotas Explícitas para Artigos */}
                                     <Route
                                         path="/guia/roteiro-vinho-petrolina"
-                                        element={<WineRouteArticle />}
+                                        element={<PageTransition><WineRouteArticle /></PageTransition>}
                                     />
                                     <Route
                                         path="/guia/onde-comer-petrolina-bododromo"
-                                        element={<BododromoArticle />}
+                                        element={<PageTransition><BododromoArticle /></PageTransition>}
                                     />
                                     <Route
                                         path="/guia/rio-sao-francisco-rodeadouro-barquinha"
-                                        element={<RioSaoFranciscoArticle />}
+                                        element={<PageTransition><RioSaoFranciscoArticle /></PageTransition>}
                                     />
                                     <Route
                                         path="/guia/hospedagem-corporativa-empresas-petrolina"
-                                        element={<CorporateArticle />}
+                                        element={<PageTransition><CorporateArticle /></PageTransition>}
                                     />
-                                    <Route path="/guia/:slug" element={<GuideArticleLoader />} />
+                                    <Route path="/guia/:slug" element={<PageTransition><GuideArticleLoader /></PageTransition>} />
                                     <Route
                                         path="/politica-privacidade"
-                                        element={<PrivacyPolicy />}
+                                        element={<PageTransition><PrivacyPolicy /></PageTransition>}
                                     />
-                                    <Route path="*" element={<Home />} />
+                                    <Route path="*" element={<PageTransition><Home /></PageTransition>} />
                                 </Routes>
                                 <CookieConsent />
                             </MainLayout>
@@ -240,8 +244,8 @@ const App: React.FC = () => {
                             {isRevoked
                                 ? 'Link desativado'
                                 : isExpired
-                                  ? 'Acesso Expirado'
-                                  : 'Reserva Não Encontrada'}
+                                    ? 'Acesso Expirado'
+                                    : 'Reserva Não Encontrada'}
                         </h1>
                         {!showManualLogin ? (
                             <>
@@ -249,8 +253,8 @@ const App: React.FC = () => {
                                     {isRevoked
                                         ? 'Link indisponível. Entre em contato com a anfitriã.'
                                         : isExpired
-                                          ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
-                                          : 'Este link não está mais disponível ou a reserva foi cancelada.'}
+                                            ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
+                                            : 'Este link não está mais disponível ou a reserva foi cancelada.'}
                                 </p>
                                 <div className="flex flex-col gap-3">
                                     <Button
@@ -319,7 +323,7 @@ const App: React.FC = () => {
                 <ThemeProvider>
                     <Suspense fallback={<LandingSkeleton />}>
                         <MainLayout>
-                            <ScrollToTop />
+                            <ScrollManager />
                             <Routes>
                                 <Route
                                     path="/"
@@ -329,29 +333,29 @@ const App: React.FC = () => {
                                         </PageTransition>
                                     }
                                 />
-                                <Route path="/guia" element={<GuideList />} />
+                                <Route path="/guia" element={<PageTransition><GuideList /></PageTransition>} />
                                 {/* Rotas Explícitas para Artigos (Melhor SEO e evita redirects) */}
                                 <Route
                                     path="/guia/roteiro-vinho-petrolina"
-                                    element={<WineRouteArticle />}
+                                    element={<PageTransition><WineRouteArticle /></PageTransition>}
                                 />
                                 <Route
                                     path="/guia/onde-comer-petrolina-bododromo"
-                                    element={<BododromoArticle />}
+                                    element={<PageTransition><BododromoArticle /></PageTransition>}
                                 />
                                 <Route
                                     path="/guia/rio-sao-francisco-rodeadouro-barquinha"
-                                    element={<RioSaoFranciscoArticle />}
+                                    element={<PageTransition><RioSaoFranciscoArticle /></PageTransition>}
                                 />
                                 <Route
                                     path="/guia/hospedagem-corporativa-empresas-petrolina"
-                                    element={<CorporateArticle />}
+                                    element={<PageTransition><CorporateArticle /></PageTransition>}
                                 />
 
                                 {/* Fallback para carregamento dinâmico ou links legados */}
-                                <Route path="/guia/:slug" element={<GuideArticleLoader />} />
-                                <Route path="/politica-privacidade" element={<PrivacyPolicy />} />
-                                <Route path="*" element={<Home />} />
+                                <Route path="/guia/:slug" element={<PageTransition><GuideArticleLoader /></PageTransition>} />
+                                <Route path="/politica-privacidade" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+                                <Route path="*" element={<PageTransition><Home /></PageTransition>} />
                             </Routes>
                             <CookieConsent />
                         </MainLayout>

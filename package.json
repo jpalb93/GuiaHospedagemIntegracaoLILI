@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "tsc && vite build && node src/scripts/generate-sitemap.js",
+        "build": "tsc && vite build && node src/scripts/generate-sitemap.js && node src/scripts/optimize-css.js",
         "lint": "eslint .",
         "preview": "vite preview",
         "format": "prettier --write .",
@@ -73,6 +73,7 @@
         "@vitest/browser-playwright": "^4.0.14",
         "@vitest/coverage-v8": "^4.0.14",
         "autoprefixer": "^10.4.22",
+        "critters": "^0.0.23",
         "esbuild": "^0.27.0",
         "eslint": "^9.39.1",
         "eslint-plugin-react-hooks": "^7.0.1",

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { Calendar, Clock, DollarSign, MapPin, Wine, ArrowRight } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
+import ArticleScrollReset from '../../components/ArticleScrollReset';
 
 const WineRouteArticle: React.FC = () => {
     return (
         <article className="pt-24 pb-16 min-h-screen bg-white">
+            <ArticleScrollReset />
             <Helmet>
                 <title>Roteiro do Vinho no Vale do São Francisco: Guia Completo e Preços</title>
                 <meta
@@ -228,7 +230,7 @@ const WineRouteArticle: React.FC = () => {
 
                 <div className="mt-12 pt-8 border-t border-gray-200">
                     <h3 className="text-xl font-bold mb-4">Veja também:</h3>
-                    <Link to="/guia/onde-comer-petrolina-bododromo" className="block group">
+                    <a href="/guia/onde-comer-petrolina-bododromo" className="block group">
                         <div className="flex gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all">
                             <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                                 <img
@@ -247,7 +249,7 @@ const WineRouteArticle: React.FC = () => {
                             </div>
                             <ArrowRight className="ml-auto text-gray-400 group-hover:text-orange-500" />
                         </div>
-                    </Link>
+                    </a>
                 </div>
             </div>
 

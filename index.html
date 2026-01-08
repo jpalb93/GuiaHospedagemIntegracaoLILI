@@ -1,9 +1,19 @@
-<!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" style="color-scheme: dark;">
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+
+    <style>
+        /* INICIALIZAÇÃO CRÍTICA - Previne Flash Branco */
+        html,
+        body {
+            background-color: #0c0a09 !important;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 
     <title>Flats Integração - Hospedagem em Petrolina</title>
     <meta name="description"
@@ -15,9 +25,18 @@
     <!-- Performance Optimizations -->
     <link rel="preload" as="image" href="/hero-bg-nova.webp" media="(min-width: 801px)" fetchpriority="high" />
     <link rel="preload" as="image" href="/hero-bg-mobile.webp" media="(max-width: 800px)" fetchpriority="high" />
-    <!-- Reduced preconnects to prioritize bandwidth -->
+
+    <!-- DNS Prefetch & Preconnect for third-party scripts and assets -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
+    <link rel="dns-prefetch" href="https://flatlili.firebaseapp.com" />
+    <link rel="dns-prefetch" href="https://i.postimg.cc" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://i.postimg.cc" />
+    <link rel="preconnect" href="https://flatlili.firebaseapp.com" crossorigin />
 
     <!-- PWA Manifest & Icons -->
     <meta name="theme-color" content="#111827" />
@@ -354,7 +373,46 @@
 </head>
 
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <!-- APP SHELL / SKELETON (Instant FCP) -->
+        <div
+            style="background-color: #0c0a09; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-family: sans-serif;">
+            <div
+                style="position: relative; height: 100vh; min-height: 600px; width: 100%; display: flex; flex-direction: column; justify-content: center; padding-top: 6rem;">
+                <div style="padding: 0 1rem; max-width: 56rem; margin: 0 auto; width: 100%;">
+                    <div
+                        style="height: 3rem; width: 200px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 2rem;">
+                    </div>
+                    <div
+                        style="height: 5rem; width: 80%; background: linear-gradient(90deg, #332b28 0%, #443a35 50%, #332b28 100%); background-size: 200% 100%; animation: pulse 2s infinite; border-radius: 8px; margin-bottom: 1rem;">
+                    </div>
+                    <div
+                        style="height: 5rem; width: 60%; background: linear-gradient(90deg, #ea580c 0%, #fb923c 50%, #ea580c 100%); background-size: 200% 100%; animation: pulse 2s infinite; border-radius: 8px; margin-bottom: 2rem;">
+                    </div>
+                    <div
+                        style="height: 2rem; width: 90%; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 2rem;">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="height: 3.5rem; width: 160px; background: #ea580c; border-radius: 2px;"></div>
+                        <div
+                            style="height: 3.5rem; width: 160px; background: rgba(255,255,255,0.1); border-radius: 2px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <style>
+                @keyframes pulse {
+                    0% {
+                        background-position: 200% 0;
+                    }
+
+                    100% {
+                        background-position: -200% 0;
+                    }
+                }
+            </style>
+        </div>
+    </div>
     <script type="module" src="src/index.tsx"></script>
 </body>
 

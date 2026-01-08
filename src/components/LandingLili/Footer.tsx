@@ -29,6 +29,8 @@ const Footer: React.FC = () => {
                         <img
                             src="/assets/logo-eximus.png"
                             alt="Eximus Digital"
+                            width="100"
+                            height="25"
                             className="h-5 w-auto hover:opacity-80 transition-opacity brightness-0 invert"
                         />
                     </a>

@@ -126,3 +126,11 @@ Criamos a pasta `src/components/LandingLili/` contendo:
 - **Sincronização em Tempo Real**: Alterada a lógica de busca de locais (`useGuestData`) para usar `onSnapshot` do Firestore. Isso garante que qualquer alteração feita no Admin (edição, adição, remoção) apareça instantaneamente na tela do hóspede, sem necessidade de recarregar a página.
 - **Consistência CMS**: Atualizado também o painel CMS (`/cms`) para incluir as novas categorias, garantindo consistência caso seja utilizado em vez do painel Admin principal.
 - **WhatsApp nos Locais**: Adicionado campo específico para número de WhatsApp no cadastro de locais. Agora, um botão verde "WhatsApp" aparece para o hóspede, permitindo contato direto (ex: para delivery) sem precisar salvar o número.
+### 9. Otimização de Performance e Critical Path
+
+Implementamos uma série de melhorias focadas em reduzir o tempo de carregamento inicial e melhorar a pontuação no PageSpeed Insights:
+
+- **Redução de Encadeamento de Solicitações**: Agrupamos 7 seções secundárias da página inicial (FAQ, Info, Blog, etc.) em um único componente carregado via `lazy loading` (`BelowTheFoldSections.tsx`). Isso reduziu drasticamente a profundidade da árvore de dependências da rede.
+- **Renderização Prioritária (Above-the-Fold)**: As seções de Reputação e Galeria agora são importadas de forma estática, garantindo que apareçam imediatamente após o Hero, sem esperar múltiplos chunks de JS.
+- **Dicas de Rede (Preconnect & DNS-prefetch)**: Adicionamos otimizações no `index.html` para antecipar a conexão com serviços externos (Google Fonts, Firebase, Postimg), reduzindo a latência de rede.
+- **Melhoria no LCP**: Refinamos os preloads de imagem no cabeçalho e ajustamos o `fallback` do Suspense na Home para evitar saltos de layout (CLS) durante o carregamento de seções pesadas.
