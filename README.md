@@ -29,6 +29,14 @@ Bem-vindo ao repositório do **Guia Digital Flats Integração**. Esta aplicaç�
 - **Configurações Globais:** Altere senha do Wi-Fi, avisos de manutenção e prompts da IA.
 - **Upload de Imagens:** Gerenciamento de imagens de capa e locais.
 
+### 📈 Copiloto Financeiro (Calculadora Local)
+
+- **Controle de Fluxo de Caixa:** Lançamento de ganhos diários líquidos com teclado numérico (Numpad) customizado.
+- **Termômetro de Risco:** Previsão de saldo simulada baseada em metas financeiras e ritmos diários.
+- **Gestão de Compromissos:** Cadastro de despesas com controle de recorrência semanal automatizado.
+
+---
+
 ## 🛠️ Configuração e Instalação
 
 ### Pré-requisitos
@@ -63,6 +71,9 @@ FIREBASE_PRIVATE_KEY="...sua-chave-privada..."
 
 # Google Gemini AI
 GEMINI_API_KEY=...
+
+# Mercado Pago
+MERCADO_PAGO_ACCESS_TOKEN=...
 ```
 
 ### 3. Rodando Localmente
@@ -83,7 +94,9 @@ npm test
 
 Isso executará a suíte de testes unitários (Vitest) para hooks e utilitários.
 
-## 🔒 Segurança e Qualidade
+---
+
+## 🔒 Segurança, Qualidade & SEO
 
 ### Segurança
 
@@ -92,12 +105,15 @@ A aplicação implementa **Server-Side Sanitization** para dados sensíveis.
 - O frontend **NUNCA** recebe a senha da porta antes do check-in.
 - A API `/api/get-guest-config` valida a data no servidor (Timezone: America/Sao_Paulo) antes de retornar os segredos.
 - Validação rigorosa de inputs com **Zod** em todas as APIs.
+- Proteção antispam e Rate Limiting (Vercel KV / in-memory fallback) para proteção contra ataques de força bruta.
 
-### Qualidade de Código
+### Qualidade de Código & SEO Engine
 
-- **Testes Unitários:** Cobertura para lógica crítica de negócios (ex: cálculo de datas de estadia).
-- **Safe Logging:** Utilitário de log que remove outputs sensíveis em produção.
-- **Acessibilidade:** Componentes otimizados com `aria-labels` e contraste adequado.
+- **Testes Unitários:** Cobertura de testes expressiva para toda a lógica crítica de negócios (ex: cálculo de datas de estadia) com Vitest.
+- **SEO & SSR Engine:** Pipeline de build avançado (`npm run build`) que realiza _prerendering_ estático, minificação e otimização de CSS crítico, otimização de imagens em lote via `sharp` e geração automatizada de sitemaps.
+- **Automação Externa:** Workflows em n8n (templates integrados) para briefing matinal de equipes e envio automático de links de acesso por WhatsApp via Z-API.
+
+---
 
 ## 📂 Estrutura do Projeto
 
@@ -105,17 +121,20 @@ A aplicação implementa **Server-Side Sanitization** para dados sensíveis.
     - `/components`: Componentes UI (GuestView, AdminDashboard, etc).
     - `/services`: Integração com Firebase Client.
     - `/hooks`: Lógica de estado e efeitos.
+    - `/pages`: Roteamento e artigos do Blog.
 - `/api`: Vercel Serverless Functions (Backend).
-    - `get-guest-config.ts`: Endpoint seguro para dados da reserva.
-    - `chat.ts`: Endpoint para a IA (Gemini).
+    - `get-guest-config.ts`: Endpoint seguro e higienizado para dados da reserva.
+    - `ai-chat.ts`: Chatbot integrado com o Google Gemini.
+    - `create-payment.ts`: Integração nativa com Mercado Pago.
+    - `translate.ts` & `tts.ts`: Tradução dinâmica e Text-to-Speech nativo.
 
 ## 🚀 Deploy
 
 O projeto é otimizado para **Vercel**.
 
-1.  Conecte o repositório GitHub à Vercel.
-2.  Configure as variáveis de ambiente no painel da Vercel.
-3.  O deploy é automático a cada push na `main`.
+1. Conecte o repositório GitHub à Vercel.
+2. Configure as variáveis de ambiente no painel da Vercel.
+3. O deploy é automático a cada push na `main`.
 
 ---
 
