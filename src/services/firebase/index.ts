@@ -58,6 +58,7 @@ export {
     saveTipsOrder,
     getCuriosities,
     saveCuriosities,
+    subscribeToCuriosities,
     subscribeToTips,
     getGuestReviews,
     addGuestReview,

@@ -28,14 +28,20 @@ const Footer: React.FC = () => {
                             localização estratégica.
                         </p>
 
-                        <address className="not-italic space-y-3">
+                        <address className="not-italic space-y-3" itemScope itemType="https://schema.org/LocalBusiness">
                             <div className="flex items-start gap-3">
                                 <MapPin className="text-orange-500 mt-1 flex-shrink-0" size={18} />
-                                <span className="text-stone-300">
-                                    R. São José, 475 B - Centro,
-                                    <br />
-                                    Petrolina - PE, 56302-270
-                                </span>
+                                <div className="text-stone-300">
+                                    <strong itemProp="name">Flats Integração</strong>
+                                    <div itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+                                        <span itemProp="streetAddress">R. São José, 475 B - Centro</span>,
+                                        <br />
+                                        <span itemProp="addressLocality">Petrolina</span> - <span itemProp="addressRegion">PE</span>, <span itemProp="postalCode">56302-270</span>
+                                    </div>
+                                    <div className="mt-1">
+                                        Telefone: <span itemProp="telephone">(87) 98828-3273</span>
+                                    </div>
+                                </div>
                             </div>
                         </address>
 
@@ -60,7 +66,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/"
-                                        className="hover:text-orange-500 transition-colors flex items-center gap-2 text-stone-300 hover:text-orange-500"
+                                        className="hover:text-orange-500 transition-colors flex items-center gap-2 text-stone-300"
                                     >
                                         <ArrowRight size={14} className="text-stone-400" /> Home
                                     </Link>
@@ -141,6 +147,38 @@ const Footer: React.FC = () => {
                                         Hospedagem Corporativa
                                     </Link>
                                 </li>
+                                <li>
+                                    <Link
+                                        to="/guia/hospedagem-proximo-hospitais-petrolina"
+                                        className="hover:text-orange-500 transition-colors block"
+                                    >
+                                        Hospedagem perto de hospitais
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        to="/guia/flat-ou-hotel-petrolina-comparativo"
+                                        className="hover:text-orange-500 transition-colors block"
+                                    >
+                                        Flat ou hotel em Petrolina
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        to="/guia/onde-ficar-petrolina-sao-joao-guia"
+                                        className="hover:text-orange-500 transition-colors block"
+                                    >
+                                        Onde ficar no São João
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        to="/guia/aluguel-mensal-petrolina-flat-mobiliado"
+                                        className="hover:text-orange-500 transition-colors block"
+                                    >
+                                        Aluguel mensal no Centro
+                                    </Link>
+                                </li>
                             </ul>
                         </nav>
                     </div>
@@ -152,7 +190,7 @@ const Footer: React.FC = () => {
                         </h3>
                         <div className="flex gap-4 mb-8">
                             <a
-                                href="https://www.instagram.com/flatintegracao/"
+                                href="https://www.instagram.com/flatsintegracao/"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-orange-500 hover:text-white transition-all duration-300"

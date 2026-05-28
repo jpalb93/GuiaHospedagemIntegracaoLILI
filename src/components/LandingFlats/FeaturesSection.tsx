@@ -26,19 +26,19 @@ const FeaturesSection: React.FC = () => {
                     const tl = gsap.timeline({
                         scrollTrigger: {
                             trigger: sectionRef.current,
-                            start: 'top 85%',
+                            start: 'top 95%', // Antecipado para aparecer logo que entra
                             toggleActions: 'play none none reverse',
                         },
                     });
 
                     tl.fromTo(
                         '.feature-card',
-                        { y: 50, opacity: 0 },
+                        { y: 20, opacity: 0 }, // Reduzido de 50 para 20
                         {
                             y: 0,
                             opacity: 1,
-                            duration: 0.8,
-                            stagger: 0.15,
+                            duration: 0.5, // Reduzido de 0.8 para 0.5
+                            stagger: 0.1,  // Reduzido de 0.15 para 0.1
                             ease: 'power2.out',
                         }
                     );
@@ -65,72 +65,70 @@ const FeaturesSection: React.FC = () => {
     return (
         <section ref={sectionRef} id="features" className="py-32 bg-stone-950">
             <div className="container mx-auto px-6 md:px-12">
-                <div className="mb-20 max-w-2xl">
-                    <span className="text-stone-400 font-bold tracking-[0.2em] uppercase text-xs mb-4 block">
-                        Comodidades
+                <div className="mb-24 max-w-3xl">
+                    <span className="text-orange-500 font-bold tracking-[0.3em] uppercase text-[10px] mb-6 block">
+                        Comodidades & Estrutura
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-heading font-light text-white leading-tight">
-                        Essencial & Sofisticado
+                    <h2 className="text-4xl md:text-6xl font-heading font-light text-white leading-[1.1] mb-8">
+                        O Melhor Flat em Petrolina <br />
+                        <span className="italic font-serif text-stone-500">para Sua Estadia</span>
                     </h2>
+                    <div className="w-24 h-px bg-gradient-to-r from-orange-500 to-transparent"></div>
                 </div>
 
-                {/* Grid Clássico de 4 Colunas - Redesign Layered Luxury Dark */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-16 border-t border-stone-800">
-                    {/* Card 1: Conforto Total */}
-                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-orange-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
-                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-orange-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
-                            <Sparkles className="stroke-1 w-7 h-7" />
-                        </div>
-                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-orange-400 transition-colors">
-                            Conforto Total
-                        </h3>
-                        <p className="text-stone-400 font-light text-sm leading-relaxed">
-                            Ar-condicionado split em todas as unidades, roupas de cama premium e
-                            banheiros privativos modernos.
-                        </p>
-                    </div>
+                {/* Layout Editorial - Sem cards pesados, apenas linhas e tipografia */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-stone-800/50">
+                    {[
+                        {
+                            num: '01',
+                            title: 'Hospedagem com Conforto',
+                            desc: 'Ar-condicionado split, roupas de cama premium e banheiros privativos para garantir a melhor hospedagem em Petrolina.',
+                            icon: <Sparkles className="stroke-1 w-6 h-6" />
+                        },
+                        {
+                            num: '02',
+                            title: 'Flat em Petrolina com Cozinha',
+                            desc: 'Cozinha completa com micro-ondas e utensílios. Ideal para quem busca um flat mobiliado em Petrolina com total autonomia.',
+                            icon: <UtensilsCrossed className="stroke-1 w-6 h-6" />
+                        },
+                        {
+                            num: '03',
+                            title: 'Internet e Trabalho Remoto',
+                            desc: 'Wi-Fi de alta velocidade e Smart TV. A estrutura perfeita para quem precisa de hospedagem em Petrolina para trabalho.',
+                            icon: <Wifi className="stroke-1 w-6 h-6" />
+                        },
+                        {
+                            num: '04',
+                            title: 'Segurança em Petrolina',
+                            desc: 'Monitoramento 24h e localização segura no Centro de Petrolina, garantindo tranquilidade em sua estadia.',
+                            icon: <Shield className="stroke-1 w-6 h-6" />
+                        }
+                    ].map((feature, i) => (
+                        <div key={i} className="feature-card group relative p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-stone-800/50 hover:bg-stone-900/30 transition-all duration-700">
+                            {/* Número Serifado de Fundo */}
+                            <span className="absolute top-8 right-10 text-6xl font-serif italic text-stone-900 group-hover:text-orange-950/20 transition-colors duration-700 select-none">
+                                {feature.num}
+                            </span>
+                            
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="text-stone-500 group-hover:text-orange-500 transition-colors duration-500 mb-12">
+                                    {feature.icon}
+                                </div>
+                                
+                                <h3 className="text-xl font-heading font-medium text-white mb-6 leading-snug group-hover:translate-x-2 transition-transform duration-500">
+                                    {feature.title}
+                                </h3>
+                                
+                                <p className="text-stone-400 font-light text-sm leading-relaxed max-w-[240px]">
+                                    {feature.desc}
+                                </p>
 
-                    {/* Card 2: Cozinha Equipada */}
-                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
-                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
-                            <UtensilsCrossed className="stroke-1 w-7 h-7" />
+                                <div className="mt-auto pt-10">
+                                    <div className="w-0 group-hover:w-full h-px bg-orange-500/50 transition-all duration-700"></div>
+                                </div>
+                            </div>
                         </div>
-                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-blue-400 transition-colors">
-                            Cozinha Equipada
-                        </h3>
-                        <p className="text-stone-400 font-light text-sm leading-relaxed">
-                            Micro-ondas, mesa de jantar e utensílios completos. Prepare suas
-                            refeições como se estivesse em casa.
-                        </p>
-                    </div>
-
-                    {/* Card 3: Conectividade & Lazer */}
-                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-green-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
-                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-green-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
-                            <Wifi className="stroke-1 w-7 h-7" />
-                        </div>
-                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-green-400 transition-colors">
-                            Conectividade & Lazer
-                        </h3>
-                        <p className="text-stone-400 font-light text-sm leading-relaxed">
-                            Wi-Fi gratuito de alta velocidade e TV de tela plana para seu
-                            entretenimento e trabalho remoto.
-                        </p>
-                    </div>
-
-                    {/* Card 4: Segurança 24h */}
-                    <div className="feature-card group bg-stone-900 p-8 rounded-[2rem] border border-stone-800 hover:border-purple-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
-                        <div className="w-14 h-14 bg-stone-800 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-purple-500 group-hover:scale-110 transition-all duration-500 shadow-sm mb-6 border border-stone-700/50">
-                            <Shield className="stroke-1 w-7 h-7" />
-                        </div>
-                        <h3 className="text-xl font-heading font-medium text-white mb-3 group-hover:text-purple-400 transition-colors">
-                            Segurança 24h
-                        </h3>
-                        <p className="text-stone-400 font-light text-sm leading-relaxed">
-                            Monitoramento por câmeras nas áreas comuns e extintores de incêndio para
-                            sua tranquilidade.
-                        </p>
-                    </div>
+                    ))}
                 </div>
             </div>
         </section>

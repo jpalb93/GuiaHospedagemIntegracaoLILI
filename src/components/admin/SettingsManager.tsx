@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppConfig } from '../../types';
-import { Settings, Sparkles, Save, Check, Loader2, Download, BellRing } from 'lucide-react';
+import { Settings, Sparkles, Save, Check, Loader2, Download, BellRing, Upload } from 'lucide-react';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../../constants';
 import Button from '../ui/Button';
 import {
@@ -23,14 +23,24 @@ interface SettingsManagerProps {
         data: AppConfig;
         save: (settings: AppConfig) => Promise<void>;
     };
+    isLoading?: boolean;
+    error?: boolean;
+    onRetry?: () => void;
 }
 
-const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings }) => {
+const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings, isLoading = false, error = false, onRetry }) => {
     const [localSettings, setLocalSettings] = useState<AppConfig>(settings.data);
     const [isSaving, setIsSaving] = useState(false);
     const [showSafeCode, setShowSafeCode] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [activeProperty, setActiveProperty] = useState<'lili' | 'integracao'>('lili');
+
+    // SYNC STATE ON LOAD: Updates localSettings when prop data arrives from Firebase
+    useEffect(() => {
+        if (settings.data) {
+            setLocalSettings(settings.data);
+        }
+    }, [settings.data]);
 
     // --- HERO IMAGES ---
     const currentHeroImages = heroImages.data[activeProperty] || [];
@@ -78,6 +88,61 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         a.click();
         URL.revokeObjectURL(url);
         alert('Backup de configurações exportado!');
+    };
+
+    // --- IMPORT BACKUP ---
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!confirm('ATENÇÃO: Isso substituirá as configurações e imagens atuais pelas do backup. Deseja continuar?')) {
+            event.target.value = '';
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const text = await file.text();
+            const backupData = JSON.parse(text);
+
+            if (!backupData.settings) {
+                throw new Error('Formato de backup inválido: "settings" não encontrado.');
+            }
+
+            // 1. Restaurar Configurações
+            // Mescla com as atuais para garantir que campos novos não quebrem
+            const mergedSettings = { ...localSettings, ...backupData.settings };
+            await settings.save(mergedSettings);
+            setLocalSettings(mergedSettings);
+
+            // 2. Restaurar Imagens
+            if (backupData.heroImages) {
+                if (backupData.heroImages.lili) {
+                    await heroImages.update(backupData.heroImages.lili, 'lili');
+                }
+                if (backupData.heroImages.integracao) {
+                    await heroImages.update(backupData.heroImages.integracao, 'integracao');
+                }
+            }
+
+            // Resetar input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+
+            alert('Backup restaurado com sucesso!');
+            // window.location.reload(); // Removido para evitar perda de estado/permissão
+
+        } catch (error) {
+            console.error('Erro ao importar backup:', error);
+            alert('Erro ao ler arquivo de backup. Verifique se é um JSON válido.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     // Helper for AI Prompt
@@ -173,8 +238,36 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] animate-fadeIn">
+                <Loader2 className="w-10 h-10 text-orange-500 animate-spin mb-4" />
+                <p className="text-gray-500 font-medium">Carregando configurações...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] animate-fadeIn p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-red-500 text-3xl">⚠️</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Falha ao carregar configurações
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+                    Ocorreu um erro ao buscar os dados do servidor. Por segurança, o formulário foi bloqueado para evitar perda de dados.
+                </p>
+                <Button onClick={onRetry} leftIcon={<Loader2 size={16} />}>
+                    Tentar Novamente
+                </Button>
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-6 max-w-3xl mx-auto">
+        <div className="space-y-6 max-w-3xl mx-auto animate-fadeIn">
             {/* PROPERTY SELECTOR */}
             <PropertySelector
                 activeProperty={activeProperty}
@@ -276,6 +369,21 @@ const SettingsManager: React.FC<SettingsManagerProps> = ({ heroImages, settings 
                         className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
                     >
                         Backup
+                    </Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept=".json"
+                        className="hidden"
+                    />
+                    <Button
+                        onClick={handleImportClick}
+                        variant="ghost"
+                        leftIcon={<Upload size={18} />}
+                        className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                    >
+                        Importar
                     </Button>
                     <Button
                         onClick={handleSaveSettings}

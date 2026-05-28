@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-// import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 // GSAP dynamically imported
 
@@ -97,13 +97,13 @@ const BlogSection: React.FC = () => {
                                 Guia completo sobre vinícolas, Vapor do Vinho e preços atualizados
                                 para sua visita.
                             </p>
-                            <a
-                                href="/guia/roteiro-vinho-petrolina"
+                            <Link
+                                to="/guia/roteiro-vinho-petrolina"
                                 aria-label="Ler artigo: Roteiro do Vinho"
                                 className="inline-flex items-center gap-2 text-orange-500 font-bold hover:text-orange-400 transition-colors uppercase tracking-wide text-xs"
                             >
                                 Ler Artigo <ArrowRight size={14} />
-                            </a>
+                            </Link>
                         </div>
                     </div>
 
@@ -126,13 +126,13 @@ const BlogSection: React.FC = () => {
                                 Onde comer a famosa carne de bode e peixes frescos do Rio São
                                 Francisco.
                             </p>
-                            <a
-                                href="/guia/onde-comer-petrolina-bododromo"
+                            <Link
+                                to="/guia/onde-comer-petrolina-bododromo"
                                 aria-label="Ler artigo: Gastronomia Regional"
                                 className="inline-flex items-center gap-2 text-orange-500 font-bold hover:text-orange-400 transition-colors uppercase tracking-wide text-xs"
                             >
                                 Ler Artigo <ArrowRight size={14} />
-                            </a>
+                            </Link>
                         </div>
                     </div>
 
@@ -154,13 +154,13 @@ const BlogSection: React.FC = () => {
                             <p className="text-stone-400 mb-6 text-sm leading-relaxed">
                                 Tudo sobre a travessia de barquinha e o banho na Ilha do Rodeadouro.
                             </p>
-                            <a
-                                href="/guia/rio-sao-francisco-rodeadouro-barquinha"
+                            <Link
+                                to="/guia/rio-sao-francisco-rodeadouro-barquinha"
                                 aria-label="Ler artigo: Experiências Fluviais"
                                 className="inline-flex items-center gap-2 text-orange-500 font-bold hover:text-orange-400 transition-colors uppercase tracking-wide text-xs"
                             >
                                 Ler Artigo <ArrowRight size={14} />
-                            </a>
+                            </Link>
                         </div>
                     </div>
 
@@ -183,15 +183,28 @@ const BlogSection: React.FC = () => {
                                 Wi-Fi de alta velocidade, nota fiscal e localização estratégica para
                                 negócios.
                             </p>
-                            <a
-                                href="/guia/hospedagem-corporativa-empresas-petrolina"
+                            <Link
+                                to="/guia/hospedagem-corporativa-empresas-petrolina"
                                 aria-label="Ler artigo: Para Empresas"
                                 className="inline-flex items-center gap-2 text-orange-500 font-bold hover:text-orange-400 transition-colors uppercase tracking-wide text-xs"
                             >
                                 Ler Artigo <ArrowRight size={14} />
-                            </a>
+                            </Link>
                         </div>
                     </div>
+                </div>
+
+                <div className="mt-16 flex justify-center">
+                    <Link
+                        to="/guia"
+                        className="group bg-transparent border border-orange-500/30 hover:border-orange-500 text-stone-300 hover:text-white px-10 py-4 rounded-full text-sm font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-3 hover:bg-orange-500/5 shadow-lg hover:shadow-orange-500/10"
+                    >
+                        Ver Guia Completo
+                        <ArrowRight
+                            size={18}
+                            className="text-orange-500 group-hover:translate-x-1 transition-transform"
+                        />
+                    </Link>
                 </div>
             </div>
         </section>

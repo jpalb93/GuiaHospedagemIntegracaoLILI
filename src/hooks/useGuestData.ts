@@ -12,9 +12,9 @@ import {
     getHeroImages,
     subscribeToAppSettings,
     subscribeToSmartSuggestions,
-    getCuriosities,
     subscribeToPlaces,
     subscribeToTips,
+    subscribeToCuriosities,
 } from '../services/firebase';
 import { DEFAULT_SLIDES, DEFAULT_CITY_CURIOSITIES } from '../constants';
 
@@ -22,6 +22,7 @@ export const useGuestData = (config: GuestConfig) => {
     const [dynamicPlaces, setDynamicPlaces] = useState<PlaceRecommendation[]>([]);
     const [heroSlides, setHeroSlides] = useState<string[]>(DEFAULT_SLIDES);
     const [appSettings, setAppSettings] = useState<AppConfig | null>(null);
+    const [loadingSettings, setLoadingSettings] = useState(true);
     const [smartSuggestions, setSmartSuggestions] = useState<SmartSuggestionsConfig | null>(null);
     const [dismissedGlobalText, setDismissedGlobalText] = useState(() => {
         if (typeof localStorage !== 'undefined') {
@@ -52,11 +53,7 @@ export const useGuestData = (config: GuestConfig) => {
                 }
 
                 // Tips are now handled by subscription below
-
-                const fetchedCuriosities = await getCuriosities();
-                if (fetchedCuriosities && fetchedCuriosities.length > 0) {
-                    setCuriosities(fetchedCuriosities);
-                }
+                // Curiosities are now handled by subscription below
             } catch (error) {
                 logger.error('Error loading static guest data:', { error });
             }
@@ -68,6 +65,7 @@ export const useGuestData = (config: GuestConfig) => {
         let unsubscribeSettings: (() => void) | undefined;
         let unsubscribeSuggestions: (() => void) | undefined;
         let unsubscribeTips: (() => void) | undefined;
+        let unsubscribeCuriosities: (() => void) | undefined;
 
         const setupSubscriptions = async () => {
             unsubscribePlaces = await subscribeToPlaces((places) => {
@@ -84,10 +82,18 @@ export const useGuestData = (config: GuestConfig) => {
 
             unsubscribeSettings = await subscribeToAppSettings((settings) => {
                 setAppSettings(settings);
+                setLoadingSettings(false);
             });
 
             unsubscribeSuggestions = await subscribeToSmartSuggestions((suggestions) => {
                 setSmartSuggestions(suggestions);
+            });
+
+            unsubscribeCuriosities = await subscribeToCuriosities((items) => {
+                const visibleCuriosities = items.filter((c) => c.visible !== false);
+                if (visibleCuriosities.length > 0) {
+                    setCuriosities(visibleCuriosities);
+                }
             });
         };
 
@@ -98,6 +104,7 @@ export const useGuestData = (config: GuestConfig) => {
             if (unsubscribeSettings) unsubscribeSettings();
             if (unsubscribeSuggestions) unsubscribeSuggestions();
             if (unsubscribeTips) unsubscribeTips();
+            if (unsubscribeCuriosities) unsubscribeCuriosities();
         };
     }, [config.guestName, config.propertyId]);
 
@@ -141,6 +148,7 @@ export const useGuestData = (config: GuestConfig) => {
         dynamicPlaces,
         heroImages: heroSlides,
         appSettings,
+        loadingSettings,
         smartSuggestions,
         tips,
         curiosities,

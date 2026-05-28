@@ -21,6 +21,7 @@ interface MiddleStayCardProps {
     onCopyAddress: () => void;
     onOpenDriverMode: () => void;
     onOpenCheckout: () => void;
+    isLoadingWifi?: boolean;
 }
 
 const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
@@ -36,6 +37,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
     onCopyAddress,
     onOpenDriverMode,
     onOpenCheckout: _onOpenCheckout,
+    isLoadingWifi = false,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
@@ -105,7 +107,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         triggerConfetti(e.currentTarget as HTMLElement);
                         onCopyWifi();
                     }}
-                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${wifiCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group h-full ${wifiCopied ? 'ring-1 ring-green-500/50' : ''}`}
                     title={`${t('Senha', 'Pass', 'Clave')}: ${currentWifiPass}`}
                 >
                     <div
@@ -120,7 +122,11 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         <p
                             className={`text-xs font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
                         >
-                            {currentWifiSSID}
+                            {isLoadingWifi ? (
+                                <span className="inline-block w-20 h-3 bg-gray-700/50 animate-pulse rounded" />
+                            ) : (
+                                currentWifiSSID
+                            )}
                         </p>
                         <p className="text-[8px] text-blue-400 font-medium">
                             {wifiCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}

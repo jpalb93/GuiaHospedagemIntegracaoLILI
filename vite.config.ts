@@ -1,79 +1,53 @@
-/// <reference types="vitest" />
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
+import compression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-import { playwright } from '@vitest/browser-playwright';
-const dirname =
-    typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
-
-// More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
-export default defineConfig({
+export default defineConfig(({ command }) => ({
     plugins: [
         react(),
+        /* SSR Prerendering handled via custom script */
         visualizer({
             open: false,
-            filename: 'stats.html',
+            filename: 'bundle-analysis.html',
             gzipSize: true,
             brotliSize: true,
         }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ] as unknown as any,
-    define: {
-        'process.env': {},
-    },
-    test: {
-        globals: true,
-        environment: 'jsdom',
-        setupFiles: './src/test/setup.ts',
-        projects: [
-            {
-                extends: true,
-                plugins: [
-                    storybookTest({
-                        configDir: path.join(dirname, '.storybook'),
-                    }),
-                ],
-                test: {
-                    name: 'storybook',
-                    browser: {
-                        enabled: true,
-                        headless: true,
-                        provider: playwright({}),
-                        instances: [
-                            {
-                                browser: 'chromium',
-                            },
-                        ],
-                    },
-                    setupFiles: ['.storybook/vitest.setup.ts'],
-                },
-            },
-            {
-                test: {
-                    name: 'unit',
-                    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-                    exclude: ['**/*.stories.test.tsx', 'node_modules'],
-                    environment: 'jsdom',
-                    globals: true,
-                    setupFiles: './src/test/setup.ts',
-                },
-            },
-        ],
-    },
-    server: {
-        proxy: {
-            '/api': {
-                target: 'http://localhost:3001',
-                changeOrigin: true,
-                secure: false,
-            },
+        compression({
+            algorithm: 'gzip',
+            ext: '.gz',
+        }),
+        compression({
+            algorithm: 'brotliCompress',
+            ext: '.br',
+        }),
+    ],
+    resolve: {
+        alias: {
+            '@': resolve(__dirname, './src'),
         },
     },
+    server: {
+        port: 3000,
+        open: true,
+        cors: true,
+    },
+    optimizeDeps: {
+        include: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            'react-helmet-async',
+            'lucide-react',
+            'gsap',
+            'framer-motion',
+            'clsx',
+            'tailwind-merge',
+        ],
+    },
+
     build: {
         rollupOptions: {
             input: {
@@ -83,30 +57,25 @@ export default defineConfig({
             output: {
                 manualChunks(id) {
                     if (id.includes('node_modules')) {
+                        // Agrupar bibliotecas pesadas de animação
                         if (id.includes('gsap') || id.includes('framer-motion')) {
                             return 'animations';
                         }
-                        if (id.includes('lucide-react')) {
-                            return 'icons';
-                        }
-                        if (id.includes('firebase')) {
-                            return 'firebase';
-                        }
-                        if (
-                            id.includes('react') ||
-                            id.includes('react-dom') ||
-                            id.includes('react-router')
-                        ) {
-                            return 'vendor';
-                        }
-                        return 'others';
+                        
+                        // Bibliotecas de terceiros menores ficam no chunk principal ou vendor automático
+                        // Removido o chunk manual de lucide-react para permitir tree-shaking eficiente
                     }
                 },
             },
         },
-        // Vite já faz code splitting automático excelente com lazy imports
-        chunkSizeWarningLimit: 800,
+        chunkSizeWarningLimit: 1000,
         sourcemap: false,
         minify: 'esbuild',
     },
-});
+    esbuild: {
+        drop: command === 'build' ? ['console', 'debugger'] : [],
+    },
+    ssr: {
+        noExternal: ['react-helmet-async'],
+    },
+}));

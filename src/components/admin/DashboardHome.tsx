@@ -3,19 +3,23 @@ import { Reservation, PropertyId } from '../../types';
 import { ArrowRight, Calendar, Clock, LogIn, LogOut, User, Building2 } from 'lucide-react';
 import { PROPERTIES } from '../../config/properties';
 import { UserPermission } from '../../types';
+import ReservationQuickViewModal from './modals/ReservationQuickViewModal';
 
 interface DashboardHomeProps {
     reservations: Reservation[];
     onNavigate: (tab: string) => void;
     userPermission?: UserPermission | null;
+    onEditReservation: (res: Reservation) => void;
 }
 
 const DashboardHome: React.FC<DashboardHomeProps> = ({
     reservations,
     onNavigate,
     userPermission,
+    onEditReservation,
 }) => {
     const [propertyFilter, setPropertyFilter] = useState<PropertyId | 'all'>('all');
+    const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
 
     const filteredReservations = useMemo(() => {
         if (propertyFilter === 'all') return reservations;
@@ -197,7 +201,8 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                         {stats.active.map((res) => (
                             <div
                                 key={res.id}
-                                className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-900/40 rounded-[2rem] border border-gray-100 dark:border-gray-700/50 hover:border-green-200 dark:hover:border-green-900/50 hover:shadow-md hover:shadow-green-500/5 transition-all"
+                                onClick={() => setSelectedReservation(res)}
+                                className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-900/40 rounded-[2rem] border border-gray-100 dark:border-gray-700/50 hover:border-green-200 dark:hover:border-green-900/50 hover:shadow-md hover:shadow-green-500/5 transition-all cursor-pointer relative z-10"
                             >
                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20 flex items-center justify-center text-green-700 dark:text-green-400 font-bold text-lg shrink-0 shadow-sm font-heading">
                                     {res.guestName.charAt(0)}
@@ -257,7 +262,8 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                             {stats.checkins.map((res) => (
                                 <div
                                     key={res.id}
-                                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-2xl border border-gray-100 dark:border-gray-700"
+                                    onClick={() => setSelectedReservation(res)}
+                                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-2xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-300 dark:hover:border-blue-800/50 transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm font-heading">
@@ -273,9 +279,9 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => onNavigate('list')}
-                                        className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
-                                        aria-label={`Ver detalhes da reserva de ${res.guestName}`}
+                                        onClick={(e) => { e.stopPropagation(); onEditReservation(res); }}
+                                        className="p-2 text-gray-400 hover:text-blue-500 transition-colors z-20 relative"
+                                        aria-label={`Editar reserva de ${res.guestName}`}
                                     >
                                         <ArrowRight size={18} />
                                     </button>
@@ -299,7 +305,8 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                             {stats.checkouts.map((res) => (
                                 <div
                                     key={res.id}
-                                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-2xl border border-gray-100 dark:border-gray-700"
+                                    onClick={() => setSelectedReservation(res)}
+                                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-2xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-red-300 dark:hover:border-red-800/50 transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 font-bold text-sm font-heading">
@@ -315,9 +322,9 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => onNavigate('list')}
-                                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                        aria-label={`Ver detalhes da reserva de ${res.guestName}`}
+                                        onClick={(e) => { e.stopPropagation(); onEditReservation(res); }}
+                                        className="p-2 text-gray-400 hover:text-red-500 transition-colors z-20 relative"
+                                        aria-label={`Editar reserva de ${res.guestName}`}
                                     >
                                         <ArrowRight size={18} />
                                     </button>
@@ -327,6 +334,17 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                     )}
                 </div>
             </div>
+
+            {/* Quick View Modal */}
+            <ReservationQuickViewModal
+                isOpen={!!selectedReservation}
+                onClose={() => setSelectedReservation(null)}
+                reservation={selectedReservation}
+                onEdit={(res) => {
+                    setSelectedReservation(null);
+                    onEditReservation(res);
+                }}
+            />
         </div>
     );
 };

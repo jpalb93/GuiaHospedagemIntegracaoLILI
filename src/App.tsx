@@ -7,13 +7,8 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import GuideList from './pages/GuideList';
-import WineRouteArticle from './pages/articles/WineRoute';
-import GuideArticleLoader from './components/GuideArticleLoader';
-import BododromoArticle from './pages/articles/Bododromo';
-import RioSaoFranciscoArticle from './pages/articles/RioSaoFrancisco';
-import CorporateArticle from './pages/articles/Corporate';
 
-import ScrollManager from './components/ScrollManager';
+
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import { Button, Input } from './components/ui';
@@ -21,7 +16,6 @@ import {
     CalendarX,
     MessageCircle,
     AlertTriangle,
-    LogOut,
     RefreshCw,
     Sparkles,
     ArrowRight,
@@ -32,7 +26,6 @@ import { initAnalytics } from './services/analytics';
 import ErrorBoundary from './components/ErrorBoundary';
 import {
     GuestSkeleton,
-    AdminSkeleton,
     LandingSkeleton,
     LiliSkeleton,
 } from './components/LoadingSkeletons';
@@ -40,7 +33,7 @@ import ModernLoadingScreen from './components/ModernLoadingScreen';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LanguageProvider } from './hooks/useLanguage';
 import { ThemeProvider } from './contexts/ThemeContext';
-import SmoothScroll from './components/SmoothScroll';
+
 import { PageTransition } from './components/ui/PageTransition';
 
 // --- LAZY LOADING (CODE SPLITTING) ---
@@ -53,260 +46,147 @@ const LandingPageLili = lazy(
     () => import(/* webpackChunkName: "landing-lili" */ './components/LandingLili')
 );
 
-const App: React.FC = () => {
-    // --- ESTADO DO APP (Refatorado para Hook) ---
-    const { appState, setAppState } = useAppInitialization();
+// Articles Lazy Loading (Code Splitting for optimized initial bundle)
+const WineRouteArticle = lazy(() => import(/* webpackChunkName: "article-wine" */ './pages/articles/WineRoute'));
+const GuideArticleLoader = lazy(() => import(/* webpackChunkName: "guide-loader" */ './components/GuideArticleLoader'));
+const BododromoArticle = lazy(() => import(/* webpackChunkName: "article-bododromo" */ './pages/articles/Bododromo'));
+const RioSaoFranciscoArticle = lazy(() => import(/* webpackChunkName: "article-rio" */ './pages/articles/RioSaoFrancisco'));
+const CorporateArticle = lazy(() => import(/* webpackChunkName: "article-corporate" */ './pages/articles/Corporate'));
+const MedicalStayArticle = lazy(() => import(/* webpackChunkName: "article-medical" */ './pages/articles/MedicalStay'));
+const FlatVsHotelArticle = lazy(() => import(/* webpackChunkName: "article-flat-hotel" */ './pages/articles/FlatVsHotel'));
+const SaoJoaoArticle = lazy(() => import(/* webpackChunkName: "article-sao-joao" */ './pages/articles/SaoJoao'));
+const MonthlyStayArticle = lazy(() => import(/* webpackChunkName: "article-monthly" */ './pages/articles/MonthlyStay'));
 
-    // --- MANUAL AUTH (Refatorado para Hook) ---
+const Calculadora = lazy(() => import(/* webpackChunkName: "calculadora" */ './pages/Calculadora'));
+
+const App: React.FC = () => {
+    const { appState, setAppState } = useAppInitialization();
     const {
         showManualLogin,
         setShowManualLogin,
         manualInput,
         setManualInput,
         handleManualSubmit,
-        handleResetApp,
     } = useManualAuth(setAppState);
 
-    // --- ANALYTICS INIT ---
     useEffect(() => {
-        // Defer loaded scripts to avoid TBT impact (Time Blocking Time)
         const timer = setTimeout(() => {
             initAnalytics();
-        }, 5000); // 5 seconds delay is safe for analytics
+        }, 5000);
         return () => clearTimeout(timer);
     }, []);
 
-    // --- ROTEAMENTO PÚBLICO (Guia) ---
-    // REMOVIDO: Unificado no bloco LANDING abaixo
+    useEffect(() => {
+        // Remove a classe de ocultação e limpa o estilo temporário do head após a primeira montagem bem-sucedida do React
+        if (typeof document !== 'undefined') {
+            document.documentElement.classList.remove('route-private');
+            const styleOverride = document.getElementById('critical-skeleton-override');
+            if (styleOverride) {
+                styleOverride.remove();
+            }
+            console.log('✨ Hidratação segura React concluída: classe route-private removida.');
+        }
+    }, []);
 
-    // --- RENDERIZAÇÃO ---
+    // Encapsulamento de Providers Globais
+    const withGlobalProviders = (children: React.ReactNode) => (
+        <ErrorBoundary>
+            <ThemeProvider>
+                <LanguageProvider>
+                    {children}
+                </LanguageProvider>
+            </ThemeProvider>
+        </ErrorBoundary>
+    );
 
-    // 1. Tela de Carregamento
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+
+    // 1. Tela de Carregamento (Só mostra se não for rota pública/landing)
     if (appState.mode === 'LOADING') {
-        const path = window.location.pathname;
-
-        // OTIMIZAÇÃO: Se for a Landing Page (raiz), não mostra tela de loading,
-        // renderiza direto (o Suspense cuidará do esqueleto se necessário).
-        // OTIMIZAÇÃO: Se for rota pública (Landing, Blog/Guia),
-        // não mostra tela de loading, renderiza direto para SEO e Performance.
-        if (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade') {
-            return (
-                <ErrorBoundary>
-                    <ThemeProvider>
-                        <Suspense fallback={<LandingSkeleton />}>
-                            <MainLayout>
-                                <ScrollManager />
-                                <Routes>
-                                    <Route
-                                        path="/"
-                                        element={
-                                            <PageTransition>
-                                                <Home />
-                                            </PageTransition>
-                                        }
-                                    />
-                                    <Route path="/guia" element={<PageTransition><GuideList /></PageTransition>} />
-                                    {/* Rotas Explícitas para Artigos */}
-                                    <Route
-                                        path="/guia/roteiro-vinho-petrolina"
-                                        element={<PageTransition><WineRouteArticle /></PageTransition>}
-                                    />
-                                    <Route
-                                        path="/guia/onde-comer-petrolina-bododromo"
-                                        element={<PageTransition><BododromoArticle /></PageTransition>}
-                                    />
-                                    <Route
-                                        path="/guia/rio-sao-francisco-rodeadouro-barquinha"
-                                        element={<PageTransition><RioSaoFranciscoArticle /></PageTransition>}
-                                    />
-                                    <Route
-                                        path="/guia/hospedagem-corporativa-empresas-petrolina"
-                                        element={<PageTransition><CorporateArticle /></PageTransition>}
-                                    />
-                                    <Route path="/guia/:slug" element={<PageTransition><GuideArticleLoader /></PageTransition>} />
-                                    <Route
-                                        path="/politica-privacidade"
-                                        element={<PageTransition><PrivacyPolicy /></PageTransition>}
-                                    />
-                                    <Route path="*" element={<PageTransition><Home /></PageTransition>} />
-                                </Routes>
-                                <CookieConsent />
-                            </MainLayout>
-                        </Suspense>
-                    </ThemeProvider>
-                </ErrorBoundary>
-            );
+        const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+        const isGuestLoading = !!(params.get('rid') || (path.length > 1 && !['/cms', '/lili', '/flat-lili', '/admin', '/calculadora'].includes(path)));
+        const isPublicRoute = (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade' || path === '/lili' || path === '/flat-lili' || path === '/calculadora') && !isGuestLoading;
+        
+        if (!isPublicRoute) {
+            let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
+            if (path === '/admin') loadingVariant = 'admin';
+            else if (isGuestLoading) loadingVariant = 'guest';
+            
+            return withGlobalProviders(<ModernLoadingScreen variant={loadingVariant} />);
         }
-
-        // OTIMIZAÇÃO: Se for a Landing Page da Lili (/lili ou /flat-lili),
-        // também não mostra loading, renderiza direto.
-        if (path === '/lili' || path === '/flat-lili') {
-            return (
-                <ErrorBoundary>
-                    <ThemeProvider>
-                        <SmoothScroll />
-                        <Suspense fallback={<LiliSkeleton />}>
-                            <PageTransition>
-                                <LandingPageLili />
-                            </PageTransition>
-                        </Suspense>
-                    </ThemeProvider>
-                </ErrorBoundary>
-            );
-        }
-
-        let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
-        const params = new URLSearchParams(window.location.search);
-        const hasStoredRid =
-            typeof localStorage !== 'undefined' && !!localStorage.getItem('flat_lili_last_rid');
-
-        if (path === '/admin') {
-            loadingVariant = 'admin';
-        } else if (
-            params.get('rid') ||
-            (path.length > 1 && !['/cms', '/lili', '/flat-lili'].includes(path)) ||
-            hasStoredRid
-        ) {
-            loadingVariant = 'guest';
-        }
-
-        return <ModernLoadingScreen variant={loadingVariant} />;
     }
 
-    // 1.5 Tela de Reconexão
+    // 2. Tela de Reconexão
     if (appState.mode === 'RECONNECTING') {
-        return (
+        return withGlobalProviders(
             <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
                 <div className="flex flex-col items-center gap-6 animate-pulse">
                     <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto">
                         <RefreshCw className="text-orange-500 animate-spin" size={32} />
                     </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-white mb-2 font-heading flex items-center justify-center gap-2">
-                            Abrindo seu guia...{' '}
-                            <Sparkles className="text-orange-400 animate-pulse" size={20} />
-                        </h1>
-                    </div>
+                    <h1 className="text-xl font-bold text-white mb-2 font-heading flex items-center justify-center gap-2">
+                        Abrindo seu guia... <Sparkles className="text-orange-400 animate-pulse" size={20} />
+                    </h1>
                 </div>
             </div>
         );
     }
 
-    // 2. Modo Admin e CMS
-    if (appState.mode === (AppMode.ADMIN as AppMode) || appState.mode === AppMode.CMS) {
-        return (
-            <ErrorBoundary>
-                <ThemeProvider>
-                    <LanguageProvider>
-                        <Suspense fallback={<ModernLoadingScreen variant="admin" />}>
-                            <PageTransition>
-                                <AdminDashboard />
-                            </PageTransition>
-                        </Suspense>
-                    </LanguageProvider>
-                </ThemeProvider>
-            </ErrorBoundary>
+    // 3. Modos Específicos que NÃO usam MainLayout (Lili, Admin, Blocked)
+    
+    if (appState.mode === 'LILI_LANDING' || (appState.mode === 'LOADING' && (path === '/lili' || path === '/flat-lili'))) {
+        return withGlobalProviders(
+            <Suspense fallback={<LiliSkeleton />}>
+                <PageTransition>
+                    <LandingPageLili />
+                </PageTransition>
+            </Suspense>
         );
     }
 
-    // 4. Modo Landing Page Pública (Lili)
-    if (appState.mode === 'LILI_LANDING') {
-        return (
-            <ErrorBoundary>
-                <ThemeProvider>
-                    <SmoothScroll />
-                    <Suspense fallback={<LiliSkeleton />}>
-                        <PageTransition>
-                            <LandingPageLili />
-                        </PageTransition>
-                    </Suspense>
-                </ThemeProvider>
-            </ErrorBoundary>
+    if (appState.mode === AppMode.ADMIN || appState.mode === AppMode.CMS) {
+        return withGlobalProviders(
+            <Suspense fallback={<ModernLoadingScreen variant="admin" />}>
+                <PageTransition>
+                    <AdminDashboard />
+                </PageTransition>
+            </Suspense>
         );
     }
 
-    // 4. Telas de Bloqueio / Expirado
     if (appState.mode === 'BLOCKED' || appState.mode === 'EXPIRED' || appState.mode === 'REVOKED') {
         const isExpired = appState.mode === 'EXPIRED';
         const isRevoked = appState.mode === 'REVOKED';
-        return (
+        return withGlobalProviders(
             <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans text-white">
                 <PageTransition>
                     <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-red-500/30 shadow-2xl max-w-md animate-fadeIn w-full">
                         <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            {isExpired || isRevoked ? (
-                                <CalendarX className="text-red-400" size={32} />
-                            ) : (
-                                <AlertTriangle className="text-red-400" size={32} />
-                            )}
+                            {isExpired || isRevoked ? <CalendarX className="text-red-400" size={32} /> : <AlertTriangle className="text-red-400" size={32} />}
                         </div>
                         <h1 className="text-2xl font-bold text-white mb-2 font-heading">
-                            {isRevoked
-                                ? 'Link desativado'
-                                : isExpired
-                                    ? 'Acesso Expirado'
-                                    : 'Reserva Não Encontrada'}
+                            {isRevoked ? 'Link desativado' : isExpired ? 'Acesso Expirado' : 'Reserva Não Encontrada'}
                         </h1>
                         {!showManualLogin ? (
                             <>
                                 <p className="text-gray-300 text-sm mb-8 leading-relaxed font-medium">
-                                    {isRevoked
-                                        ? 'Link indisponível. Entre em contato com a anfitriã.'
-                                        : isExpired
-                                            ? 'A validade deste acesso terminou. Se você tem uma nova reserva, use o botão abaixo.'
-                                            : 'Este link não está mais disponível ou a reserva foi cancelada.'}
+                                    {isRevoked ? 'Link indisponível. Entre em contato com a anfitriã.' : isExpired ? 'A validade deste acesso terminou.' : 'Este link não está mais disponível.'}
                                 </p>
                                 <div className="flex flex-col gap-3">
-                                    <Button
-                                        onClick={() => setShowManualLogin(true)}
-                                        fullWidth
-                                        leftIcon={<RefreshCw size={16} />}
-                                    >
+                                    <Button onClick={() => setShowManualLogin(true)} fullWidth leftIcon={<RefreshCw size={16} />}>
                                         {isExpired ? 'Inserir Novo Código' : 'Tenho um novo código'}
                                     </Button>
-                                    <a
-                                        href={`https://wa.me/${HOST_PHONE}`}
-                                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-heading"
-                                    >
+                                    <a href={`https://wa.me/${HOST_PHONE}`} target="_blank" rel="noreferrer" className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-heading">
                                         <MessageCircle size={18} /> Falar com a Anfitriã
                                     </a>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={handleResetApp}
-                                        className="text-xs text-gray-400 hover:text-white underline"
-                                        leftIcon={<LogOut size={12} />}
-                                    >
-                                        Voltar ao Início
-                                    </Button>
                                 </div>
                             </>
                         ) : (
                             <div className="animate-fadeIn">
-                                <p className="text-sm text-gray-300 mb-3 font-medium">
-                                    Cole o novo link abaixo:
-                                </p>
-                                <Input
-                                    value={manualInput}
-                                    onChange={(e) => setManualInput(e.target.value)}
-                                    placeholder="Cole aqui (ex: ?rid=...)"
-                                    className="bg-black/50 border-white/20 text-white placeholder:text-gray-500 mb-4"
-                                />
+                                <Input value={manualInput} onChange={(e) => setManualInput(e.target.value)} placeholder="Cole o link aqui..." className="bg-black/50 border-white/20 text-white mb-4" />
                                 <div className="flex gap-3">
-                                    <Button
-                                        variant="secondary"
-                                        onClick={() => setShowManualLogin(false)}
-                                        className="flex-1 bg-white/10 hover:bg-white/20 text-gray-300 border-0"
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button
-                                        onClick={handleManualSubmit}
-                                        disabled={!manualInput.trim()}
-                                        className="flex-1"
-                                        rightIcon={<ArrowRight size={16} />}
-                                    >
-                                        Acessar
-                                    </Button>
+                                    <Button variant="secondary" onClick={() => setShowManualLogin(false)} className="flex-1 bg-white/10 text-gray-300">Cancelar</Button>
+                                    <Button onClick={handleManualSubmit} disabled={!manualInput.trim()} className="flex-1" rightIcon={<ArrowRight size={16} />}>Acessar</Button>
                                 </div>
                             </div>
                         )}
@@ -316,91 +196,56 @@ const App: React.FC = () => {
         );
     }
 
-    // 5. Tela Inicial (Landing / Login com Código)
-    if (appState.mode === 'LANDING') {
-        return (
-            <ErrorBoundary>
-                <ThemeProvider>
-                    <Suspense fallback={<LandingSkeleton />}>
-                        <MainLayout>
-                            <ScrollManager />
-                            <Routes>
-                                <Route
-                                    path="/"
-                                    element={
-                                        <PageTransition>
-                                            <Home />
-                                        </PageTransition>
-                                    }
-                                />
-                                <Route path="/guia" element={<PageTransition><GuideList /></PageTransition>} />
-                                {/* Rotas Explícitas para Artigos (Melhor SEO e evita redirects) */}
-                                <Route
-                                    path="/guia/roteiro-vinho-petrolina"
-                                    element={<PageTransition><WineRouteArticle /></PageTransition>}
-                                />
-                                <Route
-                                    path="/guia/onde-comer-petrolina-bododromo"
-                                    element={<PageTransition><BododromoArticle /></PageTransition>}
-                                />
-                                <Route
-                                    path="/guia/rio-sao-francisco-rodeadouro-barquinha"
-                                    element={<PageTransition><RioSaoFranciscoArticle /></PageTransition>}
-                                />
-                                <Route
-                                    path="/guia/hospedagem-corporativa-empresas-petrolina"
-                                    element={<PageTransition><CorporateArticle /></PageTransition>}
-                                />
-
-                                {/* Fallback para carregamento dinâmico ou links legados */}
-                                <Route path="/guia/:slug" element={<PageTransition><GuideArticleLoader /></PageTransition>} />
-                                <Route path="/politica-privacidade" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
-                                <Route path="*" element={<PageTransition><Home /></PageTransition>} />
-                            </Routes>
-                            <CookieConsent />
-                        </MainLayout>
-                    </Suspense>
-                </ThemeProvider>
-            </ErrorBoundary>
+    if (path === '/calculadora') {
+        return withGlobalProviders(
+            <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+                <PageTransition>
+                    <Calculadora />
+                </PageTransition>
+            </Suspense>
         );
     }
 
-    // 6. App Principal (Admin ou Guest) com Suspense e ErrorBoundary
-    return (
-        <ErrorBoundary>
-            <ThemeProvider>
-                <LanguageProvider>
-                    <FavoritesProvider
-                        // Cast config to Reservation to access sync props
-                        reservationId={(appState.config as unknown as { id: string }).id}
-                        initialFavorites={
-                            (appState.config as unknown as { favoritePlaces: string[] })
-                                .favoritePlaces
-                        }
-                    >
-                        <Suspense
-                            fallback={
-                                appState.mode === AppMode.ADMIN ? (
-                                    <AdminSkeleton />
-                                ) : (
-                                    <GuestSkeleton />
-                                )
-                            }
-                        >
-                            <PageTransition>
-                                <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-                                    {appState.mode === AppMode.ADMIN ? (
-                                        <AdminDashboard />
-                                    ) : (
-                                        <GuestView config={appState.config} />
-                                    )}
-                                </div>
-                            </PageTransition>
-                        </Suspense>
-                    </FavoritesProvider>
-                </LanguageProvider>
-            </ThemeProvider>
-        </ErrorBoundary>
+    // 4. Modo Landing / Guia / Público (Usa MainLayout)
+    if (appState.mode === 'LANDING' || appState.mode === 'LOADING') {
+        return withGlobalProviders(
+            <Suspense fallback={<LandingSkeleton />}>
+                <MainLayout>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/guia" element={<GuideList />} />
+                        <Route path="/guia/roteiro-vinho-petrolina" element={<WineRouteArticle />} />
+                        <Route path="/guia/onde-comer-petrolina-bododromo" element={<BododromoArticle />} />
+                        <Route path="/guia/rio-sao-francisco-rodeadouro-barquinha" element={<RioSaoFranciscoArticle />} />
+                        <Route path="/guia/hospedagem-corporativa-empresas-petrolina" element={<CorporateArticle />} />
+                        <Route path="/guia/hospedagem-proximo-hospitais-petrolina" element={<MedicalStayArticle />} />
+                        <Route path="/guia/flat-ou-hotel-petrolina-comparativo" element={<FlatVsHotelArticle />} />
+                        <Route path="/guia/onde-ficar-petrolina-sao-joao-guia" element={<SaoJoaoArticle />} />
+                        <Route path="/guia/aluguel-mensal-petrolina-flat-mobiliado" element={<MonthlyStayArticle />} />
+                        <Route path="/guia/:slug" element={<GuideArticleLoader />} />
+                        <Route path="/politica-privacidade" element={<PrivacyPolicy />} />
+                        <Route path="*" element={<Home />} />
+                    </Routes>
+                    <CookieConsent />
+                </MainLayout>
+            </Suspense>
+        );
+    }
+
+    // 5. Modo Guest Principal (Usa FavoritesProvider)
+    return withGlobalProviders(
+        <FavoritesProvider
+            reservationId={(appState.config as any).id}
+            initialFavorites={(appState.config as any).favoritePlaces || []}
+        >
+            <Suspense fallback={<GuestSkeleton />}>
+                <PageTransition>
+                    <div className="antialiased text-gray-900 dark:text-gray-100 min-h-[100dvh] font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+                        <GuestView config={appState.config} />
+                    </div>
+                </PageTransition>
+            </Suspense>
+        </FavoritesProvider>
     );
 };
 

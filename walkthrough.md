@@ -34,42 +34,6 @@ Criamos a pasta `src/components/LandingLili/` contendo:
 - Criado arquivo `src/config/landing_lili.tsx` centralizando todos os textos e dados.
 - Refatorado `LandingLili/index.tsx` para consumir essa configuração, eliminando hardcoding.
 
-# Walkthrough - Refatoração Landing Page Lili
-
-## O que foi feito
-
-Refatoramos a antiga `LandingPageLili.tsx` (monolítica) para uma estrutura modular e organizada, preparando o terreno para futuras expansões (Landing Integração). Além disso, aplicamos melhorias de SEO e visuais.
-
-### 1. Nova Estrutura de Diretórios
-
-Criamos a pasta `src/components/LandingLili/` contendo:
-
-- `index.tsx`: Componente principal (antigo LandingPageLili).
-- `AvailabilityCalendar.tsx`: Lógica e UI do calendário isoladas.
-- `AccordionItem.tsx`: Componente reutilizável para a lista de comodidades.
-- `ReviewCard.tsx`: Componente para exibição de avaliações.
-
-### 2. Melhorias de SEO
-
-- Instalamos `react-helmet-async`.
-- Adicionamos `<Helmet>` no `LandingLili/index.tsx` para definir Title e Meta Description dinâmicos.
-- Configuramos o `HelmetProvider` no `App.tsx`.
-
-### 3. Ajustes Visuais
-
-- Aumentamos a altura da **Hero Section** para `min-h-[85vh]`, garantindo um impacto visual maior na primeira dobra.
-- Ajustamos o gradiente de sobreposição para manter a legibilidade do texto sobre as imagens.
-
-### 4. Correções de Bugs
-
-- Corrigido erro de runtime "reading 'add'" adicionando verificação de nulidade em `App.tsx`.
-- Corrigido erro de sintaxe durante a refatoração.
-
-### 5. Conteúdo Dinâmico (Fase 2)
-
-- Criado arquivo `src/config/landing_lili.tsx` centralizando todos os textos e dados.
-- Refatorado `LandingLili/index.tsx` para consumir essa configuração, eliminando hardcoding.
-
 ### 6. Calendário Interativo (Fase 3)
 
 - **Seleção de Datas**: Usuário pode clicar no calendário para selecionar Entrada e Saída.
@@ -126,6 +90,7 @@ Criamos a pasta `src/components/LandingLili/` contendo:
 - **Sincronização em Tempo Real**: Alterada a lógica de busca de locais (`useGuestData`) para usar `onSnapshot` do Firestore. Isso garante que qualquer alteração feita no Admin (edição, adição, remoção) apareça instantaneamente na tela do hóspede, sem necessidade de recarregar a página.
 - **Consistência CMS**: Atualizado também o painel CMS (`/cms`) para incluir as novas categorias, garantindo consistência caso seja utilizado em vez do painel Admin principal.
 - **WhatsApp nos Locais**: Adicionado campo específico para número de WhatsApp no cadastro de locais. Agora, um botão verde "WhatsApp" aparece para o hóspede, permitindo contato direto (ex: para delivery) sem precisar salvar o número.
+
 ### 9. Otimização de Performance e Critical Path
 
 Implementamos uma série de melhorias focadas em reduzir o tempo de carregamento inicial e melhorar a pontuação no PageSpeed Insights:
@@ -134,3 +99,24 @@ Implementamos uma série de melhorias focadas em reduzir o tempo de carregamento
 - **Renderização Prioritária (Above-the-Fold)**: As seções de Reputação e Galeria agora são importadas de forma estática, garantindo que apareçam imediatamente após o Hero, sem esperar múltiplos chunks de JS.
 - **Dicas de Rede (Preconnect & DNS-prefetch)**: Adicionamos otimizações no `index.html` para antecipar a conexão com serviços externos (Google Fonts, Firebase, Postimg), reduzindo a latência de rede.
 - **Melhoria no LCP**: Refinamos os preloads de imagem no cabeçalho e ajustamos o `fallback` do Suspense na Home para evitar saltos de layout (CLS) durante o carregamento de seções pesadas.
+
+### 10. Correção de Layout no iPhone (Guest Guide)
+
+- **Remoção de Restrições de Altura**: Identificamos que a propriedade `h-full` e `overflow-hidden` nos cards de Check-in e Acesso (`CheckinCard` e `AccessTicket`) causavam sobreposição de elementos e corte de conteúdo em dispositivos iOS (Safari), onde o cálculo da altura da viewport pode variar.
+- **Fluxo Natural**: Removemos essas restrições, permitindo que os cards se ajustem naturalmente à altura do conteúdo. Isso habilita a rolagem vertical quando necessário, garantindo que todas as informações (Senha, Wi-Fi, Localização) sejam visíveis sem cortes, independentemente do tamanho da tela.
+
+### 11. Alinhamento de Cards no Guia
+
+### 12. Padronização de Domínio e SEO Técnico
+
+Eliminamos alertas de "Cadeias de Redirecionamento" e "Canonical Mismatch" apontados pela auditoria técnica (SE Ranking), consolidando a autoridade do site na versão com `www`:
+
+- **Sitemap & Robots**:
+    - Atualizado `public/sitemap.xml` para incluir o prefixo `www.` em todas as URLs listadas.
+    - Atualizada a diretiva `Sitemap` no `public/robots.txt` para apontar para a nova URL absoluta do sitemap.
+- **Metadados Globais**:
+    - Padronização das tags `<link rel="canonical" href="...">` em todas as páginas para usar a versão com `www`.
+    - Atualização das metatags OpenGraph (`og:url`) e Twitter Cards para refletir o domínio preferencial.
+- **Dados Estruturados (JSON-LD)**:
+    - Atualizados os campos `@id`, `url` e referências de `BreadcrumbList` em todos os artigos do Guia e na Home Page para garantir que o Google identifique a versão com `www` como a entidade canônica.
+- **Impacto**: Redução imediata de redirecionamentos 302/307 internos desnecessários, melhorando a eficiência do rastreamento (crawl budget) e a distribuição de link equity.

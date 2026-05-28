@@ -1,4 +1,4 @@
-import { Wine, Utensils, Anchor, Briefcase } from 'lucide-react';
+import { Wine, Utensils, Anchor, Briefcase, Sparkles } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 export interface Article {
@@ -62,12 +62,64 @@ export const articles: Article[] = [
         title: 'Para Empresas e Executivos',
         description:
             'Wi-Fi de alta velocidade, nota fiscal e localização estratégica. A melhor escolha para sua viagem de negócios.',
-        imageUrl: 'https://i.postimg.cc/tgpZD8kK/334291651.jpg',
+        imageUrl: '/images/home-office.jpg',
         category: 'Corporativo',
         date: '2025-12-22',
         readTime: '4 min',
         icon: Briefcase,
         locationLabel: 'Centro',
+    },
+    {
+        id: 'hospedagem-medica',
+        slug: 'hospedagem-proximo-hospitais-petrolina',
+        title: 'Hospedagem perto do Hospital Dom Malan e HEMOPE',
+        description:
+            'Guia completo para pacientes e acompanhantes que buscam conforto, silêncio e praticidade perto dos principais hospitais de Petrolina.',
+        imageUrl: '/images/quarto-lavanderia.jpg',
+        category: 'Saúde',
+        date: '2026-05-06',
+        readTime: '6 min',
+        icon: Briefcase,
+        locationLabel: 'Centro / Polo Médico',
+    },
+    {
+        id: 'flat-vs-hotel',
+        slug: 'flat-ou-hotel-petrolina-comparativo',
+        title: 'Flat ou Hotel em Petrolina? Qual escolher para sua viagem',
+        description:
+            'Um comparativo real de preços, conforto e custo-benefício para ajudar você a decidir a melhor hospedagem no Sertão.',
+        imageUrl: '/images/cozinha-jantar.jpg',
+        category: 'Dicas',
+        date: '2026-05-06',
+        readTime: '7 min',
+        icon: Briefcase,
+        locationLabel: 'Centro / Petrolina',
+    },
+    {
+        id: 'sao-joao-petrolina',
+        slug: 'onde-ficar-petrolina-sao-joao-guia',
+        title: 'Onde ficar no São João de Petrolina: Guia de Hospedagem',
+        description:
+            'Planeje sua estadia para o melhor São João do Brasil. Dicas de localização, transporte e como garantir conforto perto do Pátio de Eventos.',
+        imageUrl: '/images/entretenimento.jpg',
+        category: 'Eventos',
+        date: '2026-05-06',
+        readTime: '8 min',
+        icon: Sparkles,
+        locationLabel: 'Centro / Pátio de Eventos',
+    },
+    {
+        id: 'aluguel-mensal',
+        slug: 'aluguel-mensal-petrolina-flat-mobiliado',
+        title: 'Aluguel por Mês em Petrolina: Vantagens de Morar em Flat',
+        description:
+            'Trabalho, mudança ou estudo? Descubra por que o aluguel mensal de um flat no Centro é mais prático e barato que contratos tradicionais.',
+        imageUrl: '/images/home-office.jpg',
+        category: 'Trabalho',
+        date: '2026-05-06',
+        readTime: '9 min',
+        icon: Briefcase,
+        locationLabel: 'Centro / Longa Estadia',
     },
     // Future articles example:
     // {

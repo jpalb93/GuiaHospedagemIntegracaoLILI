@@ -32,7 +32,7 @@ export const useAppInitialization = () => {
             const path = window.location.pathname;
             const params = new URLSearchParams(window.location.search);
             if (!params.get('rid')) {
-                if (path === '/') {
+                if (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade') {
                     return { mode: 'LANDING', config: { guestName: '', lockCode: '' } };
                 }
                 if (path === '/lili' || path === '/flat-lili') {
@@ -51,7 +51,8 @@ export const useAppInitialization = () => {
 
             // Delay mínimo reduzido para landing page para acelerar FCP/LCP
             const isLiliPage = path === '/lili' || path === '/flat-lili';
-            const isLanding = path === '/' || isLiliPage;
+            const isGuide = path.startsWith('/guia') || path === '/politica-privacidade';
+            const isLanding = path === '/' || isLiliPage || isGuide;
             const minLoadingTime = new Promise((resolve) => setTimeout(resolve, isLanding ? 0 : 800));
 
             let reservationId = params.get('rid');

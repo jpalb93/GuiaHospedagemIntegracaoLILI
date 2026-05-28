@@ -35,6 +35,7 @@ async function optimize() {
         const optimizedHtml = await critters.process(html);
         fs.writeFileSync(indexPath, optimizedHtml);
         console.log('✅ Critical CSS inlined successfully!');
+        process.exit(0);
     } catch (e) {
         console.error('❌ Critters optimization failed:', e);
         process.exit(1);

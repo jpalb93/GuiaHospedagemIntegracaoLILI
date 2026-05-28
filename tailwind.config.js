@@ -6,7 +6,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
-                heading: ['Outfit', 'Montserrat', 'sans-serif'],
+                heading: ['Plus Jakarta Sans', 'sans-serif'],
             },
             colors: {
                 gray: {

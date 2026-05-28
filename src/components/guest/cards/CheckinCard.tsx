@@ -23,6 +23,7 @@ interface CheckinCardProps {
     onCopyAddress: () => void;
     onOpenDriverMode: () => void;
     onOpenCheckout: () => void;
+    isLoadingWifi?: boolean;
 }
 
 const CheckinCard: React.FC<CheckinCardProps> = ({
@@ -40,13 +41,14 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
     onCopyAddress,
     onOpenDriverMode,
     onOpenCheckout,
+    isLoadingWifi = false,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
 
     return (
         <div
-            className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
+            className={`flex flex-col ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative w-full animate-gold-pulse`}
         >
             {/* Background Effects Removed */}
 
@@ -155,7 +157,11 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         <p
                             className={`text-sm font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
                         >
-                            {currentWifiSSID}
+                            {isLoadingWifi ? (
+                                <span className="inline-block w-24 h-4 bg-gray-700/50 animate-pulse rounded" />
+                            ) : (
+                                currentWifiSSID
+                            )}
                         </p>
                         <p className="text-[9px] text-blue-400 font-medium">
                             {wifiCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
@@ -213,7 +219,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     fullWidth
                     className="mb-3 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25"
                 >
-                    {t('Iniciar Passo a Passo', 'Start Walkthrough', 'Iniciar Guía Paso a Paso')}
+                    {t('Passo a Passo do Check-in', 'Check-in Walkthrough', 'Guía Paso a Paso del Check-in')}
                 </Button>
             )}
 

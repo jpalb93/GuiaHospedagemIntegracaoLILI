@@ -9,6 +9,23 @@ if (!rootElement) {
     throw new Error('Could not find root element to mount to');
 }
 
+// EMERGENCY SCROLL UNLOCK SCRIPT
+if (typeof window !== 'undefined') {
+    const unlock = () => {
+        document.documentElement.style.overflow = 'visible';
+        document.body.style.overflow = 'visible';
+        document.documentElement.style.height = 'auto';
+        document.body.style.height = 'auto';
+        document.body.style.position = 'static';
+        console.log('🔓 Scroll unlocked by Emergency Script');
+    };
+    unlock();
+    window.addEventListener('load', unlock);
+    // Agendado para garantir que rode após hidratação do React
+    setTimeout(unlock, 1000);
+    setTimeout(unlock, 3000);
+}
+
 import { HelmetProvider } from 'react-helmet-async';
 import { Analytics } from '@vercel/analytics/react';
 import { ToastProvider } from './contexts/ToastContext';

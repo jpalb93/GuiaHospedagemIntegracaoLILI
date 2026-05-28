@@ -1,0 +1,12 @@
+# Cloudflare Pages — cache de estáticos (https://developers.cloudflare.com/pages/configuration/headers/)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/hero-bg-nova.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/hero-bg-mobile.webp
+  Cache-Control: public, max-age=31536000, immutable

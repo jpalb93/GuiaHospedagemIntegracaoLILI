@@ -143,6 +143,27 @@ export const getCuriosities = async (): Promise<CityCuriosity[]> => {
     }
 };
 
+export const subscribeToCuriosities = async (callback: (items: CityCuriosity[]) => void) => {
+    const db = await getFirestoreInstance();
+    const docRef = doc(db, 'app_config', 'curiosities');
+
+    return onSnapshot(
+        docRef,
+        (docSnap) => {
+            if (docSnap.exists()) {
+                const items: CityCuriosity[] = docSnap.data()?.items || [];
+                callback(items);
+            } else {
+                callback([]);
+            }
+        },
+        (error) => {
+            logger.error('Erro no listener de curiosidades:', { error });
+            callback([]);
+        }
+    );
+};
+
 export const saveCuriosities = async (items: CityCuriosity[]) => {
     // Sanitize data: Firestore throws "Unsupported field value: undefined"
     // We must ensure no undefined fields exist in the array objects.

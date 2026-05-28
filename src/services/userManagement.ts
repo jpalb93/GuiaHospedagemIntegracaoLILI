@@ -35,3 +35,27 @@ export const canUserAccessProperty = (
     if (permission.role === 'super_admin') return true;
     return permission.allowedProperties.includes(propertyId);
 };
+
+export const restoreAdminUser = async (email: string): Promise<boolean> => {
+    try {
+        const db = await getFirestoreInstance();
+        const normalizedEmail = email.toLowerCase();
+        const docRef = doc(db, 'admin_users', normalizedEmail);
+
+        // Force Super Admin for recovery
+        await import('firebase/firestore').then(({ setDoc }) =>
+            setDoc(docRef, {
+                email: normalizedEmail,
+                role: 'super_admin',
+                allowedProperties: ['lili', 'integracao'],
+                createdAt: new Date().toISOString(),
+                restoredBy: 'system_rescue'
+            }, { merge: true })
+        );
+
+        return true;
+    } catch (error) {
+        console.error('Error restoring admin user:', error);
+        return false;
+    }
+};

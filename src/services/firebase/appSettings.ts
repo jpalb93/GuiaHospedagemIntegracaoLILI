@@ -24,11 +24,6 @@ export const getAppSettings = async (): Promise<AppConfig | null> => {
 export const saveAppSettings = async (config: AppConfig) => {
     const db = await getFirestoreInstance();
     await setDoc(doc(db, 'app_config', 'general'), config, { merge: true });
-
-    // Sync curiosities to its own document for GuestView
-    if (config.cityCuriosities) {
-        await setDoc(doc(db, 'app_config', 'curiosities'), { items: config.cityCuriosities });
-    }
 };
 
 export const subscribeToAppSettings = async (callback: (config: AppConfig | null) => void) => {

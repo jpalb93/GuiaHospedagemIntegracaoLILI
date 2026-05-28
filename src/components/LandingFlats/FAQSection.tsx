@@ -1,23 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 // GSAP dynamically imported
 
 const FAQS = [
     {
-        question: 'O flats possui estacionamento?',
-        answer: 'Não possuímos estacionamento próprio, mas é totalmente seguro estacionar na rua.',
+        question: 'A hospedagem nos Flats Integração possui estacionamento?',
+        answer: 'Não possuímos estacionamento privativo nos Flats Integração, mas é comum e seguro estacionar na rua em frente à propriedade no Centro de Petrolina.',
     },
     {
-        question: 'Qual a voltagem das tomadas?',
-        answer: 'Em Petrolina a voltagem é 220v. Nossos flats possuem tomadas padrão novo.',
+        question: 'Qual a voltagem das tomadas no flat em Petrolina?',
+        answer: 'Em Petrolina a voltagem padrão é 220v. Nossos flats possuem tomadas no padrão brasileiro novo para sua conveniência.',
     },
     {
-        question: 'Fica perto de restaurantes?',
-        answer: 'Sim, estamos no Centro, a 5 min do Bodódromo e com vários deliverys disponíveis.',
+        question: 'O flat em Petrolina fica perto de restaurantes e do Bodódromo?',
+        answer: 'Sim, nossos flats em Petrolina estão localizados no Centro, a apenas 5 minutos do famoso Bodódromo e próximos aos melhores restaurantes, farmácias e supermercados.',
     },
     {
-        question: 'Tem Wi-Fi para trabalhar?',
-        answer: 'Sim, internet fibra ótica de alta velocidade em todas as unidades.',
+        question: 'O flat oferece Wi-Fi de alta velocidade para quem viaja a trabalho?',
+        answer: 'Sim, oferecemos internet fibra ótica de alta velocidade em todas as unidades, sendo a escolha ideal de hospedagem em Petrolina para quem precisa trabalhar remotamente com estabilidade.',
     },
 ];
 
@@ -91,13 +92,29 @@ const FAQSection: React.FC = () => {
 
     return (
         <section ref={sectionRef} className="py-24 bg-stone-950" id="faq">
+            <Helmet>
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'FAQPage',
+                        mainEntity: FAQS.map((faq) => ({
+                            '@type': 'Question',
+                            name: faq.question,
+                            acceptedAnswer: {
+                                '@type': 'Answer',
+                                text: faq.answer,
+                            },
+                        })),
+                    })}
+                </script>
+            </Helmet>
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="faq-header text-center mb-16">
                     <span className="text-orange-500 font-bold uppercase tracking-wider text-sm mb-3 flex items-center justify-center gap-2">
                         <HelpCircle size={18} />
                         Dúvidas
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-bold text-white font-heading font-light">
+                    <h2 className="text-3xl md:text-5xl font-bold text-white font-heading">
                         Perguntas Frequentes
                     </h2>
                 </div>

@@ -42,32 +42,32 @@ const GallerySection: React.FC = () => {
                     const tl = gsap.timeline({
                         scrollTrigger: {
                             trigger: sectionRef.current,
-                            start: 'top 85%',
+                            start: 'top 95%',
                             toggleActions: 'play none none reverse',
                         },
                     });
 
                     tl.fromTo(
                         '.gallery-header',
-                        { y: 30, opacity: 0 },
+                        { y: 15, opacity: 0 },
                         {
                             y: 0,
                             opacity: 1,
-                            duration: 0.8,
-                            stagger: 0.2,
+                            duration: 0.5,
+                            stagger: 0.1,
                             ease: 'power2.out',
                         }
                     ).fromTo(
                         '.gallery-item',
-                        { y: 50, opacity: 0 },
+                        { y: 20, opacity: 0 },
                         {
                             y: 0,
                             opacity: 1,
-                            duration: 0.8,
-                            stagger: 0.1,
+                            duration: 0.5,
+                            stagger: 0.05,
                             ease: 'power2.out',
                         },
-                        '-=0.4'
+                        '-=0.3'
                     );
                 }, sectionRef);
             });
@@ -131,6 +131,8 @@ const GallerySection: React.FC = () => {
                                 alt={`Ambiente da hospedagem ${index + 1}`}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter hover:contrast-110 opacity-90 group-hover:opacity-100"
                                 loading="lazy"
+                                width="600"
+                                height="800"
                             />
                             {/* Overlay sutil apenas no hover para indicar interatividade */}
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>

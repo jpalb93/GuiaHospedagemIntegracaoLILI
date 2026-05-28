@@ -29,17 +29,17 @@ const ReputationSection: React.FC = () => {
                     const tl = gsap.timeline({
                         scrollTrigger: {
                             trigger: sectionRef.current,
-                            start: 'top 70%',
+                            start: 'top 95%',
                             toggleActions: 'play none none reverse',
                         },
                     });
 
                     // 1. Reveal Text & Headline
                     tl.from('.reputation-text', {
-                        y: 50,
+                        y: 20,
                         opacity: 0,
-                        duration: 1,
-                        stagger: 0.2,
+                        duration: 0.6,
+                        stagger: 0.1,
                         ease: 'power3.out',
                     });
 
@@ -48,10 +48,9 @@ const ReputationSection: React.FC = () => {
                         scoreRef.current,
                         {
                             textContent: 0,
-                            duration: 2,
+                            duration: 1.2,
                             ease: 'power1.out',
                             snap: { textContent: 0.1 },
-                            stagger: 1,
                             onUpdate: function () {
                                 if (scoreRef.current) {
                                     scoreRef.current.innerHTML = parseFloat(
@@ -60,20 +59,20 @@ const ReputationSection: React.FC = () => {
                                 }
                             },
                         },
-                        '-=0.5'
+                        '-=0.4'
                     );
 
                     // 3. Reveal Bottom Values
                     tl.from(
                         '.reputation-value',
                         {
-                            y: 30,
+                            y: 15,
                             opacity: 0,
-                            duration: 0.8,
-                            stagger: 0.1,
+                            duration: 0.4,
+                            stagger: 0.05,
                             ease: 'power2.out',
                         },
-                        '-=1.5'
+                        '-=0.8'
                     );
                 }, sectionRef);
             });

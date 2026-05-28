@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-heading;
+    }
+    
+    body {
+        @apply font-sans;
+    }
+}
+
+/* EMERGENCY SCROLL UNLOCK */
+html, body {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    position: static !important;
+}
+
 /* Safe Area Insets for Mobile Devices with Notches/Dynamic Island */
 :root {
     --safe-area-top: env(safe-area-inset-top, 0px);
@@ -30,7 +48,7 @@
 
     /* --- Buttons --- */
     .ui-btn {
-        @apply inline-flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply inline-flex items-center justify-center gap-2 font-medium transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .ui-btn-primary {
@@ -55,7 +73,7 @@
 
     /* --- Badges --- */
     .ui-badge {
-        @apply text-[10px] px-2 py-0.5 rounded-full uppercase font-bold border;
+        @apply text-[10px] px-2 py-0.5 rounded-full uppercase font-medium border;
     }
 
     .ui-badge-orange {
@@ -147,6 +165,28 @@ body {
     display: none !important;
 }
 
+
+
+/* =============================================
+   FLOATING HEADER - Premium Pill Transformation
+   ============================================= */
+
+#main-header.scrolled {
+    @apply pt-4 md:pt-6;
+}
+
+#header-pill.scrolled {
+    @apply w-[92%] max-w-6xl bg-stone-900/90 backdrop-blur-2xl py-3 px-6 md:px-10 rounded-full shadow-2xl border-white/10 ring-1 ring-white/5;
+}
+
+#header-logo.scrolled {
+    @apply h-8 md:h-9;
+}
+
+#header-cta.scrolled {
+    @apply bg-orange-600 hover:bg-orange-500 text-white px-6 py-3;
+}
+
 /* Animações Personalizadas */
 @keyframes pop-in {
     0% {
@@ -182,7 +222,7 @@ body {
 }
 
 .animate-fade-up {
-    animation: fade-up 0.6s ease-out backwards;
+    animation: fade-up 0.4s ease-out backwards;
 }
 
 @keyframes pulse-subtle {
@@ -463,152 +503,8 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* React Calendar Customization */
-.react-calendar {
-    width: 100% !important;
-    max-width: 100%;
-    background: white;
-    border: 1px solid #e5e7eb;
-    font-family: 'Inter', sans-serif;
-    line-height: 1.125em;
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
 
-.react-calendar--doubleView {
-    width: 700px;
-}
-
-.react-calendar--doubleView .react-calendar__viewContainer {
-    display: flex;
-    margin: -0.5em;
-}
-
-.react-calendar--doubleView .react-calendar__viewContainer>* {
-    width: 500%;
-    margin: 0.5em;
-}
-
-.react-calendar,
-.react-calendar *,
-.react-calendar *:before,
-.react-calendar *:after {
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.react-calendar button {
-    margin: 0;
-    border: 0;
-    outline: none;
-}
-
-.react-calendar button:enabled:hover {
-    cursor: pointer;
-}
-
-.react-calendar__navigation {
-    display: flex;
-    height: 44px;
-    margin-bottom: 1em;
-}
-
-.react-calendar__navigation button {
-    min-width: 44px;
-    background: none;
-}
-
-.react-calendar__navigation button:disabled {
-    background-color: #f0f0f0;
-}
-
-.react-calendar__navigation button:enabled:hover,
-.react-calendar__navigation button:enabled:focus {
-    background-color: #e6e6e6;
-}
-
-.react-calendar__month-view__weekdays {
-    text-align: center;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: 0.75em;
-}
-
-.react-calendar__month-view__weekdays__weekday {
-    padding: 0.5em;
-}
-
-.react-calendar__month-view__weekNumbers .react-calendar__tile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75em;
-    font-weight: bold;
-}
-
-.react-calendar__month-view__days__day--weekend {
-    color: #d10000;
-}
-
-.react-calendar__month-view__days__day--neighboringMonth {
-    color: #757575;
-}
-
-.react-calendar__year-view .react-calendar__tile,
-.react-calendar__decade-view .react-calendar__tile,
-.react-calendar__century-view .react-calendar__tile {
-    padding: 2em 0.5em;
-}
-
-.react-calendar__tile {
-    max-width: 100%;
-    padding: 10px 6.6667px;
-    background: none;
-    text-align: center;
-    line-height: 16px;
-}
-
-.react-calendar__tile:disabled {
-    background-color: #f0f0f0;
-}
-
-.react-calendar__tile:enabled:hover,
-.react-calendar__tile:enabled:focus {
-    background-color: #e6e6e6;
-}
-
-.react-calendar__tile--now {
-    background: #ffff76;
-}
-
-.react-calendar__tile--now:enabled:hover,
-.react-calendar__tile--now:enabled:focus {
-    background: #ffffa9;
-}
-
-.react-calendar__tile--hasActive {
-    background: #76baff;
-}
-
-.react-calendar__tile--hasActive:enabled:hover,
-.react-calendar__tile--hasActive:enabled:focus {
-    background: #a9d4ff;
-}
-
-.react-calendar__tile--active {
-    background: #006edc;
-    color: white;
-}
-
-.react-calendar__tile--active:enabled:hover,
-.react-calendar__tile--active:enabled:focus {
-    background: #1087ff;
-}
-
-.react-calendar--selectRange .react-calendar__tile--hover {
-    background-color: #e6e6e6;
-}
+/* Estilos de calendário removidos para otimização */
 
 /* =============================================
    SAFE AREA UTILITIES - Mobile Notch Support
@@ -711,4 +607,18 @@ body {
     .landscape-padding {
         padding-bottom: 20px !important;
     }
+}
+
+/* Ticker Animation */
+@keyframes ticker {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-ticker {
+    animation: ticker 40s linear infinite;
 }

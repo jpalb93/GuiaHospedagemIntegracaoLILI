@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { triggerConfetti } from '../utils/confetti';
 import { GuestConfig } from '../types';
 import { useGuestStay } from '../hooks/useGuestStay';
@@ -56,6 +57,7 @@ import SmartSuggestion from './SmartSuggestion';
 // Lazy load ChatWidget for better performance
 const ChatWidget = React.lazy(() => import('./ChatWidget'));
 import { GOOGLE_REVIEW_LINK } from '../constants';
+import logoEximus from '../assets/logo-eximus.png';
 
 interface GuestViewProps {
     config: GuestConfig;
@@ -70,6 +72,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
 
     const {
         appSettings,
+        loadingSettings,
         dynamicPlaces,
         dismissedAlerts,
         dismissAlert,
@@ -232,13 +235,17 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
 
     // Security Logic (from API)
     const currentWifiPass = config.wifiPass || 'Disponível no check-in';
-    const currentWifiSSID = appSettings?.wifiSSID || 'Flat_Petrolina_5G';
+    // Se estiver carregando, não usa o fallback ainda para evitar flicker
+    const currentWifiSSID = appSettings?.wifiSSID || (loadingSettings ? '' : 'Flat_Petrolina_5G');
     const currentSafeCode = appSettings?.safeCode || config.safeCode || '----';
 
     return (
         <div
             className={`min-h-screen pb-20 bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 selection:bg-orange-100 selection:text-orange-900 transition-colors duration-300 text-sm relative`}
         >
+            <Helmet>
+                <meta name="robots" content="noindex, nofollow" />
+            </Helmet>
             <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
                 <GuestHeader
                     appSettings={appSettings}
@@ -352,6 +359,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                             addressCopied={clipboard.addressCopied}
                             currentWifiSSID={currentWifiSSID}
                             currentWifiPass={currentWifiPass}
+                            isLoadingWifi={loadingSettings}
                             onOpenCheckin={() => modals.setIsCheckinModalOpen(true)}
                             onOpenCheckout={() => modals.setIsCheckoutModalOpen(true)}
                             onCopyWifi={() => clipboard.copyToClipboard(currentWifiPass, 'wifi')}
@@ -532,6 +540,21 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 }
                 propertyId={config.propertyId}
             />
+
+            {/* Discreet Footer */}
+            <footer className="mt-12 pb-8 flex flex-col items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-500">
+                <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 font-medium">
+                    Desenvolvido por
+                </span>
+                <a
+                    href="https://www.eximusdigital.com.br"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center grayscale hover:grayscale-0 transition-all"
+                >
+                    <img src={logoEximus} alt="Eximus Digital" className="h-4 w-auto" />
+                </a>
+            </footer>
         </div>
     );
 };

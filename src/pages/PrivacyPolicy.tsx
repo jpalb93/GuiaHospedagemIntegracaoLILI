@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Shield, Lock, Eye, Database, Server } from 'lucide-react';
 import { HOST_PHONE } from '../constants';
 
@@ -9,6 +10,34 @@ const PrivacyPolicy: React.FC = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8 font-sans text-gray-800">
+            <Helmet>
+                <title>Política de Privacidade | Flats Integração</title>
+                <meta name="description" content="Saiba como protegemos seus dados e sua privacidade durante sua estadia. Leia nossa Política de Privacidade baseada na LGPD." />
+                <link rel="canonical" href="https://www.flatsintegracao.com.br/politica-privacidade" />
+                <meta name="robots" content="index, follow" />
+                <meta property="og:url" content="https://www.flatsintegracao.com.br/politica-privacidade" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="Política de Privacidade | Flats Integração" />
+                <meta
+                    property="og:description"
+                    content="Saiba como protegemos seus dados e sua privacidade durante sua estadia. Leia nossa Política de Privacidade baseada na LGPD."
+                />
+                <meta
+                    property="og:image"
+                    content="https://www.flatsintegracao.com.br/android-chrome-512x512.png"
+                />
+                <meta property="og:locale" content="pt_BR" />
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content="Política de Privacidade | Flats Integração" />
+                <meta
+                    name="twitter:description"
+                    content="Saiba como protegemos seus dados e sua privacidade durante sua estadia. Leia nossa Política de Privacidade baseada na LGPD."
+                />
+                <meta
+                    name="twitter:image"
+                    content="https://www.flatsintegracao.com.br/android-chrome-512x512.png"
+                />
+            </Helmet>
             <div className="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100">
                 <header className="mb-10 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 text-green-600 rounded-full mb-4">

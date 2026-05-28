@@ -20,6 +20,7 @@ interface PreCheckoutCardProps {
     onCopyAddress: () => void;
     onOpenDriverMode: () => void;
     onOpenCheckout: () => void;
+    isLoadingWifi?: boolean;
 }
 
 const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({

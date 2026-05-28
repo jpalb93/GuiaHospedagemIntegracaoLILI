@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Lock, LogIn } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { Loader2, Lock, LogIn, ShieldAlert } from 'lucide-react';
+import { restoreAdminUser } from '../../services/userManagement';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 import { useAdminContent } from '../../hooks/useAdminContent';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
@@ -21,7 +23,7 @@ import AdminNavigation from './AdminNavigation';
 import ConfirmModal from './ConfirmModal';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface AdminDashboardProps {}
+interface AdminDashboardProps { }
 
 const FallbackLoader = () => (
     <div className="h-full w-full flex flex-col items-center justify-center min-h-[50vh] animate-fadeIn">
@@ -160,24 +162,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
             key={refreshKey}
             className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-900 dark:to-black font-sans transition-colors duration-300"
         >
+            <Helmet>
+                <meta name="robots" content="noindex, nofollow" />
+            </Helmet>
             <AdminNavigation
                 activeTab={activeTab}
                 setActiveTab={(tab) =>
                     setActiveTab(
                         tab as
-                            | 'home'
-                            | 'create'
-                            | 'list'
-                            | 'calendar'
-                            | 'blocks'
-                            | 'places'
-                            | 'tips'
-                            | 'reviews'
-                            | 'suggestions'
-                            | 'suggestions'
-                            | 'settings'
-                            | 'analytics'
-                            | 'logs'
+                        | 'home'
+                        | 'create'
+                        | 'list'
+                        | 'calendar'
+                        | 'blocks'
+                        | 'places'
+                        | 'tips'
+                        | 'reviews'
+                        | 'suggestions'
+                        | 'suggestions'
+                        | 'settings'
+                        | 'analytics'
+                        | 'logs'
                     )
                 }
                 isMobileMenuOpen={isMobileMenuOpen}
@@ -198,11 +203,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     ? 'Admin Geral'
                                     : auth.userPermission?.allowedProperties.length === 1 &&
                                         auth.userPermission.allowedProperties[0] === 'lili'
-                                      ? 'Flat da Lili'
-                                      : auth.userPermission?.allowedProperties.length === 1 &&
-                                          auth.userPermission.allowedProperties[0] === 'integracao'
-                                        ? 'Flats Integração'
-                                        : 'Painel de Gestão'}
+                                        ? 'Flat da Lili'
+                                        : auth.userPermission?.allowedProperties.length === 1 &&
+                                            auth.userPermission.allowedProperties[0] === 'integracao'
+                                            ? 'Flats Integração'
+                                            : 'Painel de Gestão'}
                             </h1>
                             <div className="flex flex-col">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -221,19 +226,36 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
                     {/* PERMISSION WARNING BANNER */}
                     {auth.user && !auth.userPermission && !auth.authLoading && (
-                        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-3 animate-fadeIn">
-                            <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
-                                <Lock size={20} />
+                        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn">
+                            <div className="flex items-center gap-3 flex-1">
+                                <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
+                                    <Lock size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-red-900 dark:text-red-100">
+                                        Acesso Limitado detectado
+                                    </h3>
+                                    <p className="text-sm text-red-700 dark:text-red-300">
+                                        Seus dados de permissão não foram encontrados no banco de dados. Isso pode ocorrer após uma limpeza de dados.
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-red-900 dark:text-red-100">
-                                    Acesso Limitado
-                                </h3>
-                                <p className="text-sm text-red-700 dark:text-red-300">
-                                    Seu usuário não possui permissões configuradas. Entre em contato
-                                    com o administrador.
-                                </p>
-                            </div>
+                            <button
+                                onClick={async () => {
+                                    if (!auth.user?.email) return;
+                                    const success = await restoreAdminUser(auth.user.email);
+                                    if (success) {
+                                        alert('Permissões restauradas com sucesso! A página será recarregada.');
+                                        window.location.reload();
+                                    } else {
+                                        alert('Falha ao restaurar permissões. Tente novamente.');
+                                    }
+                                }}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg shadow-sm flex items-center gap-2 transition-colors whitespace-nowrap"
+                            >
+                                <ShieldAlert size={16} />
+                                Restaurar Acesso Admin
+                            </button>
                         </div>
                     )}
 
@@ -246,21 +268,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     onNavigate={(tab) =>
                                         setActiveTab(
                                             tab as
-                                                | 'home'
-                                                | 'create'
-                                                | 'list'
-                                                | 'calendar'
-                                                | 'blocks'
-                                                | 'places'
-                                                | 'tips'
-                                                | 'reviews'
-                                                | 'suggestions'
-                                                | 'suggestions'
-                                                | 'settings'
-                                                | 'analytics'
+                                            | 'home'
+                                            | 'create'
+                                            | 'list'
+                                            | 'calendar'
+                                            | 'blocks'
+                                            | 'places'
+                                            | 'tips'
+                                            | 'reviews'
+                                            | 'suggestions'
+                                            | 'suggestions'
+                                            | 'settings'
                                         )
                                     }
                                     userPermission={auth.userPermission}
+                                    onEditReservation={(res) => {
+                                        form.handleStartEdit(res);
+                                        setActiveTab('create');
+                                    }}
                                 />
                             )}
 
@@ -349,6 +374,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                 <SettingsManager
                                     heroImages={settings.heroImages}
                                     settings={settings.settings}
+                                    isLoading={settings.loading}
+                                    error={settings.error}
+                                    onRetry={settings.refresh}
                                 />
                             )}
                             {activeTab === 'analytics' && (

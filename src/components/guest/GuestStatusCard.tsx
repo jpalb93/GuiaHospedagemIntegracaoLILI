@@ -17,6 +17,7 @@ interface GuestStatusCardProps {
     addressCopied: boolean;
     currentWifiSSID: string;
     currentWifiPass: string;
+    isLoadingWifi?: boolean;
     onOpenCheckin: () => void;
     onOpenCheckout: () => void;
     onCopyWifi: () => void;
@@ -40,6 +41,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
     addressCopied,
     currentWifiSSID,
     currentWifiPass,
+    isLoadingWifi = false,
     onOpenCheckin,
     onOpenCheckout,
     onCopyWifi,
@@ -50,7 +52,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
     onOpenSupport,
     onEmergency,
     onSaveAccess,
-    onOpenReview = () => {}, // Default no-op
+    onOpenReview = () => { }, // Default no-op
 }) => {
     if (!isTimeVerified) return <CardSkeleton />;
 
@@ -75,6 +77,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                     addressCopied={addressCopied}
                     currentWifiSSID={currentWifiSSID}
                     currentWifiPass={currentWifiPass}
+                    isLoadingWifi={isLoadingWifi}
                     onOpenCheckin={onOpenCheckin}
                     onOpenSupport={onOpenSupport}
                     onEmergency={onEmergency}
@@ -93,6 +96,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                     addressCopied={addressCopied}
                     currentWifiSSID={currentWifiSSID}
                     currentWifiPass={currentWifiPass}
+                    isLoadingWifi={isLoadingWifi}
                     onOpenSupport={onOpenSupport}
                     onEmergency={onEmergency}
                     onSaveAccess={onSaveAccess}
@@ -110,6 +114,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                     addressCopied={addressCopied}
                     currentWifiSSID={currentWifiSSID}
                     currentWifiPass={currentWifiPass}
+                    isLoadingWifi={isLoadingWifi}
                     onOpenSupport={onOpenSupport}
                     onEmergency={onEmergency}
                     onSaveAccess={onSaveAccess}

@@ -8,11 +8,60 @@ const GuideList: React.FC = () => {
     return (
         <div className="pt-24 pb-16 min-h-screen bg-gray-50">
             <Helmet>
-                <title>Guia de Petrolina - O que fazer e onde ir | Flats Integração</title>
+                <title>Guia de Petrolina: O que fazer e onde ir | Flats Integração</title>
                 <meta
                     name="description"
                     content="Explore o melhor de Petrolina com nosso guia exclusivo para hóspedes. Roteiros de vinho, restaurantes, passeios e muito mais."
                 />
+                <link rel="canonical" href="https://www.flatsintegracao.com.br/guia" />
+                <meta property="og:url" content="https://www.flatsintegracao.com.br/guia" />
+                <meta property="og:type" content="website" />
+                <meta
+                    property="og:title"
+                    content="Guia de Petrolina: O que fazer e onde ir | Flats Integração"
+                />
+                <meta
+                    property="og:description"
+                    content="Explore o melhor de Petrolina com nosso guia exclusivo para hóspedes. Roteiros de vinho, restaurantes, passeios e muito mais."
+                />
+                <meta
+                    property="og:image"
+                    content="https://www.flatsintegracao.com.br/assets/blog/vapor-do-vinho-montagem.webp"
+                />
+                <meta property="og:locale" content="pt_BR" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta
+                    name="twitter:title"
+                    content="Guia de Petrolina: O que fazer e onde ir | Flats Integração"
+                />
+                <meta
+                    name="twitter:description"
+                    content="Explore o melhor de Petrolina com nosso guia exclusivo para hóspedes. Roteiros de vinho, restaurantes, passeios e muito mais."
+                />
+                <meta
+                    name="twitter:image"
+                    content="https://www.flatsintegracao.com.br/assets/blog/vapor-do-vinho-montagem.webp"
+                />
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            {
+                                '@type': 'ListItem',
+                                position: 1,
+                                name: 'Home',
+                                item: 'https://www.flatsintegracao.com.br'
+                            },
+                            {
+                                '@type': 'ListItem',
+                                position: 2,
+                                name: 'Guia de Petrolina',
+                                item: 'https://www.flatsintegracao.com.br/guia'
+                            }
+                        ]
+                    })}
+                </script>
             </Helmet>
 
             <div className="container mx-auto px-4 mb-12 text-center">
@@ -37,6 +86,10 @@ const GuideList: React.FC = () => {
                                     <img
                                         src={article.imageUrl}
                                         alt={article.title}
+                                        width={800}
+                                        height={450}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
                                     {article.highlight && (

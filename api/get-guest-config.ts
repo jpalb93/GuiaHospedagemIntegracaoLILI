@@ -4,6 +4,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import * as dotenv from 'dotenv';
 import path from 'path';
 import { z } from 'zod';
+import { kv } from '@vercel/kv';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -71,7 +72,7 @@ function handleCors(req: VercelRequest, res: VercelResponse): boolean {
     return false;
 }
 
-function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): boolean {
+async function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): Promise<boolean> {
     try {
         const ip =
             (Array.isArray(req.headers['x-forwarded-for'])
@@ -82,19 +83,40 @@ function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): bo
         const now = Date.now();
         const windowMs = 60 * 1000;
 
-        const record = rateLimitMap.get(ip);
-        if (!record || now > record.resetTime) {
-            rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+        // Verifica se as credenciais do Vercel KV estão presentes no ambiente (nuvem)
+        const hasKv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+
+        if (hasKv) {
+            const key = `rate_limit:${ip}`;
+            // Incrementa atomicamente a contagem para o IP
+            const currentRequests = await kv.incr(key);
+
+            // Se for a primeira requisição da janela, define expiração para 60 segundos
+            if (currentRequests === 1) {
+                await kv.expire(key, 60);
+            }
+
+            if (currentRequests > limit) {
+                res.status(429).json({ error: 'Too Many Requests' });
+                return false;
+            }
+            return true;
+        } else {
+            // Fallback in-memory rate limiter para desenvolvimento local resiliente
+            const record = rateLimitMap.get(ip);
+            if (!record || now > record.resetTime) {
+                rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+                return true;
+            }
+
+            if (record.count >= limit) {
+                res.status(429).json({ error: 'Too Many Requests' });
+                return false;
+            }
+
+            record.count++;
             return true;
         }
-
-        if (record.count >= limit) {
-            res.status(429).json({ error: 'Too Many Requests' });
-            return false;
-        }
-
-        record.count++;
-        return true;
     } catch (e) {
         console.warn('Rate limit check failed, allowing request', e);
         return true;
@@ -110,8 +132,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. CORS
     if (handleCors(req, res)) return;
 
-    // 2. Rate Limit
-    if (!checkRateLimit(req, res)) return;
+    // 2. Rate Limit (Vercel KV com fallback)
+    if (!(await checkRateLimit(req, res))) return;
 
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method Not Allowed' });

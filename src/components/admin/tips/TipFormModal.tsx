@@ -51,7 +51,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                             type="text"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                             placeholder="Ex: Wi-Fi"
                         />
                     </div>
@@ -63,7 +63,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                             type="text"
                             value={formData.subtitle}
                             onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                             placeholder="Ex: Senha da Rede"
                         />
                     </div>
@@ -74,7 +74,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                         <select
                             value={formData.iconName}
                             onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                         >
                             {Object.keys(iconMap)
                                 .sort()
@@ -108,7 +108,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                                     onChange={(e) =>
                                         setFormData({ ...formData, image: e.target.value })
                                     }
-                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-3 py-3 outline-none focus:ring-2 focus:ring-yellow-500 text-sm font-mono text-gray-600"
+                                    className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-3 py-3 outline-none focus:ring-2 focus:ring-yellow-500 text-sm font-mono"
                                     placeholder="https://..."
                                 />
                             </div>
@@ -121,7 +121,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                         <textarea
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500 min-h-[100px]"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500 min-h-[100px]"
                             placeholder="Texto da dica..."
                         />
                     </div>
@@ -135,7 +135,7 @@ const TipFormModal: React.FC<TipFormModalProps> = ({
                             onChange={(e) =>
                                 setFormData({ ...formData, order: parseInt(e.target.value) })
                             }
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-yellow-500"
                         />
                     </div>
                 </div>

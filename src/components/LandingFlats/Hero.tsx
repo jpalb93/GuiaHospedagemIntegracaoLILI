@@ -84,8 +84,7 @@ const Hero: React.FC = () => {
                         src="/hero-bg-nova.webp"
                         className="w-full h-full object-cover opacity-60"
                         alt="Flats Integração hospedagem centro Petrolina PE próximos hospitais"
-                        // removed loading="eager" to avoid conflict with preload
-                        // removed decoding="sync" to free up main thread
+                        loading="eager"
                         fetchPriority="high"
                         width="1920"
                         height="1080"
@@ -98,67 +97,43 @@ const Hero: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent z-10"></div>
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 to-transparent z-10"></div>
 
-            <div className="container mx-auto px-4 h-full flex flex-col justify-center relative z-20 pt-24 md:pt-32">
-                <div ref={textRef} className="max-w-4xl">
-                    <div className="flex items-center gap-4 mb-6">
+            <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center md:items-start relative z-20 pt-24 md:pt-32">
+                <div ref={textRef} className="max-w-4xl text-center md:text-left flex flex-col items-center md:items-start">
+                    <div className="flex items-center justify-center md:justify-start gap-4 mb-6">
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-tight tracking-tight drop-shadow-lg">
-                            Hospedagem <br />
+                            Hospedagem em Petrolina <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
-                                em Petrolina
+                                por Temporada
                             </span>
                         </h1>
                     </div>
-                    {/* CSS Animation: Delay 150ms */}
-                    <span
-                        className="text-xl md:text-3xl font-light text-stone-300 block mt-6 mb-8"
-                    >
-                        Flat para hospedagem em Petrolina (Centro) – próximos a hospitais e orla.
-                    </span>
-                </div>
-
-                {/* Schema LocalBusiness (LodgingBusiness) */}
-                <script type="application/ld+json">
-                    {`
-                {
-                    "@context": "https://schema.org",
-                    "@type": "LodgingBusiness",
-                    "name": "Flats Integração Petrolina (Centro)",
-                    "address": {
-                        "@type": "PostalAddress",
-                        "streetAddress": "R. São José, 475 B",
-                        "addressLocality": "Petrolina",
-                        "addressRegion": "PE",
-                        "postalCode": "56302-270",
-                        "addressCountry": "BR"
-                    },
-                    "telephone": "+5587988283273",
-                    "description": "Flat mobiliado centro Petrolina próximo hospitais orla",
-                    "url": "https://flatsintegracao.com.br",
-                    "image": "https://flatsintegracao.com.br/hero-bg.jpg",
-                    "priceRange": "$$"
-                }
-                `}
-                </script>
-
-                {/* Subheadline de Valor */}
-                <p
-                    className="text-lg md:text-xl text-stone-400 mb-6 max-w-2xl leading-relaxed border-l-4 border-orange-500 pl-6"
-                >
-                    Apartamentos completos que unem a liberdade de um lar ao serviço de uma
-                    hospedagem profissional.
-                </p>
-
-                {/* Microcopy de Localização Rico */}
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 mb-10 text-stone-400 text-sm md:text-base">
-                    <div className="flex items-center gap-2 text-stone-200 font-bold bg-white/5 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
-                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        Centro de Petrolina – PE
+                    <div className="mt-8 mb-12 space-y-6 animate-fade-up flex flex-col items-center md:items-start">
+                        <p className="text-xl md:text-2xl font-light text-stone-400 leading-relaxed max-w-2xl">
+                            Flats completos e mobiliados <br />
+                            no Centro de Petrolina
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-4 gap-x-6 md:bg-white/5 md:backdrop-blur-md md:border md:border-white/10 md:px-8 md:py-4 md:rounded-full w-fit">
+                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-[11px] md:text-sm uppercase tracking-[0.2em]">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
+                                Conforto
+                            </span>
+                            <span className="hidden md:block text-white/10 text-xl font-thin">|</span>
+                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-[11px] md:text-sm uppercase tracking-[0.2em]">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
+                                Privacidade
+                            </span>
+                            <span className="hidden md:block text-white/10 text-xl font-thin">|</span>
+                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-[11px] md:text-sm uppercase tracking-[0.2em]">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
+                                Localização Privilegiada
+                            </span>
+                        </div>
                     </div>
-                    <span className="hidden md:block text-stone-500">•</span>
-                    <span>
-                        Próximo a hospitais, orla do São Francisco e principais vias de Petrolina.
-                    </span>
                 </div>
+
+
+
+
 
                 {/* Botões de Ação - Alto Contraste */}
                 {/* CSS Animation: Delay 300ms */}
@@ -167,7 +142,7 @@ const Hero: React.FC = () => {
                         href="https://wa.me/5587988283273"
                         target="_blank"
                         rel="noreferrer"
-                        className="group bg-stone-100 hover:bg-white text-stone-950 px-8 py-5 rounded-none text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                        className="group bg-stone-100 hover:bg-white text-stone-950 px-8 py-5 rounded-none text-sm font-medium uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                     >
                         Reservar Agora
                         <ArrowRight
@@ -177,7 +152,7 @@ const Hero: React.FC = () => {
                     </a>
                     <a
                         href="#galeria"
-                        className="group bg-transparent border border-white/20 hover:border-white/50 text-stone-300 hover:text-white px-8 py-5 rounded-none text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center hover:bg-white/5"
+                        className="group bg-transparent border border-white/20 hover:border-white/50 text-stone-300 hover:text-white px-8 py-5 rounded-none text-sm font-medium uppercase tracking-wider transition-all duration-300 flex items-center justify-center hover:bg-white/5"
                     >
                         Ver Ambientes
                     </a>

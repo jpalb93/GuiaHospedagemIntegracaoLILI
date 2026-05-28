@@ -92,7 +92,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Ex: Burger King"
                             />
                         </div>
@@ -108,7 +108,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                         category: e.target.value as PlaceCategory,
                                     })
                                 }
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                             >
                                 {CATEGORIES.map((cat) => (
                                     <option key={cat.id} value={cat.id}>
@@ -129,7 +129,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             onChange={(e) =>
                                 setFormData({ ...formData, description: e.target.value })
                             }
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500 min-h-[80px]"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500 min-h-[80px]"
                             placeholder="Descreva o local..."
                         />
                     </div>
@@ -146,7 +146,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 onChange={(e) =>
                                     setFormData({ ...formData, address: e.target.value })
                                 }
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Rua Exemplo, 123"
                             />
                         </div>
@@ -160,7 +160,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 onChange={(e) =>
                                     setFormData({ ...formData, distance: e.target.value })
                                 }
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Ex: 500m"
                             />
                         </div>
@@ -178,7 +178,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 onChange={(e) =>
                                     setFormData({ ...formData, orderLink: e.target.value })
                                 }
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="https://..."
                             />
                         </div>
@@ -192,7 +192,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 onChange={(e) =>
                                     setFormData({ ...formData, phoneNumber: e.target.value })
                                 }
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="55879..."
                             />
                         </div>
@@ -210,7 +210,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                 onChange={(e) =>
                                     setFormData({ ...formData, whatsapp: e.target.value })
                                 }
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="55879..."
                             />
                         </div>
@@ -223,7 +223,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                         </label>
                         <div className="flex gap-2">
                             <input
-                                className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                                className="flex-1 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Adicione tags (Enter)"
                                 value={tagInput}
                                 onChange={(e) => setTagInput(e.target.value)}
@@ -263,7 +263,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                             type="text"
                             value={formData.mapsLink}
                             onChange={(e) => setFormData({ ...formData, mapsLink: e.target.value })}
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
+                            className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-500"
                             placeholder="https://maps.google.com/..."
                         />
                     </div>
@@ -298,7 +298,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                         onChange={(e) =>
                                             setFormData({ ...formData, eventDate: e.target.value })
                                         }
-                                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     />
                                 </div>
                                 <div>
@@ -314,7 +314,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                                 eventEndDate: e.target.value,
                                             })
                                         }
-                                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     />
                                 </div>
                             </div>
@@ -328,7 +328,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                     onChange={(e) =>
                                         setFormData({ ...formData, eventTime: e.target.value })
                                     }
-                                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     placeholder="Ex: 20:00"
                                 />
                             </div>
@@ -342,7 +342,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                                     onChange={(e) =>
                                         setFormData({ ...formData, orderLink: e.target.value })
                                     }
-                                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-purple-500"
                                     placeholder="https://..."
                                 />
                             </div>
@@ -368,7 +368,7 @@ const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

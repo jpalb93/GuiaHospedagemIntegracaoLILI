@@ -226,7 +226,7 @@ const CuriositiesSection: React.FC<CuriositiesSectionProps> = ({
                             setCuriosityForm({ ...curiosityForm, text: e.target.value })
                         }
                         placeholder="Digite uma curiosidade..."
-                        className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="flex gap-2">
                         <div className="flex-1 relative">
@@ -241,7 +241,7 @@ const CuriositiesSection: React.FC<CuriositiesSectionProps> = ({
                                     setCuriosityForm({ ...curiosityForm, image: e.target.value })
                                 }
                                 placeholder="URL da Imagem (Opcional)"
-                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                className="w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                             />
                         </div>

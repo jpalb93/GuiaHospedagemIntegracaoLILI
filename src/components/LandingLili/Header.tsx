@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
 import LogoLili from '../LogoLili';
 
 const Header: React.FC = () => {
@@ -15,84 +14,94 @@ const Header: React.FC = () => {
     return (
         <>
             <header
-                className={`fixed w-full z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-stone-950/90 backdrop-blur-md py-4 border-b border-stone-800' : 'bg-transparent py-6'}`}
+                className={`fixed top-0 left-0 w-full z-[100] transition-all duration-700 flex justify-center items-center pointer-events-none ${scrollY > 50 ? 'pt-4 md:pt-6' : 'pt-0'
+                    }`}
             >
-                <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
-                    <a href="#" className="relative z-50">
+                <div
+                    className={`flex items-center justify-between transition-all duration-700 pointer-events-auto border border-transparent ${scrollY > 50
+                        ? 'w-[92%] max-w-6xl bg-stone-900/90 backdrop-blur-2xl py-3 px-6 md:px-10 rounded-full shadow-2xl border-white/10 ring-1 ring-white/5'
+                        : 'w-full bg-stone-950/20 backdrop-blur-sm py-6 px-8 md:px-16 border-b border-white/5'
+                        }`}
+                >
+                    <a href="#" className="relative group transition-opacity hover:opacity-80">
                         <LogoLili
-                            className={`h-10 w-auto transition-colors duration-300 ${scrollY > 50 ? 'text-white' : 'text-white'}`}
+                            className={`transition-all duration-700 ${scrollY > 50 ? 'h-8 md:h-9' : 'h-10 md:h-12'}`}
                         />
                     </a>
 
                     {/* Desktop Nav */}
-                    <nav
-                        className={`hidden md:flex gap-8 text-sm font-bold tracking-widest uppercase ${scrollY > 50 ? 'text-stone-300' : 'text-white/90'}`}
-                    >
-                        <a href="#inicio" className="hover:text-orange-500 transition-colors">
-                            Início
-                        </a>
-                        <a href="#sobre" className="hover:text-orange-500 transition-colors">
-                            O Flat
-                        </a>
-                        <a href="#comodidades" className="hover:text-orange-500 transition-colors">
-                            Comodidades
-                        </a>
-                        <a href="#avaliacoes" className="hover:text-orange-500 transition-colors">
-                            Reviews
-                        </a>
+                    <nav className="hidden md:flex gap-10 items-center">
+                        {[
+                            { name: 'Início', href: '#inicio' },
+                            { name: 'O Flat', href: '#sobre' },
+                            { name: 'Comodidades', href: '#comodidades' },
+                            { name: 'Reviews', href: '#avaliacoes' },
+                        ].map((link) => (
+                            <a
+                                key={link.name}
+                                href={link.href}
+                                className="relative text-xs font-bold uppercase tracking-[0.2em] text-stone-400 hover:text-white transition-colors duration-300 group"
+                            >
+                                {link.name}
+                                <span className="absolute -bottom-1 left-1/2 w-0 h-[1.5px] bg-orange-500 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
+                            </a>
+                        ))}
                     </nav>
 
-                    <a
-                        href="#calendario"
-                        className={`hidden md:block px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${scrollY > 50 ? 'bg-white text-stone-950 hover:bg-stone-200' : 'bg-white text-gray-900 hover:bg-gray-100'}`}
-                    >
-                        Reservar
-                    </a>
+                    <div className="flex items-center gap-4">
+                        <a
+                            href="#calendario"
+                            className={`font-bold text-xs uppercase tracking-widest transition-all duration-500 shadow-xl ${scrollY > 50
+                                ? 'bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-full'
+                                : 'bg-white text-stone-950 hover:bg-orange-500 hover:text-white px-8 py-4 rounded-full'
+                                }`}
+                        >
+                            Reservar
+                        </a>
 
-                    {/* Menu Mobile Toggle */}
-                    <button
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className={`md:hidden relative z-50 p-2 ${scrollY > 50 ? 'text-white' : 'text-white'}`}
-                        aria-label="Menu"
-                    >
-                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
+                        {/* Menu Mobile Toggle */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="md:hidden p-2 text-white transition-colors"
+                            aria-label="Menu"
+                        >
+                            <div className="space-y-1.5 text-white">
+                                <span className={`block w-6 h-0.5 bg-current transition-all ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                                <span className={`block w-4 h-0.5 bg-current ml-auto transition-all ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                                <span className={`block w-6 h-0.5 bg-current transition-all ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </header>
 
             {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-40 bg-stone-950 flex flex-col justify-center items-center gap-8 animate-fadeIn">
-                    <a
-                        href="#inicio"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-3xl font-heading font-bold text-white text-center"
-                    >
-                        Início
-                    </a>
-                    <a
-                        href="#sobre"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-3xl font-heading font-bold text-white text-center"
-                    >
-                        O Flat
-                    </a>
-                    <a
-                        href="#comodidades"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-3xl font-heading font-bold text-white text-center"
-                    >
-                        Comodidades
-                    </a>
-                    <a
-                        href="#calendario"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-3xl font-heading font-bold text-orange-500 text-center"
-                    >
-                        Reservar
-                    </a>
-                </div>
-            )}
+            <div className={`fixed inset-0 z-[90] bg-stone-950 lg:hidden transition-all duration-700 flex flex-col justify-center items-center gap-8 ${isMobileMenuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
+                <nav className="flex flex-col items-center gap-8">
+                    {[
+                        { name: 'Início', href: '#inicio' },
+                        { name: 'O Flat', href: '#sobre' },
+                        { name: 'Comodidades', href: '#comodidades' },
+                        { name: 'Reviews', href: '#avaliacoes' },
+                    ].map((link) => (
+                        <a
+                            key={link.name}
+                            href={link.href}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="text-3xl font-heading font-light text-white hover:text-orange-500 transition-colors"
+                        >
+                            {link.name}
+                        </a>
+                    ))}
+                </nav>
+                <a
+                    href="#calendario"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="mt-8 bg-orange-600 text-white px-12 py-4 rounded-full font-bold text-sm uppercase tracking-widest"
+                >
+                    Ver Disponibilidade
+                </a>
+            </div>
         </>
     );
 };
