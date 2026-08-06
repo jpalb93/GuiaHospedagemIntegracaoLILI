@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 // Enum para PaymentMethod
 export const PaymentMethodSchema = z.enum(['pix', 'money', 'card']);
+export const PaymentStatusSchema = z.enum(['paid', 'partial', 'pending', 'external']);
 
 // Schema base para GuestConfig
 export const GuestConfigSchema = z.object({
@@ -18,6 +19,9 @@ export const GuestConfigSchema = z.object({
     wifiPass: z.string().optional(),
     guestCount: z.number().int().positive().optional(),
     paymentMethod: PaymentMethodSchema.optional(),
+    paymentStatus: PaymentStatusSchema.optional(),
+    totalAmount: z.number().min(0).optional(),
+    depositAmount: z.number().min(0).optional(),
 
     // Alertas
     guestAlertActive: z.boolean().optional(),
@@ -40,9 +44,12 @@ export const GuestConfigSchema = z.object({
     checkOutTime: z.string().optional(),
 
     // Status
-    // Status
     isReleased: z.boolean().optional(),
     manualDeactivation: z.boolean().optional(),
+
+    // Extra / App Context
+    id: z.string().optional(),
+    favoritePlaces: z.array(z.string()).optional(),
 });
 
 // Inferência de tipo TypeScript a partir do Schema (opcional, se quiser substituir as interfaces manuais futuramente)

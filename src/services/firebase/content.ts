@@ -20,17 +20,26 @@ import {
     onSnapshot,
 } from 'firebase/firestore';
 import { getFirestoreInstance, cleanData } from './config';
-import { Tip, CityCuriosity, GuestReview } from '../../types';
+import { Tip, CityCuriosity, GuestReview, PropertyId } from '../../types';
 import { logger } from '../../utils/logger';
 
+/**
+ * Filtro defensivo para dicas:
+ * Retorna dicas sem propertyId (legadas), marcadas como 'all', ou pertencentes ao tenant específico.
+ */
+export const filterTipsByProperty = (tips: Tip[], propertyId?: PropertyId): Tip[] => {
+    if (!propertyId) return tips;
+    return tips.filter((t) => !t.propertyId || t.propertyId === 'all' || t.propertyId === propertyId);
+};
+
 // --- DICAS (TIPS) ---
-export const getTips = async (): Promise<Tip[]> => {
+export const getTips = async (propertyId?: PropertyId): Promise<Tip[]> => {
     try {
         const db = await getFirestoreInstance();
         // REMOVED orderBy('order') to avoid excluding docs without the field
         const q = query(collection(db, 'tips'));
         const snapshot = await getDocs(q);
-        const tips = snapshot.docs.map(
+        const allTips = snapshot.docs.map(
             (doc) =>
                 ({
                     id: doc.id,
@@ -38,30 +47,35 @@ export const getTips = async (): Promise<Tip[]> => {
                 }) as Tip
         );
 
+        const filtered = filterTipsByProperty(allTips, propertyId);
         // Client-side sort
-        return tips.sort((a, b) => (a.order || 0) - (b.order || 0));
+        return filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
     } catch (error) {
         logger.error('Erro ao buscar dicas:', { error });
         return [];
     }
 };
 
-export const subscribeToTips = async (callback: (tips: Tip[]) => void) => {
+export const subscribeToTips = async (
+    callback: (tips: Tip[]) => void,
+    propertyId?: PropertyId
+) => {
     const db = await getFirestoreInstance();
     const q = query(collection(db, 'tips'));
 
     return onSnapshot(
         q,
         (snapshot) => {
-            const tips = snapshot.docs.map(
+            const allTips = snapshot.docs.map(
                 (doc) =>
                     ({
                         id: doc.id,
                         ...(doc.data() as Record<string, unknown>),
                     }) as Tip
             );
+            const filtered = filterTipsByProperty(allTips, propertyId);
             // Client-side sort
-            callback(tips.sort((a, b) => (a.order || 0) - (b.order || 0)));
+            callback(filtered.sort((a, b) => (a.order || 0) - (b.order || 0)));
         },
         (error) => {
             logger.error('Erro no subscribeToTips:', { error });

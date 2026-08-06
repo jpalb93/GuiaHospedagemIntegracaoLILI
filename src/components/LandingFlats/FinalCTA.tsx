@@ -9,7 +9,7 @@ const FinalCTA: React.FC = () => {
 
             <div className="container mx-auto px-4 relative z-10 text-center">
                 <h2 className="text-3xl md:text-5xl font-heading font-black text-white mb-8 leading-tight">
-                    Gostou? <br className="md:hidden" />
+                    Gostou?{" "}<br className="md:hidden" />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
                         Reserve direto e economize.
                     </span>

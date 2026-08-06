@@ -28,6 +28,7 @@ interface HistorySectionProps {
     onShareWhatsApp: (res: Reservation) => void;
     onSendReminder: (res: Reservation, type: 'checkin' | 'checkout') => void;
     onOpenInspection: (res: Reservation) => void;
+    onQuickView?: (res: Reservation) => void;
 }
 
 const HistorySection: React.FC<HistorySectionProps> = ({
@@ -48,41 +49,46 @@ const HistorySection: React.FC<HistorySectionProps> = ({
     onShareWhatsApp,
     onSendReminder,
     onOpenInspection,
+    onQuickView,
 }) => {
     if (historyList.length === 0) return null;
 
     return (
-        <div className="mt-12">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-4 ml-1">
-                Histórico Recente
+        <div className="mt-12 animate-fadeIn">
+            <h3 className="text-xs font-extrabold font-heading text-stone-500 dark:text-stone-400 uppercase tracking-widest mb-4 ml-1">
+                Histórico Recente de Reservas
             </h3>
             {groupedHistory.map((group, index) => (
                 <div
                     key={index}
-                    className="mb-4 bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700/30 rounded-3xl overflow-hidden backdrop-blur-sm"
+                    className="mb-4 bg-white/80 dark:bg-gray-800/70 border border-white/60 dark:border-gray-700/60 rounded-[2rem] overflow-hidden backdrop-blur-xl shadow-lg shadow-stone-200/20 dark:shadow-none transition-all"
                 >
                     <button
+                        type="button"
                         onClick={() => toggleHistoryGroup(index)}
-                        className="w-full flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                        className="w-full flex items-center justify-between p-5 bg-stone-50/80 dark:bg-gray-900/60 hover:bg-stone-100 dark:hover:bg-gray-800/80 transition-colors"
                     >
-                        <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
+                        <span className="font-extrabold font-heading text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-stone-400" />
                             {group.label}
                         </span>
-                        {openHistoryGroups.includes(index) ? (
-                            <ChevronUp size={16} />
-                        ) : (
-                            <ChevronDown size={16} />
-                        )}
+                        <span className="p-1 rounded-xl bg-stone-200/60 dark:bg-gray-800 text-stone-600 dark:text-stone-300">
+                            {openHistoryGroups.includes(index) ? (
+                                <ChevronUp size={18} />
+                            ) : (
+                                <ChevronDown size={18} />
+                            )}
+                        </span>
                     </button>
                     {openHistoryGroups.includes(index) && (
-                        <div className="p-2 md:p-4">
+                        <div className="p-3 md:p-5">
                             {/* Mobile Cards */}
                             <div className="md:hidden space-y-3">
                                 {group.items.map((res) => (
                                     <ReservationCard
                                         key={res.id}
                                         reservation={res}
-                                        statusColor="border-gray-300"
+                                        statusColor="border-stone-300"
                                         statusLabel="Histórico"
                                         isCheckinTomorrow={res.checkInDate === tomorrowStr}
                                         isCheckoutTomorrow={res.checkoutDate === tomorrowStr}
@@ -98,14 +104,15 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                                         onToggleSelection={() =>
                                             res.id && onToggleSelection(res.id)
                                         }
+                                        onQuickView={() => onQuickView?.(res)}
                                     />
                                 ))}
                             </div>
 
                             {/* Desktop Table */}
-                            <div className="hidden md:block overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700">
-                                <table className="w-full text-left bg-white dark:bg-gray-900">
-                                    <tbody className="divide-y divide-gray-100">
+                            <div className="hidden md:block overflow-hidden rounded-[1.5rem] border border-stone-200/60 dark:border-gray-700/60">
+                                <table className="w-full text-left bg-white dark:bg-gray-900 border-collapse">
+                                    <tbody className="divide-y divide-stone-100 dark:divide-gray-800">
                                         {group.items.map((res) => (
                                             <ReservationTableRow
                                                 key={res.id}
@@ -123,9 +130,11 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                                                 onCopyLink={() => onCopyLink(res)}
                                                 onShareWhatsApp={() => onShareWhatsApp(res)}
                                                 onSendReminder={(type) => onSendReminder(res, type)}
+                                                onOpenInspection={() => onOpenInspection(res)}
                                                 onToggleSelection={() =>
                                                     res.id && onToggleSelection(res.id)
                                                 }
+                                                onQuickView={() => onQuickView?.(res)}
                                             />
                                         ))}
                                     </tbody>
@@ -142,7 +151,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                     disabled={loadingHistory}
                     variant="ghost"
                     fullWidth
-                    className="py-4 text-xs font-bold text-gray-500 hover:text-gray-800"
+                    className="py-4 text-xs font-extrabold font-heading text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-gray-800 rounded-2xl transition-all active:scale-95"
                 >
                     {loadingHistory ? (
                         <Loader2 className="animate-spin" size={16} />

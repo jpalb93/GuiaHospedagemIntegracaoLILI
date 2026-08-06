@@ -12,6 +12,26 @@
     }
 }
 
+/* OVERRIDE WEBKIT AUTOFILL ON MOBILE (SAFARI/CHROME) TO PREVENT BLACK/DARK BOXES */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #111827 !important;
+    caret-color: #111827;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #1f2937 inset !important;
+    -webkit-text-fill-color: #f9fafb !important;
+    caret-color: #f9fafb;
+}
+
 /* EMERGENCY SCROLL UNLOCK */
 html, body {
     overflow: visible !important;
@@ -596,6 +616,61 @@ body {
     .animate-pulse {
         animation: none !important;
     }
+
+    /*
+     * Vistoria: imprime SOMENTE o relatório.
+     * Sem isso, no mobile saem também os cards da lista de reservas.
+     */
+    body.printing-inspection * {
+        visibility: hidden !important;
+    }
+
+    body.printing-inspection #inspection-report-content,
+    body.printing-inspection #inspection-report-content * {
+        visibility: visible !important;
+    }
+
+    body.printing-inspection #inspection-report-content {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 12mm !important;
+        background: #ffffff !important;
+        color: #111827 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+
+    /* Força tema claro no relatório (ignora dark mode) */
+    body.printing-inspection #inspection-report-content,
+    body.printing-inspection #inspection-report-content div,
+    body.printing-inspection #inspection-report-content p,
+    body.printing-inspection #inspection-report-content span,
+    body.printing-inspection #inspection-report-content h1,
+    body.printing-inspection #inspection-report-content h2,
+    body.printing-inspection #inspection-report-content h3,
+    body.printing-inspection #inspection-report-content h4 {
+        background-image: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body.printing-inspection #inspection-report-content .dark\:bg-gray-900,
+    body.printing-inspection #inspection-report-content .dark\:bg-gray-800,
+    body.printing-inspection #inspection-report-content [class*='dark:bg-'] {
+        background-color: #ffffff !important;
+    }
+
+    body.printing-inspection #inspection-report-content .dark\:text-white,
+    body.printing-inspection #inspection-report-content .dark\:text-gray-100,
+    body.printing-inspection #inspection-report-content .dark\:text-gray-300,
+    body.printing-inspection #inspection-report-content [class*='dark:text-'] {
+        color: #111827 !important;
+    }
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
@@ -621,4 +696,42 @@ body {
 
 .animate-ticker {
     animation: ticker 40s linear infinite;
+}
+
+/* =============================================
+   HIGH-CONTRAST DATE & TIME PICKER INDICATORS
+   ============================================= */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+    filter: invert(0.1) sepia(1) saturate(5) hue-rotate(190deg);
+    opacity: 0.9;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    filter: invert(0.3) sepia(1) saturate(8) hue-rotate(190deg);
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.9) brightness(1.2);
+    opacity: 0.95;
+}
+
+/* Global High-Contrast Inputs and Textareas */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+    color: #111827;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select {
+    color: #f9fafb;
 }

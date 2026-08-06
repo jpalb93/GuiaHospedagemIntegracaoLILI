@@ -67,9 +67,13 @@ export interface PlaceRecommendation {
     eventEndDate?: string; // Data de término (opcional, para festivais de dias)
     eventTime?: string; // Hora de inicio (HH:MM) - Opcional
     eventEndTime?: string; // Hora de fim (HH:MM) - Opcional
+
+    // MULTI-TENANT
+    propertyId?: PropertyId | 'all'; // Imóvel específico ou 'all' para visibilidade global
 }
 
 export type PaymentMethod = 'pix' | 'money' | 'card';
+export type PaymentStatus = 'paid' | 'partial' | 'pending' | 'external';
 
 export interface GuestConfig {
     guestName: string;
@@ -85,6 +89,9 @@ export interface GuestConfig {
     wifiPass?: string; // Novo
     guestCount?: number; // Novo: Quantidade de hóspedes
     paymentMethod?: PaymentMethod; // Novo: Forma de pagamento
+    paymentStatus?: PaymentStatus; // paid | partial | pending | external (Airbnb/fora do caixa)
+    totalAmount?: number; // Novo: Valor Total da Reserva (R$)
+    depositAmount?: number; // Novo: Valor Pago do Sinal / Parcial (R$)
     // NOVOS CAMPOS DE ALERTA ESPECÍFICO
     guestAlertActive?: boolean;
     guestAlertText?: string;
@@ -99,6 +106,26 @@ export interface GuestConfig {
     checkOutTime?: string; // Horário de Check-out
     isReleased?: boolean; // Indica se o acesso foi liberado (pela API)
     manualDeactivation?: boolean; // Novo: Desativação manual de emergência
+
+    // VISTORIA DADOS SALVOS
+    preCheckInInspection?: SavedInspectionData;
+    postCheckOutInspection?: SavedInspectionData;
+
+    // CONTEXTO DE SESSÃO / FAVORITOS
+    id?: string;
+    favoritePlaces?: string[];
+
+    // TIPO DE RESERVA EXTERNA (EX: FLAT 304 CORTESIA/PAGAMENTO DIRETO FORA DO CAIXA)
+    isExternal?: boolean;
+}
+
+export interface SavedInspectionData {
+    timestamp: string;
+    inspectorName?: string;
+    checklistState: Record<string, { status: 'ok' | 'pending' | 'issue'; note?: string; image?: string }>;
+    customItems?: ChecklistItem[];
+    /** Itens do checklist padrão removidos só nesta vistoria/reserva */
+    excludedItemIds?: string[];
 }
 
 // Interface para Reserva Salva no Banco de Dados
@@ -133,6 +160,9 @@ export type ReservationFormData = Pick<
     | 'checkOutTime'
     | 'guestCount'
     | 'paymentMethod'
+    | 'paymentStatus'
+    | 'totalAmount'
+    | 'depositAmount'
     | 'email'
     | 'guestRating'
     | 'guestFeedback'
@@ -260,6 +290,7 @@ export interface Tip {
 
     order?: number; // Para ordenação personalizada
     visible?: boolean;
+    propertyId?: PropertyId | 'all'; // MULTI-TENANT: Imóvel específico ou 'all'
 }
 
 // NOVA INTERFACE: Curiosidade da Cidade

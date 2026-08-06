@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { PropertyId, PaymentMethod, Reservation } from '../types';
+import { PropertyId, PaymentMethod, PaymentStatus, Reservation } from '../types';
 import { PROPERTIES } from '../config/properties';
 import { fetchOfficialTime } from '../constants';
 
@@ -23,6 +23,9 @@ export const useReservationForm = () => {
     const [checkOutTime, setCheckOutTime] = useState('11:00');
     const [guestCount, setGuestCount] = useState<number>(1);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
+    const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pending');
+    const [totalAmount, setTotalAmount] = useState<number | ''>('');
+    const [depositAmount, setDepositAmount] = useState<number | ''>('');
     const [shortId, setShortId] = useState('');
     const [manualDeactivation, setManualDeactivation] = useState(false);
 
@@ -64,6 +67,9 @@ export const useReservationForm = () => {
         setEditingId(null);
         setGuestCount(1);
         setPaymentMethod('');
+        setPaymentStatus('pending');
+        setTotalAmount('');
+        setDepositAmount('');
         setShortId('');
         setManualDeactivation(false);
         setGuestRating(5);
@@ -88,6 +94,9 @@ export const useReservationForm = () => {
         setCheckOutTime(res.checkOutTime || '11:00');
         setGuestCount(res.guestCount || 1);
         setPaymentMethod(res.paymentMethod || '');
+        setPaymentStatus(res.paymentStatus || 'pending');
+        setTotalAmount(res.totalAmount !== undefined ? res.totalAmount : '');
+        setDepositAmount(res.depositAmount !== undefined ? res.depositAmount : '');
         setShortId(res.shortId || '');
         setManualDeactivation(res.manualDeactivation || false);
         setGuestRating(res.guestRating || 5);
@@ -97,27 +106,39 @@ export const useReservationForm = () => {
 
     // Get current form values as object
     const getFormValues = useCallback(
-        (): Omit<Reservation, 'id' | 'createdAt' | 'status'> => ({
-            guestName: guestName.trim(),
-            guestPhone: guestPhone.replace(/\D/g, ''),
-            propertyId,
-            flatNumber: flatNumber.trim(),
-            lockCode: lockCode.trim(),
-            welcomeMessage: welcomeMessage.trim(),
-            adminNotes: adminNotes.trim(),
-            guestAlertActive,
-            guestAlertText: guestAlertText.trim(),
-            checkInDate,
-            checkoutDate,
-            checkInTime,
-            checkOutTime,
-            guestCount,
-            paymentMethod: paymentMethod as PaymentMethod | undefined,
-            shortId,
-            manualDeactivation,
-            guestRating,
-            guestFeedback,
-        }),
+        (): Omit<Reservation, 'id' | 'createdAt' | 'status'> => {
+            const parseAmount = (value: number | ''): number | undefined => {
+                if (typeof value === 'number' && Number.isFinite(value)) return value;
+                if (value === '' || value === null || value === undefined) return undefined;
+                const n = Number(value);
+                return Number.isFinite(n) ? n : undefined;
+            };
+
+            return {
+                guestName: guestName.trim(),
+                guestPhone: guestPhone.replace(/\D/g, ''),
+                propertyId,
+                flatNumber: flatNumber.trim(),
+                lockCode: lockCode.trim(),
+                welcomeMessage: welcomeMessage.trim(),
+                adminNotes: adminNotes.trim(),
+                guestAlertActive,
+                guestAlertText: guestAlertText.trim(),
+                checkInDate,
+                checkoutDate,
+                checkInTime,
+                checkOutTime,
+                guestCount,
+                paymentMethod: (paymentMethod || undefined) as PaymentMethod | undefined,
+                paymentStatus: (paymentStatus || 'pending') as PaymentStatus,
+                totalAmount: parseAmount(totalAmount),
+                depositAmount: parseAmount(depositAmount),
+                shortId,
+                manualDeactivation,
+                guestRating,
+                guestFeedback,
+            };
+        },
         [
             guestName,
             guestPhone,
@@ -134,6 +155,9 @@ export const useReservationForm = () => {
             checkOutTime,
             guestCount,
             paymentMethod,
+            paymentStatus,
+            totalAmount,
+            depositAmount,
             shortId,
             manualDeactivation,
             guestRating,
@@ -174,6 +198,12 @@ export const useReservationForm = () => {
         setGuestCount,
         paymentMethod,
         setPaymentMethod,
+        paymentStatus,
+        setPaymentStatus,
+        totalAmount,
+        setTotalAmount,
+        depositAmount,
+        setDepositAmount,
         shortId,
         setShortId,
         manualDeactivation,

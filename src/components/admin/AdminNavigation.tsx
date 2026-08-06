@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 
 import { UserPermission } from '../../types';
-
 import { useTheme } from '../../contexts/ThemeContext';
+import flatsLogo from '../../assets/flats-integracao-logo.png';
 
 interface AdminNavigationProps {
     activeTab: string;
@@ -92,8 +92,8 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
                 {/* BRANDING HEADER */}
                 <div className="p-8 pb-6">
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 shrink-0">
-                            <Sparkles size={24} fill="currentColor" className="opacity-90" />
+                        <div className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/60 p-2 shadow-md shadow-orange-500/10 shrink-0 flex items-center justify-center overflow-hidden">
+                            <img src={flatsLogo} alt="Flats Integração" className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col">
                             <h1 className="text-lg font-bold text-gray-900 dark:text-white font-heading leading-none tracking-tight mb-1">

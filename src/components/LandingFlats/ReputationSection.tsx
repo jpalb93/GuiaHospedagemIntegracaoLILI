@@ -118,7 +118,7 @@ const ReputationSection: React.FC = () => {
                             Experiência
                         </span>
                         <h2 className="reputation-text text-5xl md:text-7xl font-heading font-light text-white leading-tight tracking-tight mb-8">
-                            Aprovado por <br />
+                            Aprovado por{" "}<br />
                             <span className="italic font-serif text-stone-400">quem viveu.</span>
                         </h2>
                         <p className="reputation-text text-xl text-stone-400 font-light max-w-lg leading-relaxed">

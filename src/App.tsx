@@ -57,7 +57,7 @@ const FlatVsHotelArticle = lazy(() => import(/* webpackChunkName: "article-flat-
 const SaoJoaoArticle = lazy(() => import(/* webpackChunkName: "article-sao-joao" */ './pages/articles/SaoJoao'));
 const MonthlyStayArticle = lazy(() => import(/* webpackChunkName: "article-monthly" */ './pages/articles/MonthlyStay'));
 
-const Calculadora = lazy(() => import(/* webpackChunkName: "calculadora" */ './pages/Calculadora'));
+
 
 const App: React.FC = () => {
     const { appState, setAppState } = useAppInitialization();
@@ -104,8 +104,8 @@ const App: React.FC = () => {
     // 1. Tela de Carregamento (Só mostra se não for rota pública/landing)
     if (appState.mode === 'LOADING') {
         const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-        const isGuestLoading = !!(params.get('rid') || (path.length > 1 && !['/cms', '/lili', '/flat-lili', '/admin', '/calculadora'].includes(path)));
-        const isPublicRoute = (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade' || path === '/lili' || path === '/flat-lili' || path === '/calculadora') && !isGuestLoading;
+        const isGuestLoading = !!(params.get('rid') || (path.length > 1 && !['/cms', '/lili', '/flat-lili', '/admin'].includes(path)));
+        const isPublicRoute = (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade' || path === '/lili' || path === '/flat-lili') && !isGuestLoading;
         
         if (!isPublicRoute) {
             let loadingVariant: 'guest' | 'admin' | 'landing' = 'landing';
@@ -196,18 +196,12 @@ const App: React.FC = () => {
         );
     }
 
-    if (path === '/calculadora') {
-        return withGlobalProviders(
-            <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
-                <PageTransition>
-                    <Calculadora />
-                </PageTransition>
-            </Suspense>
-        );
-    }
+
 
     // 4. Modo Landing / Guia / Público (Usa MainLayout)
-    if (appState.mode === 'LANDING' || appState.mode === 'LOADING') {
+    const isPublicPage = path === '/' || path.startsWith('/guia') || path === '/politica-privacidade';
+
+    if (isPublicPage || appState.mode === 'LANDING' || appState.mode === 'LOADING') {
         return withGlobalProviders(
             <Suspense fallback={<LandingSkeleton />}>
                 <MainLayout>
@@ -235,8 +229,8 @@ const App: React.FC = () => {
     // 5. Modo Guest Principal (Usa FavoritesProvider)
     return withGlobalProviders(
         <FavoritesProvider
-            reservationId={(appState.config as any).id}
-            initialFavorites={(appState.config as any).favoritePlaces || []}
+            reservationId={appState.config.id}
+            initialFavorites={appState.config.favoritePlaces || []}
         >
             <Suspense fallback={<GuestSkeleton />}>
                 <PageTransition>

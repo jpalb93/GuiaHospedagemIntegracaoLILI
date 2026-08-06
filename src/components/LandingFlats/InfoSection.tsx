@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, CigaretteOff, PartyPopper, PawPrint, VolumeX } from 'lucide-react';
 // GSAP dynamically imported
 
 const InfoSection: React.FC = () => {
@@ -94,7 +94,7 @@ const InfoSection: React.FC = () => {
                             Regras e Detalhes
                         </span>
                         <h2 className="text-4xl md:text-5xl font-heading font-bold text-white leading-tight">
-                            Sua Hospedagem em Petrolina: <br />
+                            Sua Hospedagem em Petrolina:{" "}<br />
                             <span className="text-stone-500">O que você precisa saber</span>
                         </h2>
                     </div>
@@ -119,7 +119,7 @@ const InfoSection: React.FC = () => {
                                     <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1 group-hover:text-orange-500 transition-colors">Entrada (Check-in)</p>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-4xl font-heading font-bold text-white">15:00</span>
-                                        <span className="text-stone-500 text-sm italic">até 18:30</span>
+                                        <span className="text-stone-500 text-sm italic">a partir das 15h</span>
                                     </div>
                                 </div>
 
@@ -128,16 +128,16 @@ const InfoSection: React.FC = () => {
                                 <div className="info-item group">
                                     <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1 group-hover:text-orange-500 transition-colors">Saída (Check-out)</p>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-4xl font-heading font-bold text-white">08:00</span>
-                                        <span className="text-stone-500 text-sm italic">até 13:00</span>
+                                        <span className="text-4xl font-heading font-bold text-white">13:00</span>
+                                        <span className="text-stone-500 text-sm italic">até as 13h</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-12 p-4 bg-orange-500/5 rounded-2xl border border-orange-500/10">
-                            <p className="text-xs text-stone-400 leading-relaxed italic">
-                                <span className="text-orange-500 font-bold not-italic">Importante:</span> Informe seu horário de chegada previamente para garantirmos sua recepção.
+                            <p className="text-xs text-stone-400 leading-relaxed">
+                                <span className="text-orange-500 font-bold">Early check-in ou Late check-out:</span> Valor a combinar mediante disponibilidade e cobrança de taxa adicional.
                             </p>
                         </div>
                     </div>
@@ -147,7 +147,7 @@ const InfoSection: React.FC = () => {
                         {/* No Smoking */}
                         <div className="info-item bg-stone-900/40 backdrop-blur-md border border-white/5 rounded-[2rem] p-8 hover:border-orange-500/30 transition-all duration-500 group">
                             <div className="w-12 h-12 bg-stone-800 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-orange-500/10 group-hover:text-orange-500 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 12h3"/><path d="M18 10h3"/><path d="M18 14h3"/><path d="M7 15a3 3 0 1 1-3-3"/><path d="M11 12H7"/><path d="M21 12H15"/><path d="M11 14a3 3 0 0 1-3 3"/><path d="M11 10a3 3 0 0 0-3-3"/><path d="M21 15v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2Z"/></svg>
+                                <CigaretteOff className="w-6 h-6 text-stone-300 group-hover:text-orange-500 transition-colors" />
                             </div>
                             <h4 className="text-lg font-bold text-white mb-3">Sem Cigarro</h4>
                             <p className="text-sm text-stone-400 leading-relaxed">
@@ -158,7 +158,7 @@ const InfoSection: React.FC = () => {
                         {/* No Parties */}
                         <div className="info-item bg-stone-900/40 backdrop-blur-md border border-white/5 rounded-[2rem] p-8 hover:border-orange-500/30 transition-all duration-500 group">
                             <div className="w-12 h-12 bg-stone-800 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-orange-500/10 group-hover:text-orange-500 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                                <PartyPopper className="w-6 h-6 text-stone-300 group-hover:text-orange-500 transition-colors" />
                             </div>
                             <h4 className="text-lg font-bold text-white mb-3">Sem Eventos</h4>
                             <p className="text-sm text-stone-400 leading-relaxed">
@@ -169,7 +169,7 @@ const InfoSection: React.FC = () => {
                         {/* No Pets */}
                         <div className="info-item bg-stone-900/40 backdrop-blur-md border border-white/5 rounded-[2rem] p-8 hover:border-orange-500/30 transition-all duration-500 group">
                             <div className="w-12 h-12 bg-stone-800 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-orange-500/10 group-hover:text-orange-500 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5.172C10 3.972 10.972 3 12.172 3c1.2 0 2.172.972 2.172 2.172v1.656C14.344 8.028 13.41 9 12.172 9c-1.238 0-2.172-.972-2.172-2.172V5.172z"/><path d="M21 16.5c0-1.933-1.567-3.5-3.5-3.5a3.486 3.486 0 0 0-2.5 1.072"/><path d="M21 16.5V21h-7v-3.5c0-1.381-1.119-2.5-2.5-2.5S9 16.119 9 17.5V21H2v-4.5C2 14.567 3.567 13 5.5 13a3.486 3.486 0 0 1 2.5 1.072"/></svg>
+                                <PawPrint className="w-6 h-6 text-stone-300 group-hover:text-orange-500 transition-colors" />
                             </div>
                             <h4 className="text-lg font-bold text-white mb-3">Sem Pets</h4>
                             <p className="text-sm text-stone-400 leading-relaxed">
@@ -180,7 +180,7 @@ const InfoSection: React.FC = () => {
                         {/* Silence Law */}
                         <div className="info-item bg-stone-900/40 backdrop-blur-md border border-white/5 rounded-[2rem] p-8 hover:border-orange-500/30 transition-all duration-500 group">
                             <div className="w-12 h-12 bg-stone-800 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-orange-500/10 group-hover:text-orange-500 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M12 7v5l3 3"/></svg>
+                                <VolumeX className="w-6 h-6 text-stone-300 group-hover:text-orange-500 transition-colors" />
                             </div>
                             <h4 className="text-lg font-bold text-white mb-3">Lei do Silêncio</h4>
                             <p className="text-sm text-stone-400 leading-relaxed">

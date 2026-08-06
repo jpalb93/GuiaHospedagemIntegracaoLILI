@@ -97,19 +97,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
     if (!auth.user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-700">
-                    {/* ... LOGIN FORM REMAINS SAME (omitted for brevity in prompt, but ensuring logic stays) ... */}
-                    {/* WAIT, I need to include the login form code since I am replacing the block */}
-                    {/* To avoid error I will include it. My previous tool call showed lines 1-328, so I have the context. */}
+            <div className="min-h-screen flex items-center justify-center bg-stone-100/80 dark:bg-gray-900 p-4">
+                <div className="bg-white dark:bg-gray-800 p-8 sm:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-stone-200/80 dark:border-gray-700 backdrop-blur-xl">
                     <div className="text-center mb-8">
-                        <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Lock className="text-orange-600 dark:text-orange-400" size={32} />
+                        <div className="w-16 h-16 bg-orange-100 dark:bg-orange-950/50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-orange-200 dark:border-orange-800/40">
+                            <Lock className="text-orange-600 dark:text-orange-400" size={30} />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <h1 className="text-2xl font-extrabold text-stone-900 dark:text-white font-heading">
                             Acesso Administrativo
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-stone-500 dark:text-gray-400 mt-1 font-medium">
                             Faça login para gerenciar reservas.
                         </p>
                     </div>
@@ -121,33 +118,35 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                 (document.getElementById('password') as HTMLInputElement).value
                             )
                         }
-                        className="space-y-4"
+                        className="space-y-5"
                     >
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            <label className="block text-xs font-extrabold text-stone-700 dark:text-gray-300 uppercase mb-1.5 font-heading tracking-wider">
                                 E-mail
                             </label>
                             <input
                                 id="email"
                                 type="email"
-                                className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                required
+                                className="w-full p-3.5 rounded-2xl border border-stone-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-stone-900 dark:text-white placeholder-stone-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all shadow-2xs font-medium text-sm"
                                 placeholder="admin@exemplo.com"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            <label className="block text-xs font-extrabold text-stone-700 dark:text-gray-300 uppercase mb-1.5 font-heading tracking-wider">
                                 Senha
                             </label>
                             <input
                                 id="password"
                                 type="password"
-                                className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                required
+                                className="w-full p-3.5 rounded-2xl border border-stone-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-stone-900 dark:text-white placeholder-stone-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all shadow-2xs font-medium text-sm"
                                 placeholder="••••••"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-gray-900 dark:bg-black text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                            className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition-all active:scale-95 cursor-pointer font-heading text-sm mt-2"
                         >
                             <LogIn size={18} /> Entrar no Painel
                         </button>

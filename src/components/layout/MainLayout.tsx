@@ -4,6 +4,8 @@ import flatsLogo from '../../assets/flats-integracao-logo.png';
 import Footer from './Footer';
 import TopTicker from './TopTicker';
 import { HOST_PHONE } from '../../constants';
+import { Briefcase } from 'lucide-react';
+import CorporateProposalModal from '../modals/CorporateProposalModal';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -14,6 +16,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const isDarkTheme = pathname.startsWith('/guia') || pathname === '/';
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isCorporateModalOpen, setIsCorporateModalOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -24,8 +27,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    useEffect(() => {
+        const handleOpenCorporateModal = () => setIsCorporateModalOpen(true);
+        window.addEventListener('open-corporate-modal', handleOpenCorporateModal);
+        return () => window.removeEventListener('open-corporate-modal', handleOpenCorporateModal);
+    }, []);
+
     // Fecha o menu ao mudar de rota e reseta o scroll
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMenuOpen(false);
         window.scrollTo(0, 0);
     }, [pathname]);
@@ -33,7 +43,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const isHomePage = pathname === '/';
 
     return (
-        <div className={`font-sans antialiased flex flex-col min-h-screen ${isDarkTheme ? 'bg-stone-950 text-stone-300' : 'bg-white text-gray-900'}`}>
+        <div className={`font-sans antialiased flex flex-col min-h-screen overflow-x-hidden max-w-[100vw] ${isDarkTheme ? 'bg-stone-950 text-stone-300' : 'bg-white text-gray-900'}`}>
             <TopTicker />
             {/* --- Premium Header --- */}
             <header
@@ -46,40 +56,48 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <div
                     className={`flex items-center justify-between transition-all duration-700 pointer-events-auto border border-transparent 
                     ${!isHomePage 
-                        ? 'w-full py-4 px-8 md:px-16' 
+                        ? 'w-full py-4 px-6 md:px-12' 
                         : (isScrolled
-                            ? 'w-[92%] max-w-6xl bg-white/95 backdrop-blur-2xl py-3 px-6 md:px-10 rounded-full shadow-2xl border-white/20 ring-1 ring-black/5'
-                            : 'w-full bg-white/90 backdrop-blur-md py-6 px-8 md:px-16 border-b border-white/10')
+                            ? 'w-[94%] max-w-6xl bg-white/95 backdrop-blur-2xl py-3 px-5 md:px-8 rounded-full shadow-2xl border-white/20 ring-1 ring-black/5'
+                            : 'w-full bg-white/90 backdrop-blur-md py-5 px-6 md:px-12 border-b border-white/10')
                     }`}
                 >
-                    <Link to="/" className="relative group transition-opacity hover:opacity-80">
+                    <Link to="/" className="relative group transition-opacity hover:opacity-80 shrink-0">
                         <img
                             src={flatsLogo}
                             alt="Logo Flats Integração"
                             width={180}
                             height={48}
-                            className={`w-auto transition-all duration-700 drop-shadow-sm ${isScrolled ? 'h-9 md:h-10' : 'h-12 md:h-16'}`}
+                            className={`w-auto transition-all duration-700 drop-shadow-sm ${isScrolled ? 'h-8 md:h-9' : 'h-10 md:h-14'}`}
                         />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex gap-10 items-center">
-                        <Link to="/" className={`text-xs font-bold uppercase tracking-[0.2em] transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Início</Link>
-                        <Link to="/guia" className={`text-xs font-bold uppercase tracking-[0.2em] transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Guia Petrolina</Link>
-                        <a href={isHomePage ? "#galeria" : "/#galeria"} className={`text-xs font-bold uppercase tracking-[0.2em] transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Galeria</a>
-                        <a href={isHomePage ? "#features" : "/#features"} className={`text-xs font-bold uppercase tracking-[0.2em] transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Diferenciais</a>
+                    <nav className="hidden md:flex gap-4 lg:gap-6 xl:gap-8 items-center">
+                        <Link to="/" className={`text-xs font-bold uppercase tracking-wider transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Início</Link>
+                        <a href={isHomePage ? "#galeria" : "/#galeria"} className={`text-xs font-bold uppercase tracking-wider transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Galeria</a>
+                        <a href={isHomePage ? "#empresas" : "/#empresas"} className="text-xs font-extrabold uppercase tracking-wider text-orange-600 hover:text-orange-500 transition-colors whitespace-nowrap">Empresas & Mensal</a>
+                        <a href={isHomePage ? "#features" : "/#features"} className={`text-xs font-bold uppercase tracking-wider transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Diferenciais</a>
+                        <Link to="/guia" className={`text-xs font-bold uppercase tracking-wider transition-colors ${isHomePage ? 'text-stone-600 hover:text-stone-950' : 'text-gray-500 hover:text-orange-600'}`}>Guia Local</Link>
                     </nav>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsCorporateModalOpen(true)}
+                            className="hidden lg:flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-orange-500/40 text-orange-600 hover:bg-orange-50 font-bold text-xs uppercase tracking-wider transition-all"
+                        >
+                            <Briefcase size={14} /> Cotação B2B
+                        </button>
                         <a
                             href={`https://wa.me/${HOST_PHONE}`}
                             target="_blank"
                             rel="noreferrer"
                             className={`font-medium text-xs uppercase tracking-widest transition-all duration-500 shadow-xl ${!isHomePage 
-                                    ? 'bg-stone-900 hover:bg-orange-600 text-white px-8 py-4 rounded-full'
+                                    ? 'bg-stone-900 hover:bg-orange-700 text-white px-8 py-4 rounded-full'
                                     : (isScrolled
-                                        ? 'bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-full'
-                                        : 'bg-orange-600 text-white hover:bg-stone-900 px-8 py-4 rounded-full')
+                                        ? 'bg-orange-700 hover:bg-orange-600 text-white px-6 py-3 rounded-full'
+                                        : 'bg-orange-700 text-white hover:bg-stone-900 px-8 py-4 rounded-full')
                                 }`}
                         >
                             Reservar
@@ -102,20 +120,33 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </header>
 
             {/* Mobile Menu Overlay */}
-            <div className={`fixed inset-0 z-[90] bg-white md:hidden transition-all duration-700 flex flex-col justify-center items-center gap-8 ${isMenuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
-                <nav className="flex flex-col items-center gap-8">
-                    <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-3xl font-heading font-bold text-stone-900">Início</Link>
-                    <Link to="/guia" onClick={() => setIsMenuOpen(false)} className="text-3xl font-heading font-bold text-stone-900">Guia Local</Link>
-                    <a href="#galeria" onClick={() => setIsMenuOpen(false)} className="text-3xl font-heading font-bold text-stone-900">Ambientes</a>
-                    <a href="#features" onClick={() => setIsMenuOpen(false)} className="text-3xl font-heading font-bold text-stone-900">Diferenciais</a>
+            <div className={`fixed inset-0 z-[90] bg-white md:hidden transition-all duration-700 flex flex-col justify-center items-center gap-6 ${isMenuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
+                <nav className="flex flex-col items-center gap-6">
+                    <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-2xl font-heading font-bold text-stone-900">Início</Link>
+                    <a href="#galeria" onClick={() => setIsMenuOpen(false)} className="text-2xl font-heading font-bold text-stone-900">Ambientes</a>
+                    <a href="#empresas" onClick={() => setIsMenuOpen(false)} className="text-2xl font-heading font-bold text-orange-600">Empresas & Mensal</a>
+                    <a href="#features" onClick={() => setIsMenuOpen(false)} className="text-2xl font-heading font-bold text-stone-900">Diferenciais</a>
+                    <Link to="/guia" onClick={() => setIsMenuOpen(false)} className="text-2xl font-heading font-bold text-stone-900">Guia Local</Link>
                 </nav>
-                <a
-                    href={`https://wa.me/${HOST_PHONE}`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="mt-8 bg-orange-600 text-white px-12 py-4 rounded-full font-bold text-sm uppercase tracking-widest shadow-xl"
-                >
-                    Reservar Agora
-                </a>
+                <div className="flex flex-col items-center gap-3 w-[80%] max-w-xs mt-4">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsCorporateModalOpen(true);
+                        }}
+                        className="w-full bg-stone-900 text-white py-3.5 rounded-full font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                    >
+                        <Briefcase size={16} /> Cotação B2B / Mensal
+                    </button>
+                    <a
+                        href={`https://wa.me/${HOST_PHONE}`}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="w-full bg-orange-700 text-white text-center py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl"
+                    >
+                        Reservar Agora
+                    </a>
+                </div>
             </div>
 
             {/* Main Content Area */}
@@ -124,6 +155,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </main>
 
             <Footer />
+
+            {/* Corporate Proposal Modal */}
+            <CorporateProposalModal
+                isOpen={isCorporateModalOpen}
+                onClose={() => setIsCorporateModalOpen(false)}
+            />
 
             {/* Botão Flutuante do WhatsApp */}
             <a

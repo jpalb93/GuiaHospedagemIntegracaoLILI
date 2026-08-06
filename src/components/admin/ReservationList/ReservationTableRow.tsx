@@ -8,6 +8,8 @@ import {
     LogOut,
     Link as LinkIcon,
     Share2,
+    ClipboardCheck,
+    DollarSign,
 } from 'lucide-react';
 import { Reservation, PropertyId } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
@@ -24,7 +26,10 @@ interface ReservationTableRowProps {
     onCopyLink: () => void;
     onShareWhatsApp: () => void;
     onSendReminder: (type: 'checkin' | 'checkout') => void;
+    onOpenInspection: () => void;
     onToggleSelection: () => void;
+    onQuickView?: () => void;
+    onOpenPaymentModal?: () => void;
 }
 
 const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
@@ -38,17 +43,22 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
     onCopyLink,
     onShareWhatsApp,
     onSendReminder,
+    onOpenInspection,
     onToggleSelection,
+    onQuickView,
+    onOpenPaymentModal,
 }) => {
     const property = PROPERTIES[(res.propertyId || 'lili') as PropertyId];
+    const initial = res.guestName ? res.guestName.charAt(0).toUpperCase() : '?';
 
     return (
-        <tr className="group hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0">
-            <td className="py-4 px-4 align-top w-10">
-                <div className="flex items-center h-full pt-1">
+        <tr className="group hover:bg-orange-50/30 dark:hover:bg-gray-800/60 transition-all border-b border-stone-200/60 dark:border-gray-800 last:border-0">
+            {/* Checkbox */}
+            <td className="py-4 px-4 align-top w-10 pt-5">
+                <div className="flex items-center justify-center">
                     <input
                         type="checkbox"
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="w-4 h-4 rounded border-stone-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
                         checked={isSelected}
                         onChange={(e) => {
                             e.stopPropagation();
@@ -58,57 +68,155 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                     />
                 </div>
             </td>
+
+            {/* Hóspede & Flat + Notas */}
             <td className="py-4 px-4 align-top">
-                <div className="flex flex-col">
-                    <span className="font-bold text-gray-900 dark:text-white text-sm">
-                        {res.guestName}
-                    </span>
-                    <span className="text-[10px] text-gray-400">
-                        {res.flatNumber ? `Flat ${res.flatNumber}` : 'Sem nº'}
-                    </span>
-                    {res.adminNotes && (
-                        <span className="text-[10px] text-yellow-600 mt-1 flex items-center gap-1">
-                            <StickyNote size={8} /> {res.adminNotes}
+                <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-stone-800 to-stone-950 text-amber-400 font-extrabold flex items-center justify-center text-sm shadow-md shrink-0 font-heading mt-0.5 border border-stone-700">
+                        {initial}
+                    </div>
+                    <div className="flex flex-col items-start min-w-0 flex-1">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onQuickView?.();
+                            }}
+                            className="font-extrabold font-heading text-stone-900 dark:text-white text-base hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-left cursor-pointer truncate max-w-[240px]"
+                        >
+                            {res.guestName}
+                        </button>
+
+                        {/* Flat Badge */}
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-lg bg-stone-100 dark:bg-gray-800 text-stone-800 dark:text-gray-200 font-heading border border-stone-200 dark:border-gray-700 shadow-2xs">
+                                {res.flatNumber ? `Flat ${res.flatNumber}` : 'Sem nº'}
+                            </span>
+                        </div>
+
+                        {/* Observações / Avisos (Destaque amplo sem espremer) */}
+                        {res.adminNotes && (
+                            <div className="mt-2.5 text-xs font-semibold text-amber-900 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/70 border border-amber-300/80 dark:border-amber-900/50 px-3 py-1.5 rounded-xl flex items-start gap-1.5 max-w-[340px] shadow-xs">
+                                <StickyNote size={13} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                <span className="leading-snug break-words">{res.adminNotes}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </td>
+
+            {/* Status & Pagamento */}
+            <td className="py-4 px-4 align-top">
+                <div className="flex flex-col items-start gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge variant={property.id === 'lili' ? 'orange' : 'blue'}>
+                            {property.name}
+                        </Badge>
+                        {statusLabel && (
+                            <Badge
+                                variant={
+                                    statusLabel === 'Checkout Hoje'
+                                        ? 'orange'
+                                        : statusLabel === 'Hospedado'
+                                          ? 'green'
+                                          : res.status === 'pending'
+                                            ? 'yellow'
+                                            : 'gray'
+                                }
+                            >
+                                {statusLabel}
+                            </Badge>
+                        )}
+                    </div>
+
+                    {/* BADGE DE STATUS DO PAGAMENTO */}
+                    {res.paymentStatus === 'paid' && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 shadow-2xs">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Pago Integral
+                        </span>
+                    )}
+                    {res.paymentStatus === 'partial' && (
+                        <div className="flex flex-col items-start gap-1">
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-950 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 shadow-2xs">
+                                <span className="w-2 h-2 rounded-full bg-amber-500" /> Sinal Pago (R$ {(res.depositAmount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
+                            </span>
+                            {res.totalAmount !== undefined && (
+                                <span className="text-[11px] font-extrabold text-rose-700 dark:text-rose-400 px-2.5 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                                    Resta: R$ {Math.max(0, res.totalAmount - (res.depositAmount || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    {res.paymentStatus === 'external' && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 shadow-2xs">
+                            Pagamento Externo
+                        </span>
+                    )}
+                    {(res.paymentStatus === 'pending' || !res.paymentStatus) && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-900 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 shadow-2xs">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Falta Pagar
                         </span>
                     )}
                 </div>
             </td>
+
+            {/* Estadia / Datas (Em Português: Entrada e Saída) */}
             <td className="py-4 px-4 align-top">
-                <div className="flex flex-col items-start gap-1">
-                    <Badge variant={property.id === 'lili' ? 'orange' : 'blue'}>
-                        {property.name}
-                    </Badge>
-                    {statusLabel && (
-                        <Badge
-                            variant={
-                                statusLabel === 'Checkout Hoje'
-                                    ? 'orange'
-                                    : statusLabel === 'Hospedado'
-                                      ? 'green'
-                                      : res.status === 'pending'
-                                        ? 'yellow'
-                                        : 'gray'
-                            }
-                        >
-                            {statusLabel}
-                        </Badge>
+                <div className="flex flex-col text-xs font-medium space-y-1.5 bg-stone-50/80 dark:bg-gray-900/50 p-2.5 rounded-2xl border border-stone-200/60 dark:border-gray-800">
+                    <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
+                        <CalendarDays size={14} className="text-emerald-500 shrink-0" />
+                        <span className="text-stone-500 dark:text-stone-400 font-extrabold text-[10px] uppercase tracking-wider">Entrada:</span>
+                        <strong className="text-stone-900 dark:text-white font-heading">{res.checkInDate?.split('-').reverse().join('/')}</strong>
+                    </span>
+                    <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300 pt-1 border-t border-stone-200/50 dark:border-gray-800">
+                        <LogOut size={14} className="text-orange-500 shrink-0" />
+                        <span className="text-stone-500 dark:text-stone-400 font-extrabold text-[10px] uppercase tracking-wider">Saída:</span>
+                        <strong className="text-stone-900 dark:text-white font-heading">{res.checkoutDate?.split('-').reverse().join('/')}</strong>
+                    </span>
+                </div>
+            </td>
+
+            {/* Valor Total */}
+            <td className="py-4 px-4 align-top">
+                <div className="flex flex-col justify-center">
+                    {res.paymentStatus === 'external' ? (
+                        <span className="font-extrabold text-slate-400 dark:text-slate-500 text-sm">
+                            —
+                        </span>
+                    ) : (
+                        <>
+                            <span className="font-extrabold font-heading text-stone-900 dark:text-white text-base flex items-center gap-1">
+                                <span className="text-emerald-600 dark:text-emerald-400 font-bold">R$</span>
+                                {res.totalAmount !== undefined && res.totalAmount !== null
+                                    ? res.totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                                    : '0,00'}
+                            </span>
+                            {res.paymentStatus === 'partial' && res.depositAmount !== undefined && (
+                                <span className="text-[11px] text-amber-700 dark:text-amber-400 font-bold mt-0.5">
+                                    Sinal: R$ {res.depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </span>
+                            )}
+                        </>
                     )}
                 </div>
             </td>
-            <td className="py-4 px-4 align-top">
-                <div className="flex flex-col text-xs text-gray-600 dark:text-gray-400 font-medium">
-                    <span className="flex items-center gap-1.5 mb-1">
-                        <CalendarDays size={12} className="text-gray-400" />{' '}
-                        {res.checkInDate?.split('-').reverse().join('/')}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                        <LogOut size={12} className="text-gray-400" />{' '}
-                        {res.checkoutDate?.split('-').reverse().join('/')}
-                    </span>
-                </div>
-            </td>
-            <td className="py-4 px-4 align-middle text-right">
-                <div className="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+
+            {/* Ações Rápidas */}
+            <td className="py-4 px-4 align-top text-right pr-6">
+                <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                    {onOpenPaymentModal && res.paymentStatus !== 'paid' && res.paymentStatus !== 'external' && (
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenPaymentModal();
+                            }}
+                            variant="icon"
+                            className="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-xs active:scale-95 flex items-center gap-1 px-3 text-xs font-extrabold font-heading"
+                            title="Dar baixa no pagamento"
+                        >
+                            <DollarSign size={15} /> Quitar
+                        </Button>
+                    )}
                     {isCheckinTomorrow && (
                         <Button
                             onClick={(e) => {
@@ -116,8 +224,8 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                                 onSendReminder('checkin');
                             }}
                             variant="icon"
-                            className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
-                            title="Lembrete Chegada"
+                            className="p-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all shadow-xs active:scale-95"
+                            title="Lembrete de Chegada"
                         >
                             <BellRing size={16} />
                         </Button>
@@ -129,8 +237,8 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                                 onSendReminder('checkout');
                             }}
                             variant="icon"
-                            className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200"
-                            title="Instruções Saída"
+                            className="p-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all shadow-xs active:scale-95"
+                            title="Instruções de Saída"
                         >
                             <LogOut size={16} />
                         </Button>
@@ -138,11 +246,35 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                     <Button
                         onClick={(e) => {
                             e.stopPropagation();
+                            onOpenInspection();
+                        }}
+                        variant="icon"
+                        className={`p-2.5 rounded-xl relative transition-all active:scale-95 shadow-2xs ${
+                            res.preCheckInInspection || res.postCheckOutInspection
+                                ? 'text-white bg-emerald-600 hover:bg-emerald-700'
+                                : 'text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/60 hover:bg-purple-200 border border-purple-300/80 dark:border-purple-800'
+                        }`}
+                        title={`Vistoria ${
+                            res.postCheckOutInspection
+                                ? 'Pós Check-out Salva ✓'
+                                : res.preCheckInInspection
+                                ? 'Pré Check-in Salva ✓'
+                                : 'Pré / Pós Check-in/out'
+                        }`}
+                    >
+                        <ClipboardCheck size={16} />
+                        {(res.preCheckInInspection || res.postCheckOutInspection) && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-gray-900" />
+                        )}
+                    </Button>
+                    <Button
+                        onClick={(e) => {
+                            e.stopPropagation();
                             onShareWhatsApp();
                         }}
                         variant="icon"
-                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
-                        title="WhatsApp"
+                        className="p-2.5 text-emerald-700 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 rounded-xl transition-all active:scale-95 shadow-2xs"
+                        title="Enviar no WhatsApp"
                     >
                         <Share2 size={16} />
                     </Button>
@@ -152,20 +284,20 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                             onCopyLink();
                         }}
                         variant="icon"
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                        title="Copiar Link"
+                        className="p-2.5 text-blue-700 dark:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 rounded-xl transition-all active:scale-95 shadow-2xs"
+                        title="Copiar Link do Hóspede"
                     >
                         <LinkIcon size={16} />
                     </Button>
-                    <div className="w-px h-4 bg-gray-200 mx-1"></div>
+                    <div className="w-px h-5 bg-stone-200 dark:bg-gray-700 mx-0.5 self-center"></div>
                     <Button
                         onClick={(e) => {
                             e.stopPropagation();
                             onEdit();
                         }}
                         variant="icon"
-                        className="p-2 text-gray-400 hover:text-blue-600 rounded-lg"
-                        title="Editar"
+                        className="p-2.5 text-stone-700 dark:text-stone-300 bg-stone-100 hover:bg-stone-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition-all active:scale-95 shadow-2xs"
+                        title="Editar Reserva"
                     >
                         <Pencil size={16} />
                     </Button>
@@ -175,8 +307,8 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                             onDelete();
                         }}
                         variant="icon"
-                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg"
-                        title="Excluir"
+                        className="p-2.5 text-rose-700 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900/40 rounded-xl transition-all active:scale-95 shadow-2xs"
+                        title="Excluir Reserva"
                     >
                         <Trash2 size={16} />
                     </Button>

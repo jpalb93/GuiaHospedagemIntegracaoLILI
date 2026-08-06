@@ -6,11 +6,12 @@ import {
     Calendar,
     MapPin,
     X,
+    Clock,
     Image as ImageIcon,
     FileSignature,
 } from 'lucide-react';
 import { ChecklistItem } from '../../types';
-import { ChecklistState } from './InspectionChecklist';
+import { ChecklistState, InspectionItemStatus } from './InspectionChecklist';
 
 // Company info should be externalized for multi-tenant support
 interface CompanyInfo {
@@ -27,6 +28,7 @@ interface InspectionReportProps {
     onInspectorNameChange: (name: string) => void;
     checklistItems: ChecklistItem[];
     checklistState: ChecklistState;
+    inspectionType?: 'pre_checkin' | 'post_checkout';
 }
 
 const InspectionReport: React.FC<InspectionReportProps> = ({
@@ -37,9 +39,18 @@ const InspectionReport: React.FC<InspectionReportProps> = ({
     onInspectorNameChange,
     checklistItems,
     checklistState,
+    inspectionType = 'pre_checkin',
 }) => {
-    const issueItems = checklistItems.filter((i) => checklistState[i.id]?.status === 'issue');
-    const okItems = checklistItems.filter((i) => checklistState[i.id]?.status === 'ok');
+    const getItemStatus = (id: string): InspectionItemStatus =>
+        (checklistState && checklistState[id]?.status) || 'pending';
+
+    const safeItems = (checklistItems && Array.isArray(checklistItems))
+        ? checklistItems.filter((i): i is ChecklistItem => Boolean(i && typeof i === 'object' && i.id))
+        : [];
+
+    const issueItems = safeItems.filter((i) => getItemStatus(i.id) === 'issue');
+    const pendingItems = safeItems.filter((i) => getItemStatus(i.id) === 'pending');
+    const okItems = safeItems.filter((i) => getItemStatus(i.id) === 'ok');
 
     // Group OK items by category
     const groupedOkItems = okItems.reduce(
@@ -53,29 +64,38 @@ const InspectionReport: React.FC<InspectionReportProps> = ({
     );
 
     return (
-        <div className="print:p-8 print:pt-0">
+        <div
+            id="inspection-report-content"
+            className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-4 rounded-xl print:bg-white print:text-gray-900 print:p-0 print:rounded-none"
+        >
             {/* HEADER WITH LOGO */}
-            <div className="flex items-center justify-between border-b-2 border-gray-300 pb-6 mb-6 print:border-black">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b-2 border-gray-300 pb-4 sm:pb-6 mb-4 sm:mb-6 gap-3 print:border-black">
+                <div className="flex items-center gap-3">
                     <img
                         src={companyInfo.logo}
                         alt={companyInfo.name}
-                        className="w-20 h-20 object-contain rounded-lg print:w-24 print:h-24"
+                        className="w-14 h-14 sm:w-20 sm:h-20 object-contain rounded-lg shrink-0 print:w-24 print:h-24"
                     />
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                        <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-wide leading-tight">
                             {companyInfo.name}
                         </h1>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                             {companyInfo.address}
                         </p>
                     </div>
                 </div>
-                <div className="text-right">
-                    <div className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold print:bg-blue-600">
-                        RELATÓRIO DE VISTORIA
+                <div className="text-left sm:text-right shrink-0">
+                    <div
+                        className={`text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold inline-block ${
+                            inspectionType === 'pre_checkin' ? 'bg-blue-600' : 'bg-indigo-700'
+                        }`}
+                    >
+                        {inspectionType === 'pre_checkin'
+                            ? 'VISTORIA PRÉ CHECK-IN'
+                            : 'VISTORIA PÓS CHECK-OUT'}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 font-mono">
+                    <p className="text-[11px] text-gray-500 mt-1 font-mono">
                         {new Date().toLocaleDateString('pt-BR')}
                     </p>
                 </div>
@@ -84,9 +104,9 @@ const InspectionReport: React.FC<InspectionReportProps> = ({
             {/* DESCRIPTION */}
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6 print:bg-gray-100">
                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Este documento registra o estado de conservação e conferência dos itens do
-                    imóvel após a saída do hóspede, garantindo a transparência e qualidade dos
-                    serviços prestados.
+                    {inspectionType === 'pre_checkin'
+                        ? 'Este documento registra o inventário e o estado de conservação de todos os itens do imóvel no momento da entrega da chave ao hóspede, assegurando a conferência de entrada.'
+                        : 'Este documento registra a conferência pós checkout para checagem da presença e estado de conservação dos itens inventariados no pré check-in.'}
                 </p>
             </div>
 
@@ -126,20 +146,29 @@ const InspectionReport: React.FC<InspectionReportProps> = ({
                         placeholder="Digite seu nome..."
                         value={inspectorName}
                         onChange={(e) => onInspectorNameChange(e.target.value)}
-                        className="bg-transparent border-b-2 border-gray-300 dark:border-gray-600 w-full focus:outline-none focus:border-blue-500 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-400 print:border-gray-900"
+                        className="bg-transparent border-b-2 border-gray-300 dark:border-gray-600 w-full focus:outline-none focus:border-blue-500 text-sm font-bold text-gray-900 dark:text-white placeholder-gray-400 print:hidden"
                     />
+                    <p className="hidden print:block border-b-2 border-gray-900 w-full text-sm font-bold text-gray-900 pb-0.5">
+                        {inspectorName || 'Não informado'}
+                    </p>
                 </div>
             </div>
 
             {/* SUMMARY */}
-            <div className="flex gap-4 mb-8">
-                <div className="flex-1 bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-200 dark:border-green-800 text-center">
+            <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-200 dark:border-green-800 text-center">
                     <p className="text-3xl font-bold text-green-600">{okItems.length}</p>
                     <p className="text-xs text-green-700 dark:text-green-400 font-medium uppercase">
                         Itens OK
                     </p>
                 </div>
-                <div className="flex-1 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800 text-center">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-800 text-center">
+                    <p className="text-3xl font-bold text-amber-600">{pendingItems.length}</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 font-medium uppercase">
+                        Pendentes
+                    </p>
+                </div>
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800 text-center">
                     <p className="text-3xl font-bold text-red-600">{issueItems.length}</p>
                     <p className="text-xs text-red-700 dark:text-red-400 font-medium uppercase">
                         Com Atenção
@@ -187,6 +216,40 @@ const InspectionReport: React.FC<InspectionReportProps> = ({
                                         )}
                                     </div>
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* PENDING ITEMS */}
+            {pendingItems.length > 0 && (
+                <div className="mb-8 break-inside-avoid">
+                    <h3 className="text-sm font-bold uppercase border-b-2 border-amber-500 pb-2 mb-4 flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                        <Clock size={16} /> Itens Pendentes de Verificação ({pendingItems.length})
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                        {pendingItems.map((item) => (
+                            <div
+                                key={item.id}
+                                className="bg-amber-50 dark:bg-amber-900/10 p-3 rounded-lg border-l-4 border-amber-500 flex items-center justify-between print:bg-amber-50"
+                            >
+                                <div className="flex-1 pr-2">
+                                    <p className="font-bold text-xs text-gray-900 dark:text-white">
+                                        {item.label}{' '}
+                                        <span className="text-[10px] font-normal text-gray-500 ml-1">
+                                            ({item.category || 'Geral'})
+                                        </span>
+                                    </p>
+                                    {checklistState[item.id]?.note && (
+                                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 italic">
+                                            "{checklistState[item.id]?.note}"
+                                        </p>
+                                    )}
+                                </div>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 shrink-0">
+                                    Pendente
+                                </span>
                             </div>
                         ))}
                     </div>

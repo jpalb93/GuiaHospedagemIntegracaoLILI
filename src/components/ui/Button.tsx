@@ -33,6 +33,7 @@ export const Button: React.FC<ButtonProps> = ({
     fullWidth = false,
     children,
     className = '',
+    type = 'button',
     ...props
 }) => {
     // Icon variant ignores size classes
@@ -41,6 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
 
     return (
         <button
+            type={type}
             className={`${variantClasses[variant]} ${sizeClass} ${widthClass} ${className}`}
             {...props}
         >

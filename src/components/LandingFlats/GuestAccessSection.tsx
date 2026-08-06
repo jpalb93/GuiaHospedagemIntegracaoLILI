@@ -107,7 +107,7 @@ const GuestAccessSection: React.FC = () => {
                             <KeyRound size={20} className="stroke-1" />
                         </div>
                         <h2 className="text-4xl font-heading font-light text-white leading-tight">
-                            Exclusivo <br />
+                            Exclusivo{" "}<br />
                             <span className="italic font-serif text-stone-500">
                                 Área do Hóspede
                             </span>

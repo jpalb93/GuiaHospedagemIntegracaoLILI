@@ -14,7 +14,7 @@ const TopTicker: React.FC = () => {
     const displayBenefits = [...benefits, ...benefits, ...benefits];
 
     return (
-        <div className="bg-orange-600 text-white overflow-hidden h-9 flex items-center relative z-[110] border-b border-orange-500/20">
+        <div className="bg-orange-700 text-white overflow-hidden h-9 flex items-center relative z-[110] border-b border-orange-600/20">
             <div className="flex animate-ticker whitespace-nowrap">
                 {displayBenefits.map((benefit, index) => (
                     <div key={index} className="flex items-center mx-6 lg:mx-10">

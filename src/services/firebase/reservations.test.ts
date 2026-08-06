@@ -17,7 +17,19 @@ vi.mock('firebase/firestore');
 // Mock config
 vi.mock('./config', () => ({
     db: {},
-    cleanData: vi.fn((data) => data),
+    cleanData: vi.fn((data) => {
+        const clean = { ...data };
+        Object.keys(clean).forEach((key) => {
+            if (clean[key] === undefined) delete clean[key];
+        });
+        return clean;
+    }),
+    getFirestoreInstance: vi.fn(async () => ({})),
+    getFirebaseAuth: vi.fn(async () => ({ currentUser: { email: 'admin@test.com' } })),
+}));
+
+vi.mock('./logs', () => ({
+    logAction: vi.fn(async () => undefined),
 }));
 
 // Mock utils
@@ -169,13 +181,27 @@ describe('Firebase Reservations Service', () => {
             );
         });
 
-        it('should call updateDoc with correct parameters', async () => {
+        it('should strip undefined fields and not overwrite createdAt', async () => {
             (firestore.updateDoc as any).mockResolvedValue(undefined);
             (firestore.doc as any).mockReturnValue({});
 
-            await updateReservation('res-123', { guestName: 'New Name' });
+            await updateReservation('res-123', {
+                guestName: 'Updated',
+                createdAt: '',
+                depositAmount: undefined,
+                totalAmount: 730,
+            });
 
-            expect(firestore.updateDoc).toHaveBeenCalled();
+            const saved = (firestore.updateDoc as any).mock.calls[0][1];
+            expect(saved).toEqual(
+                expect.objectContaining({
+                    guestName: 'Updated',
+                    totalAmount: 730,
+                })
+            );
+            expect(saved).not.toHaveProperty('depositAmount');
+            expect(saved).not.toHaveProperty('createdAt');
+            expect(saved).not.toHaveProperty('id');
         });
     });
 

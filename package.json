@@ -13,7 +13,7 @@
         "test": "vitest",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
-        "prepare": "husky"
+        "prepare": "node -e \"if (require('fs').existsSync('.git')) { require('child_process').execSync('husky', { stdio: 'inherit' }); }\""
     },
     "lint-staged": {
         "*.{ts,tsx}": [

@@ -9,7 +9,9 @@ import ReputationSection from './ReputationSection';
 import GallerySection from './GallerySection';
 import LocationSection from './LocationSection';
 import GuestAccessSection from './GuestAccessSection';
-import { Phone, Instagram } from 'lucide-react';
+import CorporateB2BSection from './CorporateB2BSection';
+import CorporateProposalModal from '../modals/CorporateProposalModal';
+import { Phone, Instagram, Briefcase } from 'lucide-react';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 import logoEximus from '../../assets/logo-eximus.png';
 
@@ -18,6 +20,7 @@ gsap.registerPlugin(ScrollTrigger);
 const LandingFlatsIntegracao: React.FC = () => {
     const [isScrolled, setIsScrolled] = React.useState(false);
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+    const [isCorporateModalOpen, setIsCorporateModalOpen] = React.useState(false);
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -30,19 +33,26 @@ const LandingFlatsIntegracao: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isScrolled]);
 
+    const navLinks = [
+        { name: 'Galeria', href: '#galeria' },
+        { name: 'Comodidades', href: '#features' },
+        { name: 'Empresas & Mensal', href: '#empresas' },
+        { name: 'Informações', href: '#info' },
+        { name: 'Localização', href: '#location' },
+    ];
+
     return (
         <div className="font-sans antialiased bg-stone-950 text-stone-300">
             {/* SEO Meta Tags */}
-            {/* ... (Helmet remains the same) */}
             <Helmet>
-                <title>Flats Integração - Hospedagem em Petrolina</title>
+                <title>Flats Integração - Hospedagem e Aluguel Mensal para Empresas em Petrolina</title>
                 <meta
                     name="description"
-                    content="Guia interativo do Flats Integração com senhas Wi-Fi, informações da estadia, dicas de Petrolina e atendimento 24h."
+                    content="Aluguel mensal e hospedagem corporativa no Centro de Petrolina. Flats equipados para empresas, diretores e consultores com Nota Fiscal PJ e economia de até 50%."
                 />
                 <meta
                     name="keywords"
-                    content="flats Petrolina, hospedagem Petrolina, guia digital, Flats Integração, aluguel temporada, hotel Petrolina"
+                    content="flats Petrolina, aluguel mensal Petrolina, hospedagem corporativa Petrolina, hotel empresas Petrolina, Nota Fiscal flat Petrolina, flats mobilados Petrolina, longa estadia Petrolina"
                 />
                 <meta name="author" content="Flats Integração" />
                 <meta name="robots" content="index, follow" />
@@ -50,19 +60,19 @@ const LandingFlatsIntegracao: React.FC = () => {
                 {/* Open Graph / Facebook */}
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="https://flatsintegracao.com.br" />
-                <meta property="og:title" content="Flats Integração - Hospedagem em Petrolina" />
+                <meta property="og:title" content="Flats Integração - Hospedagem e Aluguel Mensal Corporativo em Petrolina" />
                 <meta
                     property="og:description"
-                    content="Hospedagem com alma em Petrolina. Guia digital interativo para facilitar sua estadia."
+                    content="Soluções corporativas e aluguel mensal de flats em Petrolina com Nota Fiscal PJ, Wi-Fi fibra e cozinha completa."
                 />
                 <meta property="og:locale" content="pt_BR" />
 
                 {/* Twitter */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Flats Integração - Hospedagem em Petrolina" />
+                <meta name="twitter:title" content="Flats Integração - Aluguel Mensal para Empresas em Petrolina" />
                 <meta
                     name="twitter:description"
-                    content="Guia interativo para sua estadia em Petrolina"
+                    content="Hospedagem corporativa e aluguel mensal para empresas no Centro de Petrolina."
                 />
 
                 {/* Canonical URL */}
@@ -138,17 +148,12 @@ const LandingFlatsIntegracao: React.FC = () => {
                     </a>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-10" aria-label="Navegação principal">
-                        {[
-                            { name: 'Galeria', href: '#galeria' },
-                            { name: 'Comodidades', href: '#features' },
-                            { name: 'Informações', href: '#info' },
-                            { name: 'Localização', href: '#location' },
-                        ].map((link) => (
+                    <nav className="hidden md:flex items-center gap-8 lg:gap-10" aria-label="Navegação principal">
+                        {navLinks.map((link) => (
                             <a
                                 key={link.name}
                                 href={link.href}
-                                className="relative text-xs font-bold uppercase tracking-[0.2em] text-stone-600 hover:text-stone-950 transition-colors duration-300 group"
+                                className={`relative text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-300 group ${link.href === '#empresas' ? 'text-orange-600 font-extrabold' : 'text-stone-600 hover:text-stone-950'}`}
                             >
                                 {link.name}
                                 <span className="absolute -bottom-1 left-1/2 w-0 h-[1.5px] bg-orange-500 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
@@ -156,7 +161,14 @@ const LandingFlatsIntegracao: React.FC = () => {
                         ))}
                     </nav>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsCorporateModalOpen(true)}
+                            className="hidden lg:flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-orange-500/30 text-orange-600 hover:bg-orange-50 font-bold text-xs uppercase tracking-wider transition-all"
+                        >
+                            <Briefcase size={14} /> Cotação B2B
+                        </button>
                         <a
                             href="https://wa.me/5587988283273"
                             target="_blank"
@@ -186,29 +198,36 @@ const LandingFlatsIntegracao: React.FC = () => {
 
                 {/* Mobile Menu Overlay - Premium Feel */}
                 <div className={`fixed inset-0 bg-white z-[90] md:hidden transition-all duration-700 flex flex-col justify-center items-center gap-8 ${isMenuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
-                    <nav className="flex flex-col items-center gap-8">
-                        {[
-                            { name: 'Galeria', href: '#galeria' },
-                            { name: 'Comodidades', href: '#features' },
-                            { name: 'Informações', href: '#info' },
-                            { name: 'Localização', href: '#location' },
-                        ].map((link) => (
+                    <nav className="flex flex-col items-center gap-6">
+                        {navLinks.map((link) => (
                             <a
                                 key={link.name}
                                 href={link.href}
                                 onClick={() => setIsMenuOpen(false)}
-                                className="text-3xl font-heading font-bold text-stone-900 hover:text-orange-500 transition-colors"
+                                className={`text-2xl font-heading font-bold transition-colors ${link.href === '#empresas' ? 'text-orange-600' : 'text-stone-900 hover:text-orange-500'}`}
                             >
                                 {link.name}
                             </a>
                         ))}
                     </nav>
-                    <a
-                        href="https://wa.me/5587988283273"
-                        className="mt-8 bg-orange-600 text-white px-12 py-4 rounded-full font-bold text-sm uppercase tracking-widest"
-                    >
-                        Reservar Agora
-                    </a>
+                    <div className="flex flex-col items-center gap-3 w-[80%] max-w-xs">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsCorporateModalOpen(true);
+                            }}
+                            className="w-full bg-stone-900 text-white py-3.5 rounded-full font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                            <Briefcase size={16} /> Cotação B2B / Mensal
+                        </button>
+                        <a
+                            href="https://wa.me/5587988283273"
+                            className="w-full bg-orange-600 text-white text-center py-3.5 rounded-full font-bold text-xs uppercase tracking-widest"
+                        >
+                            Reservar Agora
+                        </a>
+                    </div>
                 </div>
             </header>
 
@@ -219,14 +238,22 @@ const LandingFlatsIntegracao: React.FC = () => {
 
                 <GallerySection />
 
-                <InfoSection />
-
                 <FeaturesSection />
+
+                <CorporateB2BSection onRequestQuote={() => setIsCorporateModalOpen(true)} />
+
+                <InfoSection />
 
                 <LocationSection />
 
                 <GuestAccessSection />
             </main>
+
+            {/* Corporate Modal */}
+            <CorporateProposalModal
+                isOpen={isCorporateModalOpen}
+                onClose={() => setIsCorporateModalOpen(false)}
+            />
 
             {/* Footer Simples */}
             <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">

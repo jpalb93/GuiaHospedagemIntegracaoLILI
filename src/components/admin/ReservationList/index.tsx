@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
-import { Reservation, UserPermission, PropertyId } from '../../../types';
+import { Reservation, UserPermission, PropertyId, SavedInspectionData, PaymentStatus } from '../../../types';
 import { useAdminSettings } from '../../../hooks/useAdminSettings';
+import { updateReservation } from '../../../services/firebase/reservations';
 import { Search } from 'lucide-react';
-import InspectionModal from '../InspectionModal';
+import InspectionModal, { InspectionType } from '../InspectionModal';
+import ReservationQuickViewModal from '../modals/ReservationQuickViewModal';
+import PaymentRegistrationModal from '../modals/PaymentRegistrationModal';
 
 // Sub-components
 import FilterBar from './FilterBar';
@@ -46,6 +49,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const [listCopiedId, setListCopiedId] = React.useState<string | null>(null);
     const [openHistoryGroups, setOpenHistoryGroups] = React.useState<number[]>([0]);
     const [propertyFilter, setPropertyFilter] = React.useState<PropertyId | 'all'>('all');
+    const [flatFilter, setFlatFilter] = React.useState<string>('all');
     const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
 
     // Advanced Filters State
@@ -68,6 +72,30 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const [inspectionReservation, setInspectionReservation] = React.useState<Reservation | null>(
         null
     );
+
+    // Quick View Modal State
+    const [quickViewReservation, setQuickViewReservation] = React.useState<Reservation | null>(null);
+
+    // Payment Registration Modal State
+    const [paymentModalReservation, setPaymentModalReservation] = React.useState<Reservation | null>(null);
+
+    const handleConfirmPayment = async (
+        reservationId: string,
+        paymentStatus: PaymentStatus,
+        depositAmount: number,
+        paymentMethod?: 'pix' | 'money' | 'card'
+    ) => {
+        try {
+            await updateReservation(reservationId, {
+                paymentStatus,
+                depositAmount,
+                paymentMethod,
+            });
+            showToast('Pagamento registrado com sucesso!', 'success');
+        } catch (_error) {
+            showToast('Erro ao registrar pagamento.', 'error');
+        }
+    };
 
     const toggleSelection = (id: string) => {
         setSelectedIds((prev) =>
@@ -103,6 +131,11 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             const propertyMatch =
                 propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
             const statusMatch = statusFilter === 'all' || res.status === statusFilter;
+            const flatMatch =
+                flatFilter === 'all' ||
+                (flatFilter === 'lili'
+                    ? (res.propertyId || 'lili') === 'lili'
+                    : res.flatNumber === flatFilter);
 
             let dateMatch = true;
             if (dateRange.start || dateRange.end) {
@@ -116,7 +149,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 }
             }
 
-            return (nameMatch || notesMatch) && propertyMatch && statusMatch && dateMatch;
+            return (nameMatch || notesMatch) && propertyMatch && statusMatch && flatMatch && dateMatch;
         });
 
         const leavingTodayArr: Reservation[] = [];
@@ -137,10 +170,21 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             }
         });
 
-        leavingTodayArr.sort((a, b) => a.guestName.localeCompare(b.guestName));
-        stayingArr.sort((a, b) => (a.checkoutDate ?? '').localeCompare(b.checkoutDate ?? ''));
-        upcomingArr.sort((a, b) => (a.checkInDate ?? '').localeCompare(b.checkInDate ?? ''));
-        historyListArr.sort((a, b) => (b.checkoutDate ?? '').localeCompare(a.checkoutDate ?? ''));
+        const sortByFlatNumber = (a: Reservation, b: Reservation) => {
+            const getFlatNum = (res: Reservation) => {
+                if ((res.propertyId || 'lili') === 'lili') return 0;
+                const num = parseInt(res.flatNumber || '0', 10);
+                return isNaN(num) ? 9999 : num;
+            };
+            const diff = getFlatNum(a) - getFlatNum(b);
+            if (diff !== 0) return diff;
+            return (a.checkInDate || '').localeCompare(b.checkInDate || '');
+        };
+
+        leavingTodayArr.sort(sortByFlatNumber);
+        stayingArr.sort(sortByFlatNumber);
+        upcomingArr.sort(sortByFlatNumber);
+        historyListArr.sort(sortByFlatNumber);
 
         interface HistoryGroup {
             label: string;
@@ -182,6 +226,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         searchTerm,
         propertyFilter,
         statusFilter,
+        flatFilter,
         dateRange,
     ]);
 
@@ -215,7 +260,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         if (!res.id) return;
         const link = getLinkForReservation(res);
         const defaultTemplate = `Olá, {guestName}! 👋\n\nPreparei um Guia Digital exclusivo para sua estadia no Flat. 📲\n\nAqui você encontra instruções e um passo a passo (com vídeos 🎥) de como entrar no flat sem dificuldade e ter uma estadia maravilhosa. ✨\n\nAlém disso, em caso de dúvidas, você pode clicar no ícone laranja 🟠 e conversar com uma Inteligência Artificial totalmente personalizada que sabe tudo (ou quase! 🤖) do nosso flat e Petrolina em geral.\n\n👇 Acesse aqui:\n{link}`;
-        const template = settings.data.messageTemplates?.invite || defaultTemplate;
+        const template = settings?.data?.messageTemplates?.invite || defaultTemplate;
         const message = formatMessage(template, res, link);
         const phone = res.guestPhone ? res.guestPhone : '';
         const whatsappUrl = phone
@@ -231,11 +276,11 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         let message = '';
         if (type === 'checkin') {
             const defaultTemplate = `Olá, {guestName}! Tudo pronto para sua chegada amanhã? ✈️\n\nJá deixei tudo preparado no seu Guia Digital (Senha da porta, Wi-Fi e Localização).\n\nAcesse aqui: {link}\n\nQualquer dúvida, estou por aqui!`;
-            const template = settings.data.messageTemplates?.checkin || defaultTemplate;
+            const template = settings?.data?.messageTemplates?.checkin || defaultTemplate;
             message = formatMessage(template, res, link);
         } else {
             const defaultTemplate = `Oi, {guestName}! Espero que a estadia esteja sendo ótima. 🌵\n\nComo seu check-out é amanhã, deixei as instruções de saída facilitadas aqui no guia: {link}\n\nBoa viagem de volta!`;
-            const template = settings.data.messageTemplates?.checkout || defaultTemplate;
+            const template = settings?.data?.messageTemplates?.checkout || defaultTemplate;
             message = formatMessage(template, res, link);
         }
         const whatsappUrl = phone
@@ -253,6 +298,30 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     const handleOpenInspection = (res: Reservation) => {
         setInspectionReservation(res);
         setInspectionModalOpen(true);
+    };
+
+    const handleSaveInspection = async (
+        reservationId: string,
+        type: InspectionType,
+        inspectionData: SavedInspectionData
+    ) => {
+        try {
+            const fieldToUpdate =
+                type === 'pre_checkin' ? 'preCheckInInspection' : 'postCheckOutInspection';
+            await updateReservation(reservationId, {
+                [fieldToUpdate]: inspectionData,
+            });
+            setInspectionReservation((prev) =>
+                prev ? { ...prev, [fieldToUpdate]: inspectionData } : null
+            );
+            showToast(
+                `Vistoria ${type === 'pre_checkin' ? 'PRÉ Check-in' : 'PÓS Check-out'} salva na reserva!`,
+                'success'
+            );
+        } catch (error) {
+            console.error('Erro ao salvar vistoria na reserva:', error);
+            showToast('Erro ao salvar vistoria na reserva', 'error');
+        }
     };
 
     const handleExportCSV = () => {
@@ -306,11 +375,18 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
 
     const handleClearFilters = () => {
         setStatusFilter('all');
+        setFlatFilter('all');
+        setPropertyFilter('all');
         setDateRange({ start: '', end: '', type: 'checkin' });
+        setSearchTerm('');
     };
 
     const hasActiveFilters =
-        statusFilter !== 'all' || dateRange.start !== '' || dateRange.end !== '';
+        statusFilter !== 'all' ||
+        flatFilter !== 'all' ||
+        dateRange.start !== '' ||
+        dateRange.end !== '' ||
+        propertyFilter !== 'all';
 
     const handleBulkDelete = () => {
         if (window.confirm(`Deseja excluir ${selectedIds.length} reservas?`)) {
@@ -320,7 +396,31 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     };
 
     return (
-        <div className="p-6 lg:p-8 space-y-6">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn">
+            {/* Executive Section Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-stone-900 via-stone-850 to-stone-950 text-white p-6 sm:p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-stone-800">
+                <div className="relative z-10 space-y-1">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold text-[11px] uppercase tracking-widest font-heading mb-2">
+                        <Search size={14} className="text-amber-400" /> Gestão Completa de Hóspedes
+                    </div>
+                    <h2 className="text-2xl sm:text-4xl font-extrabold font-heading text-white tracking-tight">
+                        Central de Reservas
+                    </h2>
+                    <p className="text-stone-400 text-xs sm:text-sm font-medium">
+                        Acompanhe check-ins, hospedados, vistorias e faturamento em tempo real.
+                    </p>
+                </div>
+                <div className="relative z-10 flex items-center gap-3 self-start sm:self-auto shrink-0 flex-wrap">
+                    <div className="px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold font-heading flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        {staying.length} Hospedados Agora
+                    </div>
+                    <div className="px-4 py-2 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs font-bold font-heading">
+                        {leavingToday.length} Saindo Hoje
+                    </div>
+                </div>
+            </div>
+
             <FilterBar
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
@@ -339,6 +439,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 showFilters={showFilters}
                 statusFilter={statusFilter}
                 setStatusFilter={setStatusFilter}
+                flatFilter={flatFilter}
+                setFlatFilter={setFlatFilter}
                 dateRange={dateRange}
                 setDateRange={setDateRange}
             />
@@ -365,6 +467,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onShareWhatsApp={handleShareListWhatsApp}
                     onSendReminder={sendReminder}
                     onOpenInspection={handleOpenInspection}
+                    onQuickView={(res) => setQuickViewReservation(res)}
+                    onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
                 />
 
                 <ReservationSection
@@ -382,6 +486,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onShareWhatsApp={handleShareListWhatsApp}
                     onSendReminder={sendReminder}
                     onOpenInspection={handleOpenInspection}
+                    onQuickView={(res) => setQuickViewReservation(res)}
+                    onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
                 />
 
                 <ReservationSection
@@ -400,6 +506,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onShareWhatsApp={handleShareListWhatsApp}
                     onSendReminder={sendReminder}
                     onOpenInspection={handleOpenInspection}
+                    onQuickView={(res) => setQuickViewReservation(res)}
+                    onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
                 />
 
                 <HistorySection
@@ -420,6 +528,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onShareWhatsApp={handleShareListWhatsApp}
                     onSendReminder={sendReminder}
                     onOpenInspection={handleOpenInspection}
+                    onQuickView={(res) => setQuickViewReservation(res)}
                 />
 
                 {activeReservations.length === 0 && historyReservations.length === 0 && (
@@ -433,9 +542,35 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             <InspectionModal
                 isOpen={inspectionModalOpen}
                 onClose={() => setInspectionModalOpen(false)}
+                reservation={inspectionReservation}
                 reservationName={inspectionReservation?.guestName || ''}
                 unitNumber={inspectionReservation?.flatNumber}
-                checklistItems={settings.data.checklist || []}
+                propertyId={
+                    (inspectionReservation?.propertyId as PropertyId) || 'integracao'
+                }
+                checklistItems={settings?.data?.checklist || []}
+                onSaveInspection={handleSaveInspection}
+            />
+
+            <ReservationQuickViewModal
+                isOpen={Boolean(quickViewReservation)}
+                onClose={() => setQuickViewReservation(null)}
+                reservation={quickViewReservation}
+                onEdit={(res) => {
+                    setQuickViewReservation(null);
+                    handleStartEdit(res);
+                }}
+                onOpenPaymentModal={(res) => {
+                    setQuickViewReservation(null);
+                    setPaymentModalReservation(res);
+                }}
+            />
+
+            <PaymentRegistrationModal
+                isOpen={Boolean(paymentModalReservation)}
+                onClose={() => setPaymentModalReservation(null)}
+                reservation={paymentModalReservation}
+                onConfirmPayment={handleConfirmPayment}
             />
         </div>
     );

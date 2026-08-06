@@ -15,22 +15,41 @@ import {
     writeBatch,
 } from 'firebase/firestore';
 import { getFirestoreInstance, cleanData, getFromCache, saveToCache } from './config';
-import { PlaceRecommendation } from '../../types';
+import { PlaceRecommendation, PropertyId } from '../../types';
 import { logger } from '../../utils/logger';
 import { mapFirestoreDocs } from './mappers';
 
-export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecommendation[]> => {
+/**
+ * Filtro defensivo para manter 100% de compatibilidade retroativa:
+ * Retorna itens sem propertyId (legados), marcados como 'all', ou pertencentes ao tenant específico.
+ */
+export const filterPlacesByProperty = (
+    places: PlaceRecommendation[],
+    propertyId?: PropertyId
+): PlaceRecommendation[] => {
+    if (!propertyId) return places;
+    return places.filter(
+        (p) => !p.propertyId || p.propertyId === 'all' || p.propertyId === propertyId
+    );
+};
+
+export const getDynamicPlaces = async (
+    forceRefresh = false,
+    propertyId?: PropertyId
+): Promise<PlaceRecommendation[]> => {
+    const cacheKey = propertyId ? `cached_places_${propertyId}` : 'cached_places';
     if (!forceRefresh) {
-        const cachedData = getFromCache<PlaceRecommendation[]>('cached_places');
+        const cachedData = getFromCache<PlaceRecommendation[]>(cacheKey);
         if (cachedData) return cachedData;
     }
 
     try {
         const db = await getFirestoreInstance();
         const querySnapshot = await getDocs(collection(db, 'places'));
-        const data = mapFirestoreDocs<PlaceRecommendation>(querySnapshot);
+        const allData = mapFirestoreDocs<PlaceRecommendation>(querySnapshot);
+        const data = filterPlacesByProperty(allData, propertyId);
 
-        saveToCache('cached_places', data);
+        saveToCache(cacheKey, data);
         return data;
     } catch (error) {
         logger.error('Erro ao buscar locais:', { error });
@@ -38,14 +57,18 @@ export const getDynamicPlaces = async (forceRefresh = false): Promise<PlaceRecom
     }
 };
 
-export const subscribeToPlaces = async (callback: (places: PlaceRecommendation[]) => void) => {
+export const subscribeToPlaces = async (
+    callback: (places: PlaceRecommendation[]) => void,
+    propertyId?: PropertyId
+) => {
     const db = await getFirestoreInstance();
     const q = query(collection(db, 'places'));
     return onSnapshot(
         q,
         (snapshot) => {
-            const data = mapFirestoreDocs<PlaceRecommendation>(snapshot);
-            callback(data);
+            const allData = mapFirestoreDocs<PlaceRecommendation>(snapshot);
+            const filteredData = filterPlacesByProperty(allData, propertyId);
+            callback(filteredData);
         },
         (error) => {
             logger.error('Erro no listener de locais:', { error });

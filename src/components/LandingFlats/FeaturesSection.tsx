@@ -70,7 +70,7 @@ const FeaturesSection: React.FC = () => {
                         Comodidades & Estrutura
                     </span>
                     <h2 className="text-4xl md:text-6xl font-heading font-light text-white leading-[1.1] mb-8">
-                        O Melhor Flat em Petrolina <br />
+                        O Melhor Flat em Petrolina{" "}<br />
                         <span className="italic font-serif text-stone-500">para Sua Estadia</span>
                     </h2>
                     <div className="w-24 h-px bg-gradient-to-r from-orange-500 to-transparent"></div>

@@ -90,7 +90,7 @@ const LocationSection: React.FC = () => {
                         Localização
                     </span>
                     <h2 className="text-4xl lg:text-5xl font-heading font-light text-white mb-8 leading-none">
-                        Petrolina <br />
+                        Petrolina{" "}<br />
                         <span className="italic font-serif text-stone-400">Centro</span>
                     </h2>
 
@@ -106,7 +106,7 @@ const LocationSection: React.FC = () => {
                     </div>
 
                     <a
-                        href="https://maps.app.goo.gl/cjGLg5TvgFE9mn2M7"
+                        href="https://maps.app.goo.gl/sdcm2s9nYXXbew796"
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-3 text-white font-bold uppercase text-xs tracking-widest hover:gap-6 transition-all duration-300 group mt-auto"

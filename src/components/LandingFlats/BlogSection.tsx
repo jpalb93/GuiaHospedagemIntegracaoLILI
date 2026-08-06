@@ -84,6 +84,9 @@ const BlogSection: React.FC = () => {
                             <img
                                 src="/assets/blog/vapor-do-vinho-montagem.webp"
                                 alt="Roteiro do Vinho em Petrolina"
+                                width={600}
+                                height={400}
+                                loading="lazy"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
@@ -113,6 +116,9 @@ const BlogSection: React.FC = () => {
                             <img
                                 src="/assets/blog/bododromo-petrolina.webp"
                                 alt="Complexo Gastronômico Bodódromo"
+                                width={600}
+                                height={400}
+                                loading="lazy"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
@@ -142,6 +148,9 @@ const BlogSection: React.FC = () => {
                             <img
                                 src="/assets/blog/rio-sao-francisco-rodeadouro.webp"
                                 alt="Ilha do Rodeadouro"
+                                width={600}
+                                height={400}
+                                loading="lazy"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
@@ -170,6 +179,9 @@ const BlogSection: React.FC = () => {
                             <img
                                 src="/assets/gallery/gallery-5.webp"
                                 alt="Hospedagem Corporativa"
+                                width={600}
+                                height={400}
+                                loading="lazy"
                                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">

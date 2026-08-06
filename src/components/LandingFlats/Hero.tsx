@@ -101,7 +101,7 @@ const Hero: React.FC = () => {
                 <div ref={textRef} className="max-w-4xl text-center md:text-left flex flex-col items-center md:items-start">
                     <div className="flex items-center justify-center md:justify-start gap-4 mb-6">
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-tight tracking-tight drop-shadow-lg">
-                            Hospedagem em Petrolina <br />
+                            Hospedagem em Petrolina{" "}<br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
                                 por Temporada
                             </span>

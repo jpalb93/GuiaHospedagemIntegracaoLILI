@@ -67,7 +67,9 @@ export const getReservation = async (id: string): Promise<Reservation | null> =>
 };
 
 export const updateReservation = async (id: string, data: Partial<Reservation>) => {
-    const { id: _discard, ...updateData } = data as Record<string, unknown>;
+    // Não sobrescrever id/createdAt; remover undefined (Firestore rejeita)
+    const { id: _discard, createdAt: _createdAt, ...rest } = data as Record<string, unknown>;
+    const updateData = cleanData(rest);
     const db = await getFirestoreInstance();
     await updateDoc(doc(db, 'reservations', id), updateData);
 

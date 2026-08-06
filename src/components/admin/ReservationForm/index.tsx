@@ -1,10 +1,23 @@
 import React from 'react';
-import { X, Eraser, Sparkles, Loader2, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+    X,
+    Eraser,
+    Sparkles,
+    Loader2,
+    Save,
+    CheckCircle2,
+    AlertCircle,
+    User,
+    CalendarDays,
+    DollarSign,
+    FileText,
+} from 'lucide-react';
 import Button from '../../ui/Button';
 import {
     PropertyId,
     UserPermission,
     PaymentMethod,
+    PaymentStatus,
     Reservation,
     ReservationTemplate,
 } from '../../../types';
@@ -13,6 +26,7 @@ import {
 import GuestInfoSection from './GuestInfoSection';
 import PropertySection from './PropertySection';
 import DatesSection from './DatesSection';
+import PaymentSection from './PaymentSection';
 import AlertSection from './AlertSection';
 import NotesSection from './NotesSection';
 import TemplateManager from './TemplateManager';
@@ -51,6 +65,12 @@ interface ReservationFormProps {
         setGuestCount: (v: number) => void;
         paymentMethod: PaymentMethod | '';
         setPaymentMethod: (v: PaymentMethod | '') => void;
+        paymentStatus: PaymentStatus | '';
+        setPaymentStatus: (v: PaymentStatus) => void;
+        totalAmount: number | '';
+        setTotalAmount: (v: number | '') => void;
+        depositAmount: number | '';
+        setDepositAmount: (v: number | '') => void;
         guestRating: number;
         setGuestRating: (v: number) => void;
         guestFeedback: string;
@@ -115,32 +135,38 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     };
 
     return (
-        <div className="p-8 space-y-6 relative">
+        <div className="p-4 md:p-8 space-y-6 relative max-w-4xl mx-auto">
+            {/* BOTÃO LIMPAR / CANCELAR */}
             <button
                 onClick={resetForm}
-                className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
+                className="absolute top-4 right-4 md:top-8 md:right-8 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
                 title="Limpar/Cancelar"
             >
-                {editingId ? <X size={18} className="text-red-500" /> : <Eraser size={18} />}
+                {editingId ? <X size={20} className="text-red-500" /> : <Eraser size={20} />}
             </button>
 
+            {/* BANNER IA CONCIERGE OU EDIÇÃO */}
             {editingId ? (
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/30">
-                    <Sparkles size={14} /> Você está editando a reserva de{' '}
-                    <strong>{form.guestName}</strong>.
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3.5 rounded-2xl flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    <Sparkles size={16} className="text-blue-500 animate-pulse" /> Você está editando a reserva de{' '}
+                    <strong className="underline">{form.guestName}</strong>.
                 </div>
             ) : (
                 <div className="flex gap-2">
                     <div
-                        className={`p-3 flex-1 rounded-2xl border flex items-center gap-3 text-xs ${apiKeyStatus === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400' : 'bg-red-50 border-red-200 text-red-700'}`}
+                        className={`p-3.5 flex-1 rounded-2xl border flex items-center gap-3 text-xs font-bold ${
+                            apiKeyStatus === 'ok'
+                                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+                                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
+                        }`}
                     >
                         {apiKeyStatus === 'ok' ? (
-                            <CheckCircle2 size={16} />
+                            <CheckCircle2 size={18} className="text-green-500" />
                         ) : (
-                            <AlertCircle size={16} />
+                            <AlertCircle size={18} className="text-red-500" />
                         )}
-                        <span className="font-bold">
-                            {apiKeyStatus === 'ok' ? 'IA Concierge Ativa' : 'IA Inativa'}
+                        <span>
+                            {apiKeyStatus === 'ok' ? 'IA Concierge Ativa (Atendimento Automático)' : 'IA Inativa'}
                         </span>
                     </div>
 
@@ -155,67 +181,108 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                 </div>
             )}
 
-            <GuestInfoSection
-                guestName={form.guestName}
-                setGuestName={form.setGuestName}
-                guestPhone={form.guestPhone}
-                setGuestPhone={form.setGuestPhone}
-                previousGuests={previousGuests}
-            />
+            {/* CARD 1 — IDENTIFICAÇÃO DO HÓSPEDE */}
+            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <User size={16} className="text-orange-500" /> 1. Quem é o Hóspede?
+                </div>
+                <GuestInfoSection
+                    guestName={form.guestName}
+                    setGuestName={form.setGuestName}
+                    guestPhone={form.guestPhone}
+                    setGuestPhone={form.setGuestPhone}
+                    previousGuests={previousGuests}
+                />
+            </div>
 
-            <PropertySection
-                propertyId={form.propertyId}
-                setPropertyId={form.setPropertyId}
-                flatNumber={form.flatNumber}
-                setFlatNumber={form.setFlatNumber}
-                lockCode={form.lockCode}
-                setLockCode={form.setLockCode}
-                guestCount={form.guestCount}
-                setGuestCount={form.setGuestCount}
-                paymentMethod={form.paymentMethod}
-                setPaymentMethod={form.setPaymentMethod}
-                editingId={editingId}
-                userPermission={userPermission}
-            />
+            {/* CARD 2 — ESTADIA, DATAS & DISPONIBILIDADE DO FLAT */}
+            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <CalendarDays size={16} className="text-orange-500" /> 2. Datas & Escolha do Flat
+                </div>
 
-            <DatesSection
-                checkInDate={form.checkInDate}
-                setCheckInDate={form.setCheckInDate}
-                checkoutDate={form.checkoutDate}
-                setCheckoutDate={form.setCheckoutDate}
-                checkInTime={form.checkInTime}
-                setCheckInTime={form.setCheckInTime}
-                checkOutTime={form.checkOutTime}
-                setCheckOutTime={form.setCheckOutTime}
-            />
+                {/* 1. SELEÇÃO DE DATAS DE CHECK-IN E CHECKOUT */}
+                <DatesSection
+                    checkInDate={form.checkInDate}
+                    setCheckInDate={form.setCheckInDate}
+                    checkoutDate={form.checkoutDate}
+                    setCheckoutDate={form.setCheckoutDate}
+                    checkInTime={form.checkInTime}
+                    setCheckInTime={form.setCheckInTime}
+                    checkOutTime={form.checkOutTime}
+                    setCheckOutTime={form.setCheckOutTime}
+                />
 
-            <AlertSection
-                guestName={form.guestName}
-                guestAlertActive={form.guestAlertActive}
-                setGuestAlertActive={form.setGuestAlertActive}
-                guestAlertText={form.guestAlertText}
-                setGuestAlertText={form.setGuestAlertText}
-            />
+                {/* 2. DISPONIBILIDADE EM TEMPO REAL, PROPRIEDADE E SELEÇÃO DE FLAT */}
+                <PropertySection
+                    propertyId={form.propertyId}
+                    setPropertyId={form.setPropertyId}
+                    flatNumber={form.flatNumber}
+                    setFlatNumber={form.setFlatNumber}
+                    lockCode={form.lockCode}
+                    setLockCode={form.setLockCode}
+                    guestCount={form.guestCount}
+                    setGuestCount={form.setGuestCount}
+                    checkInDate={form.checkInDate}
+                    checkoutDate={form.checkoutDate}
+                    reservations={previousGuests}
+                    editingId={editingId}
+                    userPermission={userPermission}
+                />
+            </div>
 
-            <NotesSection
-                propertyId={form.propertyId}
-                welcomeMessage={form.welcomeMessage}
-                setWelcomeMessage={form.setWelcomeMessage}
-                adminNotes={form.adminNotes}
-                setAdminNotes={form.setAdminNotes}
-                guestRating={form.guestRating}
-                setGuestRating={form.setGuestRating}
-                guestFeedback={form.guestFeedback}
-                setGuestFeedback={form.setGuestFeedback}
-            />
+            {/* CARD 3 — FINANCEIRO & PAGAMENTO */}
+            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <DollarSign size={16} className="text-green-500" /> 3. Valor & Pagamento
+                </div>
+                <PaymentSection
+                    paymentMethod={form.paymentMethod}
+                    setPaymentMethod={form.setPaymentMethod}
+                    paymentStatus={form.paymentStatus}
+                    setPaymentStatus={form.setPaymentStatus}
+                    totalAmount={form.totalAmount}
+                    setTotalAmount={form.setTotalAmount}
+                    depositAmount={form.depositAmount}
+                    setDepositAmount={form.setDepositAmount}
+                />
+            </div>
 
-            <DangerZone
-                editingId={editingId}
-                manualDeactivation={form.manualDeactivation}
-                setManualDeactivation={form.setManualDeactivation}
-                handleSaveReservation={handleSaveReservation}
-            />
+            {/* CARD 4 — OBSERVAÇÕES & ALERTAS DO GUIA */}
+            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <FileText size={16} className="text-purple-500" /> 4. Observações & Alertas do Guia
+                </div>
 
+                <AlertSection
+                    guestName={form.guestName}
+                    guestAlertActive={form.guestAlertActive}
+                    setGuestAlertActive={form.setGuestAlertActive}
+                    guestAlertText={form.guestAlertText}
+                    setGuestAlertText={form.setGuestAlertText}
+                />
+
+                <NotesSection
+                    propertyId={form.propertyId}
+                    welcomeMessage={form.welcomeMessage}
+                    setWelcomeMessage={form.setWelcomeMessage}
+                    adminNotes={form.adminNotes}
+                    setAdminNotes={form.setAdminNotes}
+                    guestRating={form.guestRating}
+                    setGuestRating={form.setGuestRating}
+                    guestFeedback={form.guestFeedback}
+                    setGuestFeedback={form.setGuestFeedback}
+                />
+
+                <DangerZone
+                    editingId={editingId}
+                    manualDeactivation={form.manualDeactivation}
+                    setManualDeactivation={form.setManualDeactivation}
+                    handleSaveReservation={handleSaveReservation}
+                />
+            </div>
+
+            {/* BOTÃO PRINCIPAL DE SALVAR */}
             <Button
                 onClick={() => handleSaveReservation()}
                 disabled={isSaving}
@@ -226,14 +293,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     ) : editingId ? (
                         <Save size={20} />
                     ) : (
-                        <Sparkles className="text-yellow-400" />
+                        <Sparkles className="text-yellow-400 animate-pulse" />
                     )
                 }
-                className={`py-4 text-lg shadow-xl ${editingId ? 'bg-orange-500' : 'bg-gray-900 dark:bg-white dark:text-gray-900'}`}
+                className={`py-4 text-base font-extrabold rounded-2xl shadow-xl transition-all ${
+                    editingId
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                        : 'bg-gray-900 hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
+                }`}
             >
-                {isSaving ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Gerar Magic Link'}
+                {isSaving ? 'Salvando...' : editingId ? 'Salvar Alterações da Reserva' : '⚡ Salvar Reserva & Gerar Guia Digital'}
             </Button>
 
+            {/* AÇÕES DE LINK GERADO */}
             <GeneratedLinkActions
                 generatedLink={generatedLink}
                 editingId={editingId}

@@ -1,9 +1,6 @@
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { z } from 'zod';
 
-export const config = {
-    runtime: 'edge',
-};
 
 // Whitelist de origens permitidas (sincronizada com _utils.ts)
 const ALLOWED_ORIGINS = [

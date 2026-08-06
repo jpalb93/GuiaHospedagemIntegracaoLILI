@@ -76,6 +76,12 @@ export const useAdminDashboard = () => {
         setGuestCount,
         paymentMethod,
         setPaymentMethod,
+        paymentStatus,
+        setPaymentStatus,
+        totalAmount,
+        setTotalAmount,
+        depositAmount,
+        setDepositAmount,
         shortId,
         manualDeactivation,
         setManualDeactivation,
@@ -287,11 +293,10 @@ export const useAdminDashboard = () => {
             const finalShortId = editingId && shortId ? shortId : generateShortId();
 
             const formValues = getFormValues();
-            const payload: Reservation = {
+            const payload = {
                 ...formValues,
                 ...overrides, // Apply overrides here (e.g. manualDeactivation: true)
-                status: 'active',
-                createdAt: '',
+                status: 'active' as const,
                 shortId: finalShortId,
                 paymentMethod: (overrides?.paymentMethod ?? formValues.paymentMethod) as
                     | 'pix'
@@ -303,11 +308,15 @@ export const useAdminDashboard = () => {
             };
 
             if (editingId) {
+                // Não envia createdAt — preserva a data original no Firestore
                 await updateReservation(editingId, payload);
                 showToast('Reserva atualizada com sucesso!', 'success');
                 resetReservationForm();
             } else {
-                await saveReservation(payload);
+                await saveReservation({
+                    ...payload,
+                    createdAt: new Date().toISOString(),
+                });
                 const baseUrl = window.location.origin + '/';
                 // LINK BONITO: domain.com/ABC1234
                 const link = `${baseUrl}${finalShortId}`;
@@ -398,6 +407,12 @@ export const useAdminDashboard = () => {
             setGuestCount,
             paymentMethod,
             setPaymentMethod,
+            paymentStatus,
+            setPaymentStatus,
+            totalAmount,
+            setTotalAmount,
+            depositAmount,
+            setDepositAmount,
             guestRating,
             setGuestRating,
             guestFeedback,
