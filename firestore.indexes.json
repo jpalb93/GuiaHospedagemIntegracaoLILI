@@ -1,0 +1,29 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "reservations",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "propertyId", "order": "ASCENDING" },
+                { "fieldPath": "checkoutDate", "order": "ASCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "reservations",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "propertyId", "order": "ASCENDING" },
+                { "fieldPath": "checkoutDate", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "allocations",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "propertyId", "order": "ASCENDING" },
+                { "fieldPath": "status", "order": "ASCENDING" }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

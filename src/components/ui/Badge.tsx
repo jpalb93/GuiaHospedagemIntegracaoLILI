@@ -1,6 +1,6 @@
 import React from 'react';
 
-type BadgeVariant = 'orange' | 'blue' | 'green' | 'yellow' | 'red' | 'gray';
+type BadgeVariant = 'orange' | 'amber' | 'blue' | 'green' | 'yellow' | 'red' | 'gray';
 
 interface BadgeProps {
     variant?: BadgeVariant;
@@ -10,6 +10,7 @@ interface BadgeProps {
 
 const variantClasses: Record<BadgeVariant, string> = {
     orange: 'ui-badge-orange',
+    amber: 'ui-badge-amber',
     blue: 'ui-badge-blue',
     green: 'ui-badge-green',
     yellow: 'ui-badge-yellow',
@@ -17,11 +18,7 @@ const variantClasses: Record<BadgeVariant, string> = {
     gray: 'ui-badge-gray',
 };
 
-export const Badge: React.FC<BadgeProps> = ({
-    variant = 'gray',
-    className = '',
-    children,
-}) => {
+export const Badge: React.FC<BadgeProps> = ({ variant = 'gray', className = '', children }) => {
     return <span className={`${variantClasses[variant]} ${className}`}>{children}</span>;
 };
 

@@ -1,97 +1,35 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
-// GSAP dynamically imported
+import { ChevronDown } from 'lucide-react';
 
 const FAQS = [
     {
-        question: 'A hospedagem nos Flats Integração possui estacionamento?',
-        answer: 'Não possuímos estacionamento privativo nos Flats Integração, mas é comum e seguro estacionar na rua em frente à propriedade no Centro de Petrolina.',
+        question: 'A hospedagem fica no Centro de Petrolina?',
+        answer: 'Sim. Os Flats Integração ficam na R. São José, 475 B, Centro de Petrolina (PE), perto de hospitais, comércio e polos de trabalho.',
     },
     {
-        question: 'Qual a voltagem das tomadas no flat em Petrolina?',
-        answer: 'Em Petrolina a voltagem padrão é 220v. Nossos flats possuem tomadas no padrão brasileiro novo para sua conveniência.',
+        question: 'Tem estacionamento?',
+        answer: 'Não há vaga privativa. No Centro de Petrolina é comum e seguro estacionar na rua em frente à propriedade.',
     },
     {
-        question: 'O flat em Petrolina fica perto de restaurantes e do Bodódromo?',
-        answer: 'Sim, nossos flats em Petrolina estão localizados no Centro, a apenas 5 minutos do famoso Bodódromo e próximos aos melhores restaurantes, farmácias e supermercados.',
+        question: 'Qual a voltagem das tomadas?',
+        answer: 'Em Petrolina o padrão é 220V. As tomadas seguem o padrão brasileiro novo.',
     },
     {
-        question: 'O flat oferece Wi-Fi de alta velocidade para quem viaja a trabalho?',
-        answer: 'Sim, oferecemos internet fibra ótica de alta velocidade em todas as unidades, sendo a escolha ideal de hospedagem em Petrolina para quem precisa trabalhar remotamente com estabilidade.',
+        question: 'Fica perto de restaurantes e do Bodódromo?',
+        answer: 'Sim. A hospedagem fica no Centro, a poucos minutos do Bodódromo e perto de restaurantes, farmácias e supermercados.',
     },
-];
+    {
+        question: 'O Wi-Fi serve para trabalho remoto?',
+        answer: 'Sim. Todas as unidades têm internet fibra de alta velocidade, adequada para reuniões e home office.',
+    },
+] as const;
 
 const FAQSection: React.FC = () => {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const sectionRef = useRef<HTMLElement>(null);
-
-    const toggleFAQ = (index: number) => {
-        setOpenIndex(openIndex === index ? null : index);
-    };
-
-    useEffect(() => {
-        let ctx: any;
-        let mm: any;
-
-        const initGsap = async () => {
-            const [gsapModule, scrollTriggerModule] = await Promise.all([
-                import('gsap'),
-                import('gsap/ScrollTrigger')
-            ]);
-
-            const gsap = gsapModule.default;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            gsap.registerPlugin(ScrollTrigger);
-
-            mm = gsap.matchMedia();
-
-            mm.add('(min-width: 801px)', () => {
-                ctx = gsap.context(() => {
-                    const tl = gsap.timeline({
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top 85%',
-                            toggleActions: 'play none none reverse',
-                        },
-                    });
-
-                    tl.fromTo(
-                        '.faq-header',
-                        { y: 30, opacity: 0 },
-                        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
-                    ).fromTo(
-                        '.faq-item',
-                        { y: 30, opacity: 0 },
-                        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
-                        '-=0.4'
-                    );
-                }, sectionRef);
-            });
-
-            mm.add('(max-width: 800px)', () => {
-                if (sectionRef.current) {
-                    const headers = sectionRef.current.querySelectorAll('.faq-header');
-                    const items = sectionRef.current.querySelectorAll('.faq-item');
-                    headers.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
-                    items.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
-                }
-            });
-        };
-
-        const timer = setTimeout(() => {
-            initGsap();
-        }, 100);
-
-        return () => {
-            clearTimeout(timer);
-            if (ctx) ctx.revert();
-            if (mm) mm.revert();
-        };
-    }, []);
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section ref={sectionRef} className="py-24 bg-stone-950" id="faq">
+        <section className="py-24 md:py-28 bg-stone-950" id="faq">
             <Helmet>
                 <script type="application/ld+json">
                     {JSON.stringify({
@@ -108,59 +46,64 @@ const FAQSection: React.FC = () => {
                     })}
                 </script>
             </Helmet>
-            <div className="container mx-auto px-4 max-w-4xl">
-                <div className="faq-header text-center mb-16">
-                    <span className="text-orange-500 font-bold uppercase tracking-wider text-sm mb-3 flex items-center justify-center gap-2">
-                        <HelpCircle size={18} />
+
+            <div className="max-w-3xl mx-auto px-6 md:px-12">
+                <div className="mb-12 space-y-3">
+                    <p className="text-orange-500 font-heading font-bold text-xs uppercase tracking-[0.2em]">
                         Dúvidas
-                    </span>
-                    <h2 className="text-3xl md:text-5xl font-bold text-white font-heading">
-                        Perguntas Frequentes
+                    </p>
+                    <h2 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
+                        Dúvidas sobre a hospedagem em Petrolina
                     </h2>
                 </div>
 
-                <div className="space-y-4">
-                    {FAQS.map((faq, index) => (
-                        <div
-                            key={index}
-                            className={`faq-item border rounded-2xl overflow-hidden transition-all duration-300 ${openIndex === index
-                                ? 'border-orange-500/30 bg-stone-900 shadow-lg shadow-orange-900/10'
-                                : 'border-stone-800 bg-stone-900/50 hover:bg-stone-900 hover:border-stone-700'
-                                }`}
-                        >
-                            <button
-                                onClick={() => toggleFAQ(index)}
-                                aria-expanded={openIndex === index}
-                                aria-controls={`faq-answer-${index}`}
-                                className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
-                            >
-                                <span
-                                    id={`faq-question-${index}`}
-                                    className={`font-bold text-lg transition-colors ${openIndex === index ? 'text-orange-500' : 'text-stone-300 group-hover:text-white'}`}
+                <div className="divide-y divide-stone-800 border-y border-stone-800">
+                    {FAQS.map((faq, index) => {
+                        const isOpen = openIndex === index;
+                        return (
+                            <div key={faq.question}>
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                                    aria-expanded={isOpen}
+                                    aria-controls={`faq-answer-${index}`}
+                                    className="w-full flex items-start justify-between gap-6 py-5 text-left group"
                                 >
-                                    {faq.question}
-                                </span>
-                                {openIndex === index ? (
-                                    <ChevronUp className="text-orange-500 flex-shrink-0" />
-                                ) : (
-                                    <ChevronDown className="text-stone-500 flex-shrink-0" />
-                                )}
-                            </button>
-                            <div
-                                id={`faq-answer-${index}`}
-                                role="region"
-                                aria-labelledby={`faq-question-${index}`}
-                                className={`transition-all duration-300 ease-in-out overflow-hidden ${openIndex === index
-                                    ? 'max-h-40 opacity-100'
-                                    : 'max-h-0 opacity-0'
+                                    <span
+                                        id={`faq-question-${index}`}
+                                        className={`font-heading font-medium text-base md:text-lg transition-colors ${
+                                            isOpen
+                                                ? 'text-white'
+                                                : 'text-stone-300 group-hover:text-white'
+                                        }`}
+                                    >
+                                        {faq.question}
+                                    </span>
+                                    <ChevronDown
+                                        className={`shrink-0 mt-1 text-stone-500 transition-transform duration-300 ${
+                                            isOpen ? 'rotate-180 text-orange-500' : ''
+                                        }`}
+                                        size={20}
+                                        aria-hidden
+                                    />
+                                </button>
+                                <div
+                                    id={`faq-answer-${index}`}
+                                    role="region"
+                                    aria-labelledby={`faq-question-${index}`}
+                                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                                        isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                                     }`}
-                            >
-                                <div className="p-6 pt-0 text-stone-400 leading-relaxed border-t border-stone-800/50 mt-2">
-                                    {faq.answer}
+                                >
+                                    <div className="overflow-hidden">
+                                        <p className="pb-5 pr-8 text-stone-400 leading-relaxed text-sm md:text-base">
+                                            {faq.answer}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </section>

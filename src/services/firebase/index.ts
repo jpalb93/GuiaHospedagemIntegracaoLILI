@@ -32,9 +32,7 @@ export {
     deleteReservation,
     subscribeToSingleReservation,
     subscribeToActiveReservations,
-    subscribeToFutureReservations,
     fetchHistoryReservations,
-    subscribeToReservations,
 } from './reservations';
 
 // App Settings (Configurações, Hero Images, Sugestões)
@@ -72,6 +70,53 @@ export {
     subscribeToBlockedDates,
     subscribeToFutureBlockedDates,
 } from './blockedDates';
+
+// Corporate B2B
+export {
+    subscribeToCompanies,
+    getCompany,
+    createCompany,
+    updateCompany,
+    archiveCompany,
+    unarchiveCompany,
+    subscribeToContractsByCompany,
+    getContract,
+    createContract,
+    createContractWithAllocations,
+    updateContract,
+    getEndContractChecklist,
+    endContract,
+    subscribeToAllocationsByContract,
+    getAllocationsByCompany,
+    createAllocation,
+    createAllocationsBatch,
+    updateAllocation,
+    endAllocation,
+    deleteAllocation,
+    refreshCompanyActiveFlatCount,
+    subscribeToActiveAllocations,
+} from './corporate';
+
+export {
+    subscribeToInvoicesByCompany,
+    subscribeToInvoicesByContract,
+    getInvoice,
+    generateInvoiceDraft,
+    generateInvoicesBatchForCompetence,
+    issueInvoice,
+    cancelInvoice,
+    registerInvoicePayment,
+    deleteInvoicePayment,
+    subscribeToPaymentsByInvoice,
+    updateInvoiceNf,
+    updateInvoiceDiscount,
+    refreshCompanyOpenBalance,
+    subscribeToOpenInvoices,
+    subscribeToAllInvoices,
+    currentCompetence,
+} from './invoices';
+
+export { logAction, fetchLogs, fetchCompanyActivityLogs } from './logs';
 
 // Storage (Upload de Imagens)
 export { uploadImage } from './storage';

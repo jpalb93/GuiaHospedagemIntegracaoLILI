@@ -72,8 +72,11 @@ export interface PlaceRecommendation {
     propertyId?: PropertyId | 'all'; // Imóvel específico ou 'all' para visibilidade global
 }
 
-export type PaymentMethod = 'pix' | 'money' | 'card';
-export type PaymentStatus = 'paid' | 'partial' | 'pending' | 'external';
+export type PaymentMethod = 'pix' | 'money' | 'card' | 'transfer';
+export type PaymentStatus = 'paid' | 'partial' | 'pending' | 'external' | 'billed'; // cobrado via fatura corporativa (não somar no caixa avulso da reserva)
+
+/** Como a reserva entra no financeiro */
+export type ReservationBillingMode = 'reservation' | 'corporate';
 
 export interface GuestConfig {
     guestName: string;
@@ -89,7 +92,7 @@ export interface GuestConfig {
     wifiPass?: string; // Novo
     guestCount?: number; // Novo: Quantidade de hóspedes
     paymentMethod?: PaymentMethod; // Novo: Forma de pagamento
-    paymentStatus?: PaymentStatus; // paid | partial | pending | external (Airbnb/fora do caixa)
+    paymentStatus?: PaymentStatus; // paid | partial | pending | external | billed
     totalAmount?: number; // Novo: Valor Total da Reserva (R$)
     depositAmount?: number; // Novo: Valor Pago do Sinal / Parcial (R$)
     // NOVOS CAMPOS DE ALERTA ESPECÍFICO
@@ -117,12 +120,22 @@ export interface GuestConfig {
 
     // TIPO DE RESERVA EXTERNA (EX: FLAT 304 CORTESIA/PAGAMENTO DIRETO FORA DO CAIXA)
     isExternal?: boolean;
+
+    // Vínculo corporativo (opcional — reserva avulsa B2C não usa)
+    companyId?: string;
+    contractId?: string;
+    allocationId?: string;
+    /** Sem valor ou 'reservation' = caixa na reserva; 'corporate' = fatura da empresa */
+    billingMode?: ReservationBillingMode;
 }
 
 export interface SavedInspectionData {
     timestamp: string;
     inspectorName?: string;
-    checklistState: Record<string, { status: 'ok' | 'pending' | 'issue'; note?: string; image?: string }>;
+    checklistState: Record<
+        string,
+        { status: 'ok' | 'pending' | 'issue'; note?: string; image?: string }
+    >;
     customItems?: ChecklistItem[];
     /** Itens do checklist padrão removidos só nesta vistoria/reserva */
     excludedItemIds?: string[];
@@ -330,4 +343,146 @@ export interface SystemLog {
     targetName?: string; // Nome legível (ex: "Reserva Fulano")
     details: string;
     timestamp: string; // ISO String
+}
+
+// --- CORPORATIVO B2B (Empresa → Contrato → Alocação → Fatura → Pagamento) ---
+
+export type CompanyStatus = 'active' | 'delinquent' | 'archived';
+export type ContractStatus = 'draft' | 'active' | 'ended' | 'cancelled';
+export type AllocationStatus = 'active' | 'paused' | 'ended';
+export type InvoiceStatus = 'draft' | 'issued' | 'partial' | 'paid' | 'overdue' | 'cancelled';
+export type PricingModel = 'per_unit_monthly' | 'package_monthly' | 'per_night';
+export type ProrationRule = 'daily' | 'full_if_half_month' | 'full_month';
+export type SecurityDepositStatus = 'none' | 'held' | 'returned' | 'withheld';
+
+export interface CompanyContact {
+    name?: string;
+    phone?: string;
+    email?: string;
+}
+
+export interface Company {
+    id?: string;
+    legalName: string;
+    tradeName?: string;
+    /** CNPJ só dígitos */
+    cnpj: string;
+    documentNote?: string;
+    contacts?: {
+        operational?: CompanyContact;
+        billing?: CompanyContact;
+    };
+    billingEmail?: string;
+    notes?: string;
+    status: CompanyStatus;
+    /** Denormalizado — atualizado ao emitir/pagar faturas (fase 2) */
+    openBalance?: number;
+    activeFlatCount?: number;
+    createdAt: string;
+    updatedAt: string;
+    createdBy?: string;
+}
+
+export interface Contract {
+    id?: string;
+    companyId: string;
+    companyName: string;
+    status: ContractStatus;
+    startDate: string;
+    endDate?: string;
+    pricingModel: PricingModel;
+    unitMonthlyPrice?: number;
+    packageMonthlyPrice?: number;
+    nightlyPrice?: number;
+    /** Dia do vencimento (1–28) */
+    billingDay: number;
+    prorationRule: ProrationRule;
+    emitsNf: boolean;
+    nfNotes?: string;
+    securityDeposit?: number;
+    securityDepositStatus?: SecurityDepositStatus;
+    adjustment?: {
+        indexOrPercent: string;
+        nextDate?: string;
+    };
+    notes?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Allocation {
+    id?: string;
+    contractId: string;
+    companyId: string;
+    propertyId: PropertyId;
+    flatNumber?: string;
+    status: AllocationStatus;
+    startDate: string;
+    endDate?: string;
+    monthlyPrice?: number;
+    nightlyPrice?: number;
+    /** Profissional / hóspede da empresa neste flat */
+    guestName?: string;
+    guestPhone?: string;
+    notes?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type InvoiceLineItemType = 'allocation' | 'package' | 'adjustment' | 'extra' | 'credit';
+
+export interface InvoiceLineItem {
+    id: string;
+    type: InvoiceLineItemType;
+    description: string;
+    allocationId?: string;
+    propertyId?: PropertyId;
+    flatNumber?: string;
+    quantity?: number;
+    unitAmount: number;
+    amount: number;
+}
+
+/** Fatura corporativa do ciclo (competência) */
+export interface Invoice {
+    id?: string;
+    companyId: string;
+    companyName: string;
+    contractId: string;
+    /** YYYY-MM */
+    competence: string;
+    issueDate: string;
+    dueDate: string;
+    status: InvoiceStatus;
+    items: InvoiceLineItem[];
+    subtotal: number;
+    discount: number;
+    total: number;
+    amountPaid: number;
+    nf?: {
+        number?: string;
+        issuedAt?: string;
+        amount?: number;
+        urlOrNote?: string;
+    };
+    notes?: string;
+    /** `${contractId}_${competence}` */
+    uniqueKey: string;
+    createdAt: string;
+    updatedAt: string;
+    issuedAt?: string;
+    cancelledAt?: string;
+}
+
+export interface Payment {
+    id?: string;
+    invoiceId?: string;
+    reservationId?: string;
+    companyId?: string;
+    amount: number;
+    method: PaymentMethod;
+    paidAt: string;
+    note?: string;
+    createdAt: string;
+    createdBy?: string;
 }

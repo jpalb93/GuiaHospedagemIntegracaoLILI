@@ -22,7 +22,8 @@ const app = initializeApp(firebaseConfig);
 let dbInstance: Firestore | null = null;
 export const getFirestoreInstance = async (): Promise<Firestore> => {
     if (!dbInstance) {
-        const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } = await import('firebase/firestore');
+        const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } =
+            await import('firebase/firestore');
         dbInstance = initializeFirestore(app, {
             localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
         });
@@ -108,12 +109,31 @@ export const saveToCache = (key: string, data: unknown) => {
 };
 
 // --- HELPER PARA REMOVER UNDEFINED (Firestore não aceita) ---
+/** Remove undefined em qualquer profundidade; objetos/arrays vazios após limpeza também saem. */
 export const cleanData = <T extends object>(data: T): T => {
-    const clean = { ...data } as Record<string, unknown>;
-    Object.keys(clean).forEach((key) => {
-        if (clean[key] === undefined) {
-            delete clean[key];
+    const cleanValue = (value: unknown): unknown => {
+        if (value === undefined) return undefined;
+        if (value === null) return null;
+        if (Array.isArray(value)) {
+            return value.map(cleanValue).filter((item) => item !== undefined);
         }
-    });
-    return clean as unknown as T;
+        if (value instanceof Date) return value;
+        if (typeof value === 'object' && value !== null) {
+            // Não mexer em FieldValue / Timestamp do Firebase
+            const proto = Object.getPrototypeOf(value);
+            if (proto !== Object.prototype && proto !== null) {
+                return value;
+            }
+            const out: Record<string, unknown> = {};
+            Object.entries(value as Record<string, unknown>).forEach(([k, v]) => {
+                const cleaned = cleanValue(v);
+                if (cleaned !== undefined) out[k] = cleaned;
+            });
+            return Object.keys(out).length > 0 ? out : undefined;
+        }
+        return value;
+    };
+
+    const cleaned = cleanValue(data);
+    return (cleaned && typeof cleaned === 'object' ? cleaned : {}) as T;
 };

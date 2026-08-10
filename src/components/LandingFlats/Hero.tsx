@@ -59,7 +59,7 @@ const Hero: React.FC = () => {
         <section
             id="inicio"
             ref={containerRef}
-            className="relative h-[100dvh] md:h-screen min-h-[600px] md:min-h-[700px] w-full overflow-hidden bg-stone-950"
+            className="relative flex-1 min-h-0 w-full overflow-hidden bg-stone-950"
         >
             {/* 
             SEO OTIMIZAÇÃO:
@@ -83,7 +83,7 @@ const Hero: React.FC = () => {
                     <img
                         src="/hero-bg-nova.webp"
                         className="w-full h-full object-cover opacity-60"
-                        alt="Flats Integração hospedagem centro Petrolina PE próximos hospitais"
+                        alt="Hospedagem em Petrolina: Flats Integração no Centro, próximos a hospitais"
                         loading="eager"
                         fetchPriority="high"
                         width="1920"
@@ -97,70 +97,72 @@ const Hero: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent z-10"></div>
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 to-transparent z-10"></div>
 
-            <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center md:items-start relative z-20 pt-24 md:pt-32">
-                <div ref={textRef} className="max-w-4xl text-center md:text-left flex flex-col items-center md:items-start">
-                    <div className="flex items-center justify-center md:justify-start gap-4 mb-6">
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-tight tracking-tight drop-shadow-lg">
-                            Hospedagem em Petrolina{" "}<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
-                                por Temporada
-                            </span>
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 h-full flex flex-col justify-center items-center relative z-20 pt-24 md:pt-32 pb-12 text-center">
+                <div
+                    ref={textRef}
+                    className="max-w-4xl text-center flex flex-col items-center mx-auto"
+                >
+                    <div className="flex flex-col items-center justify-center gap-2 mb-4">
+                        <span className="text-xl sm:text-2xl md:text-3xl font-heading font-semibold text-stone-300 tracking-[0.15em] uppercase drop-shadow-md">
+                            Flats Integração
+                        </span>
+                        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 leading-[1.08] tracking-tight drop-shadow-2xl">
+                            Hospedagem em Petrolina
                         </h1>
                     </div>
-                    <div className="mt-8 mb-12 space-y-6 animate-fade-up flex flex-col items-center md:items-start">
-                        <p className="text-xl md:text-2xl font-light text-stone-400 leading-relaxed max-w-2xl">
-                            Flats completos e mobiliados <br />
-                            no Centro de Petrolina
+                    <div className="mt-6 mb-10 space-y-6 animate-fade-up flex flex-col items-center">
+                        <p className="text-xl md:text-2xl font-light text-stone-300 leading-relaxed max-w-2xl mx-auto drop-shadow-md">
+                            Hospedagem mobiliada no Centro: cozinha, Wi-Fi fibra e
+                            <br className="hidden sm:block" /> melhor custo-benefício que hotel.
+                            Lazer ou empresa.
                         </p>
-                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-4 gap-x-6 md:bg-white/5 md:backdrop-blur-md md:border md:border-white/10 md:px-8 md:py-4 md:rounded-full w-fit">
-                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-[11px] md:text-sm uppercase tracking-[0.2em]">
-                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
-                                Conforto
+                        <div className="flex flex-wrap items-center justify-center gap-y-3 gap-x-6 bg-stone-900/60 backdrop-blur-md border border-white/10 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl sm:rounded-full w-fit mx-auto shadow-xl">
+                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-xs md:text-sm uppercase tracking-[0.2em]">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.6)]"></span>
+                                Economia vs hotel
                             </span>
-                            <span className="hidden md:block text-white/10 text-xl font-thin">|</span>
-                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-[11px] md:text-sm uppercase tracking-[0.2em]">
-                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
-                                Privacidade
+                            <span className="hidden md:block text-white/20 text-xl font-thin">
+                                |
                             </span>
-                            <span className="hidden md:block text-white/10 text-xl font-thin">|</span>
-                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-[11px] md:text-sm uppercase tracking-[0.2em]">
-                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
-                                Localização Privilegiada
+                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-xs md:text-sm uppercase tracking-[0.2em]">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.6)]"></span>
+                                Cozinha + Wi-Fi
+                            </span>
+                            <span className="hidden md:block text-white/20 text-xl font-thin">
+                                |
+                            </span>
+                            <span className="flex items-center gap-2.5 text-stone-200 font-medium text-xs md:text-sm uppercase tracking-[0.2em]">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.6)]"></span>
+                                NF PJ · Mensal
                             </span>
                         </div>
                     </div>
                 </div>
 
-
-
-
-
-                {/* Botões de Ação - Alto Contraste */}
-                {/* CSS Animation: Delay 300ms */}
-                <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+                {/* Dual intent: lazer (WhatsApp) + B2B (cotação) — Centralized CTAs */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 w-full sm:w-auto mx-auto">
                     <a
-                        href="https://wa.me/5587988283273"
+                        href="https://wa.me/5587988283273?text=Ol%C3%A1!%20Quero%20reservar%20um%20flat%20nos%20Flats%20Integra%C3%A7%C3%A3o."
                         target="_blank"
                         rel="noreferrer"
-                        className="group bg-stone-100 hover:bg-white text-stone-950 px-8 py-5 rounded-none text-sm font-medium uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                        className="group bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl text-xs font-heading font-bold uppercase tracking-widest border border-orange-400/60 hover:border-orange-300 transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md active:scale-[0.98] w-full sm:w-auto"
                     >
-                        Reservar Agora
+                        <span>Reservar Agora</span>
                         <ArrowRight
-                            size={18}
+                            size={16}
                             className="group-hover:translate-x-1 transition-transform"
                         />
                     </a>
                     <a
-                        href="#galeria"
-                        className="group bg-transparent border border-white/20 hover:border-white/50 text-stone-300 hover:text-white px-8 py-5 rounded-none text-sm font-medium uppercase tracking-wider transition-all duration-300 flex items-center justify-center hover:bg-white/5"
+                        href="#empresas"
+                        className="group bg-stone-900/90 hover:bg-stone-800 text-stone-200 hover:text-white px-8 py-4 rounded-xl text-xs font-heading font-bold uppercase tracking-widest border border-stone-700 hover:border-orange-500/60 transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98] w-full sm:w-auto"
                     >
-                        Ver Ambientes
+                        Cotação empresas
                     </a>
                 </div>
             </div>
 
-            {/* Indicador de Scroll Minimalista */}
-            <div className="absolute bottom-8 right-8 hidden md:flex items-center gap-4 animate-bounce text-stone-600">
+            <div className="absolute bottom-8 right-8 hidden md:flex items-center gap-4 text-stone-600">
                 <span className="vertical-rl text-xs tracking-widest uppercase rotate-180 writing-mode-vertical">
                     Scroll
                 </span>

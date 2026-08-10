@@ -11,6 +11,7 @@ interface PaymentSectionProps {
     setTotalAmount: (v: number | '') => void;
     depositAmount: number | '';
     setDepositAmount: (v: number | '') => void;
+    isCorporate?: boolean;
 }
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({
@@ -22,10 +23,13 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
     setTotalAmount,
     depositAmount,
     setDepositAmount,
+    isCorporate = false,
 }) => {
     const isExternal = paymentStatus === 'external';
-    const numericTotal = typeof totalAmount === 'number' ? totalAmount : parseFloat(totalAmount) || 0;
-    const numericDeposit = typeof depositAmount === 'number' ? depositAmount : parseFloat(depositAmount) || 0;
+    const numericTotal =
+        typeof totalAmount === 'number' ? totalAmount : parseFloat(totalAmount) || 0;
+    const numericDeposit =
+        typeof depositAmount === 'number' ? depositAmount : parseFloat(depositAmount) || 0;
     const remainingBalance = Math.max(0, numericTotal - numericDeposit);
 
     const handleSelectStatus = (status: PaymentStatus) => {
@@ -36,6 +40,20 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
             setPaymentMethod('');
         }
     };
+
+    if (isCorporate) {
+        return (
+            <div className="p-4 rounded-2xl border border-orange-200 dark:border-orange-900/50 bg-orange-50/60 dark:bg-orange-950/20">
+                <p className="text-sm font-bold text-orange-900 dark:text-orange-200">
+                    Faturado na empresa
+                </p>
+                <p className="text-xs text-orange-800/80 dark:text-orange-300/80 mt-1 leading-relaxed">
+                    O valor desta estadia entra na fatura mensal do contrato. Não registre pagamento
+                    avulso aqui — use Empresas → Faturas.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
@@ -145,7 +163,9 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                             <div className="relative group">
                                 <select
                                     value={paymentMethod}
-                                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod | '')}
+                                    onChange={(e) =>
+                                        setPaymentMethod(e.target.value as PaymentMethod | '')
+                                    }
                                     className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-orange-500 font-bold text-gray-900 dark:text-gray-100 cursor-pointer"
                                 >
                                     <option value="">Não informado</option>
@@ -162,7 +182,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                         <div className="p-4 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl animate-fadeIn space-y-3">
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                 <label className="text-xs font-extrabold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                                    <Sparkles size={14} className="text-amber-500" /> Valor Já Pago de Sinal (R$)
+                                    <Sparkles size={14} className="text-amber-500" /> Valor Já Pago
+                                    de Sinal (R$)
                                 </label>
 
                                 {numericTotal > 0 && (

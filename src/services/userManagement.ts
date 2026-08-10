@@ -1,4 +1,4 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocFromServer } from 'firebase/firestore';
 import { getFirestoreInstance } from './firebase/config';
 import { UserPermission, PropertyId, UserRole } from '../types';
 import { logger } from '../utils/logger';
@@ -9,7 +9,12 @@ export const getUserPermission = async (email: string): Promise<UserPermission |
         const normalizedEmail = email.toLowerCase();
         const db = await getFirestoreInstance();
         const docRef = doc(db, 'admin_users', normalizedEmail);
-        const docSnap = await getDoc(docRef);
+        let docSnap;
+        try {
+            docSnap = await getDocFromServer(docRef);
+        } catch {
+            docSnap = await getDoc(docRef);
+        }
 
         if (docSnap.exists()) {
             const data = docSnap.data();
@@ -44,13 +49,17 @@ export const restoreAdminUser = async (email: string): Promise<boolean> => {
 
         // Force Super Admin for recovery
         await import('firebase/firestore').then(({ setDoc }) =>
-            setDoc(docRef, {
-                email: normalizedEmail,
-                role: 'super_admin',
-                allowedProperties: ['lili', 'integracao'],
-                createdAt: new Date().toISOString(),
-                restoredBy: 'system_rescue'
-            }, { merge: true })
+            setDoc(
+                docRef,
+                {
+                    email: normalizedEmail,
+                    role: 'super_admin',
+                    allowedProperties: ['lili', 'integracao'],
+                    createdAt: new Date().toISOString(),
+                    restoredBy: 'system_rescue',
+                },
+                { merge: true }
+            )
         );
 
         return true;

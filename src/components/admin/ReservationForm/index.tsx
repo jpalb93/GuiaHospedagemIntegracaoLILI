@@ -20,6 +20,7 @@ import {
     PaymentStatus,
     Reservation,
     ReservationTemplate,
+    ReservationBillingMode,
 } from '../../../types';
 
 // Sub-components
@@ -32,6 +33,7 @@ import NotesSection from './NotesSection';
 import TemplateManager from './TemplateManager';
 import DangerZone from './DangerZone';
 import GeneratedLinkActions from './GeneratedLinkActions';
+import CorporateLinkSection from './CorporateLinkSection';
 
 interface ReservationFormProps {
     form: {
@@ -75,6 +77,14 @@ interface ReservationFormProps {
         setGuestRating: (v: number) => void;
         guestFeedback: string;
         setGuestFeedback: (v: string) => void;
+        billingMode: ReservationBillingMode;
+        setBillingMode: (v: ReservationBillingMode) => void;
+        companyId: string;
+        setCompanyId: (v: string) => void;
+        contractId: string;
+        setContractId: (v: string) => void;
+        allocationId: string;
+        setAllocationId: (v: string) => void;
         editingId: string | null;
         handleSaveReservation: (overrides?: Partial<Reservation>) => void;
         resetForm: () => void;
@@ -148,8 +158,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             {/* BANNER IA CONCIERGE OU EDIÇÃO */}
             {editingId ? (
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3.5 rounded-2xl flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                    <Sparkles size={16} className="text-blue-500 animate-pulse" /> Você está editando a reserva de{' '}
-                    <strong className="underline">{form.guestName}</strong>.
+                    <Sparkles size={16} className="text-blue-500 animate-pulse" /> Você está
+                    editando a reserva de <strong className="underline">{form.guestName}</strong>.
                 </div>
             ) : (
                 <div className="flex gap-2">
@@ -166,7 +176,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                             <AlertCircle size={18} className="text-red-500" />
                         )}
                         <span>
-                            {apiKeyStatus === 'ok' ? 'IA Concierge Ativa (Atendimento Automático)' : 'IA Inativa'}
+                            {apiKeyStatus === 'ok'
+                                ? 'IA Concierge Ativa (Atendimento Automático)'
+                                : 'IA Inativa'}
                         </span>
                     </div>
 
@@ -193,12 +205,30 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     setGuestPhone={form.setGuestPhone}
                     previousGuests={previousGuests}
                 />
+
+                <CorporateLinkSection
+                    billingMode={form.billingMode}
+                    setBillingMode={form.setBillingMode}
+                    companyId={form.companyId}
+                    setCompanyId={form.setCompanyId}
+                    contractId={form.contractId}
+                    setContractId={form.setContractId}
+                    allocationId={form.allocationId}
+                    setAllocationId={form.setAllocationId}
+                    setPropertyId={form.setPropertyId}
+                    setFlatNumber={form.setFlatNumber}
+                    setPaymentStatus={form.setPaymentStatus}
+                    setTotalAmount={form.setTotalAmount}
+                    setDepositAmount={form.setDepositAmount}
+                    setPaymentMethod={form.setPaymentMethod}
+                />
             </div>
 
             {/* CARD 2 — ESTADIA, DATAS & DISPONIBILIDADE DO FLAT */}
             <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
                 <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    <CalendarDays size={16} className="text-orange-500" /> 2. Datas & Escolha do Flat
+                    <CalendarDays size={16} className="text-orange-500" /> 2. Datas & Escolha do
+                    Flat
                 </div>
 
                 {/* 1. SELEÇÃO DE DATAS DE CHECK-IN E CHECKOUT */}
@@ -245,13 +275,15 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     setTotalAmount={form.setTotalAmount}
                     depositAmount={form.depositAmount}
                     setDepositAmount={form.setDepositAmount}
+                    isCorporate={form.billingMode === 'corporate'}
                 />
             </div>
 
             {/* CARD 4 — OBSERVAÇÕES & ALERTAS DO GUIA */}
             <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
                 <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    <FileText size={16} className="text-purple-500" /> 4. Observações & Alertas do Guia
+                    <FileText size={16} className="text-purple-500" /> 4. Observações & Alertas do
+                    Guia
                 </div>
 
                 <AlertSection
@@ -302,7 +334,11 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                         : 'bg-gray-900 hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
                 }`}
             >
-                {isSaving ? 'Salvando...' : editingId ? 'Salvar Alterações da Reserva' : '⚡ Salvar Reserva & Gerar Guia Digital'}
+                {isSaving
+                    ? 'Salvando...'
+                    : editingId
+                      ? 'Salvar Alterações da Reserva'
+                      : '⚡ Salvar Reserva & Gerar Guia Digital'}
             </Button>
 
             {/* AÇÕES DE LINK GERADO */}

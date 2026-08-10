@@ -111,34 +111,42 @@ const HistorySection: React.FC<HistorySectionProps> = ({
 
                             {/* Desktop Table */}
                             <div className="hidden md:block overflow-hidden rounded-[1.5rem] border border-stone-200/60 dark:border-gray-700/60">
-                                <table className="w-full text-left bg-white dark:bg-gray-900 border-collapse">
-                                    <tbody className="divide-y divide-stone-100 dark:divide-gray-800">
-                                        {group.items.map((res) => (
-                                            <ReservationTableRow
-                                                key={res.id}
-                                                reservation={res}
-                                                statusLabel="Histórico"
-                                                isCheckinTomorrow={res.checkInDate === tomorrowStr}
-                                                isCheckoutTomorrow={
-                                                    res.checkoutDate === tomorrowStr
-                                                }
-                                                isSelected={
-                                                    res.id ? selectedIds.includes(res.id) : false
-                                                }
-                                                onEdit={() => onEdit(res)}
-                                                onDelete={() => res.id && onDelete(res.id)}
-                                                onCopyLink={() => onCopyLink(res)}
-                                                onShareWhatsApp={() => onShareWhatsApp(res)}
-                                                onSendReminder={(type) => onSendReminder(res, type)}
-                                                onOpenInspection={() => onOpenInspection(res)}
-                                                onToggleSelection={() =>
-                                                    res.id && onToggleSelection(res.id)
-                                                }
-                                                onQuickView={() => onQuickView?.(res)}
-                                            />
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <div className="overflow-x-auto custom-scrollbar">
+                                    <table className="w-full min-w-[900px] text-left bg-white dark:bg-gray-900 border-collapse">
+                                        <tbody className="divide-y divide-stone-100 dark:divide-gray-800">
+                                            {group.items.map((res) => (
+                                                <ReservationTableRow
+                                                    key={res.id}
+                                                    reservation={res}
+                                                    statusLabel="Histórico"
+                                                    isCheckinTomorrow={
+                                                        res.checkInDate === tomorrowStr
+                                                    }
+                                                    isCheckoutTomorrow={
+                                                        res.checkoutDate === tomorrowStr
+                                                    }
+                                                    isSelected={
+                                                        res.id
+                                                            ? selectedIds.includes(res.id)
+                                                            : false
+                                                    }
+                                                    onEdit={() => onEdit(res)}
+                                                    onDelete={() => res.id && onDelete(res.id)}
+                                                    onCopyLink={() => onCopyLink(res)}
+                                                    onShareWhatsApp={() => onShareWhatsApp(res)}
+                                                    onSendReminder={(type) =>
+                                                        onSendReminder(res, type)
+                                                    }
+                                                    onOpenInspection={() => onOpenInspection(res)}
+                                                    onToggleSelection={() =>
+                                                        res.id && onToggleSelection(res.id)
+                                                    }
+                                                    onQuickView={() => onQuickView?.(res)}
+                                                />
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     )}

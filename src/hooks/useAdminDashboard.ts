@@ -39,6 +39,7 @@ export const useAdminDashboard = () => {
         hasMoreHistory,
         loadMoreHistory,
         refreshHistory,
+        refreshActive,
         removeReservation,
     } = useReservations({ userPermission, showToast });
 
@@ -96,6 +97,14 @@ export const useAdminDashboard = () => {
         setGuestRating,
         guestFeedback,
         setGuestFeedback,
+        billingMode,
+        setBillingMode,
+        companyId,
+        setCompanyId,
+        contractId,
+        setContractId,
+        allocationId,
+        setAllocationId,
     } = reservationForm;
 
     // Use extracted blocked dates hook
@@ -122,6 +131,7 @@ export const useAdminDashboard = () => {
         | 'list'
         | 'calendar'
         | 'blocks'
+        | 'companies'
         | 'places'
         | 'tips'
         | 'reviews'
@@ -148,7 +158,7 @@ export const useAdminDashboard = () => {
         title: '',
         message: '',
         isDestructive: false,
-        onConfirm: async () => { },
+        onConfirm: async () => {},
     });
 
     // Reset form wrapper that also resets blocked dates
@@ -199,8 +209,9 @@ export const useAdminDashboard = () => {
                     if (reloadTimeout) clearTimeout(reloadTimeout);
 
                     reloadTimeout = setTimeout(() => {
-                        // Força reload do histórico
+                        // Força reload do histórico e re-subscribe de reservas ativas
                         refreshHistory();
+                        refreshActive();
 
                         // Mostra feedback ao usuário
                         showToast('Dados atualizados', 'info');
@@ -268,6 +279,13 @@ export const useAdminDashboard = () => {
             return;
         }
 
+        if (billingMode === 'corporate') {
+            if (!companyId || !contractId || !allocationId) {
+                showToast('Selecione empresa, contrato e flat do contrato.', 'warning');
+                return;
+            }
+        }
+
         if (!checkInDate || !checkoutDate) {
             showToast('Verifique as datas de entrada e saída.', 'warning');
             return;
@@ -293,32 +311,49 @@ export const useAdminDashboard = () => {
             const finalShortId = editingId && shortId ? shortId : generateShortId();
 
             const formValues = getFormValues();
-            const payload = {
+            const isCorporate = formValues.billingMode === 'corporate';
+            const payload: Record<string, unknown> = {
                 ...formValues,
-                ...overrides, // Apply overrides here (e.g. manualDeactivation: true)
+                ...overrides,
                 status: 'active' as const,
                 shortId: finalShortId,
-                paymentMethod: (overrides?.paymentMethod ?? formValues.paymentMethod) as
-                    | 'pix'
-                    | 'money'
-                    | 'card'
-                    | undefined,
+                paymentMethod: isCorporate
+                    ? null
+                    : (overrides?.paymentMethod ?? formValues.paymentMethod ?? null),
                 manualDeactivation:
                     overrides?.manualDeactivation ?? formValues.manualDeactivation ?? false,
             };
 
+            if (isCorporate) {
+                payload.paymentStatus = 'billed';
+                payload.billingMode = 'corporate';
+                payload.totalAmount = null;
+                payload.depositAmount = null;
+                payload.paymentMethod = null;
+            } else if (editingId) {
+                // Limpa vínculo corporativo se desmarcado na edição
+                payload.companyId = null;
+                payload.contractId = null;
+                payload.allocationId = null;
+                payload.billingMode = 'reservation';
+            }
+
             if (editingId) {
                 // Não envia createdAt — preserva a data original no Firestore
-                await updateReservation(editingId, payload);
+                await updateReservation(editingId, payload as Partial<Reservation>);
                 showToast('Reserva atualizada com sucesso!', 'success');
                 resetReservationForm();
             } else {
-                await saveReservation({
-                    ...payload,
-                    createdAt: new Date().toISOString(),
+                // create: remove nulls via cleanData no saveReservation
+                const createPayload = { ...payload };
+                Object.keys(createPayload).forEach((k) => {
+                    if (createPayload[k] === null) delete createPayload[k];
                 });
+                await saveReservation({
+                    ...(createPayload as Omit<Reservation, 'id'>),
+                    createdAt: new Date().toISOString(),
+                } as Reservation);
                 const baseUrl = window.location.origin + '/';
-                // LINK BONITO: domain.com/ABC1234
                 const link = `${baseUrl}${finalShortId}`;
                 setGeneratedLink(link);
                 showToast('Reserva criada! Link curto gerado.', 'success');
@@ -375,6 +410,8 @@ export const useAdminDashboard = () => {
             loadMoreHistory,
             hasMoreHistory,
             loadingHistory,
+            refreshActive,
+            refreshHistory,
         },
         form: {
             guestName,
@@ -417,6 +454,14 @@ export const useAdminDashboard = () => {
             setGuestRating,
             guestFeedback,
             setGuestFeedback,
+            billingMode,
+            setBillingMode,
+            companyId,
+            setCompanyId,
+            contractId,
+            setContractId,
+            allocationId,
+            setAllocationId,
             editingId,
             handleSaveReservation,
             handleDeleteReservation,

@@ -1,37 +1,47 @@
 import React from 'react';
 import { ArrowRight, MessageCircle } from 'lucide-react';
+import { HOST_PHONE } from '../../constants';
+
+const WA_LINK = `https://wa.me/${HOST_PHONE}?text=${encodeURIComponent(
+    'Olá! Quero reservar um flat direto nos Flats Integração.'
+)}`;
 
 const FinalCTA: React.FC = () => {
     return (
-        <section className="py-20 bg-gray-900 border-t border-gray-800 relative overflow-hidden">
-            {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <section className="py-16 md:py-20 bg-stone-950 relative overflow-hidden">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="container mx-auto px-4 relative z-10 text-center">
-                <h2 className="text-3xl md:text-5xl font-heading font-black text-white mb-8 leading-tight">
-                    Gostou?{" "}<br className="md:hidden" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
-                        Reserve direto e economize.
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 text-center space-y-6">
+                <h2 className="text-3xl md:text-5xl font-heading font-bold text-white leading-tight tracking-tight">
+                    Reserve sua hospedagem em Petrolina
+                    <br className="hidden md:block" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">
+                        {' '}
+                        direto e economize.
                     </span>
                 </h2>
 
-                <div className="flex flex-col items-center gap-6">
-                    <p className="text-gray-400 max-w-lg mx-auto text-lg">
-                        Sem taxas de intermediários. Fale diretamente conosco e garanta sua estadia
-                        com o melhor preço.
-                    </p>
+                <p className="text-stone-300 max-w-xl mx-auto text-base md:text-lg font-light leading-relaxed">
+                    Sem taxas de intermediários. Fale conosco e garanta flats no Centro com o melhor
+                    preço.
+                </p>
 
+                <div className="pt-2 flex justify-center">
                     <a
-                        href="https://wa.me/5587988283273"
+                        href={WA_LINK}
                         target="_blank"
                         rel="noreferrer"
-                        className="group bg-orange-700 hover:bg-orange-800 text-white px-8 py-5 rounded-full text-lg font-medium transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1"
+                        className="group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-400 hover:to-orange-500 text-white px-9 md:px-11 py-4 md:py-4.5 rounded-2xl text-base md:text-lg font-heading font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_8px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_12px_40px_rgba(249,115,22,0.5)] border border-orange-400/50 hover:-translate-y-0.5 active:scale-[0.98]"
                     >
-                        <MessageCircle size={24} />
-                        Reservar pelo WhatsApp
+                        <MessageCircle
+                            size={22}
+                            className="shrink-0 group-hover:scale-110 transition-transform"
+                        />
+                        <span>Reservar pelo WhatsApp</span>
                         <ArrowRight
                             size={20}
-                            className="group-hover:translate-x-1 transition-transform"
+                            className="shrink-0 group-hover:translate-x-1.5 transition-transform duration-300"
                         />
                     </a>
                 </div>

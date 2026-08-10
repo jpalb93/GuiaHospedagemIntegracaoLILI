@@ -22,13 +22,13 @@ const GallerySection: React.FC = () => {
     const closeLightbox = () => setSelectedImage(null);
 
     useEffect(() => {
-        let ctx: any;
-        let mm: any;
+        let ctx: { revert: () => void } | undefined;
+        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
 
         const initGsap = async () => {
             const [gsapModule, scrollTriggerModule] = await Promise.all([
                 import('gsap'),
-                import('gsap/ScrollTrigger')
+                import('gsap/ScrollTrigger'),
             ]);
 
             const gsap = gsapModule.default;
@@ -76,8 +76,14 @@ const GallerySection: React.FC = () => {
                 if (sectionRef.current) {
                     const headers = sectionRef.current.querySelectorAll('.gallery-header');
                     const items = sectionRef.current.querySelectorAll('.gallery-item');
-                    headers.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
-                    items.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                    headers.forEach((el) => {
+                        (el as HTMLElement).style.opacity = '1';
+                        (el as HTMLElement).style.transform = 'translateY(0)';
+                    });
+                    items.forEach((el) => {
+                        (el as HTMLElement).style.opacity = '1';
+                        (el as HTMLElement).style.transform = 'translateY(0)';
+                    });
                 }
             });
         };
@@ -94,30 +100,26 @@ const GallerySection: React.FC = () => {
     }, []);
 
     return (
-        <section
-            ref={sectionRef}
-            id="galeria"
-            className="py-0 bg-stone-950 border-b border-stone-900"
-        >
+        <section ref={sectionRef} id="galeria" className="py-0 bg-stone-950">
             {/* Header com padding, mas galeria sangrada */}
-            <div className="container mx-auto px-8 pt-32 pb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-32 pb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="gallery-header">
                     <span className="text-stone-400 font-bold tracking-widest uppercase text-xs mb-4 block">
-                        TOUR VISUAL
+                        Tour visual
                     </span>
                     <h2 className="text-4xl md:text-6xl font-heading font-black text-white tracking-tighter">
-                        AMBIENTES
+                        Ambientes da hospedagem
                     </h2>
                 </div>
                 <div className="gallery-header">
                     <p className="text-stone-400 max-w-sm text-right text-lg">
-                        Cada detalhe pensado para o seu bem-estar.
+                        Flats mobiliados no Centro de Petrolina: cozinha, quarto e estar.
                     </p>
                 </div>
             </div>
 
             {/* Grid Otimizado para Fotos Verticais */}
-            <div className="container mx-auto px-4 md:px-8 pb-20">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 pb-20">
                 <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {PHOTOS.map((photo, index) => (
                         <button
@@ -128,7 +130,7 @@ const GallerySection: React.FC = () => {
                         >
                             <img
                                 src={photo}
-                                alt={`Ambiente da hospedagem ${index + 1}`}
+                                alt={`Hospedagem em Petrolina: ambiente do flat ${index + 1}`}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter hover:contrast-110 opacity-90 group-hover:opacity-100"
                                 loading="lazy"
                                 width="600"
@@ -148,7 +150,7 @@ const GallerySection: React.FC = () => {
                     onClick={closeLightbox}
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Visualização de imagem"
+                    aria-label="Visualização da hospedagem em Petrolina"
                 >
                     <button
                         onClick={closeLightbox}

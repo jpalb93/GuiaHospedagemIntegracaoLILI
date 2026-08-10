@@ -73,7 +73,7 @@ export const LANDING_LILI_CONTENT = {
             title: 'Cozinha e sala de jantar',
             icon: <Coffee className="text-amber-700" />,
             items: [
-                'Geladeira, Fogão e Microondas',
+                'Frigobar, Fogão e Microondas',
                 'Air Fryer e Liquidificador',
                 'Cafeteira e Sanduicheira',
                 'Purificador de água',

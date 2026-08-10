@@ -9,6 +9,11 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/admin_users/$(request.auth.token.email)).data;
     }
 
+    function isLoggedAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admin_users/$(request.auth.token.email));
+    }
+
     // Verifica se é Super Admin
     function isSuperAdmin() {
       let user = getAdminUser();
@@ -19,6 +24,66 @@ service cloud.firestore {
     function hasPropertyAccess(propertyId) {
       let user = getAdminUser();
       return user != null && (user.role == 'super_admin' || user.allowedProperties.hasAny([propertyId]));
+    }
+
+    // Reservas legadas podem não ter propertyId. Somente o super admin pode
+    // acessá-las até que o imóvel seja definido; reservas modernas continuam
+    // respeitando o isolamento por propriedade.
+    function hasReservationAccess(data) {
+      return ('propertyId' in data && hasPropertyAccess(data.propertyId))
+        || (!('propertyId' in data) && isSuperAdmin());
+    }
+
+    function isValidDate(value) {
+      return value is string
+        && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // O único cadastro público de reserva é o pedido da landing do Flat da Lili.
+    // Campos operacionais, financeiros e corporativos nunca podem ser enviados pelo cliente público.
+    function isValidPublicBooking() {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'guestName', 'guestPhone', 'email', 'propertyId',
+          'checkInDate', 'checkoutDate', 'checkInTime', 'checkOutTime',
+          'guestCount', 'paymentMethod', 'paymentStatus', 'status',
+          'createdAt', 'shortId'
+        ])
+        && data.guestName is string && data.guestName.size() >= 2 && data.guestName.size() <= 120
+        && data.guestPhone is string && data.guestPhone.size() >= 8 && data.guestPhone.size() <= 20
+        && data.email is string && data.email.size() <= 254
+        && data.propertyId == 'lili'
+        && isValidDate(data.checkInDate)
+        && isValidDate(data.checkoutDate)
+        && data.checkInDate < data.checkoutDate
+        && data.status == 'pending'
+        && data.paymentMethod == 'pix'
+        && data.paymentStatus == 'pending'
+        && data.guestCount is int && data.guestCount >= 1 && data.guestCount <= 10
+        && data.shortId is string && data.shortId.size() >= 5 && data.shortId.size() <= 12;
+    }
+
+    function hasValidCorporateLink(data) {
+      return !('billingMode' in data) || data.billingMode == 'reservation'
+        ? !data.keys().hasAny(['companyId', 'contractId', 'allocationId'])
+        : data.billingMode == 'corporate'
+          && data.companyId is string
+          && data.contractId is string
+          && data.allocationId is string
+          && data.propertyId == 'integracao'
+          && data.paymentStatus == 'billed'
+          && !data.keys().hasAny(['totalAmount', 'depositAmount', 'paymentMethod'])
+          && exists(/databases/$(database)/documents/allocations/$(data.allocationId))
+          && get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.companyId == data.companyId
+          && get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.contractId == data.contractId
+          && get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.propertyId == data.propertyId
+          && get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.flatNumber == data.flatNumber
+          && get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.status == 'active'
+          && data.checkInDate >= get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.startDate
+          && (!('endDate' in get(/databases/$(database)/documents/allocations/$(data.allocationId)).data)
+              || data.checkoutDate <= get(/databases/$(database)/documents/allocations/$(data.allocationId)).data.endDate)
+          && exists(/databases/$(database)/documents/contracts/$(data.contractId))
+          && get(/databases/$(database)/documents/contracts/$(data.contractId)).data.status == 'active';
     }
 
     // --- REGRAS ---
@@ -41,25 +106,33 @@ service cloud.firestore {
             && data.propertyId in ['lili', 'integracao'];
       }
 
-      // Hóspede pode criar (com validação de campos obrigatórios)
-      allow create: if isValidReservation();
-      
-      // Atualização: Admin autenticado OU atualização com dados válidos
-      allow update: if request.auth != null && hasPropertyAccess(resource.data.propertyId)
-                    || isValidReservation();
-      
-      // LEITURA PÚBLICA para o calendário da landing page mostrar disponibilidade
-      allow list: if true;
-      allow get: if true;
+      // Admin cria dentro do seu imóvel; a landing cria somente um pedido mínimo e pendente.
+      allow create: if (isLoggedAdmin() && isValidReservation()
+                         && hasPropertyAccess(request.resource.data.propertyId)
+                         && hasValidCorporateLink(request.resource.data))
+                    || isValidPublicBooking();
+
+      // Atualizações administrativas aceitam reservas legadas sem telefone.
+      // Sem propertyId, somente o super admin pode acessar e corrigir o documento.
+      allow update: if isLoggedAdmin()
+                    && hasReservationAccess(resource.data)
+                    && hasReservationAccess(request.resource.data)
+                    && (!('propertyId' in resource.data) || 'propertyId' in request.resource.data)
+                    && hasValidCorporateLink(request.resource.data);
+
+      // O guia usa /api/get-guest-config e a landing usa /api/get-availability.
+      // Documentos completos de reserva nunca são públicos.
+      allow list, get: if isLoggedAdmin()
+                       && hasReservationAccess(resource.data);
       
       // DELETE: APENAS usuários autenticados com permissão
-      allow delete: if request.auth != null && hasPropertyAccess(resource.data.propertyId);
+      allow delete: if isLoggedAdmin()
+                    && hasReservationAccess(resource.data);
     }
 
     // 3. BLOQUEIOS DE DATA
     match /blocked_dates/{document} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if isLoggedAdmin();
     }
     
     // 4. USUÁRIOS ADMIN (Só Super Admin mexe)
@@ -80,6 +153,75 @@ service cloud.firestore {
     match /reviews/{document} { 
       allow read: if true; 
       allow write: if request.auth != null; 
+    }
+
+    // 6. CORPORATIVO B2B — módulo exclusivo do tenant Flats Integração.
+    match /companies/{document} {
+      allow read, write: if isLoggedAdmin() && hasPropertyAccess('integracao');
+    }
+    match /company_identifiers/{document} {
+      allow read, write: if isLoggedAdmin() && hasPropertyAccess('integracao');
+    }
+    match /contracts/{document} {
+      allow read: if isLoggedAdmin() && hasPropertyAccess('integracao');
+      allow create: if isLoggedAdmin()
+                    && hasPropertyAccess('integracao')
+                    && request.resource.data.companyId is string
+                    && existsAfter(/databases/$(database)/documents/companies/$(request.resource.data.companyId));
+      allow update: if isLoggedAdmin()
+                    && hasPropertyAccess('integracao')
+                    && request.resource.data.companyId is string
+                    && existsAfter(/databases/$(database)/documents/companies/$(request.resource.data.companyId));
+    }
+    match /allocations/{document} {
+      allow read: if isLoggedAdmin()
+                  && hasPropertyAccess(resource.data.propertyId);
+      allow create: if isLoggedAdmin()
+                    && hasPropertyAccess(request.resource.data.propertyId)
+                    && request.resource.data.propertyId == 'integracao'
+                    && existsAfter(/databases/$(database)/documents/contracts/$(request.resource.data.contractId))
+                    && getAfter(/databases/$(database)/documents/contracts/$(request.resource.data.contractId)).data.companyId == request.resource.data.companyId;
+      allow update: if isLoggedAdmin()
+                    && hasPropertyAccess(resource.data.propertyId)
+                    && hasPropertyAccess(request.resource.data.propertyId)
+                    && request.resource.data.propertyId == 'integracao'
+                    && exists(/databases/$(database)/documents/contracts/$(request.resource.data.contractId))
+                    && get(/databases/$(database)/documents/contracts/$(request.resource.data.contractId)).data.companyId == request.resource.data.companyId
+                    && (
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['guestName', 'guestPhone', 'notes', 'updatedAt'])
+                      || (
+                        request.resource.data.status == 'ended'
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(['status', 'endDate', 'updatedAt'])
+                      )
+                    );
+      allow delete: if isLoggedAdmin()
+                    && hasPropertyAccess(resource.data.propertyId);
+    }
+    match /allocation_locks/{document} {
+      allow read, write: if isLoggedAdmin() && hasPropertyAccess('integracao');
+    }
+    match /invoices/{document} {
+      allow read, delete: if isLoggedAdmin() && hasPropertyAccess('integracao');
+      allow create: if isLoggedAdmin()
+                    && hasPropertyAccess('integracao')
+                    && exists(/databases/$(database)/documents/contracts/$(request.resource.data.contractId))
+                    && get(/databases/$(database)/documents/contracts/$(request.resource.data.contractId)).data.companyId == request.resource.data.companyId;
+      allow update: if isLoggedAdmin()
+                    && hasPropertyAccess('integracao')
+                    && exists(/databases/$(database)/documents/contracts/$(request.resource.data.contractId))
+                    && get(/databases/$(database)/documents/contracts/$(request.resource.data.contractId)).data.companyId == request.resource.data.companyId;
+    }
+    match /payments/{document} {
+      allow read, delete: if isLoggedAdmin() && hasPropertyAccess('integracao');
+      allow create: if isLoggedAdmin()
+                    && hasPropertyAccess('integracao')
+                    && request.resource.data.invoiceId is string
+                    && exists(/databases/$(database)/documents/invoices/$(request.resource.data.invoiceId));
+    }
+    match /logs/{document} {
+      allow read, write: if isLoggedAdmin();
     }
   }
 }

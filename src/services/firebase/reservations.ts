@@ -7,6 +7,7 @@ import {
     doc,
     getDoc,
     getDocs,
+    getDocsFromServer,
     addDoc,
     updateDoc,
     deleteDoc,
@@ -18,6 +19,8 @@ import {
     startAfter,
     QueryDocumentSnapshot,
     DocumentData,
+    deleteField,
+    runTransaction,
 } from 'firebase/firestore';
 import { getFirestoreInstance, cleanData, getFirebaseAuth } from './config'; // Import auth
 import { Reservation } from '../../types';
@@ -25,6 +28,18 @@ import { logger } from '../../utils/logger';
 import { generateShortId } from '../../utils/helpers';
 import { mapFirestoreDocs } from './mappers';
 import { logAction } from './logs'; // Import logAction
+
+/** Converte null → deleteField(); remove undefined */
+const prepareReservationUpdate = (data: Record<string, unknown>) => {
+    const out: Record<string, unknown> = {};
+    Object.keys(data).forEach((key) => {
+        const val = data[key];
+        if (val === undefined) return;
+        if (val === null) out[key] = deleteField();
+        else out[key] = val;
+    });
+    return out;
+};
 
 export const saveReservation = async (reservation: Reservation): Promise<string> => {
     const data = {
@@ -34,7 +49,33 @@ export const saveReservation = async (reservation: Reservation): Promise<string>
         status: reservation.status || 'active',
     };
     const db = await getFirestoreInstance();
-    const docRef = await addDoc(collection(db, 'reservations'), cleanData(data));
+    let reservationId: string;
+
+    if (reservation.billingMode === 'corporate' && reservation.allocationId) {
+        const legacy = await getDocs(
+            query(
+                collection(db, 'reservations'),
+                where('allocationId', '==', reservation.allocationId),
+                limit(1)
+            )
+        );
+        if (!legacy.empty) {
+            throw new Error('Esta alocação já possui uma reserva vinculada');
+        }
+
+        const corporateRef = doc(db, 'reservations', `corporate_${reservation.allocationId}`);
+        await runTransaction(db, async (transaction) => {
+            const existing = await transaction.get(corporateRef);
+            if (existing.exists()) {
+                throw new Error('Esta alocação já possui uma reserva vinculada');
+            }
+            transaction.set(corporateRef, cleanData(data));
+        });
+        reservationId = corporateRef.id;
+    } else {
+        const docRef = await addDoc(collection(db, 'reservations'), cleanData(data));
+        reservationId = docRef.id;
+    }
 
     // Log Action
     const auth = await getFirebaseAuth();
@@ -43,11 +84,11 @@ export const saveReservation = async (reservation: Reservation): Promise<string>
         'create',
         userEmail,
         `Nova reserva para ${reservation.guestName}`,
-        docRef.id,
+        reservationId,
         reservation.guestName
     );
 
-    return docRef.id;
+    return reservationId;
 };
 
 export const getReservation = async (id: string): Promise<Reservation | null> => {
@@ -67,9 +108,9 @@ export const getReservation = async (id: string): Promise<Reservation | null> =>
 };
 
 export const updateReservation = async (id: string, data: Partial<Reservation>) => {
-    // Não sobrescrever id/createdAt; remover undefined (Firestore rejeita)
+    // Não sobrescrever id/createdAt; null remove o campo no Firestore
     const { id: _discard, createdAt: _createdAt, ...rest } = data as Record<string, unknown>;
-    const updateData = cleanData(rest);
+    const updateData = prepareReservationUpdate(rest);
     const db = await getFirestoreInstance();
     await updateDoc(doc(db, 'reservations', id), updateData);
 
@@ -120,19 +161,31 @@ export const subscribeToActiveReservations = async (
     callback: (reservations: Reservation[]) => void,
     allowedProperties?: string[]
 ) => {
+    if (allowedProperties && allowedProperties.length === 0) {
+        callback([]);
+        return () => undefined;
+    }
+
     const now = new Date();
     const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD Local
 
-    // Query base: checkout >= hoje, ordenado por checkout
-    const db = await getFirestoreInstance();
-    const q = query(
-        collection(db, 'reservations'),
+    const constraints: ReturnType<typeof where | typeof orderBy>[] = [
         where('checkoutDate', '>=', today),
-        orderBy('checkoutDate', 'asc')
-    );
+        orderBy('checkoutDate', 'asc'),
+    ];
 
-    // Nota: Se allowedProperties for usado, o Firestore precisa de um índice composto
-    // Por ora, fazemos o filtro client-side para evitar problemas de índice
+    // O filtro de tenant no Firestore é aplicado apenas para propriedades restritas não-padrão (ex: apenas 'integracao').
+    // Para super_admin (2+ propriedades) ou 'lili', não filtramos no Firestore por propertyId
+    // para evitar a exclusão de reservas legadas sem o campo propertyId no documento.
+    const isSingleRestrictedProperty =
+        allowedProperties?.length === 1 && allowedProperties[0] !== 'lili';
+    if (isSingleRestrictedProperty) {
+        constraints.unshift(where('propertyId', '==', allowedProperties[0]));
+    }
+
+    const db = await getFirestoreInstance();
+
+    const q = query(collection(db, 'reservations'), ...constraints);
 
     logger.info('[Firebase] Subscribed to active reservations');
 
@@ -141,9 +194,9 @@ export const subscribeToActiveReservations = async (
         (snapshot) => {
             let data = mapFirestoreDocs<Reservation>(snapshot);
 
-            // Filtro client-side por propriedade (evita problema de índice composto)
-            if (allowedProperties && allowedProperties.length > 0) {
-                data = data.filter((r) => allowedProperties.includes(r.propertyId || 'lili'));
+            // Se o usuário tem permissão apenas para 'lili', filtra client-side preservando legados sem propertyId
+            if (allowedProperties?.length === 1 && allowedProperties[0] === 'lili') {
+                data = data.filter((r) => (r.propertyId || 'lili') === 'lili');
             }
 
             logger.info(`[Firebase] Active reservations updated: ${data.length} items`);
@@ -151,31 +204,6 @@ export const subscribeToActiveReservations = async (
         },
         (error) => {
             logger.error('Erro no listener de reservas ativas:', { error });
-        }
-    );
-};
-
-// --- LANDING PAGE: Pega só o FUTURO ---
-export const subscribeToFutureReservations = async (callback: (reservations: Reservation[]) => void) => {
-    const now = new Date();
-    const today = now.toLocaleDateString('en-CA');
-    const db = await getFirestoreInstance();
-    const q = query(collection(db, 'reservations'), where('checkoutDate', '>=', today));
-
-    return onSnapshot(
-        q,
-        (snapshot) => {
-            const data = snapshot.docs.map(
-                (doc) =>
-                    ({
-                        id: doc.id,
-                        ...doc.data(),
-                    }) as Reservation
-            );
-            callback(data);
-        },
-        (error) => {
-            logger.error('Erro ao buscar reservas futuras:', { error });
         }
     );
 };
@@ -195,8 +223,10 @@ export const fetchHistoryReservations = async (
         limit(pageSize),
     ];
 
-    if (allowedProperties && allowedProperties.length > 0) {
-        constraints.push(where('propertyId', 'in', allowedProperties));
+    const isSingleRestrictedProperty =
+        allowedProperties?.length === 1 && allowedProperties[0] !== 'lili';
+    if (isSingleRestrictedProperty) {
+        constraints.push(where('propertyId', '==', allowedProperties[0]));
     }
 
     const db = await getFirestoreInstance();
@@ -206,8 +236,14 @@ export const fetchHistoryReservations = async (
         q = query(q, startAfter(lastDoc));
     }
 
-    const snapshot = await getDocs(q);
-    const data = snapshot.docs.map(
+    let snapshot;
+    try {
+        snapshot = await getDocsFromServer(q);
+        if (!snapshot) snapshot = await getDocs(q);
+    } catch {
+        snapshot = await getDocs(q);
+    }
+    let data = snapshot.docs.map(
         (doc) =>
             ({
                 id: doc.id,
@@ -215,34 +251,15 @@ export const fetchHistoryReservations = async (
             }) as Reservation
     );
 
+    if (allowedProperties?.length === 1 && allowedProperties[0] === 'lili') {
+        data = data.filter((r) => (r.propertyId || 'lili') === 'lili');
+    }
+
     return {
         data,
         lastVisible: snapshot.docs[snapshot.docs.length - 1],
         hasMore: snapshot.docs.length === pageSize,
     };
-};
-
-// LEGACY (Mantido para compatibilidade)
-export const subscribeToReservations = async (
-    callback: (reservations: Reservation[]) => void,
-    limitCount: number = 300
-) => {
-    const db = await getFirestoreInstance();
-    const q = query(
-        collection(db, 'reservations'),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
-    );
-    return onSnapshot(
-        q,
-        (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Reservation);
-            callback(data);
-        },
-        (error) => {
-            logger.error('Erro no listener de reservas (legacy):', { error });
-        }
-    );
 };
 
 // --- SYNCHRONIZED FAVORITES (GUEST) ---

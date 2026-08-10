@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAdminAuth } from './useAdminAuth';
@@ -35,7 +37,7 @@ describe('useAdminAuth Hook', () => {
 
     describe('Authentication State', () => {
         it('should start with loading state', () => {
-            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => { });
+            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => {});
 
             const { result } = renderHook(() => useAdminAuth());
 
@@ -47,7 +49,7 @@ describe('useAdminAuth Hook', () => {
         it('should set user and permissions when authenticated', async () => {
             (firebaseAuth.subscribeToAuth as any).mockImplementation((callback: any) => {
                 setTimeout(() => callback(mockUser), 0);
-                return () => { };
+                return () => {};
             });
 
             (userManagement.getUserPermission as any).mockResolvedValue(mockUserPermission);
@@ -65,7 +67,7 @@ describe('useAdminAuth Hook', () => {
         it('should clear user and permissions when logged out', async () => {
             (firebaseAuth.subscribeToAuth as any).mockImplementation((callback: any) => {
                 setTimeout(() => callback(null), 0);
-                return () => { };
+                return () => {};
             });
 
             const { result } = renderHook(() => useAdminAuth());
@@ -81,7 +83,7 @@ describe('useAdminAuth Hook', () => {
         it('should fetch user permissions when user logs in', async () => {
             (firebaseAuth.subscribeToAuth as any).mockImplementation((callback: any) => {
                 setTimeout(() => callback(mockUser), 0);
-                return () => { };
+                return () => {};
             });
 
             (userManagement.getUserPermission as any).mockResolvedValue(mockUserPermission);
@@ -96,13 +98,17 @@ describe('useAdminAuth Hook', () => {
 
     describe('Login', () => {
         it('should login successfully', async () => {
-            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => { });
+            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => {});
             (firebaseAuth.loginCMS as any).mockResolvedValue(undefined);
 
             const { result } = renderHook(() => useAdminAuth());
 
             const mockEvent = { preventDefault: vi.fn() } as any;
-            const loginResult = await result.current.login(mockEvent, 'test@test.com', 'password123');
+            const loginResult = await result.current.login(
+                mockEvent,
+                'test@test.com',
+                'password123'
+            );
 
             expect(mockEvent.preventDefault).toHaveBeenCalled();
             expect(firebaseAuth.loginCMS).toHaveBeenCalledWith('test@test.com', 'password123');
@@ -111,20 +117,24 @@ describe('useAdminAuth Hook', () => {
         });
 
         it('should handle login failure', async () => {
-            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => { });
+            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => {});
             (firebaseAuth.loginCMS as any).mockRejectedValue(new Error('Invalid credentials'));
 
             const { result } = renderHook(() => useAdminAuth());
 
             const mockEvent = { preventDefault: vi.fn() } as any;
-            const loginResult = await result.current.login(mockEvent, 'wrong@test.com', 'wrongpass');
+            const loginResult = await result.current.login(
+                mockEvent,
+                'wrong@test.com',
+                'wrongpass'
+            );
 
             expect(loginResult.success).toBe(false);
             expect(loginResult.error).toBe('Erro ao entrar. Verifique email e senha.');
         });
 
         it('should prevent default form submission on login', async () => {
-            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => { });
+            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => {});
             (firebaseAuth.loginCMS as any).mockResolvedValue(undefined);
 
             const { result } = renderHook(() => useAdminAuth());
@@ -138,7 +148,7 @@ describe('useAdminAuth Hook', () => {
 
     describe('Logout', () => {
         it('should logout successfully', async () => {
-            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => { });
+            (firebaseAuth.subscribeToAuth as any).mockImplementation(() => () => {});
             (firebaseAuth.logoutCMS as any).mockResolvedValue(undefined);
 
             const { result } = renderHook(() => useAdminAuth());
@@ -168,7 +178,7 @@ describe('useAdminAuth Hook', () => {
 
             (firebaseAuth.subscribeToAuth as any).mockImplementation((callback: any) => {
                 setTimeout(() => callback(userWithoutEmail), 0);
-                return () => { };
+                return () => {};
             });
 
             const { result } = renderHook(() => useAdminAuth());
@@ -185,7 +195,7 @@ describe('useAdminAuth Hook', () => {
         it('should handle getUserPermission failure', async () => {
             (firebaseAuth.subscribeToAuth as any).mockImplementation((callback: any) => {
                 setTimeout(() => callback(mockUser), 0);
-                return () => { };
+                return () => {};
             });
 
             (userManagement.getUserPermission as any).mockRejectedValue(

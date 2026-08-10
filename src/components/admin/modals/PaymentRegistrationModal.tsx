@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, CreditCard, Banknote, QrCode, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
-import { Reservation, PaymentStatus } from '../../../types';
+import {
+    X,
+    DollarSign,
+    CreditCard,
+    Banknote,
+    QrCode,
+    CheckCircle2,
+    Loader2,
+    Sparkles,
+} from 'lucide-react';
+import { Reservation, PaymentStatus, PaymentMethod } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
 
 interface PaymentRegistrationModalProps {
@@ -11,7 +20,7 @@ interface PaymentRegistrationModalProps {
         reservationId: string,
         paymentStatus: PaymentStatus,
         depositAmount: number,
-        paymentMethod?: 'pix' | 'money' | 'card'
+        paymentMethod?: PaymentMethod
     ) => Promise<void>;
 }
 
@@ -23,7 +32,7 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
 }) => {
     const [mode, setMode] = useState<'full' | 'partial'>('full');
     const [customAmountPaid, setCustomAmountPaid] = useState<string>('');
-    const [paymentMethod, setPaymentMethod] = useState<'pix' | 'money' | 'card'>('pix');
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -41,11 +50,12 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
 
     const property = PROPERTIES[reservation.propertyId || 'lili'];
     const totalAmount = reservation.totalAmount || 0;
-    const currentPaid = reservation.paymentStatus === 'paid' ? totalAmount : (reservation.depositAmount || 0);
+    const currentPaid =
+        reservation.paymentStatus === 'paid' ? totalAmount : reservation.depositAmount || 0;
     const initialRemaining = Math.max(0, totalAmount - currentPaid);
 
     // Cálculos dinâmicos
-    const addedAmount = mode === 'full' ? initialRemaining : (parseFloat(customAmountPaid) || 0);
+    const addedAmount = mode === 'full' ? initialRemaining : parseFloat(customAmountPaid) || 0;
     const newTotalPaid = currentPaid + addedAmount;
     const newRemaining = Math.max(0, totalAmount - newTotalPaid);
     const isFullyPaid = newRemaining <= 0.01;
@@ -55,15 +65,14 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
 
         setIsSubmitting(true);
         try {
-            const finalStatus: PaymentStatus = isFullyPaid ? 'paid' : (newTotalPaid > 0 ? 'partial' : 'pending');
+            const finalStatus: PaymentStatus = isFullyPaid
+                ? 'paid'
+                : newTotalPaid > 0
+                  ? 'partial'
+                  : 'pending';
             const finalDepositAmount = isFullyPaid ? totalAmount : newTotalPaid;
 
-            await onConfirmPayment(
-                reservation.id,
-                finalStatus,
-                finalDepositAmount,
-                paymentMethod
-            );
+            await onConfirmPayment(reservation.id, finalStatus, finalDepositAmount, paymentMethod);
             onClose();
         } catch (_error) {
             // Error is logged and toasted by caller
@@ -82,9 +91,10 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
 
             {/* Modal Container */}
             <div className="relative bg-white dark:bg-gray-800 rounded-[2.2rem] shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-gray-100 dark:border-gray-700 animate-slideUp">
-                
                 {/* Header Header */}
-                <div className={`p-5 sm:p-6 border-b border-white/10 ${property.id === 'lili' ? 'bg-gradient-to-r from-orange-500 to-amber-600' : 'bg-gradient-to-r from-blue-600 to-indigo-800'} text-white relative shrink-0`}>
+                <div
+                    className={`p-5 sm:p-6 border-b border-white/10 ${property.id === 'lili' ? 'bg-gradient-to-r from-orange-500 to-amber-600' : 'bg-gradient-to-r from-blue-600 to-indigo-800'} text-white relative shrink-0`}
+                >
                     <button
                         type="button"
                         onClick={onClose}
@@ -106,7 +116,10 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
                                 {reservation.guestName}
                             </h2>
                             <p className="text-xs text-white/90 font-medium">
-                                {property.name} — {reservation.flatNumber ? `Flat ${reservation.flatNumber}` : 'Unidade'}
+                                {property.name} —{' '}
+                                {reservation.flatNumber
+                                    ? `Flat ${reservation.flatNumber}`
+                                    : 'Unidade'}
                             </p>
                         </div>
                     </div>
@@ -114,13 +127,13 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
 
                 {/* Body Content */}
                 <div className="p-5 sm:p-6 overflow-y-auto space-y-5 no-scrollbar">
-
                     {/* Card de Resumo Financeiro Atual */}
                     <div className="bg-stone-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-stone-200/80 dark:border-gray-600/60 space-y-2">
                         <div className="flex justify-between items-center text-xs text-stone-600 dark:text-gray-300 font-medium">
                             <span>Valor Total da Reserva:</span>
                             <span className="font-bold text-stone-900 dark:text-white">
-                                R$ {totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                R${' '}
+                                {totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </span>
                         </div>
 
@@ -128,7 +141,10 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
                             <div className="flex justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                                 <span>Já Pago Anteriormente:</span>
                                 <span className="font-bold">
-                                    R$ {currentPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    R${' '}
+                                    {currentPaid.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                    })}
                                 </span>
                             </div>
                         )}
@@ -138,7 +154,10 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
                                 Saldo Restante Atual:
                             </span>
                             <span className="text-amber-600 dark:text-amber-400 font-heading text-base">
-                                R$ {initialRemaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                R${' '}
+                                {initialRemaining.toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                })}
                             </span>
                         </div>
                     </div>
@@ -160,7 +179,14 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
                             >
                                 <div className="flex items-center justify-between w-full">
                                     <span className="font-heading">Quitação Total</span>
-                                    <CheckCircle2 size={16} className={mode === 'full' ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-300'} />
+                                    <CheckCircle2
+                                        size={16}
+                                        className={
+                                            mode === 'full'
+                                                ? 'text-emerald-600 dark:text-emerald-400'
+                                                : 'text-stone-300'
+                                        }
+                                    />
                                 </div>
                                 <span className="text-[11px] opacity-80 font-normal">
                                     Zerar saldo (100% Pago)
@@ -178,7 +204,14 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
                             >
                                 <div className="flex items-center justify-between w-full">
                                     <span className="font-heading">Abatimento Parcial</span>
-                                    <Sparkles size={16} className={mode === 'partial' ? 'text-amber-600 dark:text-amber-400' : 'text-stone-300'} />
+                                    <Sparkles
+                                        size={16}
+                                        className={
+                                            mode === 'partial'
+                                                ? 'text-amber-600 dark:text-amber-400'
+                                                : 'text-stone-300'
+                                        }
+                                    />
                                 </div>
                                 <span className="text-[11px] opacity-80 font-normal">
                                     Informar valor recebido
@@ -211,7 +244,10 @@ export const PaymentRegistrationModal: React.FC<PaymentRegistrationModalProps> =
                             <p className="text-[11px] text-stone-500 dark:text-gray-400 mt-1">
                                 Restará pendente:{' '}
                                 <strong className="text-amber-600 dark:text-amber-400">
-                                    R$ {newRemaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    R${' '}
+                                    {newRemaining.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                    })}
                                 </strong>
                             </p>
                         </div>

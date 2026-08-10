@@ -1,10 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { Reservation, PropertyId } from '../../types';
-import { ArrowRight, Calendar, Clock, LogIn, LogOut, User, Building2, Plus, Lock, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Reservation, PropertyId, UserPermission, PaymentMethod, PaymentStatus } from '../../types';
+import {
+    ArrowRight,
+    Calendar,
+    Clock,
+    LogIn,
+    LogOut,
+    User,
+    Building2,
+    Plus,
+    ShieldCheck,
+    CheckCircle2,
+} from 'lucide-react';
 import { PROPERTIES } from '../../config/properties';
-import { UserPermission } from '../../types';
 import ReservationQuickViewModal from './modals/ReservationQuickViewModal';
 import PaymentRegistrationModal from './modals/PaymentRegistrationModal';
+import { getTodayDateStr } from '../../utils/dateFormatting';
 import { updateReservation } from '../../services/firebase/reservations';
 import CRMQuickStats from './dashboard/CRMQuickStats';
 import FlatOccupancyGrid from './dashboard/FlatOccupancyGrid';
@@ -12,6 +23,7 @@ import CRMActionsAlerts from './dashboard/CRMActionsAlerts';
 import RevenueTrendWidget from './dashboard/RevenueTrendWidget';
 import ActivityFeedWidget from './dashboard/ActivityFeedWidget';
 import CRMSearchWidget from './dashboard/CRMSearchWidget';
+import CorporateInvoiceAlerts from './dashboard/CorporateInvoiceAlerts';
 
 interface DashboardHomeProps {
     reservations: Reservation[];
@@ -28,13 +40,15 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
 }) => {
     const [propertyFilter, setPropertyFilter] = useState<PropertyId | 'all'>('all');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-    const [paymentModalReservation, setPaymentModalReservation] = useState<Reservation | null>(null);
+    const [paymentModalReservation, setPaymentModalReservation] = useState<Reservation | null>(
+        null
+    );
 
     const handleConfirmPayment = async (
         reservationId: string,
-        paymentStatus: any,
+        paymentStatus: PaymentStatus,
         depositAmount: number,
-        paymentMethod?: 'pix' | 'money' | 'card'
+        paymentMethod?: PaymentMethod
     ) => {
         await updateReservation(reservationId, {
             paymentStatus,
@@ -49,11 +63,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
     }, [reservations, propertyFilter]);
 
     const stats = useMemo(() => {
-        // CORREÇÃO DE FUSO HORÁRIO: Usar data local para definir "Hoje"
-        const today = new Date();
-        const offset = today.getTimezoneOffset() * 60000;
-        const localDate = new Date(today.getTime() - offset);
-        const todayStr = localDate.toISOString().split('T')[0];
+        const todayStr = getTodayDateStr();
 
         const checkins = filteredReservations.filter((r) => r.checkInDate === todayStr);
         const checkouts = filteredReservations.filter((r) => r.checkoutDate === todayStr);
@@ -119,13 +129,6 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                     >
                         <Calendar size={16} /> Calendário
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => onNavigate('blocks')}
-                        className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 active:scale-95 touch-manipulation"
-                    >
-                        <Lock size={16} /> Bloqueios
-                    </button>
                 </div>
             </div>
 
@@ -150,12 +153,13 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                             type="button"
                             key={prop.id}
                             onClick={() => setPropertyFilter(prop.id)}
-                            className={`snap-start min-h-[44px] px-5 py-2.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-2 active:scale-95 touch-manipulation border ${propertyFilter === prop.id
-                                ? prop.id === 'lili'
-                                    ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/30'
-                                    : 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/30'
-                                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
+                            className={`snap-start min-h-[44px] px-5 py-2.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-2 active:scale-95 touch-manipulation border ${
+                                propertyFilter === prop.id
+                                    ? prop.id === 'lili'
+                                        ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/30'
+                                        : 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/30'
+                                    : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
                         >
                             <Building2 size={14} /> {prop.name}
                         </button>
@@ -173,19 +177,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                 onNavigate={onNavigate}
             />
 
-            {/* MAPA DE OCUPAÇÃO DOS FLATS EM TEMPO REAL */}
-            <FlatOccupancyGrid
-                reservations={reservations}
-                onSelectReservation={(res) => setSelectedReservation(res)}
-            />
-
-            {/* ANALYTICS & TIMELINE GRID */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <RevenueTrendWidget reservations={filteredReservations} />
-                <ActivityFeedWidget reservations={filteredReservations} onSelectReservation={(res) => setSelectedReservation(res)} />
-            </div>
-
-            {/* CENTRAL DE PENDÊNCIAS E ALERTAS DO CRM */}
+            {/* PRIORIDADE 1: CENTRAL DE AÇÕES PENDENTES HOJE (REPOSICIONADO PARA O TOPO DESTAQUE OPERACIONAL) */}
             <CRMActionsAlerts
                 reservations={filteredReservations}
                 onSelectReservation={(res) => setSelectedReservation(res)}
@@ -193,8 +185,28 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                 onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
             />
 
-            {/* HOSPEDADOS AGORA (REDESENHADO DE LUXO) */}
-            <div className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/30 dark:shadow-none">
+            <CorporateInvoiceAlerts onNavigateCompanies={() => onNavigate('companies')} />
+
+            {/* MAPA DE OCUPAÇÃO DOS FLATS EM TEMPO REAL */}
+            <FlatOccupancyGrid
+                reservations={reservations}
+                onSelectReservation={(res) => setSelectedReservation(res)}
+            />
+
+            {/* ANALYTICS & TIMELINE GRID (REBAIXADO CONFORME PRIORIDADE 1) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RevenueTrendWidget reservations={filteredReservations} />
+                <ActivityFeedWidget
+                    reservations={filteredReservations}
+                    onSelectReservation={(res) => setSelectedReservation(res)}
+                />
+            </div>
+
+            {/* HOSPEDADOS AGORA (COM ÂNCORA PARA SCROLL DIRETO) */}
+            <div
+                id="hospedados-agora"
+                className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/30 dark:shadow-none"
+            >
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-3 font-heading">
                         <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 shadow-sm">
@@ -211,7 +223,9 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                 {stats.active.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50/50 dark:bg-gray-900/30 rounded-[2rem] border-2 border-dashed border-gray-100 dark:border-gray-700/50">
                         <User size={36} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                        <p className="text-gray-400 text-sm font-bold">Nenhum hóspede na casa neste momento.</p>
+                        <p className="text-gray-400 text-sm font-bold">
+                            Nenhum hóspede na casa neste momento.
+                        </p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -243,7 +257,10 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                             </span>
                                         </div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
-                                            <Calendar size={12} className="text-emerald-500 shrink-0" />
+                                            <Calendar
+                                                size={12}
+                                                className="text-emerald-500 shrink-0"
+                                            />
                                             <span>
                                                 Até{' '}
                                                 {(res.checkoutDate || '')
@@ -264,10 +281,13 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                 )}
             </div>
 
-            {/* ATIVIDADE DE HOJE: CHEGANDO & SAINDO (REDESENHADOS DE LUXO) */}
+            {/* ATIVIDADE DE HOJE: CHEGANDO & SAINDO (COM ÂNCORAS PARA SCROLL DIRETO) */}
             <div className="grid md:grid-cols-2 gap-6">
                 {/* CHEGANDO HOJE */}
-                <div className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/30 dark:shadow-none">
+                <div
+                    id="chegando-hoje"
+                    className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/30 dark:shadow-none"
+                >
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-3 font-heading">
                             <div className="p-3 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm">
@@ -317,7 +337,8 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                                 </span>
                                             </div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
-                                                <Clock size={12} className="text-blue-500" /> {res.checkInTime || '15:00'}
+                                                <Clock size={12} className="text-blue-500" />{' '}
+                                                {res.checkInTime || '15:00'}
                                             </p>
                                         </div>
                                     </div>
@@ -338,23 +359,26 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                     )}
                 </div>
 
-                {/* SAINDO HOJE */}
-                <div className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/30 dark:shadow-none">
+                {/* SAINDO HOJE (COM COR SEMÂNTICA ÂMBAR) */}
+                <div
+                    id="saindo-hoje"
+                    className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/30 dark:shadow-none"
+                >
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-3 font-heading">
-                            <div className="p-3 rounded-2xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 shadow-sm">
+                            <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 shadow-sm">
                                 <LogOut size={22} />
                             </div>
                             Saindo Hoje
                         </h3>
-                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50">
+                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
                             {stats.checkouts.length} check-outs
                         </span>
                     </div>
 
                     {stats.checkouts.length === 0 ? (
-                        <div className="text-center py-10 bg-orange-50/30 dark:bg-orange-950/10 rounded-2xl border border-dashed border-orange-200/60 dark:border-orange-900/30">
-                            <CheckCircle2 size={30} className="mx-auto text-orange-400 mb-2" />
+                        <div className="text-center py-10 bg-amber-50/30 dark:bg-amber-950/10 rounded-2xl border border-dashed border-amber-200/60 dark:border-amber-900/30">
+                            <CheckCircle2 size={30} className="mx-auto text-amber-500 mb-2" />
                             <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
                                 Nenhum check-out previsto para hoje.
                             </p>
@@ -365,15 +389,15 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                 <div
                                     key={res.id}
                                     onClick={() => setSelectedReservation(res)}
-                                    className="flex items-center justify-between p-4 bg-gradient-to-br from-white to-orange-50/40 dark:from-gray-900/60 dark:to-orange-950/20 rounded-2xl border border-gray-100 dark:border-gray-700/70 hover:border-orange-300 dark:hover:border-orange-800/60 hover:shadow-lg transition-all cursor-pointer group"
+                                    className="flex items-center justify-between p-4 bg-gradient-to-br from-white to-amber-50/40 dark:from-gray-900/60 dark:to-amber-950/20 rounded-2xl border border-gray-100 dark:border-gray-700/70 hover:border-amber-300 dark:hover:border-amber-800/60 hover:shadow-lg transition-all cursor-pointer group"
                                 >
                                     <div className="flex items-center gap-3.5 min-w-0">
-                                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white font-extrabold text-sm flex items-center justify-center font-heading shrink-0 shadow-md shadow-orange-500/20">
+                                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 text-white font-extrabold text-sm flex items-center justify-center font-heading shrink-0 shadow-md shadow-amber-500/20">
                                             {res.guestName.charAt(0)}
                                         </div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                                <p className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white font-heading group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors truncate">
+                                                <p className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white font-heading group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
                                                     {res.guestName}
                                                 </p>
                                                 <span
@@ -389,7 +413,8 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                                 </span>
                                             </div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
-                                                <Clock size={12} className="text-orange-500" /> {res.checkOutTime || '11:00'}
+                                                <Clock size={12} className="text-amber-500" />{' '}
+                                                {res.checkOutTime || '11:00'}
                                             </p>
                                         </div>
                                     </div>
@@ -399,7 +424,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                                             e.stopPropagation();
                                             onEditReservation(res);
                                         }}
-                                        className="p-2 text-gray-400 hover:text-orange-600 transition-colors shrink-0"
+                                        className="p-2 text-gray-400 hover:text-amber-600 transition-colors shrink-0"
                                         aria-label={`Editar reserva de ${res.guestName}`}
                                     >
                                         <ArrowRight size={18} />

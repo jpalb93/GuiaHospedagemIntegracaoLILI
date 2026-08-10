@@ -8,7 +8,11 @@ export interface UseAdminAuthReturn {
     user: User | null;
     userPermission: UserPermission | null;
     authLoading: boolean;
-    login: (e: React.FormEvent, email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+    login: (
+        e: React.FormEvent,
+        email: string,
+        pass: string
+    ) => Promise<{ success: boolean; error?: string }>;
     logout: () => Promise<void>;
 }
 
@@ -20,23 +24,45 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
     // Auth Listener
     useEffect(() => {
         let unsubscribe: (() => void) | undefined;
+        let disposed = false;
 
-        const initAuth = async () => {
-            unsubscribe = await subscribeToAuth(async (u) => {
+        const handleAuthChange = async (u: User | null) => {
+            if (disposed) return;
+            try {
                 setUser(u);
                 if (u && u.email) {
                     const perm = await getUserPermission(u.email);
-                    setUserPermission(perm);
+                    if (!disposed) setUserPermission(perm);
                 } else {
                     setUserPermission(null);
                 }
-                setAuthLoading(false);
-            });
+            } catch {
+                if (!disposed) setUserPermission(null);
+            } finally {
+                if (!disposed) setAuthLoading(false);
+            }
+        };
+
+        const initAuth = () => {
+            const pending = subscribeToAuth(handleAuthChange) as unknown;
+            if (typeof pending === 'function') {
+                unsubscribe = pending as () => void;
+                return;
+            }
+            void (pending as Promise<() => void>)
+                .then((nextUnsubscribe) => {
+                    if (disposed) nextUnsubscribe();
+                    else unsubscribe = nextUnsubscribe;
+                })
+                .catch(() => {
+                    if (!disposed) setAuthLoading(false);
+                });
         };
 
         initAuth();
 
         return () => {
+            disposed = true;
             if (unsubscribe) unsubscribe();
         };
     }, []);

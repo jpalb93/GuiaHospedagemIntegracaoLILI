@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
@@ -5,7 +6,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 vi.mock('../services/firebase');
 vi.mock('../services/geminiService');
 vi.mock('./useAdminAuth');
-vi.mock('./useToast');
+vi.mock('../contexts/ToastContext');
 vi.mock('./useReservations');
 vi.mock('./useReservationForm');
 vi.mock('./useBlockedDates');
@@ -14,14 +15,17 @@ vi.mock('../utils/helpers');
 import { useAdminDashboard } from './useAdminDashboard';
 import * as firebaseService from '../services/firebase';
 import * as useAdminAuthModule from './useAdminAuth';
-import * as useToastModule from './useToast';
+import * as useToastModule from '../contexts/ToastContext';
+import * as useReservationsModule from './useReservations';
+import * as useReservationFormModule from './useReservationForm';
+import * as useBlockedDatesModule from './useBlockedDates';
+import * as helpersModule from '../utils/helpers';
 import { Reservation } from '../types';
 
 describe('useAdminDashboard Hook', () => {
     const mockLogin = vi.fn();
     const mockLogout = vi.fn();
     const mockShowToast = vi.fn();
-    const mockRemoveToast = vi.fn();
     const mockLoadMoreHistory = vi.fn();
     const mockRemoveReservation = vi.fn();
     const mockSetGeneratedLink = vi.fn();
@@ -29,7 +33,7 @@ describe('useAdminDashboard Hook', () => {
     const mockResetForm = vi.fn();
     const mockLoadReservation = vi.fn();
     const mockGetFormValues = vi.fn();
-    const mockSubscribeToBlockedDates = vi.fn(() => () => { });
+    const mockSubscribeToBlockedDates = vi.fn(async () => () => {});
     const mockResetBlockedForm = vi.fn();
     const mockSaveReservation = vi.fn();
     const mockUpdateReservation = vi.fn();
@@ -53,26 +57,25 @@ describe('useAdminDashboard Hook', () => {
 
         // Mock useToast
         vi.mocked(useToastModule.useToast).mockReturnValue({
-            toasts: [],
             showToast: mockShowToast,
-            removeToast: mockRemoveToast,
+            showSuccess: (message: string) => mockShowToast(message, 'success'),
+            showError: (message: string) => mockShowToast(message, 'error'),
+            showInfo: (message: string) => mockShowToast(message, 'info'),
+            showWarning: (message: string) => mockShowToast(message, 'warning'),
         });
 
         // Mock useReservations
-        const useReservationsMock = vi.fn().mockReturnValue({
+        vi.mocked(useReservationsModule.useReservations).mockReturnValue({
             activeReservations: [],
             historyReservations: [],
             loadingHistory: false,
             hasMoreHistory: false,
             loadMoreHistory: mockLoadMoreHistory,
             removeReservation: mockRemoveReservation,
-        });
-        vi.doMock('./useReservations', () => ({
-            useReservations: useReservationsMock,
-        }));
+        } as any);
 
         // Mock useReservationForm - return full state
-        const useReservationFormMock = vi.fn().mockReturnValue({
+        vi.mocked(useReservationFormModule.useReservationForm).mockReturnValue({
             editingId: null,
             guestName: '',
             setGuestName: vi.fn(),
@@ -104,7 +107,27 @@ describe('useAdminDashboard Hook', () => {
             setGuestCount: vi.fn(),
             paymentMethod: 'pix',
             setPaymentMethod: vi.fn(),
+            paymentStatus: 'pending',
+            setPaymentStatus: vi.fn(),
+            totalAmount: '',
+            setTotalAmount: vi.fn(),
+            depositAmount: '',
+            setDepositAmount: vi.fn(),
+            guestRating: 5,
+            setGuestRating: vi.fn(),
+            guestFeedback: '',
+            setGuestFeedback: vi.fn(),
+            billingMode: 'reservation',
+            setBillingMode: vi.fn(),
+            companyId: '',
+            setCompanyId: vi.fn(),
+            contractId: '',
+            setContractId: vi.fn(),
+            allocationId: '',
+            setAllocationId: vi.fn(),
             shortId: 'ABC123',
+            manualDeactivation: false,
+            setManualDeactivation: vi.fn(),
             generatedLink: '',
             setGeneratedLink: mockSetGeneratedLink,
             isSaving: false,
@@ -112,13 +135,10 @@ describe('useAdminDashboard Hook', () => {
             resetForm: mockResetForm,
             loadReservation: mockLoadReservation,
             getFormValues: mockGetFormValues,
-        });
-        vi.doMock('./useReservationForm', () => ({
-            useReservationForm: useReservationFormMock,
-        }));
+        } as any);
 
         // Mock useBlockedDates
-        const useBlockedDatesMock = vi.fn().mockReturnValue({
+        vi.mocked(useBlockedDatesModule.useBlockedDates).mockReturnValue({
             blockedDates: [],
             blockedStartDate: '2024-01-01',
             setBlockedStartDate: vi.fn(),
@@ -131,24 +151,14 @@ describe('useAdminDashboard Hook', () => {
             resetBlockedForm: mockResetBlockedForm,
             handleAddBlock: vi.fn(),
             handleDeleteBlock: vi.fn(),
-        });
-        vi.doMock('./useBlockedDates', () => ({
-            useBlockedDates: useBlockedDatesMock,
-        }));
+        } as any);
 
         // Mock Firebase
         vi.mocked(firebaseService.saveReservation).mockImplementation(mockSaveReservation);
         vi.mocked(firebaseService.updateReservation).mockImplementation(mockUpdateReservation);
 
         // Mock helpers
-        vi.doMock('../utils/helpers', () => ({
-            generateShortId: vi.fn(() => 'TEST123'),
-        }));
-
-        // Mock geminiService
-        vi.doMock('../services/geminiService', () => ({
-            isApiConfigured: true,
-        }));
+        vi.mocked(helpersModule.generateShortId).mockReturnValue('TEST123');
 
         // Set default getFormValues return
         mockGetFormValues.mockReturnValue({
@@ -174,20 +184,20 @@ describe('useAdminDashboard Hook', () => {
         it('should expose auth properties from useAdminAuth', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
-            expect(result.current.user).toBeDefined();
-            expect(result.current.userPermission).toBeDefined();
-            expect(result.current.authLoading).toBe(false);
+            expect(result.current.auth.user).toBeDefined();
+            expect(result.current.auth.userPermission).toBeDefined();
+            expect(result.current.auth.authLoading).toBe(false);
         });
 
         it('should default to "home" tab', () => {
             const { result } = renderHook(() => useAdminDashboard());
-            expect(result.current.activeTab).toBe('home');
+            expect(result.current.ui.activeTab).toBe('home');
         });
 
         it('should load saved active tab from localStorage', () => {
             localStorage.setItem('admin_active_tab', 'settings');
             const { result } = renderHook(() => useAdminDashboard());
-            expect(result.current.activeTab).toBe('settings');
+            expect(result.current.ui.activeTab).toBe('settings');
         });
     });
 
@@ -198,7 +208,7 @@ describe('useAdminDashboard Hook', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
             await act(async () => {
-                await result.current.handleLogin(
+                await result.current.auth.handleLogin(
                     { preventDefault: vi.fn() } as any,
                     'test@example.com',
                     'password123'
@@ -219,7 +229,11 @@ describe('useAdminDashboard Hook', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
             await act(async () => {
-                await result.current.handleLogin({ preventDefault: vi.fn() } as any, 'bad@email.com', 'bad');
+                await result.current.auth.handleLogin(
+                    { preventDefault: vi.fn() } as any,
+                    'bad@email.com',
+                    'bad'
+                );
             });
 
             expect(mockShowToast).toHaveBeenCalledWith('Invalid credentials', 'error');
@@ -236,7 +250,7 @@ describe('useAdminDashboard Hook', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
             await act(async () => {
-                await result.current.handleSaveReservation();
+                await result.current.form.handleSaveReservation();
             });
 
             expect(mockShowToast).toHaveBeenCalledWith('Preencha o nome do hóspede.', 'warning');
@@ -244,6 +258,13 @@ describe('useAdminDashboard Hook', () => {
         });
 
         it('should validate checkout date must be after checkin', async () => {
+            const currentForm = useReservationFormModule.useReservationForm();
+            vi.mocked(useReservationFormModule.useReservationForm).mockReturnValue({
+                ...currentForm,
+                guestName: 'Test Guest',
+                checkInDate: '2024-01-05',
+                checkoutDate: '2024-01-01',
+            } as any);
             mockGetFormValues.mockReturnValue({
                 ...mockGetFormValues(),
                 guestName: 'Test Guest',
@@ -254,10 +275,13 @@ describe('useAdminDashboard Hook', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
             await act(async () => {
-                await result.current.handleSaveReservation();
+                await result.current.form.handleSaveReservation();
             });
 
-            expect(mockShowToast).toHaveBeenCalledWith('O Check-out deve ser DEPOIS do Check-in.', 'error');
+            expect(mockShowToast).toHaveBeenCalledWith(
+                'O Check-out deve ser DEPOIS do Check-in.',
+                'error'
+            );
         });
     });
 
@@ -282,11 +306,11 @@ describe('useAdminDashboard Hook', () => {
             };
 
             act(() => {
-                result.current.handleStartEdit(mockReservation);
+                result.current.form.handleStartEdit(mockReservation);
             });
 
             expect(mockLoadReservation).toHaveBeenCalledWith(mockReservation);
-            expect(result.current.activeTab).toBe('create');
+            expect(result.current.ui.activeTab).toBe('create');
             expect(mockShowToast).toHaveBeenCalledWith('Editando reserva de John Doe', 'info');
             expect(mockScrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
         });
@@ -297,7 +321,7 @@ describe('useAdminDashboard Hook', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
             act(() => {
-                result.current.setActiveTab('calendar');
+                result.current.ui.setActiveTab('calendar');
             });
 
             expect(localStorage.getItem('admin_active_tab')).toBe('calendar');
@@ -307,10 +331,10 @@ describe('useAdminDashboard Hook', () => {
             const { result } = renderHook(() => useAdminDashboard());
 
             act(() => {
-                result.current.setSearchTerm('test search');
+                result.current.ui.setSearchTerm('test search');
             });
 
-            expect(result.current.searchTerm).toBe('test search');
+            expect(result.current.ui.searchTerm).toBe('test search');
         });
     });
 });

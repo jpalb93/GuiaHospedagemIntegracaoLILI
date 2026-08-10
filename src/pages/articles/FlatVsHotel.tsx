@@ -1,14 +1,14 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { 
-    Hotel, 
-    Home, 
-    DollarSign, 
-    CheckCircle2, 
-    Coffee, 
+import {
+    Hotel,
+    Home,
+    DollarSign,
+    CheckCircle2,
+    Coffee,
     UtensilsCrossed,
     Users,
-    Zap
+    Zap,
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
 import ArticleScrollReset from '../../components/ArticleScrollReset';
@@ -16,8 +16,9 @@ import ArticleScrollReset from '../../components/ArticleScrollReset';
 const FlatVsHotelArticle: React.FC = () => {
     const slug = 'flat-ou-hotel-petrolina-comparativo';
     const canonicalUrl = `https://www.flatsintegracao.com.br/guia/${slug}`;
-    const pageTitle = "Flat ou Hotel em Petrolina? Descubra o Melhor Custo-Benefício";
-    const pageDescription = "Comparativo completo entre hotel e flat por temporada em Petrolina. Veja preços, vantagens e qual opção vale mais a pena para sua viagem ao Sertão.";
+    const pageTitle = 'Flat ou Hotel em Petrolina? Descubra o Melhor Custo-Benefício';
+    const pageDescription =
+        'Comparativo completo entre hotel e flat por temporada em Petrolina. Veja preços, vantagens e qual opção vale mais a pena para sua viagem ao Sertão.';
 
     return (
         <article className="pt-24 pb-16 min-h-screen bg-stone-950 text-stone-200">
@@ -28,15 +29,21 @@ const FlatVsHotelArticle: React.FC = () => {
                 <meta property="og:title" content={pageTitle} />
                 <meta property="og:description" content={pageDescription} />
                 <meta property="og:type" content="article" />
-                <meta property="og:image" content="https://www.flatsintegracao.com.br/images/cozinha-jantar.jpg" />
+                <meta
+                    property="og:image"
+                    content="https://www.flatsintegracao.com.br/images/cozinha-jantar.jpg"
+                />
                 <meta property="og:locale" content="pt_BR" />
                 <meta property="og:url" content={canonicalUrl} />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDescription} />
-                <meta name="twitter:image" content="https://www.flatsintegracao.com.br/images/cozinha-jantar.jpg" />
+                <meta
+                    name="twitter:image"
+                    content="https://www.flatsintegracao.com.br/images/cozinha-jantar.jpg"
+                />
                 <link rel="canonical" href={canonicalUrl} />
-                
+
                 <script type="application/ld+json">
                     {JSON.stringify({
                         '@context': 'https://schema.org',
@@ -44,29 +51,29 @@ const FlatVsHotelArticle: React.FC = () => {
                         mainEntity: [
                             {
                                 '@type': 'Question',
-                                'name': 'O que é mais barato em Petrolina: hotel ou flat?',
-                                'acceptedAnswer': {
+                                name: 'O que é mais barato em Petrolina: hotel ou flat?',
+                                acceptedAnswer: {
                                     '@type': 'Answer',
-                                    'text': 'Geralmente, o flat por temporada oferece melhor custo-benefício, especialmente para estadias de mais de 2 noites ou para grupos, pois permite economizar com alimentação e oferece diárias competitivas a partir de R$ 199.'
-                                }
+                                    text: 'Geralmente, o flat por temporada oferece melhor custo-benefício, especialmente para estadias de mais de 2 noites ou para grupos, pois permite economizar com alimentação e oferece diárias competitivas a partir de R$ 199.',
+                                },
                             },
                             {
                                 '@type': 'Question',
-                                'name': 'Quais as vantagens de um flat mobiliado em relação a um hotel?',
-                                'acceptedAnswer': {
+                                name: 'Quais as vantagens de um flat mobiliado em relação a um hotel?',
+                                acceptedAnswer: {
                                     '@type': 'Answer',
-                                    'text': 'As principais vantagens são a cozinha privativa completa, maior espaço interno, maior privacidade e silêncio, além da autonomia de se sentir em casa durante a viagem.'
-                                }
+                                    text: 'As principais vantagens são a cozinha privativa completa, maior espaço interno, maior privacidade e silêncio, além da autonomia de se sentir em casa durante a viagem.',
+                                },
                             },
                             {
                                 '@type': 'Question',
-                                'name': 'O Flats Integração tem serviço de quarto como hotel?',
-                                'acceptedAnswer': {
+                                name: 'O Flats Integração tem serviço de quarto como hotel?',
+                                acceptedAnswer: {
                                     '@type': 'Answer',
-                                    'text': 'Não oferecemos serviço de quarto diário ou café da manhã, pois nosso foco é oferecer autonomia total e preços mais baixos. No entanto, fornecemos enxoval completo e o flat é entregue higienizado.'
-                                }
-                            }
-                        ]
+                                    text: 'Não oferecemos serviço de quarto diário ou café da manhã, pois nosso foco é oferecer autonomia total e preços mais baixos. No entanto, fornecemos enxoval completo e o flat é entregue higienizado.',
+                                },
+                            },
+                        ],
                     })}
                 </script>
                 <script type="application/ld+json">
@@ -75,7 +82,7 @@ const FlatVsHotelArticle: React.FC = () => {
                         '@type': 'Article',
                         mainEntityOfPage: {
                             '@type': 'WebPage',
-                            '@id': canonicalUrl
+                            '@id': canonicalUrl,
                         },
                         headline: pageTitle,
                         description: pageDescription,
@@ -83,22 +90,20 @@ const FlatVsHotelArticle: React.FC = () => {
                         author: {
                             '@type': 'Organization',
                             name: 'Flats Integração',
-                            url: 'https://www.flatsintegracao.com.br'
+                            url: 'https://www.flatsintegracao.com.br',
                         },
                         publisher: {
                             '@type': 'Organization',
                             name: 'Flats Integração',
                             url: 'https://www.flatsintegracao.com.br',
-                            sameAs: [
-                                'https://maps.app.goo.gl/9QPX2VnGxQwUCpzs6'
-                            ],
+                            sameAs: ['https://maps.app.goo.gl/9QPX2VnGxQwUCpzs6'],
                             logo: {
                                 '@type': 'ImageObject',
-                                url: 'https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg'
-                            }
+                                url: 'https://i.postimg.cc/CxBg00qr/Whats_App_Image_2025_11_21_at_11_00_19.jpg',
+                            },
                         },
                         datePublished: '2026-05-06T10:00:00-03:00',
-                        dateModified: '2026-05-06T10:00:00-03:00'
+                        dateModified: '2026-05-06T10:00:00-03:00',
                     })}
                 </script>
                 <script type="application/ld+json">
@@ -110,21 +115,21 @@ const FlatVsHotelArticle: React.FC = () => {
                                 '@type': 'ListItem',
                                 position: 1,
                                 name: 'Home',
-                                item: 'https://www.flatsintegracao.com.br'
+                                item: 'https://www.flatsintegracao.com.br',
                             },
                             {
                                 '@type': 'ListItem',
                                 position: 2,
                                 name: 'Guia',
-                                item: 'https://www.flatsintegracao.com.br/guia'
+                                item: 'https://www.flatsintegracao.com.br/guia',
                             },
                             {
                                 '@type': 'ListItem',
                                 position: 3,
                                 name: 'Flat ou Hotel',
-                                item: canonicalUrl
-                            }
-                        ]
+                                item: canonicalUrl,
+                            },
+                        ],
                     })}
                 </script>
             </Helmet>
@@ -139,7 +144,8 @@ const FlatVsHotelArticle: React.FC = () => {
                     Flat ou Hotel em Petrolina? Qual a Melhor Opção Para Você?
                 </h1>
                 <p className="text-xl text-stone-400 leading-relaxed">
-                    Comparamos preços, conforto e autonomia para você decidir onde se hospedar no Vale do São Francisco.
+                    Comparamos preços, conforto e autonomia para você decidir onde se hospedar no
+                    Vale do São Francisco.
                 </p>
             </header>
 
@@ -149,7 +155,9 @@ const FlatVsHotelArticle: React.FC = () => {
                     {/* Hotel Card */}
                     <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
                         <Hotel className="text-stone-500 mb-4" size={40} />
-                        <h3 className="text-2xl font-bold mb-4 text-white font-heading">Hotel Tradicional</h3>
+                        <h3 className="text-2xl font-bold mb-4 text-white font-heading">
+                            Hotel Tradicional
+                        </h3>
                         <ul className="space-y-3">
                             <li className="flex items-start gap-2 text-stone-400">
                                 <CheckCircle2 size={18} className="text-stone-600 mt-1 shrink-0" />
@@ -176,7 +184,9 @@ const FlatVsHotelArticle: React.FC = () => {
                             Melhor Escolha
                         </div>
                         <Home className="text-orange-500 mb-4" size={40} />
-                        <h3 className="text-2xl font-bold mb-4 text-white font-heading">Flat Mobiliado</h3>
+                        <h3 className="text-2xl font-bold mb-4 text-white font-heading">
+                            Flat Mobiliado
+                        </h3>
                         <ul className="space-y-3">
                             <li className="flex items-start gap-2 text-stone-200">
                                 <CheckCircle2 size={18} className="text-orange-500 mt-1 shrink-0" />
@@ -203,7 +213,9 @@ const FlatVsHotelArticle: React.FC = () => {
             <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-orange prose-headings:font-heading prose-headings:font-bold text-stone-300">
                 <section>
                     <p>
-                        Petrolina oferece hoje uma rede hoteleira robusta, mas o crescimento do <strong>aluguel por temporada</strong> trouxe uma nova alternativa que tem conquistado tanto turistas quanto executivos: os flats mobiliados no Centro.
+                        Petrolina oferece hoje uma rede hoteleira robusta, mas o crescimento do{' '}
+                        <strong>aluguel por temporada</strong> trouxe uma nova alternativa que tem
+                        conquistado tanto turistas quanto executivos: os flats mobiliados no Centro.
                     </p>
                 </section>
 
@@ -212,10 +224,14 @@ const FlatVsHotelArticle: React.FC = () => {
                     Entendendo os preços em Petrolina
                 </h2>
                 <p>
-                    Dados de buscadores mostram que as diárias em hotéis 3 estrelas variam entre <strong>R$ 300 e R$ 340</strong>. Para uma família de 4 pessoas, isso muitas vezes significa reservar dois quartos, dobrando o custo.
+                    Dados de buscadores mostram que as diárias em hotéis 3 estrelas variam entre{' '}
+                    <strong>R$ 300 e R$ 340</strong>. Para uma família de 4 pessoas, isso muitas
+                    vezes significa reservar dois quartos, dobrando o custo.
                 </p>
                 <p>
-                    Já o <strong>aluguel de temporada no Centro</strong> permite acomodar mais pessoas pelo mesmo valor de uma diária de hotel individual, oferecendo diárias competitivas a partir de <strong>R$ 199</strong> em imóveis bem localizados.
+                    Já o <strong>aluguel de temporada no Centro</strong> permite acomodar mais
+                    pessoas pelo mesmo valor de uma diária de hotel individual, oferecendo diárias
+                    competitivas a partir de <strong>R$ 199</strong> em imóveis bem localizados.
                 </p>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
@@ -223,20 +239,30 @@ const FlatVsHotelArticle: React.FC = () => {
                     Quando o Hotel faz mais sentido?
                 </h2>
                 <p>
-                    O hotel é ideal para quem está de passagem rápida (apenas uma noite) e não quer ter trabalho nenhum. Se você valoriza ter o café da manhã pronto ao acordar e não se importa em comer fora em todas as refeições, os hotéis tradicionais atendem bem.
+                    O hotel é ideal para quem está de passagem rápida (apenas uma noite) e não quer
+                    ter trabalho nenhum. Se você valoriza ter o café da manhã pronto ao acordar e
+                    não se importa em comer fora em todas as refeições, os hotéis tradicionais
+                    atendem bem.
                 </p>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <UtensilsCrossed className="text-orange-500" size={28} />
-                    A liberdade do Flat e a economia real
+                    <UtensilsCrossed className="text-orange-500" size={28} />A liberdade do Flat e a
+                    economia real
                 </h2>
                 <p>
-                    A grande diferença está na <strong>cozinha equipada</strong>. Em um flat, você economiza não apenas na diária, mas também na alimentação. Poder preparar seu próprio jantar ou ter uma geladeira grande para suas compras de mercado faz toda a diferença em estadias de 3 dias ou mais.
+                    A grande diferença está na <strong>cozinha equipada</strong>. Em um flat, você
+                    economiza não apenas na diária, mas também na alimentação. Poder preparar seu
+                    próprio jantar ou ter um frigobar para suas compras de mercado faz toda a
+                    diferença em estadias de 3 dias ou mais.
                 </p>
                 <div className="bg-white/5 border-l-4 border-orange-500 p-8 my-10 rounded-r-3xl">
-                    <h3 className="m-0 text-xl font-bold text-white mb-2">Custo-benefício calculado</h3>
+                    <h3 className="m-0 text-xl font-bold text-white mb-2">
+                        Custo-benefício calculado
+                    </h3>
                     <p className="m-0 text-stone-400 italic">
-                        "Estudos mostram que viajantes em flats economizam até 40% do orçamento total da viagem ao reduzir gastos com restaurantes e taxas de serviço de hotéis."
+                        "Estudos mostram que viajantes em flats economizam até 40% do orçamento
+                        total da viagem ao reduzir gastos com restaurantes e taxas de serviço de
+                        hotéis."
                     </p>
                 </div>
 
@@ -269,7 +295,8 @@ const FlatVsHotelArticle: React.FC = () => {
                         Quer a liberdade de um flat com preço de hotel econômico?
                     </h3>
                     <p className="text-stone-400 mb-12 text-xl">
-                        Nossos flats no Centro de Petrolina são a escolha lógica para quem busca o melhor custo-benefício.
+                        Nossos flats no Centro de Petrolina são a escolha lógica para quem busca o
+                        melhor custo-benefício.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <a

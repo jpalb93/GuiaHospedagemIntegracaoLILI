@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Loader2, Lock, LogIn, ShieldAlert } from 'lucide-react';
-import { restoreAdminUser } from '../../services/userManagement';
+import { canUserAccessProperty, restoreAdminUser } from '../../services/userManagement';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 import { useAdminContent } from '../../hooks/useAdminContent';
 import { useAdminSettings } from '../../hooks/useAdminSettings';
@@ -18,12 +18,14 @@ const DashboardHome = React.lazy(() => import('./DashboardHome'));
 const ReservationCalendar = React.lazy(() => import('./ReservationCalendar'));
 const AnalyticsDashboard = React.lazy(() => import('./AnalyticsDashboard'));
 const ActivityLogs = React.lazy(() => import('./ActivityLogs'));
+const CompaniesManager = React.lazy(() => import('./CompaniesManager'));
 
 import AdminNavigation from './AdminNavigation';
 import ConfirmModal from './ConfirmModal';
+import flatsLogo from '../../assets/flats-integracao-logo.png';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface AdminDashboardProps { }
+interface AdminDashboardProps {}
 
 const FallbackLoader = () => (
     <div className="h-full w-full flex flex-col items-center justify-center min-h-[50vh] animate-fadeIn">
@@ -45,6 +47,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     const [refreshKey, setRefreshKey] = useState(0);
 
     const { activeTab, setActiveTab } = ui;
+    const canAccessCorporate = auth.userPermission
+        ? canUserAccessProperty(auth.userPermission, 'integracao')
+        : false;
 
     // AUTO-REFRESH: Quando aba volta após longo período, força reload da página
     useEffect(() => {
@@ -169,19 +174,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                 setActiveTab={(tab) =>
                     setActiveTab(
                         tab as
-                        | 'home'
-                        | 'create'
-                        | 'list'
-                        | 'calendar'
-                        | 'blocks'
-                        | 'places'
-                        | 'tips'
-                        | 'reviews'
-                        | 'suggestions'
-                        | 'suggestions'
-                        | 'settings'
-                        | 'analytics'
-                        | 'logs'
+                            | 'home'
+                            | 'create'
+                            | 'list'
+                            | 'calendar'
+                            | 'blocks'
+                            | 'companies'
+                            | 'places'
+                            | 'tips'
+                            | 'reviews'
+                            | 'suggestions'
+                            | 'settings'
+                            | 'analytics'
+                            | 'logs'
                     )
                 }
                 isMobileMenuOpen={isMobileMenuOpen}
@@ -192,33 +197,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
             />
 
             {/* MAIN CONTENT AREA */}
-            <div className="md:pl-72 pb-32 md:pb-12 min-h-screen transition-all duration-300">
+            <div className="xl:pl-72 pb-[calc(11rem+env(safe-area-inset-bottom,0px))] xl:pb-12 min-h-screen transition-all duration-300 max-w-[100vw] overflow-x-hidden">
                 <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-                    {/* HEADER MOBILE (Title only) */}
-                    <div className="md:hidden mb-6 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-heading">
-                                {auth.userPermission?.role === 'super_admin'
-                                    ? 'Admin Geral'
-                                    : auth.userPermission?.allowedProperties.length === 1 &&
-                                        auth.userPermission.allowedProperties[0] === 'lili'
-                                        ? 'Flat da Lili'
+                    {/* HEADER MOBILE & TABLET (< 1280px) — ULTRA CHIC COM LOGOMARCA */}
+                    <div className="xl:hidden mb-6 p-4 sm:p-5 bg-gradient-to-r from-stone-900 via-stone-850 to-gray-900 text-white rounded-[2.2rem] border border-white/10 shadow-2xl shadow-stone-900/30 flex items-center justify-between gap-4 relative overflow-hidden backdrop-blur-xl">
+                        <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                        <div className="flex items-center gap-3.5 relative z-10 min-w-0">
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 p-1.5 backdrop-blur-md border border-white/20 shadow-md shrink-0 flex items-center justify-center">
+                                <img
+                                    src={flatsLogo}
+                                    alt="Flats Integração"
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+
+                            <div className="flex flex-col min-w-0">
+                                <h1 className="text-lg sm:text-xl font-extrabold font-heading text-white tracking-tight leading-snug truncate">
+                                    {auth.userPermission?.role === 'super_admin'
+                                        ? 'Admin Geral'
                                         : auth.userPermission?.allowedProperties.length === 1 &&
-                                            auth.userPermission.allowedProperties[0] === 'integracao'
+                                            auth.userPermission.allowedProperties[0] === 'lili'
+                                          ? 'Flat da Lili'
+                                          : auth.userPermission?.allowedProperties.length === 1 &&
+                                              auth.userPermission.allowedProperties[0] ===
+                                                  'integracao'
                                             ? 'Flats Integração'
-                                            : 'Painel de Gestão'}
-                            </h1>
-                            <div className="flex flex-col">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Bem-vindo, {auth.user.email?.split('@')[0]}
-                                </p>
-                                {auth.userPermission && (
-                                    <span className="text-[10px] uppercase font-bold text-orange-600 dark:text-orange-400">
-                                        {auth.userPermission.role === 'super_admin'
-                                            ? 'Super Admin'
-                                            : 'Gestor de Propriedade'}
+                                            : 'Flats Integração'}
+                                </h1>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-[11px] font-medium text-stone-300 truncate">
+                                        Bem-vindo,{' '}
+                                        <strong className="text-white font-extrabold">
+                                            {auth.user.email?.split('@')[0]}
+                                        </strong>
                                     </span>
-                                )}
+                                    {auth.userPermission && (
+                                        <span className="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 tracking-widest font-heading">
+                                            {auth.userPermission.role === 'super_admin'
+                                                ? 'Super Admin'
+                                                : 'Gestor'}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -235,7 +256,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                         Acesso Limitado detectado
                                     </h3>
                                     <p className="text-sm text-red-700 dark:text-red-300">
-                                        Seus dados de permissão não foram encontrados no banco de dados. Isso pode ocorrer após uma limpeza de dados.
+                                        Seus dados de permissão não foram encontrados no banco de
+                                        dados. Isso pode ocorrer após uma limpeza de dados.
                                     </p>
                                 </div>
                             </div>
@@ -244,7 +266,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     if (!auth.user?.email) return;
                                     const success = await restoreAdminUser(auth.user.email);
                                     if (success) {
-                                        alert('Permissões restauradas com sucesso! A página será recarregada.');
+                                        alert(
+                                            'Permissões restauradas com sucesso! A página será recarregada.'
+                                        );
                                         window.location.reload();
                                     } else {
                                         alert('Falha ao restaurar permissões. Tente novamente.');
@@ -267,17 +291,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     onNavigate={(tab) =>
                                         setActiveTab(
                                             tab as
-                                            | 'home'
-                                            | 'create'
-                                            | 'list'
-                                            | 'calendar'
-                                            | 'blocks'
-                                            | 'places'
-                                            | 'tips'
-                                            | 'reviews'
-                                            | 'suggestions'
-                                            | 'suggestions'
-                                            | 'settings'
+                                                | 'home'
+                                                | 'create'
+                                                | 'list'
+                                                | 'calendar'
+                                                | 'blocks'
+                                                | 'companies'
+                                                | 'places'
+                                                | 'tips'
+                                                | 'reviews'
+                                                | 'suggestions'
+                                                | 'settings'
+                                                | 'analytics'
+                                                | 'logs'
                                         )
                                     }
                                     userPermission={auth.userPermission}
@@ -354,6 +380,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                         blockedDates={data.blockedDates}
                                     />
                                 </div>
+                            )}
+
+                            {activeTab === 'companies' && canAccessCorporate && (
+                                <CompaniesManager />
                             )}
 
                             {activeTab === 'places' && <PlacesManager places={content.places} />}

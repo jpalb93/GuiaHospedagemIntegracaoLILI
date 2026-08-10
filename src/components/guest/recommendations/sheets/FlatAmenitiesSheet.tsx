@@ -53,24 +53,48 @@ const FlatAmenitiesSheet: React.FC<FlatAmenitiesSheetProps> = ({ propertyId }) =
                             <span className="bg-red-100 text-red-600 p-0.5 rounded">🚗</span>
                             <span>
                                 <strong className="text-gray-800 dark:text-gray-200">
-                                    {t('Não possuímos estacionamento', 'We do not have parking', 'No tenemos estacionamiento')}
+                                    {t(
+                                        'Não possuímos estacionamento',
+                                        'We do not have parking',
+                                        'No tenemos estacionamiento'
+                                    )}
                                 </strong>{' '}
-                                ({t('vagas disponíveis na rua', 'street parking available', 'aparcamiento disponible en la calle')}).
+                                (
+                                {t(
+                                    'vagas disponíveis na rua',
+                                    'street parking available',
+                                    'aparcamiento disponible en la calle'
+                                )}
+                                ).
                             </span>
                         </div>
                         <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
                             <span className="bg-orange-100 text-orange-600 p-0.5 rounded">👣</span>
-                            <span>{t('O prédio não possui elevador (acesso por escadas).', 'The building has no elevator (stairs access).', 'El edificio no tiene ascensor (acceso por escaleras).')}</span>
+                            <span>
+                                {t(
+                                    'O prédio não possui elevador (acesso por escadas).',
+                                    'The building has no elevator (stairs access).',
+                                    'El edificio no tiene ascensor (acceso por escaleras).'
+                                )}
+                            </span>
                         </div>
                     </div>
                     <div className="flex gap-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide pt-1">
                         <span className="flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>{' '}
-                            {t('Aeroporto: 15-20 min', 'Airport: 15-20 min', 'Aeropuerto: 15-20 min')}
+                            {t(
+                                'Aeroporto: 15-20 min',
+                                'Airport: 15-20 min',
+                                'Aeropuerto: 15-20 min'
+                            )}
                         </span>
                         <span className="flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>{' '}
-                            {t('Rodoviária: 10-15 min', 'Bus Station: 10-15 min', 'Estación de Autobuses: 10-15 min')}
+                            {t(
+                                'Rodoviária: 10-15 min',
+                                'Bus Station: 10-15 min',
+                                'Estación de Autobuses: 10-15 min'
+                            )}
                         </span>
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/20 rounded-xl p-3 mt-2">
@@ -78,9 +102,17 @@ const FlatAmenitiesSheet: React.FC<FlatAmenitiesSheetProps> = ({ propertyId }) =
                             {t('Curiosidade Local', 'Local Curiosity', 'Curiosidad Local')}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400 italic">
-                            {t('Quase em frente, você verá o icônico ', 'Almost in front, you will see the iconic ', 'Casi enfrente, verás el icónico ')}
+                            {t(
+                                'Quase em frente, você verá o icônico ',
+                                'Almost in front, you will see the iconic ',
+                                'Casi enfrente, verás el icónico '
+                            )}
                             <strong className="text-orange-800 dark:text-orange-300">
-                                {t('Monumento da Integração', 'Integration Monument', 'Monumento a la Integración')}
+                                {t(
+                                    'Monumento da Integração',
+                                    'Integration Monument',
+                                    'Monumento a la Integración'
+                                )}
                             </strong>{' '}
                             {t(
                                 '(apelidado de "Monumento da Besteira"). Ele simboliza a união dos bairros de Petrolina! 🤩',
@@ -107,7 +139,11 @@ const IntegracaoAmenities: React.FC = () => {
             {/* Cozinha Privativa */}
             <div>
                 <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">
-                    {t('Na sua cozinha privativa:', 'In your private kitchen:', 'En su cocina privada:')}
+                    {t(
+                        'Na sua cozinha privativa:',
+                        'In your private kitchen:',
+                        'En su cocina privada:'
+                    )}
                 </h4>
                 <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                     {[
@@ -131,7 +167,11 @@ const IntegracaoAmenities: React.FC = () => {
             {/* Banheiro Privativo */}
             <div>
                 <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">
-                    {t('No seu banheiro privativo:', 'In your private bathroom:', 'En su baño privado:')}
+                    {t(
+                        'No seu banheiro privativo:',
+                        'In your private bathroom:',
+                        'En su baño privado:'
+                    )}
                 </h4>
                 <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                     {[
@@ -139,24 +179,26 @@ const IntegracaoAmenities: React.FC = () => {
                         t('Banheira ou chuveiro', 'Bath or shower', 'Bañera o ducha'),
                         t('Toalhas', 'Towels', 'Toallas'),
                         t('Papel higiênico', 'Toilet paper', 'Papel higiénico'),
-                    ].map(
-                        (item, idx) => (
-                            <div
-                                key={idx}
-                                className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
-                            >
-                                <CheckCircle2 size={12} className="text-green-500 shrink-0" />
-                                <span>{item}</span>
-                            </div>
-                        )
-                    )}
+                    ].map((item, idx) => (
+                        <div
+                            key={idx}
+                            className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                        >
+                            <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                            <span>{item}</span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
             {/* Comodidades do Apartamento */}
             <div>
                 <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">
-                    {t('Comodidades do apartamento:', 'Apartment amenities:', 'Comodidades del apartamento:')}
+                    {t(
+                        'Comodidades do apartamento:',
+                        'Apartment amenities:',
+                        'Comodidades del apartamento:'
+                    )}
                 </h4>
                 <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                     {[
@@ -164,7 +206,11 @@ const IntegracaoAmenities: React.FC = () => {
                         t('Cozinha', 'Kitchen', 'Cocina'),
                         t('Sofá', 'Sofa', 'Sofá'),
                         t('Roupa de cama', 'Bed linen', 'Ropa de cama'),
-                        t('Tomada perto da cama', 'Socket near the bed', 'Enchufe cerca de la cama'),
+                        t(
+                            'Tomada perto da cama',
+                            'Socket near the bed',
+                            'Enchufe cerca de la cama'
+                        ),
                         t('Produtos de limpeza', 'Cleaning products', 'Productos de limpieza'),
                         t('Mesa de trabalho', 'Desk', 'Escritorio'),
                         t('Área de estar', 'Seating Area', 'Zona de estar'),
@@ -181,9 +227,17 @@ const IntegracaoAmenities: React.FC = () => {
                         t('Fogão', 'Stove', 'Estufa'),
                         t('Área para refeições', 'Dining area', 'Zona de comedor'),
                         t('Mesa de jantar', 'Dining table', 'Mesa de comedor'),
-                        t('Andares superiores acessíveis somente por escada', 'Upper floors accessible by stairs only', 'Pisos superiores accesibles solo por escaleras'),
+                        t(
+                            'Andares superiores acessíveis somente por escada',
+                            'Upper floors accessible by stairs only',
+                            'Pisos superiores accesibles solo por escaleras'
+                        ),
                         t('Independente', 'Detached', 'Independiente'),
-                        t('Flat particular em prédio', 'Private flat in building', 'Apartamento privado en edificio'),
+                        t(
+                            'Flat particular em prédio',
+                            'Private flat in building',
+                            'Apartamento privado en edificio'
+                        ),
                         t('Arara para roupas', 'Clothes rack', 'Perchero'),
                         t('Varal para secar roupas', 'Drying rack for clothing', 'Tendedero'),
                     ].map((item, idx) => (
@@ -257,7 +311,7 @@ const LiliAmenities: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                     {[
-                        t('Geladeira Inverter', 'Inverter Refrigerator', 'Refrigerador Inverter'),
+                        t('Frigobar', 'Mini-Fridge', 'Frigobar'),
                         t('Microondas', 'Microwave', 'Microondas'),
                         t('Air Fryer', 'Air Fryer', 'Freidora de Aire'),
                         t('Liquidificador', 'Blender', 'Licuadora'),
@@ -275,7 +329,11 @@ const LiliAmenities: React.FC = () => {
                     ))}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-1">
-                    {t('+ Panelas, louça e talheres.', '+ Pots, crockery and cutlery.', '+ Ollas, vajilla y cubiertos.')}
+                    {t(
+                        '+ Panelas, louça e talheres.',
+                        '+ Pots, crockery and cutlery.',
+                        '+ Ollas, vajilla y cubiertos.'
+                    )}
                 </p>
             </div>
 
@@ -296,18 +354,16 @@ const LiliAmenities: React.FC = () => {
                         t('Roupas de Cama', 'Bed linen', 'Ropa de cama'),
                         t('TV', 'TV', 'TV'),
                         t('Escrivaninha', 'Desk', 'Escritorio'),
-                    ].map(
-                        (item, idx) => (
-                            <div
-                                key={idx}
-                                className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm"
-                            >
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                    {item}
-                                </span>
-                            </div>
-                        )
-                    )}
+                    ].map((item, idx) => (
+                        <div
+                            key={idx}
+                            className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm"
+                        >
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                {item}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -327,16 +383,14 @@ const LiliAmenities: React.FC = () => {
                             t('Chuveiro Elétrico', 'Electric Shower', 'Ducha Eléctrica'),
                             t('Secador de Cabelo', 'Hair dryer', 'Secador de pelo'),
                             t('Toalhas e Sabonete', 'Towels and Soap', 'Toallas y Jabón'),
-                        ].map(
-                            (item, idx) => (
-                                <li
-                                    key={idx}
-                                    className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5"
-                                >
-                                    <span className="w-1 h-1 rounded-full bg-cyan-500"></span> {item}
-                                </li>
-                            )
-                        )}
+                        ].map((item, idx) => (
+                            <li
+                                key={idx}
+                                className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5"
+                            >
+                                <span className="w-1 h-1 rounded-full bg-cyan-500"></span> {item}
+                            </li>
+                        ))}
                     </ul>
                 </div>
                 <div>

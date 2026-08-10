@@ -1,33 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { subscribeToFutureReservations } from '../../services/firebase/reservations';
-import { subscribeToFutureBlockedDates } from '../../services/firebase/blockedDates';
-import { Reservation, BlockedDateRange } from '../../types';
+import {
+    fetchPublicAvailability,
+    PublicReservationPeriod,
+} from '../../services/publicAvailability';
+import { BlockedDateRange } from '../../types';
 
 const AvailabilityCalendar: React.FC = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [reservations, setReservations] = useState<PublicReservationPeriod[]>([]);
     const [blockedDates, setBlockedDates] = useState<BlockedDateRange[]>([]);
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
-        let unsubscribeRes: (() => void) | undefined;
-        let unsubscribeBlocked: (() => void) | undefined;
-
-        const setupSubs = async () => {
-            unsubscribeRes = await subscribeToFutureReservations((data) => {
-                setReservations(data);
+        const controller = new AbortController();
+        fetchPublicAvailability('lili', controller.signal)
+            .then((data) => {
+                setReservations(data.reservations);
+                setBlockedDates(data.blockedDates);
+                setLoadError(false);
+            })
+            .catch((error: unknown) => {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+                setLoadError(true);
             });
-            unsubscribeBlocked = await subscribeToFutureBlockedDates((data) => {
-                setBlockedDates(data);
-            });
-        };
-
-        setupSubs();
-
-        return () => {
-            if (unsubscribeRes) unsubscribeRes();
-            if (unsubscribeBlocked) unsubscribeBlocked();
-        };
+        return () => controller.abort();
     }, []);
 
     const isDateOccupied = (date: Date) => {
@@ -36,7 +33,7 @@ const AvailabilityCalendar: React.FC = () => {
         const targetTime = target.getTime();
 
         const isReserved = reservations.some((res) => {
-            if (!res.checkInDate || !res.checkoutDate || res.status === 'cancelled') return false;
+            if (!res.checkInDate || !res.checkoutDate) return false;
             const [inY, inM, inD] = res.checkInDate.split('-').map(Number);
             const [outY, outM, outD] = res.checkoutDate.split('-').map(Number);
             const start = new Date(inY, inM - 1, inD);
@@ -137,12 +134,13 @@ const AvailabilityCalendar: React.FC = () => {
                             key={idx}
                             className={`
                         aspect-square flex items-center justify-center rounded-xl text-sm font-medium relative transition-all duration-300
-                        ${isOccupied
-                                    ? 'bg-red-50 text-red-300 cursor-not-allowed'
-                                    : isPast
-                                        ? 'text-gray-200 cursor-not-allowed'
-                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-900 hover:text-white cursor-pointer'
-                                } 
+                        ${
+                            isOccupied
+                                ? 'bg-red-50 text-red-300 cursor-not-allowed'
+                                : isPast
+                                  ? 'text-gray-200 cursor-not-allowed'
+                                  : 'bg-gray-50 text-gray-700 hover:bg-gray-900 hover:text-white cursor-pointer'
+                        } 
                         ${isToday ? 'ring-1 ring-gray-900 font-bold' : ''}
                      `}
                         >
@@ -162,6 +160,12 @@ const AvailabilityCalendar: React.FC = () => {
                     Ocupado
                 </div>
             </div>
+            {loadError && (
+                <p role="status" className="mt-4 text-center text-sm text-amber-800">
+                    Não foi possível atualizar a disponibilidade agora. Tente novamente em
+                    instantes.
+                </p>
+            )}
         </div>
     );
 };

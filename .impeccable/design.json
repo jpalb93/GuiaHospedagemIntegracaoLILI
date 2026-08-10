@@ -1,0 +1,354 @@
+{
+    "schemaVersion": 2,
+    "generatedAt": "2026-08-08T04:15:00.000Z",
+    "title": "Design System: Flats Integração",
+    "extensions": {
+        "colorMeta": {
+            "brasa-petrolina": {
+                "role": "primary",
+                "displayName": "Brasa Petrolina",
+                "canonical": "#f97316",
+                "tonalRamp": [
+                    "#431407",
+                    "#7c2d12",
+                    "#9a3412",
+                    "#c2410c",
+                    "#ea580c",
+                    "#f97316",
+                    "#fb923c",
+                    "#ffedd5"
+                ]
+            },
+            "brasa-deep": {
+                "role": "primary",
+                "displayName": "Brasa Deep",
+                "canonical": "#ea580c",
+                "tonalRamp": [
+                    "#431407",
+                    "#7c2d12",
+                    "#9a3412",
+                    "#c2410c",
+                    "#ea580c",
+                    "#f97316",
+                    "#fb923c",
+                    "#ffedd5"
+                ]
+            },
+            "brasa-cta": {
+                "role": "primary",
+                "displayName": "Brasa CTA",
+                "canonical": "#c2410c",
+                "tonalRamp": [
+                    "#431407",
+                    "#7c2d12",
+                    "#9a3412",
+                    "#c2410c",
+                    "#ea580c",
+                    "#f97316",
+                    "#fb923c",
+                    "#ffedd5"
+                ]
+            },
+            "stone-ink": {
+                "role": "neutral",
+                "displayName": "Stone Ink",
+                "canonical": "#0c0a09",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "stone-panel": {
+                "role": "neutral",
+                "displayName": "Stone Panel",
+                "canonical": "#1c1917",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "stone-line": {
+                "role": "neutral",
+                "displayName": "Stone Line",
+                "canonical": "#292524",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "stone-mute": {
+                "role": "neutral",
+                "displayName": "Stone Mute",
+                "canonical": "#a8a29e",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "stone-body": {
+                "role": "neutral",
+                "displayName": "Stone Body",
+                "canonical": "#d6d3d1",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "snow": {
+                "role": "neutral",
+                "displayName": "Snow",
+                "canonical": "#f5f5f4",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "ink": {
+                "role": "neutral",
+                "displayName": "Ink",
+                "canonical": "#0c0a09",
+                "tonalRamp": [
+                    "#0c0a09",
+                    "#1c1917",
+                    "#292524",
+                    "#44403c",
+                    "#78716c",
+                    "#a8a29e",
+                    "#d6d3d1",
+                    "#f5f5f4"
+                ]
+            },
+            "savings-green": {
+                "role": "tertiary",
+                "displayName": "Savings Green",
+                "canonical": "#34d399",
+                "tonalRamp": [
+                    "#064e3b",
+                    "#065f46",
+                    "#047857",
+                    "#059669",
+                    "#10b981",
+                    "#34d399",
+                    "#6ee7b7",
+                    "#d1fae5"
+                ]
+            }
+        },
+        "typographyMeta": {
+            "display": { "displayName": "Display", "purpose": "Hero H1 hotel-scale only." },
+            "headline": {
+                "displayName": "Headline",
+                "purpose": "Section titles across the landing."
+            },
+            "title": { "displayName": "Title", "purpose": "Feature and card titles." },
+            "body": { "displayName": "Body", "purpose": "Paragraphs and supporting copy." },
+            "label": {
+                "displayName": "Label",
+                "purpose": "Nav, eyebrows, and CTA uppercase labels."
+            }
+        },
+        "shadows": [
+            {
+                "name": "nav-float",
+                "value": "0 25px 50px -12px rgba(0,0,0,0.25)",
+                "purpose": "Floating pill header after scroll."
+            },
+            {
+                "name": "cta-lift",
+                "value": "0 10px 15px -3px rgba(0,0,0,0.1), 0 0 20px rgba(249,115,22,0.3)",
+                "purpose": "WhatsApp / conversion button hover glow."
+            },
+            {
+                "name": "ember-dot",
+                "value": "0 0 10px rgba(249,115,22,0.5)",
+                "purpose": "Small accent dots in hero proof row."
+            }
+        ],
+        "motion": [
+            {
+                "name": "ease-standard",
+                "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+                "purpose": "Default entrance and state transitions."
+            },
+            {
+                "name": "duration-cta",
+                "value": "300ms",
+                "purpose": "Button hover and lift."
+            },
+            {
+                "name": "duration-nav",
+                "value": "700ms",
+                "purpose": "Header pill morph on scroll."
+            }
+        ],
+        "breakpoints": [
+            { "name": "md", "value": "768px" },
+            { "name": "lg", "value": "1024px" },
+            { "name": "motion-desktop", "value": "801px" }
+        ]
+    },
+    "components": [
+        {
+            "name": "Hero Primary CTA",
+            "kind": "button",
+            "refersTo": "button-hero-primary",
+            "description": "Sharp snow CTA on the dark hero — reserve / primary action.",
+            "html": "<button class=\"ds-btn-hero-primary\">RESERVAR AGORA <span aria-hidden=\"true\">→</span></button>",
+            "css": ".ds-btn-hero-primary { background: #f5f5f4; color: #0c0a09; padding: 1.25rem 2rem; border: none; border-radius: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.75rem; box-shadow: 0 0 20px rgba(255,255,255,0.1); transition: background 0.3s, transform 0.3s; cursor: pointer; } .ds-btn-hero-primary:hover { background: #ffffff; transform: translateY(-4px); } .ds-btn-hero-primary:focus-visible { outline: 2px solid #f97316; outline-offset: 3px; }"
+        },
+        {
+            "name": "Hero Ghost CTA",
+            "kind": "button",
+            "refersTo": "button-hero-ghost",
+            "description": "Secondary sharp outline CTA on the hero.",
+            "html": "<button class=\"ds-btn-hero-ghost\">VER AMBIENTES</button>",
+            "css": ".ds-btn-hero-ghost { background: transparent; color: #d6d3d1; padding: 1.25rem 2rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.3s, border-color 0.3s, background 0.3s; cursor: pointer; } .ds-btn-hero-ghost:hover { color: #ffffff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); } .ds-btn-hero-ghost:focus-visible { outline: 2px solid #f97316; outline-offset: 3px; }"
+        },
+        {
+            "name": "Nav Reserve CTA",
+            "kind": "button",
+            "refersTo": "button-nav-cta",
+            "description": "Pill Brasa CTA in the floating header.",
+            "html": "<button class=\"ds-btn-nav-cta\">RESERVAR</button>",
+            "css": ".ds-btn-nav-cta { background: #ea580c; color: #ffffff; padding: 0.75rem 1.5rem; border: none; border-radius: 9999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); transition: background 0.3s; cursor: pointer; } .ds-btn-nav-cta:hover { background: #f97316; } .ds-btn-nav-cta:focus-visible { outline: 2px solid #f97316; outline-offset: 3px; }"
+        },
+        {
+            "name": "WhatsApp CTA",
+            "kind": "button",
+            "refersTo": "button-whatsapp",
+            "description": "Final conversion pill — direct WhatsApp booking.",
+            "html": "<button class=\"ds-btn-whatsapp\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z\"/></svg> RESERVAR PELO WHATSAPP</button>",
+            "css": ".ds-btn-whatsapp { background: #c2410c; color: #ffffff; padding: 1.25rem 2rem; border: none; border-radius: 9999px; font-family: Inter, sans-serif; font-size: 1.125rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); transition: background 0.3s, transform 0.3s, box-shadow 0.3s; cursor: pointer; } .ds-btn-whatsapp:hover { background: #9a3412; transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2), 0 0 24px rgba(249,115,22,0.3); } .ds-btn-whatsapp:focus-visible { outline: 2px solid #f97316; outline-offset: 3px; }"
+        },
+        {
+            "name": "B2B Outline",
+            "kind": "button",
+            "refersTo": "button-b2b-outline",
+            "description": "Header outline pill for corporate quote.",
+            "html": "<button class=\"ds-btn-b2b\">COTAÇÃO B2B</button>",
+            "css": ".ds-btn-b2b { background: transparent; color: #ea580c; padding: 0.625rem 1rem; border: 1px solid rgba(249,115,22,0.3); border-radius: 9999px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s; cursor: pointer; } .ds-btn-b2b:hover { background: #fff7ed; } .ds-btn-b2b:focus-visible { outline: 2px solid #f97316; outline-offset: 3px; }"
+        },
+        {
+            "name": "Floating Nav Pill",
+            "kind": "nav",
+            "refersTo": "nav-pill",
+            "description": "Scrolled header pill over the dark landing.",
+            "html": "<nav class=\"ds-nav-pill\" aria-label=\"Principal\"><span class=\"ds-nav-brand\">Flats Integração</span><a href=\"#galeria\">Galeria</a><a href=\"#empresas\" class=\"ds-nav-hot\">Empresas</a><button class=\"ds-nav-cta\">Reservar</button></nav>",
+            "css": ".ds-nav-pill { display: flex; align-items: center; gap: 2rem; width: 92%; max-width: 72rem; margin: 0 auto; padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(24px); border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); font-family: 'Plus Jakarta Sans', sans-serif; } .ds-nav-brand { font-weight: 800; color: #0c0a09; font-size: 0.875rem; margin-right: auto; } .ds-nav-pill a { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #57534e; text-decoration: none; } .ds-nav-pill a:hover { color: #0c0a09; } .ds-nav-hot { color: #ea580c !important; } .ds-nav-cta { background: #ea580c; color: #fff; border: none; border-radius: 9999px; padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; } .ds-nav-cta:hover { background: #f97316; } .ds-nav-cta:focus-visible { outline: 2px solid #f97316; outline-offset: 3px; }"
+        },
+        {
+            "name": "Info Panel Card",
+            "kind": "card",
+            "refersTo": "card-panel",
+            "description": "Soft stone panel used for house rules / info tiles.",
+            "html": "<article class=\"ds-card-panel\"><div class=\"ds-card-icon\" aria-hidden=\"true\"></div><h3>Check-in</h3><p>a partir das 15h</p></article>",
+            "css": ".ds-card-panel { background: rgba(28,25,23,0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; color: #d6d3d1; font-family: Inter, sans-serif; transition: border-color 0.5s; } .ds-card-panel:hover { border-color: rgba(249,115,22,0.3); } .ds-card-icon { width: 3rem; height: 3rem; border-radius: 1rem; background: #292524; margin-bottom: 1.5rem; } .ds-card-panel h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 1.25rem; color: #ffffff; margin: 0 0 0.5rem; } .ds-card-panel p { margin: 0; font-size: 0.875rem; color: #a8a29e; font-style: italic; }"
+        },
+        {
+            "name": "Eyebrow Chip",
+            "kind": "chip",
+            "refersTo": "chip-eyebrow",
+            "description": "Section eyebrow label with ember tint.",
+            "html": "<span class=\"ds-chip-eyebrow\">COMODIDADES & ESTRUTURA</span>",
+            "css": ".ds-chip-eyebrow { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.2); color: #f97316; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }"
+        }
+    ],
+    "narrative": {
+        "northStar": "Petrolina Editorial Dark",
+        "overview": "O site público dos Flats Integração se comporta como um hotel boutique editorial em pedra escura: tipografia forte, fotografia real do imóvel, e oferta (economia, preço, o que está incluso) sempre legível. O clima é premium — no nível dos melhores sites de hotelaria do mundo — sóbrio, com momentos de “uau” por composição, escala tipográfica e imagem, nunca por efeitos genéricos.\n\nA densidade é generosa: seções amplas (py-32 / py-24), muito ar negativo, divisores finos e grids editoriais. O laranja de marca (Brasa Petrolina) aparece com parcimônia — accent, CTA de conversão, eyebrows — sobre um campo quase monocromático de stone.\n\nRejeições confirmadas: nada genérico, nada com “cara de IA” (beige cremoso, purple gradients, glassmorphism ornamental, badge soup, cards empilhados sem propósito). Guia do hóspede e admin estão fora deste sistema visual.",
+        "keyCharacteristics": [
+            "Pedra escura full-bleed com tipografia Plus Jakarta Sans em escala hotelaria",
+            "Brasa Petrolina como único accent de marca",
+            "Hero com CTAs de canto reto; nav/WhatsApp em pílula",
+            "Profundidade híbrida: camadas tonais + sombra suave em nav flutuante e CTAs",
+            "Boutique hotel UI: espaçoso, refinado, detalhes premium sem enfeite"
+        ],
+        "rules": [
+            {
+                "name": "The One Ember Rule",
+                "body": "Brasa Petrolina ocupa no máximo uma fração pequena de cada viewport — accent e conversão, nunca preenchimento de seção.",
+                "section": "colors"
+            },
+            {
+                "name": "The Dark Field Rule",
+                "body": "O campo padrão da landing é stone-ink; superfícies claras ficam reservadas à nav flutuante e ao CTA hero claro.",
+                "section": "colors"
+            },
+            {
+                "name": "The Hotel Scale Rule",
+                "body": "Títulos de seção devem sentir escala de hotel boutique (grandes, leves no tracking), não dashboard.",
+                "section": "typography"
+            },
+            {
+                "name": "The Label Discipline Rule",
+                "body": "Uppercase + tracking largo só em labels/CTAs/nav — nunca em parágrafos.",
+                "section": "typography"
+            },
+            {
+                "name": "The Air First Rule",
+                "body": "Preferir espaço e divisores lineares a caixas; se um card não carrega interação ou conteúdo denso, preferir layout open.",
+                "section": "layout"
+            },
+            {
+                "name": "The Hybrid Depth Rule",
+                "body": "Camadas tonais primeiro; sombra só em elementos flutuantes ou de conversão.",
+                "section": "elevation"
+            },
+            {
+                "name": "The Dual CTA Geometry Rule",
+                "body": "Hero = reto; nav/WhatsApp = pílula. Não unificar sem decisão explícita.",
+                "section": "shapes"
+            }
+        ],
+        "dos": [
+            "Do manter o campo escuro e a Brasa Petrolina rara e decisiva.",
+            "Do priorizar tipografia grande + foto real + oferta (economia/preço/incluso) na hierarquia.",
+            "Do respeitar a Dual CTA Geometry (hero reto / nav-WhatsApp pílula).",
+            "Do usar ar generoso e divisores lineares antes de criar novos cards.",
+            "Do limitar savings-green a métricas de economia B2B."
+        ],
+        "donts": [
+            "Don't introduzir paletas creme, roxo, glow neon ou “AI SaaS” glass stacks.",
+            "Don't redesenhar guia do hóspede ou admin sob este documento — escopo é a landing.",
+            "Don't fabricar depoimentos, preços ou % de economia que não existam no produto/copy confirmada.",
+            "Don't transformar seções editoriais em dashboard de cards/stat strips.",
+            "Don't usar italic serif em botões, nav ou blocos longos de corpo."
+        ]
+    }
+}

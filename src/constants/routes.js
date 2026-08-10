@@ -1,7 +1,9 @@
-export const SITE_URL = 'https://flatsintegracao.com.br';
+export const SITE_URL = 'https://www.flatsintegracao.com.br';
 
 export const ROUTES = [
     '/',
+    '/hospedagem-em-petrolina',
+    '/flat-centro-petrolina',
     '/lili',
     '/politica-privacidade',
     '/guia',

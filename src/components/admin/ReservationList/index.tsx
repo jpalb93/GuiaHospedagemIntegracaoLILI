@@ -1,5 +1,13 @@
 import React, { useMemo } from 'react';
-import { Reservation, UserPermission, PropertyId, SavedInspectionData, PaymentStatus } from '../../../types';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+    Reservation,
+    UserPermission,
+    PropertyId,
+    SavedInspectionData,
+    PaymentStatus,
+    PaymentMethod,
+} from '../../../types';
 import { useAdminSettings } from '../../../hooks/useAdminSettings';
 import { updateReservation } from '../../../services/firebase/reservations';
 import { Search } from 'lucide-react';
@@ -35,6 +43,7 @@ interface ReservationListProps {
 }
 
 const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userPermission }) => {
+    const queryClient = useQueryClient();
     const {
         activeReservations,
         historyReservations,
@@ -74,16 +83,19 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     );
 
     // Quick View Modal State
-    const [quickViewReservation, setQuickViewReservation] = React.useState<Reservation | null>(null);
+    const [quickViewReservation, setQuickViewReservation] = React.useState<Reservation | null>(
+        null
+    );
 
     // Payment Registration Modal State
-    const [paymentModalReservation, setPaymentModalReservation] = React.useState<Reservation | null>(null);
+    const [paymentModalReservation, setPaymentModalReservation] =
+        React.useState<Reservation | null>(null);
 
     const handleConfirmPayment = async (
         reservationId: string,
         paymentStatus: PaymentStatus,
         depositAmount: number,
-        paymentMethod?: 'pix' | 'money' | 'card'
+        paymentMethod?: PaymentMethod
     ) => {
         try {
             await updateReservation(reservationId, {
@@ -113,7 +125,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         groupedHistory,
         allFiltered,
     } = useMemo(() => {
-        const allReservations = [...activeReservations, ...historyReservations];
+        const allReservations = [...historyReservations, ...activeReservations];
         const uniqueReservations = Array.from(
             new Map(allReservations.map((item: Reservation) => [item.id, item])).values()
         );
@@ -149,7 +161,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 }
             }
 
-            return (nameMatch || notesMatch) && propertyMatch && statusMatch && flatMatch && dateMatch;
+            return (
+                (nameMatch || notesMatch) && propertyMatch && statusMatch && flatMatch && dateMatch
+            );
         });
 
         const leavingTodayArr: Reservation[] = [];
@@ -192,8 +206,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         }
         const groupedHistoryArr = historyListArr.reduce(
             (groups: HistoryGroup[], res: Reservation) => {
-                if (!res.checkoutDate) return groups;
-                const [y, m] = res.checkoutDate.split('-');
+                const groupingDate = res.checkInDate || res.checkoutDate;
+                if (!groupingDate) return groups;
+                const [y, m] = groupingDate.split('-');
                 const date = new Date(parseInt(y), parseInt(m) - 1, 1);
                 const labelRaw = date.toLocaleDateString('pt-BR', {
                     month: 'long',
@@ -314,6 +329,10 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             setInspectionReservation((prev) =>
                 prev ? { ...prev, [fieldToUpdate]: inspectionData } : null
             );
+            queryClient.invalidateQueries({
+                queryKey: ['historyReservations'],
+                refetchType: 'all',
+            });
             showToast(
                 `Vistoria ${type === 'pre_checkin' ? 'PRÉ Check-in' : 'PÓS Check-out'} salva na reserva!`,
                 'success'
@@ -321,6 +340,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         } catch (error) {
             console.error('Erro ao salvar vistoria na reserva:', error);
             showToast('Erro ao salvar vistoria na reserva', 'error');
+            throw error;
         }
     };
 
@@ -396,7 +416,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     };
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn pb-[calc(11rem+env(safe-area-inset-bottom,0px))]">
             {/* Executive Section Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-stone-900 via-stone-850 to-stone-950 text-white p-6 sm:p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-stone-800">
                 <div className="relative z-10 space-y-1">
@@ -415,7 +435,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                         {staying.length} Hospedados Agora
                     </div>
-                    <div className="px-4 py-2 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs font-bold font-heading">
+                    <div className="px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold font-heading flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                         {leavingToday.length} Saindo Hoje
                     </div>
                 </div>
@@ -455,7 +476,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 <ReservationSection
                     title="Saindo Hoje"
                     list={leavingToday}
-                    statusColor="border-orange-500"
+                    statusColor="border-amber-500"
                     statusLabel="Checkout Hoje"
                     tomorrowStr={tomorrowStr}
                     selectedIds={selectedIds}
@@ -545,9 +566,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 reservation={inspectionReservation}
                 reservationName={inspectionReservation?.guestName || ''}
                 unitNumber={inspectionReservation?.flatNumber}
-                propertyId={
-                    (inspectionReservation?.propertyId as PropertyId) || 'integracao'
-                }
+                propertyId={(inspectionReservation?.propertyId as PropertyId) || 'integracao'}
                 checklistItems={settings?.data?.checklist || []}
                 onSaveInspection={handleSaveInspection}
             />

@@ -73,7 +73,7 @@ const Amenities: React.FC = () => {
                                 </h3>
                             </div>
                             <ul className="text-stone-300 text-sm space-y-1 columns-2">
-                                <li>Geladeira, Fogão e Microondas</li>
+                                <li>Frigobar, Fogão e Microondas</li>
                                 <li>Air Fryer e Liquidificador</li>
                                 <li>Cafeteira e Sanduicheira</li>
                                 <li>Purificador de água</li>

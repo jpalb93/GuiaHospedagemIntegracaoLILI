@@ -1,20 +1,59 @@
 import { useRef, useEffect } from 'react';
-import { Star, MapPin, ShieldCheck, Heart } from 'lucide-react';
-// GSAP dynamically imported
+import { Star, Quote, CheckCircle2 } from 'lucide-react';
+
+const REAL_REVIEWS = [
+    {
+        name: 'Pedro',
+        initials: 'P',
+        avatarBg: 'bg-amber-600/30 text-amber-300 border-amber-500/40',
+        country: 'Brasil',
+        flag: '🇧🇷',
+        rating: '10',
+        date: '22 de março de 2026',
+        tripType: 'Viajante individual',
+        title: 'Foi muito boa, ótima localização e higiene.',
+        comment:
+            'Da pra duas pessoas tranquilamente, anfitriã também muito atenciosa. Muito limpa e organizada.',
+    },
+    {
+        name: 'Gisele',
+        initials: 'G',
+        avatarBg: 'bg-sky-600/30 text-sky-300 border-sky-500/40',
+        country: 'Brasil',
+        flag: '🇧🇷',
+        rating: '10',
+        date: '13 de fevereiro de 2026',
+        tripType: 'Viajante individual',
+        title: 'Excepcional',
+        comment: 'Super indico, muito limpo, boa localização, estrutura perfeita.',
+    },
+    {
+        name: 'Edvanderson',
+        initials: 'E',
+        avatarBg: 'bg-orange-600/30 text-orange-300 border-orange-500/40',
+        country: 'Brasil',
+        flag: '🇧🇷',
+        rating: '9,0',
+        date: '4 de agosto de 2025',
+        tripType: 'Viajante individual',
+        title: 'Flat confortável e acolhedor próximo a Orla',
+        comment:
+            'O flat é bem confortável e acolhedor. Tem tudo o que você precisa, além do preço ser justo e convidativo. Fica próximo a Orla de Petrolina (uns 5 minutos a pé). Tem comércio próximo. Internet de boa qualidade e simpatia dos anfitriões...',
+    },
+] as const;
 
 const ReputationSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const scoreRef = useRef<HTMLSpanElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        let ctx: any;
-        let mm: any;
+        let ctx: { revert: () => void } | undefined;
+        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
 
         const initGsap = async () => {
             const [gsapModule, scrollTriggerModule] = await Promise.all([
                 import('gsap'),
-                import('gsap/ScrollTrigger')
+                import('gsap/ScrollTrigger'),
             ]);
 
             const gsap = gsapModule.default;
@@ -23,31 +62,34 @@ const ReputationSection: React.FC = () => {
 
             mm = gsap.matchMedia();
 
-            // Desktop Animation
             mm.add('(min-width: 801px)', () => {
                 ctx = gsap.context(() => {
                     const tl = gsap.timeline({
                         scrollTrigger: {
                             trigger: sectionRef.current,
                             start: 'top 95%',
-                            toggleActions: 'play none none reverse',
+                            toggleActions: 'play none none none',
                         },
                     });
 
-                    // 1. Reveal Text & Headline
-                    tl.from('.reputation-text', {
-                        y: 20,
-                        opacity: 0,
-                        duration: 0.6,
-                        stagger: 0.1,
-                        ease: 'power3.out',
-                    });
-
-                    // 2. Animate Score Number (Count up)
-                    tl.from(
-                        scoreRef.current,
+                    tl.fromTo(
+                        '.reputation-text',
+                        { y: 20, opacity: 0 },
                         {
-                            textContent: 0,
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.6,
+                            stagger: 0.1,
+                            ease: 'power3.out',
+                            clearProps: 'all',
+                        }
+                    );
+
+                    tl.fromTo(
+                        scoreRef.current,
+                        { textContent: 0 },
+                        {
+                            textContent: 9.0,
                             duration: 1.2,
                             ease: 'power1.out',
                             snap: { textContent: 0.1 },
@@ -62,28 +104,30 @@ const ReputationSection: React.FC = () => {
                         '-=0.4'
                     );
 
-                    // 3. Reveal Bottom Values
-                    tl.from(
-                        '.reputation-value',
+                    tl.fromTo(
+                        '.review-card',
+                        { y: 20, opacity: 0 },
                         {
-                            y: 15,
-                            opacity: 0,
-                            duration: 0.4,
-                            stagger: 0.05,
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.5,
+                            stagger: 0.15,
                             ease: 'power2.out',
+                            clearProps: 'all',
                         },
-                        '-=0.8'
+                        '-=0.4'
                     );
                 }, sectionRef);
             });
 
-            // Mobile Fallback
             mm.add('(max-width: 800px)', () => {
                 if (sectionRef.current) {
-                    const texts = sectionRef.current.querySelectorAll('.reputation-text');
-                    const values = sectionRef.current.querySelectorAll('.reputation-value');
-                    texts.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
-                    values.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
+                    sectionRef.current
+                        .querySelectorAll('.reputation-text, .review-card')
+                        .forEach((el) => {
+                            (el as HTMLElement).style.opacity = '1';
+                            (el as HTMLElement).style.transform = 'none';
+                        });
                 }
                 if (scoreRef.current) scoreRef.current.innerHTML = '9.0';
             });
@@ -101,103 +145,126 @@ const ReputationSection: React.FC = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} className="py-32 bg-stone-950 relative overflow-hidden">
-            {/* Decorative Background Number */}
+        <section ref={sectionRef} className="py-24 md:py-32 bg-stone-950 relative overflow-hidden">
             <div className="absolute top-0 right-0 text-[400px] font-heading font-bold text-white/5 leading-none select-none -z-0 pointer-events-none">
                 9
             </div>
 
-            <div className="container mx-auto px-6 md:px-12 relative z-10">
-                <div
-                    ref={contentRef}
-                    className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center border-b border-stone-800 pb-20"
-                >
-                    {/* Editorial Headline */}
-                    <div className="lg:col-span-6">
-                        <span className="reputation-text text-stone-400 font-bold tracking-[0.2em] uppercase text-xs mb-6 block">
-                            Experiência
-                        </span>
-                        <h2 className="reputation-text text-5xl md:text-7xl font-heading font-light text-white leading-tight tracking-tight mb-8">
-                            Aprovado por{" "}<br />
-                            <span className="italic font-serif text-stone-400">quem viveu.</span>
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 space-y-16">
+                {/* Header com Nota do Booking */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center border-b border-stone-800/80 pb-16">
+                    <div className="lg:col-span-6 space-y-5">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-heading font-bold uppercase tracking-[0.2em]">
+                            <Star size={12} className="fill-orange-400" />
+                            Prova no Booking
+                        </div>
+                        <h2 className="reputation-text text-4xl md:text-6xl font-heading font-bold text-white leading-[1.1] tracking-tight">
+                            Nota 9.0:{' '}
+                            <span className="text-stone-500 font-medium">quem ficou recomenda</span>
                         </h2>
-                        <p className="reputation-text text-xl text-stone-400 font-light max-w-lg leading-relaxed">
-                            A excelência não é um ato, mas um hábito. Nossa pontuação reflete o
-                            compromisso diário com seu conforto absoluto.
+                        <p className="reputation-text text-lg text-stone-400 font-light max-w-lg leading-relaxed">
+                            Avaliações 100% autênticas de hóspedes que se hospedaram em nossos flats
+                            em Petrolina através do Booking.com.
                         </p>
                     </div>
 
-                    {/* Framed Score Card */}
-                    <div className="lg:col-span-6 flex justify-end reputation-text">
+                    <div className="lg:col-span-6 flex lg:justify-end reputation-text">
                         <a
                             href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
                             target="_blank"
                             rel="noreferrer"
-                            className="group relative bg-stone-900/50 backdrop-blur-md p-10 rounded-[2.5rem] shadow-2xl shadow-black/50 hover:shadow-orange-900/20 hover:-translate-y-2 transition-all duration-500 border border-white/5 hover:border-orange-500/30"
+                            className="group w-full max-w-md bg-stone-900/60 border border-stone-800 hover:border-orange-500/40 p-8 md:p-10 rounded-[2rem] transition-all duration-500 shadow-xl hover:shadow-[0_10px_30px_rgba(249,115,22,0.15)]"
                         >
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3">
                                 <span
                                     ref={scoreRef}
-                                    className="text-[140px] leading-none font-heading font-medium text-white tracking-tighter group-hover:text-orange-500 transition-colors"
+                                    className="text-[7rem] md:text-[8.5rem] leading-none font-heading font-medium text-white tracking-tighter group-hover:text-orange-500 transition-colors"
                                 >
                                     9.0
                                 </span>
-                                <div className="pt-8">
-                                    <Star className="w-10 h-10 text-orange-500 fill-orange-500 animate-pulse" />
-                                </div>
+                                <Star
+                                    className="w-8 h-8 mt-6 text-orange-500 fill-orange-500 shrink-0"
+                                    aria-hidden
+                                />
                             </div>
-                            <div className="flex items-center justify-between mt-4 border-t border-stone-800 pt-6">
-                                <div className="flex flex-col">
-                                    <span className="uppercase text-sm tracking-widest font-bold text-stone-200">
+                            <div className="flex items-end justify-between mt-4 border-t border-stone-800 pt-5 gap-4">
+                                <div>
+                                    <p className="uppercase text-xs tracking-[0.15em] font-bold text-stone-200">
                                         Excepcional
-                                    </span>
-                                    <span className="text-stone-400 text-xs mt-1">
-                                        Baseado em avaliações reais
-                                    </span>
+                                    </p>
+                                    <p className="text-stone-500 text-xs mt-1">
+                                        Avaliações públicas no Booking.com
+                                    </p>
                                 </div>
-                                <span className="text-stone-400 text-sm italic group-hover:text-orange-400 transition-colors">
-                                    Ver no Booking &rarr;
+                                <span className="text-orange-500 text-sm font-medium shrink-0 group-hover:translate-x-0.5 transition-transform">
+                                    Ver notas →
                                 </span>
                             </div>
                         </a>
                     </div>
                 </div>
 
-                {/* Values Layout - Clean & Dividers */}
-                <div className="grid grid-cols-1 md:grid-cols-3 pt-16 gap-12">
-                    <div className="reputation-value space-y-4">
-                        <div className="w-full h-px bg-stone-800 mb-6"></div>
-                        <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
-                            <MapPin className="stroke-1 text-stone-400" size={20} /> Localização
-                        </h3>
-                        <p className="text-stone-400 font-light leading-relaxed text-sm">
-                            No epicentro de Petrolina. A poucos passos de tudo o que importa,
-                            mantendo a privacidade que você precisa.
-                        </p>
-                    </div>
+                {/* Depoimentos Reais dos Hóspedes */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {REAL_REVIEWS.map((review, idx) => (
+                        <div
+                            key={idx}
+                            className="review-card bg-stone-900/60 border border-stone-800 hover:border-orange-500/40 rounded-3xl p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl relative overflow-hidden group opacity-100"
+                        >
+                            {/* Watermark Quote Icon */}
+                            <Quote className="absolute top-5 right-5 text-white/5 w-16 h-16 pointer-events-none group-hover:text-orange-500/10 transition-colors" />
 
-                    <div className="reputation-value space-y-4">
-                        <div className="w-full h-px bg-stone-800 mb-6"></div>
-                        <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
-                            <ShieldCheck className="stroke-1 text-stone-400" size={20} />{' '}
-                            Privacidade & Segurança
-                        </h3>
-                        <p className="text-stone-400 font-light leading-relaxed text-sm">
-                            Monitoramento discreto e sistemas de segurança de última geração para
-                            sua total tranquilidade.
-                        </p>
-                    </div>
+                            <div className="space-y-4 relative z-10">
+                                {/* Header do Hóspede */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className={`w-10 h-10 rounded-full ${review.avatarBg} border flex items-center justify-center font-heading font-bold text-sm shrink-0`}
+                                        >
+                                            {review.initials}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-heading font-bold text-white text-base">
+                                                    {review.name}
+                                                </span>
+                                                <span className="text-sm" title={review.country}>
+                                                    {review.flag}
+                                                </span>
+                                            </div>
+                                            <span className="text-[11px] text-stone-500 flex items-center gap-1">
+                                                <CheckCircle2
+                                                    size={11}
+                                                    className="text-emerald-500"
+                                                />
+                                                Hóspede Verificado
+                                            </span>
+                                        </div>
+                                    </div>
 
-                    <div className="reputation-value space-y-4">
-                        <div className="w-full h-px bg-stone-800 mb-6"></div>
-                        <h3 className="text-lg font-heading font-medium text-stone-200 flex items-center gap-3">
-                            <Heart className="stroke-1 text-stone-400" size={20} /> Conforto Premium
-                        </h3>
-                        <p className="text-stone-400 font-light leading-relaxed text-sm">
-                            Cada detalhe, do lençol ao chuveiro, pensado para proporcionar uma
-                            experiência de descanso superior.
-                        </p>
-                    </div>
+                                    <div className="bg-blue-600 text-white font-heading font-bold text-sm px-3 py-1 rounded-xl shadow-md">
+                                        {review.rating}
+                                    </div>
+                                </div>
+
+                                {/* Conteúdo do Depoimento */}
+                                <div className="space-y-2 pt-2">
+                                    <h3 className="font-heading font-bold text-stone-100 text-base leading-snug">
+                                        "{review.title}"
+                                    </h3>
+                                    <p className="text-stone-300 text-sm font-light leading-relaxed">
+                                        {review.comment}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Rodapé com data e contexto */}
+                            <div className="pt-6 mt-6 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 relative z-10">
+                                <span>{review.date}</span>
+                                <span>{review.tripType}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>

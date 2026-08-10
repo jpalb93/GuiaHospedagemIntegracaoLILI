@@ -6,9 +6,9 @@ import { UserPermission } from '../types';
 // Mock Firestore
 vi.mock('firebase/firestore');
 
-// Mock Firebase
-vi.mock('./firebase', () => ({
-    db: {},
+// Mock Firebase config
+vi.mock('./firebase/config', () => ({
+    getFirestoreInstance: vi.fn().mockResolvedValue({}),
 }));
 
 // Mock logger
@@ -53,7 +53,10 @@ describe('User Management Service', () => {
         it('should normalize email to lowercase', async () => {
             const mockDocSnap = {
                 exists: () => true,
-                data: () => ({ role: 'admin', allowedProperties: ['lili'] }),
+                data: () => ({
+                    role: 'admin',
+                    allowedProperties: ['lili'],
+                }),
             };
 
             (firestore.doc as any).mockReturnValue({});

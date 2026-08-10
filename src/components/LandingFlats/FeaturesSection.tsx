@@ -1,18 +1,16 @@
 import { useRef, useEffect } from 'react';
-import { Shield, Sparkles, UtensilsCrossed, Wifi } from 'lucide-react';
-// GSAP dynamically imported
 
 const FeaturesSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-        let ctx: any;
-        let mm: any;
+        let ctx: { revert: () => void } | undefined;
+        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
 
         const initGsap = async () => {
             const [gsapModule, scrollTriggerModule] = await Promise.all([
                 import('gsap'),
-                import('gsap/ScrollTrigger')
+                import('gsap/ScrollTrigger'),
             ]);
 
             const gsap = gsapModule.default;
@@ -23,34 +21,30 @@ const FeaturesSection: React.FC = () => {
 
             mm.add('(min-width: 801px)', () => {
                 ctx = gsap.context(() => {
-                    const tl = gsap.timeline({
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top 95%', // Antecipado para aparecer logo que entra
-                            toggleActions: 'play none none reverse',
-                        },
-                    });
-
-                    tl.fromTo(
-                        '.feature-card',
-                        { y: 20, opacity: 0 }, // Reduzido de 50 para 20
+                    gsap.fromTo(
+                        '.feature-stage',
+                        { y: 24, opacity: 0 },
                         {
                             y: 0,
                             opacity: 1,
-                            duration: 0.5, // Reduzido de 0.8 para 0.5
-                            stagger: 0.1,  // Reduzido de 0.15 para 0.1
-                            ease: 'power2.out',
+                            duration: 0.7,
+                            stagger: 0.12,
+                            ease: 'power3.out',
+                            scrollTrigger: {
+                                trigger: sectionRef.current,
+                                start: 'top 88%',
+                                toggleActions: 'play none none reverse',
+                            },
                         }
                     );
                 }, sectionRef);
             });
 
-            // Mobile Fallback: Ensure visibility immediately
             mm.add('(max-width: 800px)', () => {
-                if (sectionRef.current) {
-                    const cards = sectionRef.current.querySelectorAll('.feature-card');
-                    cards.forEach((el) => { (el as HTMLElement).style.opacity = '1'; (el as HTMLElement).style.transform = 'translateY(0)'; });
-                }
+                sectionRef.current?.querySelectorAll('.feature-stage').forEach((el) => {
+                    (el as HTMLElement).style.opacity = '1';
+                    (el as HTMLElement).style.transform = 'translateY(0)';
+                });
             });
         };
 
@@ -63,72 +57,92 @@ const FeaturesSection: React.FC = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} id="features" className="py-32 bg-stone-950">
-            <div className="container mx-auto px-6 md:px-12">
-                <div className="mb-24 max-w-3xl">
-                    <span className="text-orange-500 font-bold tracking-[0.3em] uppercase text-[10px] mb-6 block">
-                        Comodidades & Estrutura
-                    </span>
-                    <h2 className="text-4xl md:text-6xl font-heading font-light text-white leading-[1.1] mb-8">
-                        O Melhor Flat em Petrolina{" "}<br />
-                        <span className="italic font-serif text-stone-500">para Sua Estadia</span>
+        <section ref={sectionRef} id="features" className="py-20 md:py-28 bg-stone-950">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 space-y-10 md:space-y-14">
+                <div className="feature-stage max-w-4xl space-y-5">
+                    <h2 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold text-white leading-[1.05] tracking-tight">
+                        Hotel cobra à parte.
+                        <br />
+                        <span className="text-orange-500">Aqui já vem no flat.</span>
                     </h2>
-                    <div className="w-24 h-px bg-gradient-to-r from-orange-500 to-transparent"></div>
+                    <p className="text-stone-400 text-lg md:text-xl font-light max-w-2xl leading-relaxed">
+                        Hospedagem em Petrolina no Centro, mobiliada de verdade. Você cozinha,
+                        trabalha e dorme bem, sem diária inchada de intermediário.
+                    </p>
                 </div>
 
-                {/* Layout Editorial - Sem cards pesados, apenas linhas e tipografia */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-stone-800/50">
-                    {[
-                        {
-                            num: '01',
-                            title: 'Hospedagem com Conforto',
-                            desc: 'Ar-condicionado split, roupas de cama premium e banheiros privativos para garantir a melhor hospedagem em Petrolina.',
-                            icon: <Sparkles className="stroke-1 w-6 h-6" />
-                        },
-                        {
-                            num: '02',
-                            title: 'Flat em Petrolina com Cozinha',
-                            desc: 'Cozinha completa com micro-ondas e utensílios. Ideal para quem busca um flat mobiliado em Petrolina com total autonomia.',
-                            icon: <UtensilsCrossed className="stroke-1 w-6 h-6" />
-                        },
-                        {
-                            num: '03',
-                            title: 'Internet e Trabalho Remoto',
-                            desc: 'Wi-Fi de alta velocidade e Smart TV. A estrutura perfeita para quem precisa de hospedagem em Petrolina para trabalho.',
-                            icon: <Wifi className="stroke-1 w-6 h-6" />
-                        },
-                        {
-                            num: '04',
-                            title: 'Segurança em Petrolina',
-                            desc: 'Monitoramento 24h e localização segura no Centro de Petrolina, garantindo tranquilidade em sua estadia.',
-                            icon: <Shield className="stroke-1 w-6 h-6" />
-                        }
-                    ].map((feature, i) => (
-                        <div key={i} className="feature-card group relative p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-stone-800/50 hover:bg-stone-900/30 transition-all duration-700">
-                            {/* Número Serifado de Fundo */}
-                            <span className="absolute top-8 right-10 text-6xl font-serif italic text-stone-900 group-hover:text-orange-950/20 transition-colors duration-700 select-none">
-                                {feature.num}
-                            </span>
-                            
-                            <div className="relative z-10 flex flex-col h-full">
-                                <div className="text-stone-500 group-hover:text-orange-500 transition-colors duration-500 mb-12">
-                                    {feature.icon}
-                                </div>
-                                
-                                <h3 className="text-xl font-heading font-medium text-white mb-6 leading-snug group-hover:translate-x-2 transition-transform duration-500">
-                                    {feature.title}
-                                </h3>
-                                
-                                <p className="text-stone-400 font-light text-sm leading-relaxed max-w-[240px]">
-                                    {feature.desc}
-                                </p>
+                {/* Spread editorial: foto grande + coluna de momentos */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
+                    <article className="feature-stage group relative lg:col-span-7 min-h-[420px] md:min-h-[560px] overflow-hidden bg-stone-900">
+                        <img
+                            src="/assets/gallery/gallery-2.webp"
+                            alt="Hospedagem em Petrolina: sala e estar do flat no Centro"
+                            width={1200}
+                            height={900}
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/35 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 space-y-3">
+                            <p className="text-white text-3xl md:text-5xl font-heading font-bold tracking-tight">
+                                Cozinha completa
+                            </p>
+                            <p className="text-stone-300 text-base md:text-lg font-light max-w-md leading-relaxed">
+                                Frigobar, micro-ondas, utensílios. Café e janta no flat: você
+                                economiza o que o hotel gasta em room service.
+                            </p>
+                        </div>
+                    </article>
 
-                                <div className="mt-auto pt-10">
-                                    <div className="w-0 group-hover:w-full h-px bg-orange-500/50 transition-all duration-700"></div>
+                    <div className="lg:col-span-5 flex flex-col gap-5 md:gap-6">
+                        <article className="feature-stage group relative flex-1 min-h-[240px] md:min-h-0 overflow-hidden bg-stone-900">
+                            <img
+                                src="/assets/gallery/gallery-4.webp"
+                                alt="Quarto da hospedagem Flats Integração em Petrolina"
+                                width={800}
+                                height={600}
+                                loading="lazy"
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 p-7 md:p-8 space-y-2">
+                                <p className="text-white text-2xl md:text-3xl font-heading font-bold tracking-tight">
+                                    Quarto de verdade
+                                </p>
+                                <p className="text-stone-300 text-sm md:text-base font-light leading-relaxed">
+                                    Ar split, cama arrumada, banheiro só seu. Descanso sem cara de
+                                    passagem.
+                                </p>
+                            </div>
+                        </article>
+
+                        <article className="feature-stage flex-1 bg-stone-900 border border-stone-800 p-7 md:p-9 flex flex-col justify-between gap-8 min-h-[220px]">
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="text-orange-500 text-xs font-heading font-bold uppercase tracking-[0.2em] mb-2">
+                                        Trabalho &amp; noite
+                                    </p>
+                                    <p className="text-white text-2xl font-heading font-bold tracking-tight">
+                                        Fibra + Smart TV
+                                    </p>
+                                    <p className="text-stone-400 text-sm mt-2 leading-relaxed">
+                                        Reunião de manhã, série à noite. Mesma unidade, zero
+                                        improvisação.
+                                    </p>
+                                </div>
+                                <div className="h-px bg-stone-800" />
+                                <div>
+                                    <p className="text-white text-2xl font-heading font-bold tracking-tight">
+                                        Centro monitorado
+                                    </p>
+                                    <p className="text-stone-400 text-sm mt-2 leading-relaxed">
+                                        24h de acompanhamento. Hospitais, comércio e polos de
+                                        serviço a poucos minutos.
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        </article>
+                    </div>
                 </div>
             </div>
         </section>

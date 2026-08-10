@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Reservation } from '../../../types';
 import { LogIn, LogOut, CheckCircle2, Sparkles } from 'lucide-react';
+import { getTodayDateStr } from '../../../utils/dateFormatting';
 
 interface ActivityFeedWidgetProps {
     reservations: Reservation[];
@@ -21,7 +22,7 @@ export const ActivityFeedWidget: React.FC<ActivityFeedWidgetProps> = ({
     onSelectReservation,
 }) => {
     const events = useMemo<ActivityEvent[]>(() => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getTodayDateStr();
         const list: ActivityEvent[] = [];
 
         reservations.forEach((r) => {
@@ -102,8 +103,8 @@ export const ActivityFeedWidget: React.FC<ActivityFeedWidgetProps> = ({
                                         evt.type === 'checkin'
                                             ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300'
                                             : evt.type === 'checkout'
-                                            ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-300'
-                                            : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300'
+                                              ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-300'
+                                              : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300'
                                     }`}
                                 >
                                     {evt.type === 'checkin' && <LogIn size={16} />}

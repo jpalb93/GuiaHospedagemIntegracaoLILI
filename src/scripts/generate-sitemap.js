@@ -18,6 +18,8 @@ const routes = ROUTES;
 // Map routes to their main source files to get actual modification date
 const routeToFileMap = {
     '/': 'src/pages/Home.tsx',
+    '/hospedagem-em-petrolina': 'src/pages/seo/HospedagemPetrolina.tsx',
+    '/flat-centro-petrolina': 'src/pages/seo/FlatCentroPetrolina.tsx',
     '/lili': 'src/components/LandingLili/index.tsx',
     '/politica-privacidade': 'src/pages/PrivacyPolicy.tsx',
     '/guia': 'src/pages/GuideList.tsx',
@@ -54,6 +56,12 @@ const generateSitemap = () => {
         if (route === '/') {
             priority = '1.0';
             changefreq = 'weekly';
+        } else if (
+            route === '/hospedagem-em-petrolina' ||
+            route === '/flat-centro-petrolina'
+        ) {
+            priority = '0.9';
+            changefreq = 'monthly';
         } else if (route === '/guia') {
             priority = '0.9';
             changefreq = 'weekly';

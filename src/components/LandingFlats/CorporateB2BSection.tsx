@@ -1,5 +1,15 @@
 import React from 'react';
-import { Building2, FileCheck2, DollarSign, Utensils, Wifi, ShieldCheck, ArrowRight, Briefcase } from 'lucide-react';
+import {
+    FileCheck2,
+    ArrowRight,
+    CheckCircle2,
+    XCircle,
+    TrendingDown,
+    Wifi,
+    MapPin,
+    Building2,
+    Sparkles,
+} from 'lucide-react';
 
 interface CorporateB2BSectionProps {
     onRequestQuote?: () => void;
@@ -12,129 +22,247 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
     };
 
     return (
-        <section id="empresas" className="py-20 bg-stone-900 text-stone-100 relative overflow-hidden w-full max-w-[100vw]">
-            {/* Background Accent Glow */}
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] max-w-full bg-orange-600/10 rounded-full blur-[120px] pointer-events-none overflow-hidden" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] max-w-full bg-blue-600/10 rounded-full blur-[120px] pointer-events-none overflow-hidden" />
+        <section
+            id="empresas"
+            className="py-24 md:py-32 bg-[#0C0A09] text-stone-100 relative overflow-hidden w-full max-w-[100vw]"
+        >
+            {/* Efeitos de Luz e Brilho "WOW" */}
+            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-orange-600/10 rounded-full blur-[160px] pointer-events-none" />
+            <div className="absolute bottom-10 right-10 w-[500px] h-[300px] bg-amber-500/5 rounded-full blur-[140px] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:40px_40px] opacity-[0.02] pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-                {/* SECTION HEADER */}
-                <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 font-extrabold text-xs tracking-widest uppercase font-heading">
-                        <Briefcase size={14} /> Soluções B2B & Longas Estadias
-                    </div>
-                    <h2 className="text-3xl md:text-5xl font-extrabold font-heading text-white tracking-tight leading-tight">
-                        Aluguel Mensal & Corporativo para Empresas em Petrolina
-                    </h2>
-                    <p className="text-stone-400 text-sm md:text-base leading-relaxed">
-                        Hospede seus diretores, engenheiros, consultores e equipes com conforto de casa, economia expressiva e total facilidade contábil.
-                    </p>
-                </div>
-
-                {/* 6 DIFFERENTIAL CARDS GRID */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
-                    {/* CARD 1 */}
-                    <div className="bg-stone-950/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-stone-800 hover:border-orange-500/40 transition-all duration-300 group hover:-translate-y-1">
-                        <div className="w-14 h-14 rounded-2xl bg-orange-500/10 text-orange-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <FileCheck2 size={28} />
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 space-y-20">
+                {/* Header — editorial + métricas WOW */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center bg-stone-900/60 backdrop-blur-xl border border-stone-800/80 rounded-3xl p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                    <div className="lg:col-span-7 space-y-5">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-heading font-bold uppercase tracking-[0.2em]">
+                            <Building2 size={14} />
+                            Empresas &amp; longas estadias
                         </div>
-                        <h3 className="text-xl font-bold text-white font-heading mb-3">
-                            Nota Fiscal PJ & Faturamento
-                        </h3>
-                        <p className="text-stone-400 text-xs md:text-sm leading-relaxed">
-                            Emissão imediata de Nota Fiscal para a empresa e opções de faturamento corporativo direto ou cartão corporativo.
+                        <h2 className="text-3xl md:text-5xl font-heading font-bold text-white tracking-tight leading-[1.1]">
+                            Hospedagem corporativa sob medida em Petrolina
+                        </h2>
+                        <p className="text-stone-400 text-base md:text-lg leading-relaxed max-w-xl font-light">
+                            Diretores, engenheiros e equipes de projeto em flats privativos, com
+                            Nota Fiscal PJ e custo menor que hotelaria.
                         </p>
                     </div>
 
-                    {/* CARD 2 */}
-                    <div className="bg-stone-950/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-stone-800 hover:border-orange-500/40 transition-all duration-300 group hover:-translate-y-1">
-                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <DollarSign size={28} />
+                    <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+                        <div className="bg-stone-950/80 border border-stone-800 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/30 transition-all shadow-md group">
+                            <div className="flex items-center justify-between">
+                                <span className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+                                    <TrendingDown size={20} />
+                                </span>
+                                <span className="text-[10px] uppercase tracking-widest font-mono text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded">
+                                    REDUÇÃO
+                                </span>
+                            </div>
+                            <div className="mt-4">
+                                <div className="text-emerald-400 font-heading font-bold text-2xl sm:text-3xl tracking-tight">
+                                    30% a 50%
+                                </div>
+                                <p className="text-stone-400 text-xs mt-1 font-medium">
+                                    Economia vs. hotelaria
+                                </p>
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold text-white font-heading mb-3">
-                            Economia de 30% a 50%
-                        </h3>
-                        <p className="text-stone-400 text-xs md:text-sm leading-relaxed">
-                            Tabela de desconto progressivo para contratos mensalistas (30+ dias), reduzindo drasticamente o custo comparado a hotéis tradicionais.
-                        </p>
-                    </div>
 
-                    {/* CARD 3 */}
-                    <div className="bg-stone-950/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-stone-800 hover:border-orange-500/40 transition-all duration-300 group hover:-translate-y-1">
-                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <Utensils size={28} />
+                        <div className="bg-stone-950/80 border border-stone-800 p-6 rounded-2xl flex flex-col justify-between hover:border-orange-500/30 transition-all shadow-md group">
+                            <div className="flex items-center justify-between">
+                                <span className="p-2.5 bg-orange-500/10 rounded-xl text-orange-400 border border-orange-500/20">
+                                    <FileCheck2 size={20} />
+                                </span>
+                                <span className="text-[10px] uppercase tracking-widest font-mono text-orange-400/80 bg-orange-500/10 px-2 py-0.5 rounded">
+                                    DIRETO
+                                </span>
+                            </div>
+                            <div className="mt-4">
+                                <div className="text-orange-400 font-heading font-bold text-2xl sm:text-3xl tracking-tight">
+                                    NF PJ
+                                </div>
+                                <p className="text-stone-400 text-xs mt-1 font-medium">
+                                    Faturamento no CNPJ
+                                </p>
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold text-white font-heading mb-3">
-                            Cozinha Equipada no Flat
-                        </h3>
-                        <p className="text-stone-400 text-xs md:text-sm leading-relaxed">
-                            Cozinha com geladeira, cooktop/fogão e utensílios completos. Seu colaborador economiza com refeições preparadas no próprio flat.
-                        </p>
-                    </div>
-
-                    {/* CARD 4 */}
-                    <div className="bg-stone-950/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-stone-800 hover:border-orange-500/40 transition-all duration-300 group hover:-translate-y-1">
-                        <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <Wifi size={28} />
-                        </div>
-                        <h3 className="text-xl font-bold text-white font-heading mb-3">
-                            Workstation & Wi-Fi Fibra
-                        </h3>
-                        <p className="text-stone-400 text-xs md:text-sm leading-relaxed">
-                            Internet banda larga dedicada e ambiente estruturado com bancada para videoconferências, planilhas e relatórios de trabalho.
-                        </p>
-                    </div>
-
-                    {/* CARD 5 */}
-                    <div className="bg-stone-950/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-stone-800 hover:border-orange-500/40 transition-all duration-300 group hover:-translate-y-1">
-                        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <Building2 size={28} />
-                        </div>
-                        <h3 className="text-xl font-bold text-white font-heading mb-3">
-                            Localização Central Estratégica
-                        </h3>
-                        <p className="text-stone-400 text-xs md:text-sm leading-relaxed">
-                            No Centro de Petrolina, com rápido acesso às indústrias, fazendas de irrigação, UNIVASF, hospitais e aeroporto.
-                        </p>
-                    </div>
-
-                    {/* CARD 6 */}
-                    <div className="bg-stone-950/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-stone-800 hover:border-orange-500/40 transition-all duration-300 group hover:-translate-y-1">
-                        <div className="w-14 h-14 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                            <ShieldCheck size={28} />
-                        </div>
-                        <h3 className="text-xl font-bold text-white font-heading mb-3">
-                            Sem Burocracia de Fiador
-                        </h3>
-                        <p className="text-stone-400 text-xs md:text-sm leading-relaxed">
-                            Contrato direto e flexível para a empresa, com limpeza, manutenção e enxoval inclusos, sem necessidade de fiador ou calção abusivo.
-                        </p>
                     </div>
                 </div>
 
-                {/* BANNER CALL TO ACTION */}
-                <div className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="space-y-2 text-center md:text-left max-w-xl">
-                        <h3 className="text-2xl md:text-3xl font-extrabold font-heading">
+                {/* Três pilares — Cards elevados com efeito glow top border */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                        {
+                            icon: FileCheck2,
+                            title: 'Fiscal e contratos',
+                            body: 'Nota Fiscal PJ imediata, faturamento quinzenal ou mensal, cartão corporativo. Mensalistas sem fiador ou caução abusiva.',
+                        },
+                        {
+                            icon: Wifi,
+                            title: 'Flat pronto para trabalho',
+                            body: 'Wi-Fi fibra, cozinha equipada, enxoval e limpeza. Equipe acomoda e produz sem montar imóvel.',
+                        },
+                        {
+                            icon: MapPin,
+                            title: 'Centro de Petrolina',
+                            body: 'Acesso a indústrias, irrigação, Univasf, hospitais e aeroporto. Mobilidade prática no dia a dia.',
+                        },
+                    ].map((item) => (
+                        <div
+                            key={item.title}
+                            className="group bg-stone-900/50 hover:bg-stone-900/90 border border-stone-800/80 hover:border-orange-500/40 rounded-3xl p-8 space-y-5 transition-all duration-300 hover:-translate-y-1 shadow-lg relative overflow-hidden"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-center text-orange-500 group-hover:border-orange-500/40 group-hover:bg-orange-500/10 transition-colors">
+                                <item.icon size={22} />
+                            </div>
+                            <h3 className="text-xl font-heading font-bold text-white leading-snug">
+                                {item.title}
+                            </h3>
+                            <p className="text-stone-400 text-sm leading-relaxed font-light">
+                                {item.body}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Comparativo — tabela elevada em Card estilo Matrix */}
+                <div className="bg-stone-900/50 border border-stone-800 rounded-3xl p-8 md:p-12 space-y-8 shadow-2xl backdrop-blur-md">
+                    <div className="max-w-2xl space-y-2">
+                        <div className="inline-flex items-center gap-1.5 text-orange-400 text-xs font-mono font-bold uppercase tracking-wider">
+                            <Sparkles size={14} /> PROVA DE ECONOMIA
+                        </div>
+                        <h3 className="text-2xl md:text-4xl font-heading font-bold text-white tracking-tight">
+                            Flat vs. hotel vs. aluguel
+                        </h3>
+                        <p className="text-stone-400 text-sm md:text-base leading-relaxed font-light">
+                            O que muda no custo e na operação da sua empresa.
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm border-collapse min-w-[620px]">
+                            <thead>
+                                <tr className="border-b border-stone-800 text-stone-400 font-heading">
+                                    <th className="py-4 pr-4 font-bold text-xs uppercase tracking-wider">
+                                        Critério
+                                    </th>
+                                    <th className="py-4 px-6 font-bold text-orange-500 bg-orange-500/10 border-t border-x border-orange-500/30 rounded-t-2xl text-center text-xs uppercase tracking-wider">
+                                        Flats Integração
+                                    </th>
+                                    <th className="py-4 px-4 font-bold text-slate-400 text-center text-xs uppercase tracking-wider">
+                                        Hotel
+                                    </th>
+                                    <th className="py-4 pl-4 font-bold text-slate-400 text-center text-xs uppercase tracking-wider">
+                                        Aluguel imobiliário
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-stone-800/80 text-stone-300">
+                                <tr className="hover:bg-stone-800/20 transition-colors">
+                                    <td className="py-4 pr-4 font-semibold text-white">
+                                        Custo mensal
+                                    </td>
+                                    <td className="py-4 px-6 font-bold text-emerald-400 bg-orange-500/10 border-x border-orange-500/30 text-center">
+                                        Economia de 30% a 50%
+                                    </td>
+                                    <td className="py-4 px-4 text-center text-stone-400">
+                                        Diárias acumuladas
+                                    </td>
+                                    <td className="py-4 pl-4 text-center text-stone-400">
+                                        Mobília + contas à parte
+                                    </td>
+                                </tr>
+                                <tr className="hover:bg-stone-800/20 transition-colors">
+                                    <td className="py-4 pr-4 font-semibold text-white">
+                                        Refeições
+                                    </td>
+                                    <td className="py-4 px-6 font-medium text-stone-100 bg-orange-500/10 border-x border-orange-500/30 text-center">
+                                        <span className="inline-flex items-center gap-1.5 font-semibold text-white">
+                                            <CheckCircle2
+                                                size={16}
+                                                className="text-orange-500 shrink-0"
+                                            />
+                                            Cozinha no flat
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-4 text-center text-stone-400">
+                                        Restaurantes
+                                    </td>
+                                    <td className="py-4 pl-4 text-center text-stone-400">
+                                        Montar cozinha
+                                    </td>
+                                </tr>
+                                <tr className="hover:bg-stone-800/20 transition-colors">
+                                    <td className="py-4 pr-4 font-semibold text-white">
+                                        Burocracia
+                                    </td>
+                                    <td className="py-4 px-6 font-medium text-stone-100 bg-orange-500/10 border-x border-orange-500/30 text-center">
+                                        <span className="inline-flex items-center gap-1.5 font-semibold text-white">
+                                            <CheckCircle2
+                                                size={16}
+                                                className="text-orange-500 shrink-0"
+                                            />
+                                            Sem fiador / caução
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-4 text-center text-stone-400">
+                                        Sem fiador (caro)
+                                    </td>
+                                    <td className="py-4 pl-4 text-center">
+                                        <span className="inline-flex items-center gap-1.5 text-stone-400">
+                                            <XCircle size={16} className="text-rose-500 shrink-0" />
+                                            Contrato longo + fiador
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr className="hover:bg-stone-800/20 transition-colors">
+                                    <td className="py-4 pr-4 font-semibold text-white">Inclusos</td>
+                                    <td className="py-4 px-6 font-medium text-stone-100 bg-orange-500/10 border-x border-b border-orange-500/30 rounded-b-2xl text-center">
+                                        Wi-Fi, limpeza, enxoval, manutenção
+                                    </td>
+                                    <td className="py-4 px-4 text-center text-stone-400">
+                                        Limpeza
+                                    </td>
+                                    <td className="py-4 pl-4 text-center text-stone-400">
+                                        Tudo por conta
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* CTA — Dual Geometry: conversão em pílula com brilho */}
+                <div className="bg-gradient-to-r from-stone-900 via-[#1C1613] to-stone-900 border border-orange-500/30 rounded-3xl p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="space-y-3 max-w-xl relative z-10">
+                        <h3 className="text-2xl md:text-3xl font-heading font-bold text-white tracking-tight">
                             Precisa hospedar sua equipe em Petrolina?
                         </h3>
-                        <p className="text-orange-100 text-xs md:text-sm">
-                            Receba uma proposta corporativa personalizada em menos de 2 horas. Faturamento rápido e atendimento dedicado.
+                        <p className="text-stone-300 text-sm md:text-base leading-relaxed font-light">
+                            Proposta corporativa e tabela mensal em até 2 horas. Faturamento rápido
+                            e suporte direto.
                         </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full sm:w-auto">
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0 w-full lg:w-auto relative z-10">
                         <button
                             type="button"
                             onClick={handleQuoteClick}
-                            className="w-full sm:w-auto px-8 py-4 bg-white text-stone-900 hover:bg-stone-100 font-extrabold text-xs uppercase tracking-widest rounded-full shadow-xl transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-2 font-heading"
+                            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-400 hover:to-orange-500 text-white font-heading font-bold text-xs uppercase tracking-widest rounded-xl border border-orange-400/40 hover:border-orange-300/80 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_28px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98] touch-manipulation inline-flex items-center justify-center gap-2.5 group"
                         >
-                            Solicitar Cotação B2B <ArrowRight size={16} />
+                            <span>Solicitar cotação B2B</span>
+                            <ArrowRight
+                                size={16}
+                                className="group-hover:translate-x-1 transition-transform"
+                            />
                         </button>
                         <a
                             href="/guia/hospedagem-corporativa-empresas-petrolina"
-                            className="w-full sm:w-auto px-6 py-4 bg-orange-700/50 hover:bg-orange-700/80 border border-white/20 text-white font-bold text-xs uppercase tracking-widest rounded-full transition-all text-center"
+                            className="w-full sm:w-auto px-8 py-4 bg-stone-900/90 hover:bg-stone-800 text-stone-200 hover:text-white font-heading font-bold text-xs uppercase tracking-widest rounded-xl border border-stone-700/80 hover:border-orange-500/50 hover:shadow-[0_0_18px_rgba(249,115,22,0.15)] transition-all text-center"
                         >
-                            Saiba Mais
+                            Guia B2B
                         </a>
                     </div>
                 </div>

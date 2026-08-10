@@ -217,7 +217,7 @@ describe('Firebase Reservations Service', () => {
     });
 
     describe('subscribeToSingleReservation', () => {
-        it('should call callback with reservation when it exists', () => {
+        it('should call callback with reservation when it exists', async () => {
             const mockCallback = vi.fn();
             const mockUnsubscribe = vi.fn();
 
@@ -233,19 +233,16 @@ describe('Firebase Reservations Service', () => {
             });
             (firestore.doc as any).mockReturnValue({});
 
-            const unsubscribe = subscribeToSingleReservation('res-123', mockCallback);
+            const unsubscribe = await subscribeToSingleReservation('res-123', mockCallback);
 
-            setTimeout(() => {
-                expect(mockCallback).toHaveBeenCalledWith({
-                    id: 'res-123',
-                    guestName: 'Test',
-                });
-            }, 10);
+            await vi.waitFor(() => {
+                expect(mockCallback).toHaveBeenCalledWith({ id: 're-123', guestName: 'Test' });
+            });
 
             expect(typeof unsubscribe).toBe('function');
         });
 
-        it('should call callback with null when reservation does not exist', () => {
+        it('should call callback with null when reservation does not exist', async () => {
             const mockCallback = vi.fn();
             const mockDocSnap = {
                 exists: () => false,
@@ -253,20 +250,20 @@ describe('Firebase Reservations Service', () => {
 
             (firestore.onSnapshot as any).mockImplementation((docRef, onNext) => {
                 setTimeout(() => onNext(mockDocSnap), 0);
-                return () => { };
+                return () => {};
             });
             (firestore.doc as any).mockReturnValue({});
 
-            subscribeToSingleReservation('non-existent', mockCallback);
+            await subscribeToSingleReservation('non-existent', mockCallback);
 
-            setTimeout(() => {
+            await vi.waitFor(() => {
                 expect(mockCallback).toHaveBeenCalledWith(null);
-            }, 10);
+            });
         });
     });
 
     describe('subscribeToActiveReservations', () => {
-        it('should subscribe to active reservations', () => {
+        it('should subscribe to active reservations', async () => {
             const mockCallback = vi.fn();
             const mockUnsubscribe = vi.fn();
 
@@ -276,13 +273,13 @@ describe('Firebase Reservations Service', () => {
             (firestore.orderBy as any).mockReturnValue({});
             (firestore.onSnapshot as any).mockReturnValue(mockUnsubscribe);
 
-            const unsubscribe = subscribeToActiveReservations(mockCallback);
+            const unsubscribe = await subscribeToActiveReservations(mockCallback);
 
             expect(firestore.onSnapshot).toHaveBeenCalled();
             expect(typeof unsubscribe).toBe('function');
         });
 
-        it('should filter by allowed properties on client side', () => {
+        it('should constrain the Firestore query by allowed property', async () => {
             const mockCallback = vi.fn();
             const mockSnapshot = {
                 docs: [
@@ -303,16 +300,12 @@ describe('Firebase Reservations Service', () => {
             (firestore.orderBy as any).mockReturnValue({});
             (firestore.onSnapshot as any).mockImplementation((q, onNext) => {
                 setTimeout(() => onNext(mockSnapshot), 0);
-                return () => { };
+                return () => {};
             });
 
-            subscribeToActiveReservations(mockCallback, ['lili']);
+            await subscribeToActiveReservations(mockCallback, ['integracao']);
 
-            setTimeout(() => {
-                expect(mockCallback).toHaveBeenCalledWith([
-                    expect.objectContaining({ propertyId: 'lili' }),
-                ]);
-            }, 10);
+            expect(firestore.where).toHaveBeenCalledWith('propertyId', '==', 'integracao');
         });
     });
 

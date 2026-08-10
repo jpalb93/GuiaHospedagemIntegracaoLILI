@@ -45,7 +45,9 @@ const LandingFlatsIntegracao: React.FC = () => {
         <div className="font-sans antialiased bg-stone-950 text-stone-300">
             {/* SEO Meta Tags */}
             <Helmet>
-                <title>Flats Integração - Hospedagem e Aluguel Mensal para Empresas em Petrolina</title>
+                <title>
+                    Flats Integração | Hospedagem e Aluguel Mensal para Empresas em Petrolina
+                </title>
                 <meta
                     name="description"
                     content="Aluguel mensal e hospedagem corporativa no Centro de Petrolina. Flats equipados para empresas, diretores e consultores com Nota Fiscal PJ e economia de até 50%."
@@ -60,7 +62,10 @@ const LandingFlatsIntegracao: React.FC = () => {
                 {/* Open Graph / Facebook */}
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="https://flatsintegracao.com.br" />
-                <meta property="og:title" content="Flats Integração - Hospedagem e Aluguel Mensal Corporativo em Petrolina" />
+                <meta
+                    property="og:title"
+                    content="Flats Integração | Hospedagem e Aluguel Mensal Corporativo em Petrolina"
+                />
                 <meta
                     property="og:description"
                     content="Soluções corporativas e aluguel mensal de flats em Petrolina com Nota Fiscal PJ, Wi-Fi fibra e cozinha completa."
@@ -69,7 +74,10 @@ const LandingFlatsIntegracao: React.FC = () => {
 
                 {/* Twitter */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Flats Integração - Aluguel Mensal para Empresas em Petrolina" />
+                <meta
+                    name="twitter:title"
+                    content="Flats Integração | Aluguel Mensal para Empresas em Petrolina"
+                />
                 <meta
                     name="twitter:description"
                     content="Hospedagem corporativa e aluguel mensal para empresas no Centro de Petrolina."
@@ -94,16 +102,16 @@ const LandingFlatsIntegracao: React.FC = () => {
                             addressLocality: 'Petrolina',
                             addressRegion: 'PE',
                             postalCode: '56328-020',
-                            addressCountry: 'BR'
+                            addressCountry: 'BR',
                         },
                         geo: {
                             '@type': 'GeoCoordinates',
                             latitude: -9.3941,
-                            longitude: -40.5036
+                            longitude: -40.5036,
                         },
                         sameAs: [
                             'https://www.instagram.com/flatintegracao/',
-                            'https://maps.app.goo.gl/9QPX2VnGxQwUCpzs6'
+                            'https://maps.app.goo.gl/9QPX2VnGxQwUCpzs6',
                         ],
                         openingHoursSpecification: {
                             '@type': 'OpeningHoursSpecification',
@@ -114,25 +122,27 @@ const LandingFlatsIntegracao: React.FC = () => {
                                 'Thursday',
                                 'Friday',
                                 'Saturday',
-                                'Sunday'
+                                'Sunday',
                             ],
                             opens: '00:00',
-                            closes: '23:59'
-                        }
+                            closes: '23:59',
+                        },
                     })}
                 </script>
             </Helmet>
 
             {/* Header Sticky - Premium Floating Pill Design */}
             <header
-                className={`fixed top-0 left-0 w-full z-[100] transition-all duration-700 flex justify-center items-center pointer-events-none ${isScrolled ? 'pt-4 md:pt-6' : 'pt-0'
-                    }`}
+                className={`fixed top-0 left-0 w-full z-[100] transition-all duration-700 flex justify-center items-center pointer-events-none ${
+                    isScrolled ? 'pt-4 md:pt-6' : 'pt-0'
+                }`}
             >
                 <div
-                    className={`flex items-center justify-between transition-all duration-700 pointer-events-auto border border-transparent ${isScrolled
-                        ? 'w-[92%] max-w-6xl bg-white/95 backdrop-blur-2xl py-3 px-6 md:px-10 rounded-full shadow-2xl border-white/20 ring-1 ring-black/5'
-                        : 'w-full bg-white/90 backdrop-blur-md py-6 px-8 md:px-16 border-b border-white/10'
-                        }`}
+                    className={`flex items-center justify-between transition-all duration-700 pointer-events-auto border border-transparent ${
+                        isScrolled
+                            ? 'w-[92%] max-w-6xl bg-white/95 backdrop-blur-2xl py-3 px-6 md:px-10 rounded-full shadow-2xl border-white/20 ring-1 ring-black/5'
+                            : 'w-full bg-white/90 backdrop-blur-md py-6 px-8 md:px-16 border-b border-white/10'
+                    }`}
                 >
                     <a
                         href="#inicio"
@@ -142,13 +152,17 @@ const LandingFlatsIntegracao: React.FC = () => {
                         <img
                             src={flatsLogo}
                             alt="Logo Flats Integração"
-                            className={`w-auto transition-all duration-700 drop-shadow-sm ${isScrolled ? 'h-8 md:h-9' : 'h-10 md:h-12'
-                                }`}
+                            className={`w-auto transition-all duration-700 drop-shadow-sm ${
+                                isScrolled ? 'h-8 md:h-9' : 'h-10 md:h-12'
+                            }`}
                         />
                     </a>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-8 lg:gap-10" aria-label="Navegação principal">
+                    <nav
+                        className="hidden md:flex items-center gap-8 lg:gap-10"
+                        aria-label="Navegação principal"
+                    >
                         {navLinks.map((link) => (
                             <a
                                 key={link.name}
@@ -173,10 +187,11 @@ const LandingFlatsIntegracao: React.FC = () => {
                             href="https://wa.me/5587988283273"
                             target="_blank"
                             rel="noreferrer"
-                            className={`font-bold text-xs uppercase tracking-widest transition-all duration-500 shadow-xl ${isScrolled
-                                ? 'bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-full'
-                                : 'bg-orange-600 text-white hover:bg-stone-900 px-8 py-4 rounded-full'
-                                }`}
+                            className={`font-bold text-xs uppercase tracking-widest transition-all duration-500 shadow-xl ${
+                                isScrolled
+                                    ? 'bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-full'
+                                    : 'bg-orange-600 text-white hover:bg-stone-900 px-8 py-4 rounded-full'
+                            }`}
                         >
                             Reservar
                         </a>
@@ -188,16 +203,24 @@ const LandingFlatsIntegracao: React.FC = () => {
                             aria-label="Abrir menu"
                         >
                             <div className="space-y-1.5 text-stone-900">
-                                <span className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-                                <span className={`block w-4 h-0.5 bg-current ml-auto transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-                                <span className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                                <span
+                                    className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}
+                                ></span>
+                                <span
+                                    className={`block w-4 h-0.5 bg-current ml-auto transition-all ${isMenuOpen ? 'opacity-0' : ''}`}
+                                ></span>
+                                <span
+                                    className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}
+                                ></span>
                             </div>
                         </button>
                     </div>
                 </div>
 
                 {/* Mobile Menu Overlay - Premium Feel */}
-                <div className={`fixed inset-0 bg-white z-[90] md:hidden transition-all duration-700 flex flex-col justify-center items-center gap-8 ${isMenuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
+                <div
+                    className={`fixed inset-0 bg-white z-[90] md:hidden transition-all duration-700 flex flex-col justify-center items-center gap-8 ${isMenuOpen ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}
+                >
                     <nav className="flex flex-col items-center gap-6">
                         {navLinks.map((link) => (
                             <a

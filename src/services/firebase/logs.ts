@@ -31,15 +31,31 @@ export const logAction = async (
 export const fetchLogs = async (max = 50): Promise<SystemLog[]> => {
     try {
         const db = await getFirestoreInstance();
-        const q = query(
-            collection(db, COLLECTION_NAME),
-            orderBy('timestamp', 'desc'),
-            limit(max)
-        );
+        const q = query(collection(db, COLLECTION_NAME), orderBy('timestamp', 'desc'), limit(max));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SystemLog));
+        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as SystemLog);
     } catch (error) {
         console.error('Error fetching logs:', error);
         return [];
     }
+};
+
+/** Histórico relacionado a uma conta (por id e nomes legíveis) */
+export const fetchCompanyActivityLogs = async (
+    companyId: string,
+    names: string[],
+    maxScan = 150
+): Promise<SystemLog[]> => {
+    const all = await fetchLogs(maxScan);
+    const nameSet = new Set(names.map((n) => n.trim().toLowerCase()).filter(Boolean));
+    return all.filter((log) => {
+        if (log.targetId === companyId) return true;
+        const tn = (log.targetName || '').toLowerCase();
+        if (tn && nameSet.has(tn)) return true;
+        const details = (log.details || '').toLowerCase();
+        for (const n of nameSet) {
+            if (n.length >= 3 && details.includes(n)) return true;
+        }
+        return false;
+    });
 };

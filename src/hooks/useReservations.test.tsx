@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useReservations } from './useReservations';
@@ -168,7 +169,10 @@ describe('useReservations Hook', () => {
         });
 
         await waitFor(() => {
-            expect(firebaseService.deleteReservation).toHaveBeenCalledWith('123');
+            expect(firebaseService.deleteReservation).toHaveBeenCalledWith(
+                '123',
+                expect.any(Object)
+            );
             expect(mockShowToast).toHaveBeenCalledWith('Reserva excluída!', 'success');
         });
     });

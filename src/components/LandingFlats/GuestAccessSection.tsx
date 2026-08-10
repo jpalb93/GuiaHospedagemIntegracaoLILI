@@ -1,68 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, KeyRound, Loader2 } from 'lucide-react';
 import { fetchGuestConfig } from '../../services/guest';
-// GSAP is dynamically imported
 
 const GuestAccessSection: React.FC = () => {
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const sectionRef = useRef<HTMLElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        let ctx: any;
-        let mm: any;
-
-        const initGsap = async () => {
-            const gsapModule = await import('gsap');
-            const scrollTriggerModule = await import('gsap/ScrollTrigger');
-
-            const gsap = gsapModule.default;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            gsap.registerPlugin(ScrollTrigger);
-
-            mm = gsap.matchMedia();
-
-            mm.add('(min-width: 801px)', () => {
-                // Context for cleanup
-                ctx = gsap.context(() => {
-                    const timer = setTimeout(() => {
-                        if (contentRef.current && sectionRef.current) {
-                            gsap.from(contentRef.current, {
-                                y: 50,
-                                opacity: 0,
-                                duration: 1,
-                                ease: 'power3.out',
-                                scrollTrigger: {
-                                    trigger: sectionRef.current,
-                                    start: 'top 80%',
-                                    toggleActions: 'play none none reverse',
-                                },
-                            });
-                        }
-                    }, 100);
-                    return () => clearTimeout(timer);
-                }, sectionRef);
-            });
-
-            mm.add('(max-width: 800px)', () => {
-                // Manual fallback if needed, but CSS handles opacity usually or we set it here
-                if (contentRef.current) {
-                    contentRef.current.style.opacity = '1';
-                    contentRef.current.style.transform = 'translateY(0)';
-                }
-            });
-        };
-
-        initGsap();
-
-        return () => {
-            if (mm) mm.revert();
-            if (ctx) ctx.revert();
-        };
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,81 +27,78 @@ const GuestAccessSection: React.FC = () => {
                 localStorage.setItem('flat_lili_last_rid', rid);
                 window.location.href = `/?rid=${rid}`;
             } else {
-                setError('Código inválido.');
+                setError(
+                    'Código não encontrado. Confira a mensagem de confirmação no WhatsApp ou fale conosco.'
+                );
             }
         } catch (err) {
             console.error(err);
-            setError('Erro ao verificar.');
+            setError('Não foi possível verificar agora. Tente de novo em instantes.');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <section ref={sectionRef} className="py-24 bg-stone-900 text-stone-200">
-            <div className="container mx-auto px-6 md:px-12">
-                <div
-                    ref={contentRef}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
-                >
-                    {/* Text Side */}
-                    <div className="space-y-8">
-                        <div className="w-12 h-12 border border-stone-700 rounded-full flex items-center justify-center text-stone-400">
-                            <KeyRound size={20} className="stroke-1" />
+        <section id="hospede" className="py-14 md:py-16 bg-stone-950">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+                <div className="flex flex-col lg:flex-row lg:items-end gap-8 lg:gap-16">
+                    <div className="lg:w-[40%] space-y-3 shrink-0">
+                        <div className="flex items-center gap-2 text-stone-500">
+                            <KeyRound size={16} className="stroke-1" aria-hidden />
+                            <p className="text-xs font-heading font-bold uppercase tracking-[0.2em]">
+                                Já reservou?
+                            </p>
                         </div>
-                        <h2 className="text-4xl font-heading font-light text-white leading-tight">
-                            Exclusivo{" "}<br />
-                            <span className="italic font-serif text-stone-500">
-                                Área do Hóspede
-                            </span>
+                        <h2 className="text-xl md:text-2xl font-heading font-medium text-stone-300 tracking-tight">
+                            Acesse o guia do hóspede
                         </h2>
-                        <p className="font-light text-stone-400 max-w-md leading-relaxed">
-                            Já possui uma reserva? Digite seu código de acesso para desbloquear o
-                            Guia Digital completo da propriedade.
+                        <p className="text-sm text-stone-500 leading-relaxed max-w-sm">
+                            Use o código da confirmação para abrir Wi-Fi, senhas e o guia da
+                            propriedade.
                         </p>
                     </div>
 
-                    {/* Form Side - Minimalist */}
-                    <div className="lg:pl-12">
-                        <form onSubmit={handleSubmit} className="relative">
-                            <label className="block text-xs font-bold tracking-[0.2em] text-stone-400 uppercase mb-6">
-                                Código da Reserva
-                            </label>
-
-                            <div className="relative group">
-                                <input
-                                    type="text"
-                                    value={code}
-                                    onChange={(e) => setCode(e.target.value)}
-                                    placeholder="Digite seu código..."
-                                    className="w-full bg-transparent border-b border-stone-700 text-3xl font-light text-white pb-4 focus:outline-none focus:border-stone-400 transition-colors placeholder:text-stone-700"
-                                />
-                                <button
-                                    type="submit"
-                                    aria-label="Verificar código de reserva"
-                                    disabled={isLoading || !code}
-                                    className="absolute right-0 top-0 bottom-4 text-stone-400 hover:text-white disabled:text-stone-800 transition-colors"
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="animate-spin" size={24} />
-                                    ) : (
-                                        <ArrowRight size={28} className="stroke-1" />
-                                    )}
-                                </button>
-                            </div>
-
-                            {error && (
-                                <p className="text-red-400/80 text-sm mt-4 flex items-center gap-2 font-light animate-fadeIn">
-                                    <span className="w-1 h-1 bg-red-400 rounded-full"></span>{' '}
-                                    {error}
-                                </p>
-                            )}
-
-                            <p className="text-stone-400 text-xs mt-6 font-light">
-                                Encontre o código na confirmação enviada via WhatsApp.
+                    <form onSubmit={handleSubmit} className="flex-1 max-w-lg w-full space-y-3">
+                        <label
+                            htmlFor="guest-access-code"
+                            className="block text-xs font-bold tracking-[0.15em] text-stone-500 uppercase"
+                        >
+                            Código da reserva
+                        </label>
+                        <div className="flex items-center gap-3 border-b border-stone-700 focus-within:border-orange-500/60 transition-colors">
+                            <input
+                                id="guest-access-code"
+                                type="text"
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                placeholder="Cole o código ou o link com rid=…"
+                                autoComplete="off"
+                                className="flex-1 bg-transparent text-lg font-light text-white py-3 focus:outline-none placeholder:text-stone-700"
+                            />
+                            <button
+                                type="submit"
+                                aria-label="Entrar no guia do hóspede"
+                                disabled={isLoading || !code.trim()}
+                                className="shrink-0 text-stone-400 hover:text-orange-500 disabled:text-stone-700 disabled:pointer-events-none transition-colors p-1"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="animate-spin" size={22} />
+                                ) : (
+                                    <ArrowRight size={22} className="stroke-1" />
+                                )}
+                            </button>
+                        </div>
+                        {error ? (
+                            <p className="text-red-400/90 text-sm leading-relaxed" role="alert">
+                                {error}
                             </p>
-                        </form>
-                    </div>
+                        ) : (
+                            <p className="text-stone-600 text-xs">
+                                O código chega na confirmação via WhatsApp.
+                            </p>
+                        )}
+                    </form>
                 </div>
             </div>
         </section>

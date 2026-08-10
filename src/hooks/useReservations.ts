@@ -23,12 +23,32 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
     // React Query doesn't natively support streams easily without third-party adapters,
     // and maintaining the live socket is good for "Active" view.
     const [activeReservations, setActiveReservations] = useState<Reservation[]>([]);
+    const [subKey, setSubKey] = useState(0);
+
+    const refreshActive = useCallback(() => {
+        setSubKey((k) => k + 1);
+    }, []);
+
+    // Timer para recalcular o listener na virada da meia-noite (evita data 'today' congelada)
+    useEffect(() => {
+        const now = new Date();
+        const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+        const msUntilMidnight = midnight.getTime() - now.getTime();
+
+        const timer = setTimeout(() => {
+            logger.info(
+                '[useReservations] Midnight reached, refreshing active reservations subscription'
+            );
+            setSubKey((k) => k + 1);
+        }, msUntilMidnight);
+
+        return () => clearTimeout(timer);
+    }, [subKey]);
 
     useEffect(() => {
         if (!userPermission) return;
 
-        const allowedProperties =
-            userPermission.role === 'super_admin' ? undefined : userPermission.allowedProperties;
+        const allowedProperties = userPermission.allowedProperties;
 
         let unsubscribe: (() => void) | undefined;
 
@@ -43,11 +63,10 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         return () => {
             if (unsubscribe) unsubscribe();
         };
-    }, [userPermission]);
+    }, [userPermission, subKey]);
 
     // --- 2. History Reservations (Infinite Query) ---
-    const allowedProperties =
-        userPermission?.role === 'super_admin' ? undefined : userPermission?.allowedProperties;
+    const allowedProperties = userPermission?.allowedProperties;
 
     // We use 'historyReservations' string as key + user permissions to segregate cache
     const historyQuery = useInfiniteQuery({
@@ -133,6 +152,7 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         hasMoreHistory: !!historyQuery.hasNextPage,
         loadMoreHistory,
         refreshHistory: historyQuery.refetch,
+        refreshActive,
 
         // Errors (Optional exposure)
         historyError: historyQuery.error,

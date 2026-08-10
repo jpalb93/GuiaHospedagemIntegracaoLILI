@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Copy, CheckCircle, Loader2, QrCode } from 'lucide-react';
-import { saveReservation, updateReservation } from '../../services/firebase';
+import { saveReservation } from '../../services/firebase';
 import { Reservation } from '../../types';
 
 interface BookingModalProps {
@@ -70,14 +70,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 status: 'pending',
                 createdAt: new Date().toISOString(),
                 email: formData.email,
-                adminNotes: `Email: ${formData.email} | CPF: ${formData.cpf}`,
-                welcomeMessage: '',
-                lockCode: '',
-                wifiSSID: '',
-                wifiPass: '',
-                safeCode: '',
-                guestAlertActive: false,
-                guestAlertText: '',
+                paymentStatus: 'pending',
             };
 
             let id = reservationId;
@@ -312,17 +305,10 @@ const BookingModal: React.FC<BookingModalProps> = ({
                             </div>
 
                             <button
-                                onClick={async () => {
-                                    if (reservationId) {
-                                        await updateReservation(reservationId, {
-                                            status: 'active',
-                                        });
-                                    }
-                                    setStep(3);
-                                }}
+                                onClick={() => setStep(3)}
                                 className="text-amber-700 font-bold text-sm hover:underline"
                             >
-                                Já realizei o pagamento
+                                Já realizei o pagamento — enviar para conferência
                             </button>
                         </div>
                     )}
@@ -334,11 +320,11 @@ const BookingModal: React.FC<BookingModalProps> = ({
                                 <CheckCircle size={48} />
                             </div>
                             <h4 className="text-2xl font-bold text-gray-900 mb-2">
-                                Pagamento Recebido!
+                                Pagamento enviado para conferência
                             </h4>
                             <p className="text-gray-600 mb-8">
-                                Sua reserva está confirmada. Enviamos os detalhes para o seu email e
-                                WhatsApp.
+                                Manteremos a solicitação pendente até a confirmação do PIX. Depois,
+                                enviaremos os detalhes por email e WhatsApp.
                             </p>
 
                             <button

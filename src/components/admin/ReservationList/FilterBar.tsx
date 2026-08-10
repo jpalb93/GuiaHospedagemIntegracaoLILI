@@ -47,7 +47,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Buscar por nome de hóspede, flat ou anotação..."
-                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 px-4 shadow-inner text-sm focus:ring-2 focus:ring-orange-500/30"
+                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl py-3 pr-4 !pl-12 shadow-inner text-sm focus:ring-2 focus:ring-orange-500/30"
                     />
                 </div>
 

@@ -4,16 +4,18 @@ import { logger } from '../utils/logger';
 import { fetchGuestConfig } from '../services/guest';
 import { USE_OFFICIAL_TIME, fetchOfficialTime } from '../constants';
 
+const SEO_PUBLIC_PATHS = ['/hospedagem-em-petrolina', '/flat-centro-petrolina'];
+
 export type AppState = {
     mode:
-    | AppMode
-    | 'LANDING'
-    | 'LILI_LANDING'
-    | 'EXPIRED'
-    | 'BLOCKED'
-    | 'REVOKED'
-    | 'LOADING'
-    | 'RECONNECTING';
+        | AppMode
+        | 'LANDING'
+        | 'LILI_LANDING'
+        | 'EXPIRED'
+        | 'BLOCKED'
+        | 'REVOKED'
+        | 'LOADING'
+        | 'RECONNECTING';
     config: GuestConfig;
 };
 
@@ -32,7 +34,12 @@ export const useAppInitialization = () => {
             const path = window.location.pathname;
             const params = new URLSearchParams(window.location.search);
             if (!params.get('rid')) {
-                if (path === '/' || path.startsWith('/guia') || path === '/politica-privacidade') {
+                if (
+                    path === '/' ||
+                    path.startsWith('/guia') ||
+                    path === '/politica-privacidade' ||
+                    SEO_PUBLIC_PATHS.includes(path)
+                ) {
                     return { mode: 'LANDING', config: { guestName: '', lockCode: '' } };
                 }
                 if (path === '/lili' || path === '/flat-lili') {
@@ -52,8 +59,11 @@ export const useAppInitialization = () => {
             // Delay mínimo reduzido para landing page para acelerar FCP/LCP
             const isLiliPage = path === '/lili' || path === '/flat-lili';
             const isGuide = path.startsWith('/guia') || path === '/politica-privacidade';
-            const isLanding = path === '/' || isLiliPage || isGuide;
-            const minLoadingTime = new Promise((resolve) => setTimeout(resolve, isLanding ? 0 : 800));
+            const isSeoPage = SEO_PUBLIC_PATHS.includes(path);
+            const isLanding = path === '/' || isLiliPage || isGuide || isSeoPage;
+            const minLoadingTime = new Promise((resolve) =>
+                setTimeout(resolve, isLanding ? 0 : 800)
+            );
 
             let reservationId = params.get('rid');
 
@@ -81,6 +91,15 @@ export const useAppInitialization = () => {
                     prev.mode === 'LILI_LANDING'
                         ? prev
                         : { mode: 'LILI_LANDING', config: { guestName: '', lockCode: '' } }
+                );
+                return;
+            }
+
+            if (isSeoPage) {
+                setAppState((prev) =>
+                    prev.mode === 'LANDING'
+                        ? prev
+                        : { mode: 'LANDING', config: { guestName: '', lockCode: '' } }
                 );
                 return;
             }
@@ -133,7 +152,7 @@ export const useAppInitialization = () => {
                             if (USE_OFFICIAL_TIME) {
                                 try {
                                     now = await fetchOfficialTime();
-                                } catch (_e) { }
+                                } catch (_e) {}
                             }
                             const [year, month, day] = safeConfig.checkoutDate
                                 .split('-')

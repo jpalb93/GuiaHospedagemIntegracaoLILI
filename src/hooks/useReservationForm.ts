@@ -1,12 +1,15 @@
 import { useState, useCallback } from 'react';
-import { PropertyId, PaymentMethod, PaymentStatus, Reservation } from '../types';
+import {
+    PropertyId,
+    PaymentMethod,
+    PaymentStatus,
+    Reservation,
+    ReservationBillingMode,
+} from '../types';
 import { PROPERTIES } from '../config/properties';
 import { fetchOfficialTime } from '../constants';
 
-// ReservationFormState removed - now using ReservationFormData from types.ts
-
 export const useReservationForm = () => {
-    // Form State
     const [editingId, setEditingId] = useState<string | null>(null);
     const [guestName, setGuestName] = useState('');
     const [guestPhone, setGuestPhone] = useState('');
@@ -29,15 +32,17 @@ export const useReservationForm = () => {
     const [shortId, setShortId] = useState('');
     const [manualDeactivation, setManualDeactivation] = useState(false);
 
-    // Rating / Quality Control (Internal)
+    const [billingMode, setBillingMode] = useState<ReservationBillingMode>('reservation');
+    const [companyId, setCompanyId] = useState('');
+    const [contractId, setContractId] = useState('');
+    const [allocationId, setAllocationId] = useState('');
+
     const [guestRating, setGuestRating] = useState<number>(5);
     const [guestFeedback, setGuestFeedback] = useState('');
 
-    // UI State
     const [generatedLink, setGeneratedLink] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
-    // Reset form to default values
     const resetForm = useCallback(async () => {
         const officialNow = await fetchOfficialTime();
         const yyyy = officialNow.getFullYear();
@@ -74,9 +79,12 @@ export const useReservationForm = () => {
         setManualDeactivation(false);
         setGuestRating(5);
         setGuestFeedback('');
+        setBillingMode('reservation');
+        setCompanyId('');
+        setContractId('');
+        setAllocationId('');
     }, [propertyId]);
 
-    // Load existing reservation for editing
     const loadReservation = useCallback((res: Reservation) => {
         setEditingId(res.id!);
         setGuestName(res.guestName);
@@ -101,72 +109,83 @@ export const useReservationForm = () => {
         setManualDeactivation(res.manualDeactivation || false);
         setGuestRating(res.guestRating || 5);
         setGuestFeedback(res.guestFeedback || '');
+        setBillingMode(res.billingMode === 'corporate' ? 'corporate' : 'reservation');
+        setCompanyId(res.companyId || '');
+        setContractId(res.contractId || '');
+        setAllocationId(res.allocationId || '');
         setGeneratedLink('');
     }, []);
 
-    // Get current form values as object
-    const getFormValues = useCallback(
-        (): Omit<Reservation, 'id' | 'createdAt' | 'status'> => {
-            const parseAmount = (value: number | ''): number | undefined => {
-                if (typeof value === 'number' && Number.isFinite(value)) return value;
-                if (value === '' || value === null || value === undefined) return undefined;
-                const n = Number(value);
-                return Number.isFinite(n) ? n : undefined;
-            };
+    const getFormValues = useCallback((): Omit<Reservation, 'id' | 'createdAt' | 'status'> => {
+        const parseAmount = (value: number | ''): number | undefined => {
+            if (typeof value === 'number' && Number.isFinite(value)) return value;
+            if (value === '' || value === null || value === undefined) return undefined;
+            const n = Number(value);
+            return Number.isFinite(n) ? n : undefined;
+        };
 
-            return {
-                guestName: guestName.trim(),
-                guestPhone: guestPhone.replace(/\D/g, ''),
-                propertyId,
-                flatNumber: flatNumber.trim(),
-                lockCode: lockCode.trim(),
-                welcomeMessage: welcomeMessage.trim(),
-                adminNotes: adminNotes.trim(),
-                guestAlertActive,
-                guestAlertText: guestAlertText.trim(),
-                checkInDate,
-                checkoutDate,
-                checkInTime,
-                checkOutTime,
-                guestCount,
-                paymentMethod: (paymentMethod || undefined) as PaymentMethod | undefined,
-                paymentStatus: (paymentStatus || 'pending') as PaymentStatus,
-                totalAmount: parseAmount(totalAmount),
-                depositAmount: parseAmount(depositAmount),
-                shortId,
-                manualDeactivation,
-                guestRating,
-                guestFeedback,
-            };
-        },
-        [
-            guestName,
-            guestPhone,
+        const isCorporate = billingMode === 'corporate';
+
+        return {
+            guestName: guestName.trim(),
+            guestPhone: guestPhone.replace(/\D/g, ''),
             propertyId,
-            flatNumber,
-            lockCode,
-            welcomeMessage,
-            adminNotes,
+            flatNumber: flatNumber.trim(),
+            lockCode: lockCode.trim(),
+            welcomeMessage: welcomeMessage.trim(),
+            adminNotes: adminNotes.trim(),
             guestAlertActive,
-            guestAlertText,
+            guestAlertText: guestAlertText.trim(),
             checkInDate,
             checkoutDate,
             checkInTime,
             checkOutTime,
             guestCount,
-            paymentMethod,
-            paymentStatus,
-            totalAmount,
-            depositAmount,
+            paymentMethod: isCorporate
+                ? undefined
+                : ((paymentMethod || undefined) as PaymentMethod | undefined),
+            paymentStatus: isCorporate ? 'billed' : ((paymentStatus || 'pending') as PaymentStatus),
+            totalAmount: isCorporate ? undefined : parseAmount(totalAmount),
+            depositAmount: isCorporate ? undefined : parseAmount(depositAmount),
             shortId,
             manualDeactivation,
             guestRating,
             guestFeedback,
-        ]
-    );
+            billingMode: isCorporate ? 'corporate' : 'reservation',
+            companyId: isCorporate && companyId ? companyId : undefined,
+            contractId: isCorporate && contractId ? contractId : undefined,
+            allocationId: isCorporate && allocationId ? allocationId : undefined,
+        };
+    }, [
+        guestName,
+        guestPhone,
+        propertyId,
+        flatNumber,
+        lockCode,
+        welcomeMessage,
+        adminNotes,
+        guestAlertActive,
+        guestAlertText,
+        checkInDate,
+        checkoutDate,
+        checkInTime,
+        checkOutTime,
+        guestCount,
+        paymentMethod,
+        paymentStatus,
+        totalAmount,
+        depositAmount,
+        shortId,
+        manualDeactivation,
+        guestRating,
+        guestFeedback,
+        billingMode,
+        companyId,
+        contractId,
+        allocationId,
+    ]);
 
     return {
-        // State
         editingId,
         guestName,
         setGuestName,
@@ -212,18 +231,20 @@ export const useReservationForm = () => {
         setGuestRating,
         guestFeedback,
         setGuestFeedback,
-
-        // UI State
+        billingMode,
+        setBillingMode,
+        companyId,
+        setCompanyId,
+        contractId,
+        setContractId,
+        allocationId,
+        setAllocationId,
         generatedLink,
         setGeneratedLink,
         isSaving,
         setIsSaving,
-
-        // Actions
         resetForm,
         loadReservation,
         getFormValues,
     };
 };
-
-export default useReservationForm;

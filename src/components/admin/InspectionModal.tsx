@@ -61,18 +61,18 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
             (inspectionType === 'post_checkout' ? reservation?.preCheckInInspection : null);
 
         if (savedToLoad) {
-            if (savedToLoad.checklistState && typeof savedToLoad.checklistState === 'object') {
-                setChecklistState(savedToLoad.checklistState);
-            }
-            if (savedToLoad.inspectorName) {
-                setInspectorName(savedToLoad.inspectorName);
-            }
+            setChecklistState(
+                savedToLoad.checklistState && typeof savedToLoad.checklistState === 'object'
+                    ? savedToLoad.checklistState
+                    : {}
+            );
+            setInspectorName(savedToLoad.inspectorName || '');
             if (savedToLoad.customItems) {
                 const loadedCustom = Array.isArray(savedToLoad.customItems)
                     ? savedToLoad.customItems
                     : typeof savedToLoad.customItems === 'object'
-                    ? Object.values(savedToLoad.customItems)
-                    : [];
+                      ? Object.values(savedToLoad.customItems)
+                      : [];
                 setCustomItems(loadedCustom as ChecklistItem[]);
             } else {
                 setCustomItems([]);
@@ -104,9 +104,8 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
 
     const allChecklistItems = useMemo(() => {
         const excluded = new Set(excludedItemIds);
-        return [...safeChecklistProp, ...safeCustomItems].filter(
-            (item): item is ChecklistItem =>
-                Boolean(item && typeof item === 'object' && item.id && !excluded.has(item.id))
+        return [...safeChecklistProp, ...safeCustomItems].filter((item): item is ChecklistItem =>
+            Boolean(item && typeof item === 'object' && item.id && !excluded.has(item.id))
         );
     }, [safeChecklistProp, safeCustomItems, excludedItemIds]);
 
@@ -287,16 +286,137 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
         alert('Relatório copiado para a área de transferência!');
     };
 
-    const handlePrint = () => {
-        const cleanup = () => {
-            document.body.classList.remove('printing-inspection');
-            window.removeEventListener('afterprint', cleanup);
-        };
-        document.body.classList.add('printing-inspection');
-        window.addEventListener('afterprint', cleanup);
-        // Fallback se afterprint não disparar (alguns WebViews mobile)
-        setTimeout(cleanup, 60_000);
-        window.print();
+    const handlePrint = async () => {
+        const reportContent = document.getElementById('inspection-report-content');
+        if (!reportContent) return;
+
+        document.getElementById('inspection-print-frame')?.remove();
+
+        const printFrame = document.createElement('iframe');
+        printFrame.id = 'inspection-print-frame';
+        printFrame.title = 'Impressão do relatório de vistoria';
+        printFrame.setAttribute('aria-hidden', 'true');
+        Object.assign(printFrame.style, {
+            position: 'fixed',
+            left: '-10000px',
+            top: '0',
+            width: '210mm',
+            height: '297mm',
+            border: '0',
+            pointerEvents: 'none',
+        });
+        document.body.appendChild(printFrame);
+
+        try {
+            const printDocument = printFrame.contentDocument;
+            const printWindow = printFrame.contentWindow;
+            if (!printDocument || !printWindow)
+                throw new Error('Documento de impressão indisponível');
+
+            printDocument.open();
+            printDocument.write(
+                '<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Relatório de Vistoria</title></head><body></body></html>'
+            );
+            printDocument.close();
+
+            const base = printDocument.createElement('base');
+            base.href = document.baseURI;
+            printDocument.head.prepend(base);
+
+            const stylesheetPromises = Array.from(
+                document.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
+                    'link[rel="stylesheet"], style'
+                )
+            ).map((sourceStyle) => {
+                const clonedStyle = sourceStyle.cloneNode(true) as
+                    | HTMLLinkElement
+                    | HTMLStyleElement;
+                if (clonedStyle.tagName !== 'LINK') {
+                    printDocument.head.appendChild(clonedStyle);
+                    return Promise.resolve();
+                }
+
+                return new Promise<void>((resolve) => {
+                    clonedStyle.addEventListener('load', () => resolve(), { once: true });
+                    clonedStyle.addEventListener('error', () => resolve(), { once: true });
+                    printDocument.head.appendChild(clonedStyle);
+                });
+            });
+
+            const printOverrides = printDocument.createElement('style');
+            printOverrides.textContent = `
+                @page { size: A4 portrait; margin: 8mm 10mm; }
+                html, body {
+                    width: auto !important;
+                    height: auto !important;
+                    min-height: 0 !important;
+                    max-height: none !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    overflow: visible !important;
+                    background: #ffffff !important;
+                    color: #111827 !important;
+                }
+                #inspection-report-content {
+                    position: static !important;
+                    display: block !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    min-height: 0 !important;
+                    max-height: none !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    overflow: visible !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
+                    background: #ffffff !important;
+                    color: #111827 !important;
+                }
+                #inspection-report-content, #inspection-report-content * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+            `;
+            printDocument.head.appendChild(printOverrides);
+            printDocument.body.appendChild(reportContent.cloneNode(true));
+
+            const imagesReady = Promise.all(
+                Array.from(printDocument.images).map((image) => {
+                    if (image.complete) return Promise.resolve();
+                    return new Promise<void>((resolve) => {
+                        image.addEventListener('load', () => resolve(), { once: true });
+                        image.addEventListener('error', () => resolve(), { once: true });
+                    });
+                })
+            );
+
+            const assetsReady = Promise.all([
+                ...stylesheetPromises,
+                imagesReady,
+                printDocument.fonts?.ready ?? Promise.resolve(),
+            ]);
+            await Promise.race([
+                assetsReady,
+                new Promise<void>((resolve) => window.setTimeout(resolve, 5_000)),
+            ]);
+
+            let cleanedUp = false;
+            const cleanup = () => {
+                if (cleanedUp) return;
+                cleanedUp = true;
+                printFrame.remove();
+                window.clearTimeout(cleanupTimeout);
+            };
+            const cleanupTimeout = window.setTimeout(cleanup, 60_000);
+            printWindow.addEventListener('afterprint', cleanup, { once: true });
+
+            printWindow.focus();
+            printWindow.print();
+        } catch (error) {
+            printFrame.remove();
+            console.error('Erro ao imprimir vistoria:', error);
+            window.alert('Não foi possível preparar o relatório para impressão. Tente novamente.');
+        }
     };
 
     const resetAndClose = () => {
@@ -314,18 +434,26 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
     const pendingItems = allChecklistItems.filter((i) => getItemStatus(i.id) === 'pending');
     const totalChecked = issueItems.length + okItems.length;
     const progress =
-        allChecklistItems.length > 0 ? Math.round((totalChecked / allChecklistItems.length) * 100) : 0;
+        allChecklistItems.length > 0
+            ? Math.round((totalChecked / allChecklistItems.length) * 100)
+            : 0;
 
     return (
-        <div className="modal-overlay fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm print:p-0 print:bg-white print:block print:absolute print:top-0 print:left-0 print:w-full print:min-h-screen print:z-[9999]">
-            <div className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[90vh] print:max-h-none print:shadow-none print:rounded-none print:w-full print:max-w-none print:h-auto print:block overflow-hidden">
+        <div className="modal-overlay fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm print:p-0 print:bg-white print:block print:absolute print:top-0 print:left-0 print:w-full print:min-h-0 print:h-auto print:z-[9999]">
+            <div className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[90vh] print:max-h-none print:shadow-none print:rounded-none print:w-full print:max-w-none print:h-auto print:block print:overflow-visible overflow-hidden">
                 {/* HEADER */}
                 <div className="p-3.5 sm:p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center print:hidden shrink-0">
                     <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2 truncate">
                         {step === 'inspection' ? (
-                            <Camera className={`shrink-0 ${inspectionType === 'pre_checkin' ? 'text-blue-500' : 'text-indigo-500'}`} size={20} />
+                            <Camera
+                                className={`shrink-0 ${inspectionType === 'pre_checkin' ? 'text-blue-500' : 'text-indigo-500'}`}
+                                size={20}
+                            />
                         ) : (
-                            <FileText className={`shrink-0 ${inspectionType === 'pre_checkin' ? 'text-blue-500' : 'text-indigo-500'}`} size={20} />
+                            <FileText
+                                className={`shrink-0 ${inspectionType === 'pre_checkin' ? 'text-blue-500' : 'text-indigo-500'}`}
+                                size={20}
+                            />
                         )}
                         <span className="truncate">
                             {step === 'inspection'
@@ -337,9 +465,7 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                     </h2>
                     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         {step === 'inspection' && (
-                            <div className="text-xs text-gray-500 font-medium">
-                                {progress}%
-                            </div>
+                            <div className="text-xs text-gray-500 font-medium">{progress}%</div>
                         )}
                         <button
                             type="button"
@@ -362,7 +488,8 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100'
                         }`}
                     >
-                        📥 <span className="hidden sm:inline">Vistoria </span>PRÉ Check-in<span className="hidden sm:inline"> (Entrada)</span>
+                        📥 <span className="hidden sm:inline">Vistoria </span>PRÉ Check-in
+                        <span className="hidden sm:inline"> (Entrada)</span>
                     </button>
                     <button
                         type="button"
@@ -373,7 +500,8 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100'
                         }`}
                     >
-                        📤 <span className="hidden sm:inline">Vistoria </span>PÓS Check-out<span className="hidden sm:inline"> (Saída)</span>
+                        📤 <span className="hidden sm:inline">Vistoria </span>PÓS Check-out
+                        <span className="hidden sm:inline"> (Saída)</span>
                     </button>
                 </div>
 
@@ -442,8 +570,13 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
                                 }}
                                 className="flex-1 min-h-[44px] py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all active:scale-[0.98] text-xs flex items-center justify-center touch-manipulation"
                             >
-                                <span className="hidden sm:inline">Gerar Relatório ({okItems.length} OK, {issueItems.length} Atenção, {pendingItems.length} Pendentes)</span>
-                                <span className="sm:hidden">Gerar Relatório ({okItems.length} OK)</span>
+                                <span className="hidden sm:inline">
+                                    Gerar Relatório ({okItems.length} OK, {issueItems.length}{' '}
+                                    Atenção, {pendingItems.length} Pendentes)
+                                </span>
+                                <span className="sm:hidden">
+                                    Gerar Relatório ({okItems.length} OK)
+                                </span>
                             </button>
                         </div>
                     ) : (
