@@ -292,13 +292,14 @@ describe('Firebase Reservations Service', () => {
                         data: () => ({ propertyId: 'integracao', guestName: 'Guest 2' }),
                     },
                 ],
+                metadata: { fromCache: false, hasPendingWrites: false },
             };
 
             (firestore.query as any).mockReturnValue({});
             (firestore.collection as any).mockReturnValue({});
             (firestore.where as any).mockReturnValue({});
             (firestore.orderBy as any).mockReturnValue({});
-            (firestore.onSnapshot as any).mockImplementation((q, onNext) => {
+            (firestore.onSnapshot as any).mockImplementation((q, options, onNext) => {
                 setTimeout(() => onNext(mockSnapshot), 0);
                 return () => {};
             });
@@ -306,6 +307,33 @@ describe('Firebase Reservations Service', () => {
             await subscribeToActiveReservations(mockCallback, ['integracao']);
 
             expect(firestore.where).toHaveBeenCalledWith('propertyId', '==', 'integracao');
+        });
+
+        it('should expose whether a snapshot came from cache', async () => {
+            const mockCallback = vi.fn();
+            const mockSnapshot = {
+                docs: [],
+                metadata: { fromCache: true, hasPendingWrites: false },
+            };
+
+            (firestore.query as any).mockReturnValue({});
+            (firestore.collection as any).mockReturnValue({});
+            (firestore.where as any).mockReturnValue({});
+            (firestore.orderBy as any).mockReturnValue({});
+            (firestore.onSnapshot as any).mockImplementation((q, options, onNext) => {
+                setTimeout(() => onNext(mockSnapshot), 0);
+                return () => {};
+            });
+
+            await subscribeToActiveReservations(mockCallback);
+
+            await vi.waitFor(() => {
+                expect(mockCallback).toHaveBeenCalledWith([], {
+                    status: 'cached',
+                    fromCache: true,
+                    hasPendingWrites: false,
+                });
+            });
         });
     });
 
@@ -325,7 +353,7 @@ describe('Firebase Reservations Service', () => {
             (firestore.where as any).mockReturnValue({});
             (firestore.orderBy as any).mockReturnValue({});
             (firestore.limit as any).mockReturnValue({});
-            (firestore.getDocs as any).mockResolvedValue(mockSnapshot);
+            (firestore.getDocsFromServer as any).mockResolvedValue(mockSnapshot);
 
             const result = await fetchHistoryReservations();
 
@@ -344,7 +372,7 @@ describe('Firebase Reservations Service', () => {
             (firestore.where as any).mockReturnValue({});
             (firestore.orderBy as any).mockReturnValue({});
             (firestore.limit as any).mockReturnValue({});
-            (firestore.getDocs as any).mockResolvedValue({ docs: mockDocs });
+            (firestore.getDocsFromServer as any).mockResolvedValue({ docs: mockDocs });
 
             const result = await fetchHistoryReservations(null, 20);
 

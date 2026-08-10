@@ -34,6 +34,8 @@ export const useAdminDashboard = () => {
     // Use extracted reservations hook
     const {
         activeReservations,
+        activeSyncStatus,
+        activeSyncError,
         historyReservations,
         loadingHistory,
         hasMoreHistory,
@@ -229,7 +231,7 @@ export const useAdminDashboard = () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             if (reloadTimeout) clearTimeout(reloadTimeout);
         };
-    }, [user, userPermission, loadMoreHistory, showToast, refreshHistory]);
+    }, [user, userPermission, showToast, refreshHistory, refreshActive]);
 
     // --- API KEY CHECK ---
     useEffect(() => {
@@ -405,6 +407,8 @@ export const useAdminDashboard = () => {
         auth: { user, authLoading, handleLogin, logout, userPermission },
         data: {
             activeReservations,
+            activeSyncStatus,
+            activeSyncError,
             historyReservations,
             blockedDates,
             loadMoreHistory,

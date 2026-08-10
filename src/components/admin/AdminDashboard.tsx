@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Loader2, Lock, LogIn, ShieldAlert } from 'lucide-react';
+import { CloudOff, Loader2, Lock, LogIn, RefreshCw, ShieldAlert } from 'lucide-react';
 import { canUserAccessProperty, restoreAdminUser } from '../../services/userManagement';
 import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 import { useAdminContent } from '../../hooks/useAdminContent';
@@ -278,6 +278,68 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                             >
                                 <ShieldAlert size={16} />
                                 Restaurar Acesso Admin
+                            </button>
+                        </div>
+                    )}
+
+                    {/* RESERVATION SERVER SYNC STATUS */}
+                    {auth.userPermission && data.activeSyncStatus !== 'synced' && (
+                        <div
+                            className={`mb-6 rounded-2xl border p-4 flex flex-col sm:flex-row sm:items-center gap-4 animate-fadeIn ${
+                                data.activeSyncStatus === 'error'
+                                    ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+                                    : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+                            }`}
+                            role="status"
+                        >
+                            <div
+                                className={`p-2 rounded-full shrink-0 ${
+                                    data.activeSyncStatus === 'error'
+                                        ? 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-300'
+                                        : 'bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-300'
+                                }`}
+                            >
+                                {data.activeSyncStatus === 'connecting' ? (
+                                    <Loader2 size={20} className="animate-spin" />
+                                ) : (
+                                    <CloudOff size={20} />
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3
+                                    className={`font-bold ${
+                                        data.activeSyncStatus === 'error'
+                                            ? 'text-red-900 dark:text-red-100'
+                                            : 'text-amber-900 dark:text-amber-100'
+                                    }`}
+                                >
+                                    {data.activeSyncStatus === 'connecting'
+                                        ? 'Confirmando reservas com o servidor…'
+                                        : data.activeSyncStatus === 'pending'
+                                          ? 'Alterações aguardando confirmação do servidor'
+                                          : data.activeSyncStatus === 'cached'
+                                            ? 'Cópia local detectada — aguardando o servidor'
+                                            : 'Reservas não sincronizadas'}
+                                </h3>
+                                <p
+                                    className={`text-sm ${
+                                        data.activeSyncStatus === 'error'
+                                            ? 'text-red-700 dark:text-red-300'
+                                            : 'text-amber-700 dark:text-amber-300'
+                                    }`}
+                                >
+                                    Os números do painel não devem ser considerados atuais até a
+                                    confirmação. Nenhum dado local antigo será exibido como oficial.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={data.refreshActive}
+                                disabled={data.activeSyncStatus === 'connecting'}
+                                className="px-4 py-2 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-sm font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-wait"
+                            >
+                                <RefreshCw size={16} />
+                                Tentar novamente
                             </button>
                         </div>
                     )}

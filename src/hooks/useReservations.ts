@@ -7,6 +7,8 @@ import {
     saveReservation,
     updateReservation,
     deleteReservation,
+    ReservationSyncInfo,
+    ReservationSyncStatus,
 } from '../services/firebase/reservations';
 import { Reservation, UserPermission } from '../types';
 import { logger } from '../utils/logger';
@@ -23,9 +25,13 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
     // React Query doesn't natively support streams easily without third-party adapters,
     // and maintaining the live socket is good for "Active" view.
     const [activeReservations, setActiveReservations] = useState<Reservation[]>([]);
+    const [activeSyncStatus, setActiveSyncStatus] = useState<ReservationSyncStatus>('connecting');
+    const [activeSyncError, setActiveSyncError] = useState<Error | null>(null);
     const [subKey, setSubKey] = useState(0);
 
     const refreshActive = useCallback(() => {
+        setActiveSyncStatus('connecting');
+        setActiveSyncError(null);
         setSubKey((k) => k + 1);
     }, []);
 
@@ -51,16 +57,45 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         const allowedProperties = userPermission.allowedProperties;
 
         let unsubscribe: (() => void) | undefined;
+        let disposed = false;
 
         const setupSubscription = async () => {
-            unsubscribe = await subscribeToActiveReservations((data) => {
-                setActiveReservations(data);
-            }, allowedProperties);
+            try {
+                unsubscribe = await subscribeToActiveReservations(
+                    (data, sync?: ReservationSyncInfo) => {
+                        if (disposed) return;
+
+                        // Compatibilidade com mocks/consumidores antigos: sem metadados significa
+                        // snapshot confirmado. Em produção, cache e escritas pendentes nunca
+                        // substituem a última fotografia confirmada pelo servidor.
+                        const nextStatus = sync?.status ?? 'synced';
+                        setActiveSyncStatus(nextStatus);
+                        if (nextStatus === 'synced') {
+                            setActiveReservations(data);
+                            setActiveSyncError(null);
+                        }
+                    },
+                    allowedProperties,
+                    (error) => {
+                        if (disposed) return;
+                        setActiveSyncStatus('error');
+                        setActiveSyncError(error);
+                    }
+                );
+            } catch (error) {
+                if (disposed) return;
+                const syncError =
+                    error instanceof Error ? error : new Error('Falha ao sincronizar reservas');
+                logger.error('Error subscribing to active reservations', { error: syncError });
+                setActiveSyncStatus('error');
+                setActiveSyncError(syncError);
+            }
         };
 
         setupSubscription();
 
         return () => {
+            disposed = true;
             if (unsubscribe) unsubscribe();
         };
     }, [userPermission, subKey]);
@@ -145,6 +180,8 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
     return {
         // Data
         activeReservations,
+        activeSyncStatus,
+        activeSyncError,
         historyReservations,
 
         // Pagination

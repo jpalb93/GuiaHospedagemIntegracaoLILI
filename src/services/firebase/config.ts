@@ -22,10 +22,13 @@ const app = initializeApp(firebaseConfig);
 let dbInstance: Firestore | null = null;
 export const getFirestoreInstance = async (): Promise<Firestore> => {
     if (!dbInstance) {
-        const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } =
-            await import('firebase/firestore');
+        const { initializeFirestore, memoryLocalCache } = await import('firebase/firestore');
         dbInstance = initializeFirestore(app, {
-            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+            // O admin gerencia ocupação e pagamentos em tempo real. Persistir snapshots entre
+            // sessões permite que um navegador reabra exibindo uma fotografia antiga como se
+            // fosse o estado atual. O cache em memória mantém a navegação rápida sem criar
+            // fontes de verdade diferentes entre dispositivos.
+            localCache: memoryLocalCache(),
         });
     }
     return dbInstance;

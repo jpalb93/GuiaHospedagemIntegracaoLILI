@@ -62,7 +62,27 @@ describe('useReservations Hook', () => {
 
         expect(result.current.activeReservations).toEqual([]);
         expect(result.current.historyReservations).toEqual([]);
+        expect(result.current.activeSyncStatus).toBe('connecting');
         // status is implicit in useInfiniteQuery
+    });
+
+    it('should not promote cached reservations to confirmed data', async () => {
+        const cachedReservations = [{ id: 'cached', guestName: 'Stale guest' }] as Reservation[];
+
+        (firebaseService.subscribeToActiveReservations as import('vitest').Mock).mockImplementation(
+            (callback: (res: Reservation[], sync: { status: 'cached' }) => void) => {
+                callback(cachedReservations, { status: 'cached' });
+                return () => {};
+            }
+        );
+
+        const { result } = renderHook(
+            () => useReservations({ userPermission: mockUserPermission, showToast: mockShowToast }),
+            { wrapper: createWrapper() }
+        );
+
+        await waitFor(() => expect(result.current.activeSyncStatus).toBe('cached'));
+        expect(result.current.activeReservations).toEqual([]);
     });
 
     it('should subscribe to active reservations on mount', async () => {

@@ -29,6 +29,15 @@ import { generateShortId } from '../../utils/helpers';
 import { mapFirestoreDocs } from './mappers';
 import { logAction } from './logs'; // Import logAction
 
+export type ReservationSyncStatus = 'connecting' | 'synced' | 'cached' | 'pending' | 'error';
+
+export interface ReservationSyncInfo {
+    status: ReservationSyncStatus;
+    fromCache: boolean;
+    hasPendingWrites: boolean;
+    error?: Error;
+}
+
 /** Converte null → deleteField(); remove undefined em qualquer nível de profundidade */
 const prepareReservationUpdate = (data: Record<string, unknown>) => {
     const out: Record<string, unknown> = {};
@@ -163,11 +172,16 @@ export const subscribeToSingleReservation = async (
 
 // --- OTIMIZAÇÃO: Apenas Ativas em Tempo Real ---
 export const subscribeToActiveReservations = async (
-    callback: (reservations: Reservation[]) => void,
-    allowedProperties?: string[]
+    callback: (reservations: Reservation[], sync: ReservationSyncInfo) => void,
+    allowedProperties?: string[],
+    onSyncError?: (error: Error) => void
 ) => {
     if (allowedProperties && allowedProperties.length === 0) {
-        callback([]);
+        callback([], {
+            status: 'synced',
+            fromCache: false,
+            hasPendingWrites: false,
+        });
         return () => undefined;
     }
 
@@ -196,6 +210,7 @@ export const subscribeToActiveReservations = async (
 
     return onSnapshot(
         q,
+        { includeMetadataChanges: true },
         (snapshot) => {
             let data = mapFirestoreDocs<Reservation>(snapshot);
 
@@ -204,11 +219,24 @@ export const subscribeToActiveReservations = async (
                 data = data.filter((r) => (r.propertyId || 'lili') === 'lili');
             }
 
-            logger.info(`[Firebase] Active reservations updated: ${data.length} items`);
-            callback(data);
+            const fromCache = snapshot.metadata.fromCache;
+            const hasPendingWrites = snapshot.metadata.hasPendingWrites;
+            const status: ReservationSyncStatus = hasPendingWrites
+                ? 'pending'
+                : fromCache
+                  ? 'cached'
+                  : 'synced';
+
+            logger.info(`[Firebase] Active reservations updated: ${data.length} items`, {
+                status,
+                fromCache,
+                hasPendingWrites,
+            });
+            callback(data, { status, fromCache, hasPendingWrites });
         },
         (error) => {
             logger.error('Erro no listener de reservas ativas:', { error });
+            onSyncError?.(error);
         }
     );
 };
@@ -241,13 +269,9 @@ export const fetchHistoryReservations = async (
         q = query(q, startAfter(lastDoc));
     }
 
-    let snapshot;
-    try {
-        snapshot = await getDocsFromServer(q);
-        if (!snapshot) snapshot = await getDocs(q);
-    } catch {
-        snapshot = await getDocs(q);
-    }
+    // O histórico administrativo nunca deve cair silenciosamente para um snapshot local antigo.
+    // Se o servidor estiver indisponível, a UI precisa mostrar o erro em vez de dados incompletos.
+    const snapshot = await getDocsFromServer(q);
     let data = snapshot.docs.map(
         (doc) =>
             ({
