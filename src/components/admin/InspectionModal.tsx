@@ -113,18 +113,35 @@ const InspectionModal: React.FC<InspectionModalProps> = ({
         if (!reservation?.id || !onSaveInspection) return;
         setIsSaving(true);
         try {
+            // Limpa propriedades undefined no checklistState para garantir compatibilidade com Firestore
+            const cleanedChecklistState: ChecklistState = {};
+            Object.entries(checklistState || {}).forEach(([key, value]) => {
+                if (!value) return;
+                cleanedChecklistState[key] = {
+                    status: value.status || 'pending',
+                    ...(value.note ? { note: value.note } : {}),
+                    ...(value.image ? { image: value.image } : {}),
+                };
+            });
+
             const inspectionData: SavedInspectionData = {
                 timestamp: new Date().toISOString(),
-                inspectorName,
-                checklistState,
-                customItems,
-                excludedItemIds,
+                inspectorName: inspectorName || '',
+                checklistState: cleanedChecklistState,
+                customItems: (customItems || []).map((ci) => ({
+                    id: ci.id,
+                    label: ci.label,
+                    active: true,
+                    category: ci.category || 'Geral',
+                })),
+                excludedItemIds: excludedItemIds || [],
             };
             await onSaveInspection(reservation.id, inspectionType, inspectionData);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (err) {
             console.error('Erro ao salvar vistoria:', err);
+            alert('Erro ao salvar vistoria. Verifique sua conexão e tente novamente.');
         } finally {
             setIsSaving(false);
         }

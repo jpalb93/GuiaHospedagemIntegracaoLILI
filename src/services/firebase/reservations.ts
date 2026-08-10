@@ -29,14 +29,19 @@ import { generateShortId } from '../../utils/helpers';
 import { mapFirestoreDocs } from './mappers';
 import { logAction } from './logs'; // Import logAction
 
-/** Converte null → deleteField(); remove undefined */
+/** Converte null → deleteField(); remove undefined em qualquer nível de profundidade */
 const prepareReservationUpdate = (data: Record<string, unknown>) => {
     const out: Record<string, unknown> = {};
     Object.keys(data).forEach((key) => {
         const val = data[key];
         if (val === undefined) return;
-        if (val === null) out[key] = deleteField();
-        else out[key] = val;
+        if (val === null) {
+            out[key] = deleteField();
+        } else if (typeof val === 'object' && val !== null) {
+            out[key] = cleanData(val as object);
+        } else {
+            out[key] = val;
+        }
     });
     return out;
 };
