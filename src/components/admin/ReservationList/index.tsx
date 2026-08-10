@@ -10,6 +10,7 @@ import {
 } from '../../../types';
 import { useAdminSettings } from '../../../hooks/useAdminSettings';
 import { updateReservation } from '../../../services/firebase/reservations';
+import { normalizeToISODate } from '../../../utils/dateFormatting';
 import { Search } from 'lucide-react';
 import InspectionModal, { InspectionType } from '../InspectionModal';
 import ReservationQuickViewModal from '../modals/ReservationQuickViewModal';
@@ -151,8 +152,8 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
 
             let dateMatch = true;
             if (dateRange.start || dateRange.end) {
-                const targetDate =
-                    dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
+                const rawTarget = dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
+                const targetDate = normalizeToISODate(rawTarget);
                 if (targetDate) {
                     if (dateRange.start && targetDate < dateRange.start) dateMatch = false;
                     if (dateRange.end && targetDate > dateRange.end) dateMatch = false;
@@ -172,12 +173,15 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         const historyListArr: Reservation[] = [];
 
         filteredList.forEach((res: Reservation) => {
-            if (!res.checkoutDate || !res.checkInDate) return;
-            if (res.checkoutDate < todayStr) {
+            const checkInISO = normalizeToISODate(res.checkInDate);
+            const checkOutISO = normalizeToISODate(res.checkoutDate);
+            if (!checkOutISO || !checkInISO) return;
+
+            if (checkOutISO < todayStr) {
                 historyListArr.push(res);
-            } else if (res.checkoutDate === todayStr) {
+            } else if (checkOutISO === todayStr) {
                 leavingTodayArr.push(res);
-            } else if (res.checkInDate > todayStr) {
+            } else if (checkInISO > todayStr) {
                 upcomingArr.push(res);
             } else {
                 stayingArr.push(res);
@@ -192,7 +196,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
             };
             const diff = getFlatNum(a) - getFlatNum(b);
             if (diff !== 0) return diff;
-            return (a.checkInDate || '').localeCompare(b.checkInDate || '');
+            const aIn = normalizeToISODate(a.checkInDate);
+            const bIn = normalizeToISODate(b.checkInDate);
+            return aIn.localeCompare(bIn);
         };
 
         leavingTodayArr.sort(sortByFlatNumber);
@@ -206,7 +212,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         }
         const groupedHistoryArr = historyListArr.reduce(
             (groups: HistoryGroup[], res: Reservation) => {
-                const groupingDate = res.checkInDate || res.checkoutDate;
+                const groupingDate = normalizeToISODate(res.checkInDate || res.checkoutDate);
                 if (!groupingDate) return groups;
                 const [y, m] = groupingDate.split('-');
                 const date = new Date(parseInt(y), parseInt(m) - 1, 1);
