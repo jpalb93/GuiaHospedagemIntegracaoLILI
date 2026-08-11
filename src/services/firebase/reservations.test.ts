@@ -307,6 +307,48 @@ describe('Firebase Reservations Service', () => {
             await subscribeToActiveReservations(mockCallback, ['integracao']);
 
             expect(firestore.where).toHaveBeenCalledWith('propertyId', '==', 'integracao');
+            expect(firestore.orderBy).not.toHaveBeenCalled();
+        });
+
+        it('should filter expired reservations client-side for a single property', async () => {
+            const mockCallback = vi.fn();
+            const mockSnapshot = {
+                docs: [
+                    {
+                        id: 'active',
+                        data: () => ({
+                            propertyId: 'integracao',
+                            guestName: 'Active',
+                            checkoutDate: '2099-01-01',
+                        }),
+                    },
+                    {
+                        id: 'expired',
+                        data: () => ({
+                            propertyId: 'integracao',
+                            guestName: 'Expired',
+                            checkoutDate: '2020-01-01',
+                        }),
+                    },
+                ],
+                metadata: { fromCache: false, hasPendingWrites: false },
+            };
+
+            (firestore.query as any).mockReturnValue({});
+            (firestore.collection as any).mockReturnValue({});
+            (firestore.where as any).mockReturnValue({});
+            (firestore.onSnapshot as any).mockImplementation((q, options, onNext) => {
+                setTimeout(() => onNext(mockSnapshot), 0);
+                return () => {};
+            });
+
+            await subscribeToActiveReservations(mockCallback, ['integracao']);
+
+            await vi.waitFor(() => {
+                expect(mockCallback.mock.calls[0][0]).toEqual([
+                    expect.objectContaining({ id: 'active' }),
+                ]);
+            });
         });
 
         it('should expose whether a snapshot came from cache', async () => {

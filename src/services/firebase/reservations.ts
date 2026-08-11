@@ -26,6 +26,7 @@ import { getFirestoreInstance, cleanData, getFirebaseAuth } from './config'; // 
 import { Reservation } from '../../types';
 import { logger } from '../../utils/logger';
 import { generateShortId } from '../../utils/helpers';
+import { normalizeToISODate } from '../../utils/dateFormatting';
 import { mapFirestoreDocs } from './mappers';
 import { logAction } from './logs'; // Import logAction
 
@@ -188,19 +189,11 @@ export const subscribeToActiveReservations = async (
     const now = new Date();
     const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD Local
 
-    const constraints: ReturnType<typeof where | typeof orderBy>[] = [
-        where('checkoutDate', '>=', today),
-        orderBy('checkoutDate', 'asc'),
-    ];
-
-    // O filtro de tenant no Firestore é aplicado apenas para propriedades restritas não-padrão (ex: apenas 'integracao').
-    // Para super_admin (2+ propriedades) ou 'lili', não filtramos no Firestore por propertyId
-    // para evitar a exclusão de reservas legadas sem o campo propertyId no documento.
     const isSingleRestrictedProperty =
         allowedProperties?.length === 1 && allowedProperties[0] !== 'lili';
-    if (isSingleRestrictedProperty) {
-        constraints.unshift(where('propertyId', '==', allowedProperties[0]));
-    }
+    const constraints: ReturnType<typeof where | typeof orderBy>[] = isSingleRestrictedProperty
+        ? [where('propertyId', '==', allowedProperties[0])]
+        : [where('checkoutDate', '>=', today), orderBy('checkoutDate', 'asc')];
 
     const db = await getFirestoreInstance();
 
@@ -214,9 +207,22 @@ export const subscribeToActiveReservations = async (
         (snapshot) => {
             let data = mapFirestoreDocs<Reservation>(snapshot);
 
-            // Se o usuário tem permissão apenas para 'lili', filtra client-side preservando legados sem propertyId
+            // Para gestores de um único imóvel, consultar somente por propertyId evita depender
+            // de um índice composto propertyId + checkoutDate. A janela ativa e a ordenação são
+            // aplicadas em memória sobre o snapshot confirmado pelo servidor.
+            if (isSingleRestrictedProperty) {
+                data = data
+                    .filter((reservation) => normalizeToISODate(reservation.checkoutDate) >= today)
+                    .sort((a, b) =>
+                        normalizeToISODate(a.checkoutDate).localeCompare(
+                            normalizeToISODate(b.checkoutDate)
+                        )
+                    );
+            }
+
+            // Reservas legadas da propriedade padrão podem não possuir propertyId.
             if (allowedProperties?.length === 1 && allowedProperties[0] === 'lili') {
-                data = data.filter((r) => (r.propertyId || 'lili') === 'lili');
+                data = data.filter((reservation) => (reservation.propertyId || 'lili') === 'lili');
             }
 
             const fromCache = snapshot.metadata.fromCache;
