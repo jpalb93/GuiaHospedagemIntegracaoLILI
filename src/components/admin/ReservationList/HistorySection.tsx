@@ -29,6 +29,7 @@ interface HistorySectionProps {
     onSendReminder: (res: Reservation, type: 'checkin' | 'checkout') => void;
     onOpenInspection: (res: Reservation) => void;
     onQuickView?: (res: Reservation) => void;
+    onOpenCleaning?: (res: Reservation) => void;
 }
 
 const HistorySection: React.FC<HistorySectionProps> = ({
@@ -50,6 +51,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({
     onSendReminder,
     onOpenInspection,
     onQuickView,
+    onOpenCleaning,
 }) => {
     if (historyList.length === 0) return null;
 
@@ -105,6 +107,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                                             res.id && onToggleSelection(res.id)
                                         }
                                         onQuickView={() => onQuickView?.(res)}
+                                        onOpenCleaning={() => onOpenCleaning?.(res)}
                                     />
                                 ))}
                             </div>
@@ -142,6 +145,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                                                         res.id && onToggleSelection(res.id)
                                                     }
                                                     onQuickView={() => onQuickView?.(res)}
+                                                    onOpenCleaning={() => onOpenCleaning?.(res)}
                                                 />
                                             ))}
                                         </tbody>

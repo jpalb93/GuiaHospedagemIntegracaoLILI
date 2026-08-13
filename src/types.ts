@@ -127,6 +127,25 @@ export interface GuestConfig {
     allocationId?: string;
     /** Sem valor ou 'reservation' = caixa na reserva; 'corporate' = fatura da empresa */
     billingMode?: ReservationBillingMode;
+
+    // REGISTRO DE LIMPEZAS ADICIONAIS (CUSTOS ADICIONAIS)
+    cleanings?: CleaningRecord[];
+}
+
+export type CleaningType = 'full' | 'linen_change' | 'light' | 'disinfection' | 'custom';
+export type CleaningPaymentStatus = 'paid' | 'pending' | 'billed_corporate' | 'courtesy';
+
+export interface CleaningRecord {
+    id: string;
+    date: string; // Data (YYYY-MM-DD)
+    time?: string; // Hora (HH:MM)
+    cleanerName: string; // Nome da camareira/limpador(a)
+    type: CleaningType | string; // Tipo de limpeza
+    typeLabel?: string; // Rótulo legível
+    cost: number; // Valor cobrado (R$)
+    paymentStatus: CleaningPaymentStatus;
+    notes?: string; // Observações
+    createdAt: string; // Timestamp ISO
 }
 
 export interface SavedInspectionData {
@@ -238,6 +257,7 @@ export interface AppConfig {
     checklist?: ChecklistItem[]; // Novo: Itens de Vistoria
     messageTemplates?: MessageTemplates; // Novo: Templates de mensagem
     reservationTemplates?: ReservationTemplate[]; // Novo: Templates de Reserva
+    defaultCleaningFee?: number; // Novo: Valor Padrão de Limpeza Adicional (ex: 50.00)
 }
 
 export interface ReservationTemplate {

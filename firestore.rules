@@ -26,12 +26,12 @@ service cloud.firestore {
       return user != null && (user.role == 'super_admin' || user.allowedProperties.hasAny([propertyId]));
     }
 
-    // Reservas legadas podem não ter propertyId. Somente o super admin pode
-    // acessá-las até que o imóvel seja definido; reservas modernas continuam
-    // respeitando o isolamento por propriedade.
+    // Reservas legadas podem não ter propertyId. Por padrão, pertencem ao
+    // Flat da Lili ('lili'). Administradores com acesso a 'lili' podem
+    // lê-las e atualizá-las normalmente.
     function hasReservationAccess(data) {
       return ('propertyId' in data && hasPropertyAccess(data.propertyId))
-        || (!('propertyId' in data) && isSuperAdmin());
+        || (!('propertyId' in data) && hasPropertyAccess('lili'));
     }
 
     function isValidDate(value) {
@@ -50,7 +50,7 @@ service cloud.firestore {
           'createdAt', 'shortId'
         ])
         && data.guestName is string && data.guestName.size() >= 2 && data.guestName.size() <= 120
-        && data.guestPhone is string && data.guestPhone.size() >= 8 && data.guestPhone.size() <= 20
+        && data.guestPhone is string && (data.guestPhone.size() == 0 || (data.guestPhone.size() >= 8 && data.guestPhone.size() <= 20))
         && data.email is string && data.email.size() <= 254
         && data.propertyId == 'lili'
         && isValidDate(data.checkInDate)
@@ -100,7 +100,7 @@ service cloud.firestore {
       function isValidReservation() {
         let data = request.resource.data;
         return data.guestName is string && data.guestName.size() >= 2
-            && data.guestPhone is string && data.guestPhone.size() >= 8
+            && data.guestPhone is string && (data.guestPhone.size() == 0 || data.guestPhone.size() >= 8)
             && data.checkInDate is string && data.checkInDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
             && data.checkoutDate is string && data.checkoutDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
             && data.propertyId in ['lili', 'integracao'];

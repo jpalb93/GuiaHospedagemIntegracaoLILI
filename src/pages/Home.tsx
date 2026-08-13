@@ -83,7 +83,7 @@ const Home: React.FC = () => {
                         '@id': 'https://www.flatsintegracao.com.br',
                         url: 'https://www.flatsintegracao.com.br',
                         sameAs: [
-                            'https://www.instagram.com/flatsintegracao/',
+                            'https://www.instagram.com/flatintegracao/',
                             'https://www.airbnb.com.br/users/show/155799195',
                         ],
                         hasMap: 'https://maps.app.goo.gl/K8n5q9r9G7jQ8J9T6',

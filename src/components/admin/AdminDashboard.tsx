@@ -22,6 +22,7 @@ const CompaniesManager = React.lazy(() => import('./CompaniesManager'));
 
 import AdminNavigation from './AdminNavigation';
 import ConfirmModal from './ConfirmModal';
+import ModernLoadingScreen from '../ModernLoadingScreen';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -93,11 +94,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     }, []);
 
     if (auth.authLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                <Loader2 className="animate-spin text-orange-500" size={48} />
-            </div>
-        );
+        return <ModernLoadingScreen variant="admin" />;
     }
 
     if (!auth.user) {

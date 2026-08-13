@@ -107,7 +107,7 @@ export const CompanyList: React.FC<CompanyListProps> = ({
                 <button
                     type="button"
                     onClick={() => setShowNewCompany(true)}
-                    className={`${btnPrimary} relative z-10 shrink-0 bg-white text-slate-900 hover:bg-gray-100 shadow-xl`}
+                    className="relative z-10 shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs sm:text-sm font-extrabold font-heading shadow-lg shadow-orange-500/25 transition-all active:scale-95 cursor-pointer uppercase tracking-wider"
                 >
                     <Plus size={18} /> Nova conta
                 </button>

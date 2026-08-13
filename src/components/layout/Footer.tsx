@@ -231,7 +231,7 @@ const Footer: React.FC = () => {
 
                         <div className="flex items-center gap-3 pt-1">
                             <a
-                                href="https://www.instagram.com/flatsintegracao/"
+                                href="https://www.instagram.com/flatintegracao/"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-orange-500/40 text-xs text-stone-300 hover:text-white transition-all group"
@@ -241,7 +241,7 @@ const Footer: React.FC = () => {
                                     size={16}
                                     className="text-orange-500 group-hover:scale-110 transition-transform"
                                 />
-                                <span>@flatsintegracao</span>
+                                <span>@flatintegracao</span>
                             </a>
                         </div>
 

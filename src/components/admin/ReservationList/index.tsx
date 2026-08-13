@@ -7,12 +7,14 @@ import {
     SavedInspectionData,
     PaymentStatus,
     PaymentMethod,
+    CleaningRecord,
 } from '../../../types';
 import { useAdminSettings } from '../../../hooks/useAdminSettings';
 import { updateReservation } from '../../../services/firebase/reservations';
 import { normalizeToISODate } from '../../../utils/dateFormatting';
 import { Search } from 'lucide-react';
 import InspectionModal, { InspectionType } from '../InspectionModal';
+import CleaningModal from '../CleaningModal';
 import ReservationQuickViewModal from '../modals/ReservationQuickViewModal';
 import PaymentRegistrationModal from '../modals/PaymentRegistrationModal';
 
@@ -91,6 +93,10 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
     // Payment Registration Modal State
     const [paymentModalReservation, setPaymentModalReservation] =
         React.useState<Reservation | null>(null);
+
+    // Cleaning Modal State
+    const [cleaningModalOpen, setCleaningModalOpen] = React.useState(false);
+    const [cleaningReservation, setCleaningReservation] = React.useState<Reservation | null>(null);
 
     const handleConfirmPayment = async (
         reservationId: string,
@@ -350,6 +356,29 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
         }
     };
 
+    const handleOpenCleaning = (res: Reservation) => {
+        setCleaningReservation(res);
+        setCleaningModalOpen(true);
+    };
+
+    const handleSaveCleanings = async (reservationId: string, cleanings: CleaningRecord[]) => {
+        try {
+            await updateReservation(reservationId, {
+                cleanings,
+            });
+            setCleaningReservation((prev) => (prev ? { ...prev, cleanings } : null));
+            queryClient.invalidateQueries({
+                queryKey: ['historyReservations'],
+                refetchType: 'all',
+            });
+            showToast('Registros de limpeza atualizados!', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar limpezas:', error);
+            showToast('Erro ao salvar registros de limpeza', 'error');
+            throw error;
+        }
+    };
+
     const handleExportCSV = () => {
         if (!allFiltered || allFiltered.length === 0) {
             showToast('Nenhuma reserva para exportar', 'error');
@@ -496,6 +525,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onOpenInspection={handleOpenInspection}
                     onQuickView={(res) => setQuickViewReservation(res)}
                     onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
+                    onOpenCleaning={handleOpenCleaning}
                 />
 
                 <ReservationSection
@@ -515,6 +545,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onOpenInspection={handleOpenInspection}
                     onQuickView={(res) => setQuickViewReservation(res)}
                     onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
+                    onOpenCleaning={handleOpenCleaning}
                 />
 
                 <ReservationSection
@@ -535,6 +566,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onOpenInspection={handleOpenInspection}
                     onQuickView={(res) => setQuickViewReservation(res)}
                     onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
+                    onOpenCleaning={handleOpenCleaning}
                 />
 
                 <HistorySection
@@ -556,6 +588,7 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                     onSendReminder={sendReminder}
                     onOpenInspection={handleOpenInspection}
                     onQuickView={(res) => setQuickViewReservation(res)}
+                    onOpenCleaning={handleOpenCleaning}
                 />
 
                 {activeReservations.length === 0 && historyReservations.length === 0 && (
@@ -596,6 +629,15 @@ const ReservationList: React.FC<ReservationListProps> = ({ data, ui, form, userP
                 onClose={() => setPaymentModalReservation(null)}
                 reservation={paymentModalReservation}
                 onConfirmPayment={handleConfirmPayment}
+            />
+
+            <CleaningModal
+                isOpen={cleaningModalOpen}
+                onClose={() => setCleaningModalOpen(false)}
+                reservation={cleaningReservation}
+                defaultFee={settings?.data?.defaultCleaningFee ?? 50}
+                propertyId={(cleaningReservation?.propertyId as PropertyId) || 'integracao'}
+                onSaveCleanings={handleSaveCleanings}
             />
         </div>
     );

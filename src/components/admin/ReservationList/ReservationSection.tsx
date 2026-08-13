@@ -22,6 +22,7 @@ interface ReservationSectionProps {
     onOpenInspection: (res: Reservation) => void;
     onQuickView?: (res: Reservation) => void;
     onOpenPaymentModal?: (res: Reservation) => void;
+    onOpenCleaning?: (res: Reservation) => void;
 }
 
 const ReservationSection: React.FC<ReservationSectionProps> = ({
@@ -42,6 +43,7 @@ const ReservationSection: React.FC<ReservationSectionProps> = ({
     onOpenInspection,
     onQuickView,
     onOpenPaymentModal,
+    onOpenCleaning,
 }) => {
     if (list.length === 0 && !showEmpty) return null;
 
@@ -89,6 +91,7 @@ const ReservationSection: React.FC<ReservationSectionProps> = ({
                         onToggleSelection={() => res.id && onToggleSelection(res.id)}
                         onQuickView={() => onQuickView?.(res)}
                         onOpenPaymentModal={() => onOpenPaymentModal?.(res)}
+                        onOpenCleaning={() => onOpenCleaning?.(res)}
                     />
                 ))}
             </div>
@@ -135,6 +138,7 @@ const ReservationSection: React.FC<ReservationSectionProps> = ({
                                     onToggleSelection={() => res.id && onToggleSelection(res.id)}
                                     onQuickView={() => onQuickView?.(res)}
                                     onOpenPaymentModal={() => onOpenPaymentModal?.(res)}
+                                    onOpenCleaning={() => onOpenCleaning?.(res)}
                                 />
                             ))}
                         </tbody>

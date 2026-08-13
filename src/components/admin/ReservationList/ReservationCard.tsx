@@ -13,6 +13,7 @@ import {
     Share2,
     DollarSign,
     MoreVertical,
+    Sparkles,
 } from 'lucide-react';
 import { Reservation, PropertyId } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
@@ -36,6 +37,7 @@ interface ReservationCardProps {
     onToggleSelection: () => void;
     onQuickView?: () => void;
     onOpenPaymentModal?: () => void;
+    onOpenCleaning?: () => void;
 }
 
 const ReservationCard: React.FC<ReservationCardProps> = ({
@@ -55,6 +57,7 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
     onToggleSelection,
     onQuickView,
     onOpenPaymentModal,
+    onOpenCleaning,
 }) => {
     const [showMenu, setShowMenu] = useState(false);
     const property = PROPERTIES[(res.propertyId || 'lili') as PropertyId];
@@ -344,6 +347,26 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
                         : res.preCheckInInspection
                           ? 'Vistoria (Pré Salva ✓)'
                           : 'Vistoria'}
+                </Button>
+
+                <Button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenCleaning?.();
+                    }}
+                    fullWidth
+                    leftIcon={<Sparkles size={16} />}
+                    className={`col-span-2 min-h-[44px] py-2.5 rounded-2xl text-xs font-extrabold font-heading flex items-center justify-center gap-2 shadow-sm active:scale-95 touch-manipulation transition-all ${
+                        res.cleanings && res.cleanings.length > 0
+                            ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                            : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                    }`}
+                    title="Limpezas adicionais (Custos Adicionais)"
+                >
+                    {res.cleanings && res.cleanings.length > 0
+                        ? `Limpezas (R$ ${res.cleanings.reduce((sum, c) => sum + (c.cost || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`
+                        : 'Limpeza Adicional'}
                 </Button>
 
                 <Button
