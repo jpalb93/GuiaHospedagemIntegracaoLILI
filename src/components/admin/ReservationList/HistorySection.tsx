@@ -2,8 +2,7 @@ import React from 'react';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Reservation } from '../../../types';
 import { Button } from '../../ui';
-import ReservationCard from './ReservationCard';
-import ReservationTableRow from './ReservationTableRow';
+import ReservationGridCard from './ReservationGridCard';
 
 interface HistoryGroup {
     label: string;
@@ -18,18 +17,10 @@ interface HistorySectionProps {
     hasMoreHistory: boolean;
     loadingHistory: boolean;
     loadMoreHistory: () => void;
-    tomorrowStr: string;
     selectedIds: string[];
-    listCopiedId: string | null;
     onToggleSelection: (id: string) => void;
-    onEdit: (res: Reservation) => void;
-    onDelete: (id: string) => void;
-    onCopyLink: (res: Reservation) => void;
-    onShareWhatsApp: (res: Reservation) => void;
-    onSendReminder: (res: Reservation, type: 'checkin' | 'checkout') => void;
     onOpenInspection: (res: Reservation) => void;
     onQuickView?: (res: Reservation) => void;
-    onOpenCleaning?: (res: Reservation) => void;
 }
 
 const HistorySection: React.FC<HistorySectionProps> = ({
@@ -40,18 +31,10 @@ const HistorySection: React.FC<HistorySectionProps> = ({
     hasMoreHistory,
     loadingHistory,
     loadMoreHistory,
-    tomorrowStr,
     selectedIds,
-    listCopiedId,
     onToggleSelection,
-    onEdit,
-    onDelete,
-    onCopyLink,
-    onShareWhatsApp,
-    onSendReminder,
     onOpenInspection,
     onQuickView,
-    onOpenCleaning,
 }) => {
     if (historyList.length === 0) return null;
 
@@ -83,74 +66,19 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                         </span>
                     </button>
                     {openHistoryGroups.includes(index) && (
-                        <div className="p-3 md:p-5">
-                            {/* Mobile Cards */}
-                            <div className="md:hidden space-y-3">
+                        <div className="p-5 sm:p-7">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6">
                                 {group.items.map((res) => (
-                                    <ReservationCard
+                                    <ReservationGridCard
                                         key={res.id}
                                         reservation={res}
-                                        statusColor="border-stone-300"
-                                        statusLabel="Histórico"
-                                        isCheckinTomorrow={res.checkInDate === tomorrowStr}
-                                        isCheckoutTomorrow={res.checkoutDate === tomorrowStr}
-                                        isIntegracao={res.propertyId === 'integracao'}
                                         isSelected={res.id ? selectedIds.includes(res.id) : false}
-                                        isCopied={listCopiedId === res.id}
-                                        onEdit={() => onEdit(res)}
-                                        onDelete={() => res.id && onDelete(res.id)}
-                                        onCopyLink={() => onCopyLink(res)}
-                                        onShareWhatsApp={() => onShareWhatsApp(res)}
-                                        onSendReminder={(type) => onSendReminder(res, type)}
+                                        onToggleSelection={onToggleSelection}
+                                        onOpenQuickActions={(r) => onQuickView?.(r)}
+                                        onOpenPaymentModal={() => onQuickView?.(res)}
                                         onOpenInspection={() => onOpenInspection(res)}
-                                        onToggleSelection={() =>
-                                            res.id && onToggleSelection(res.id)
-                                        }
-                                        onQuickView={() => onQuickView?.(res)}
-                                        onOpenCleaning={() => onOpenCleaning?.(res)}
                                     />
                                 ))}
-                            </div>
-
-                            {/* Desktop Table */}
-                            <div className="hidden md:block overflow-hidden rounded-[1.5rem] border border-stone-200/60 dark:border-gray-700/60">
-                                <div className="overflow-x-auto custom-scrollbar">
-                                    <table className="w-full min-w-[900px] text-left bg-white dark:bg-gray-900 border-collapse">
-                                        <tbody className="divide-y divide-stone-100 dark:divide-gray-800">
-                                            {group.items.map((res) => (
-                                                <ReservationTableRow
-                                                    key={res.id}
-                                                    reservation={res}
-                                                    statusLabel="Histórico"
-                                                    isCheckinTomorrow={
-                                                        res.checkInDate === tomorrowStr
-                                                    }
-                                                    isCheckoutTomorrow={
-                                                        res.checkoutDate === tomorrowStr
-                                                    }
-                                                    isSelected={
-                                                        res.id
-                                                            ? selectedIds.includes(res.id)
-                                                            : false
-                                                    }
-                                                    onEdit={() => onEdit(res)}
-                                                    onDelete={() => res.id && onDelete(res.id)}
-                                                    onCopyLink={() => onCopyLink(res)}
-                                                    onShareWhatsApp={() => onShareWhatsApp(res)}
-                                                    onSendReminder={(type) =>
-                                                        onSendReminder(res, type)
-                                                    }
-                                                    onOpenInspection={() => onOpenInspection(res)}
-                                                    onToggleSelection={() =>
-                                                        res.id && onToggleSelection(res.id)
-                                                    }
-                                                    onQuickView={() => onQuickView?.(res)}
-                                                    onOpenCleaning={() => onOpenCleaning?.(res)}
-                                                />
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
                             </div>
                         </div>
                     )}

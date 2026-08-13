@@ -195,7 +195,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
             {/* MAIN CONTENT AREA */}
             <div className="xl:pl-72 pb-[calc(11rem+env(safe-area-inset-bottom,0px))] xl:pb-12 min-h-screen transition-all duration-300 max-w-[100vw] overflow-x-hidden">
-                <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+                <div className="p-4 sm:p-6 lg:p-8 max-w-[1700px] w-full mx-auto">
                     {/* HEADER MOBILE & TABLET (< 1280px) — ULTRA CHIC COM LOGOMARCA */}
                     <div className="xl:hidden mb-6 p-4 sm:p-5 bg-gradient-to-r from-stone-900 via-stone-850 to-gray-900 text-white rounded-[2.2rem] border border-white/10 shadow-2xl shadow-stone-900/30 flex items-center justify-between gap-4 relative overflow-hidden backdrop-blur-xl">
                         <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -416,6 +416,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     ui={ui}
                                     form={form}
                                     userPermission={auth.userPermission}
+                                    onNewReservation={() => setActiveTab('create')}
                                 />
                             )}
 
