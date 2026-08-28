@@ -73,17 +73,28 @@ export const CRMActionsAlerts: React.FC<CRMActionsAlertsProps> = ({
 
             const checkIn = normalizeToISODate(r.checkInDate) || '';
             const checkOut = normalizeToISODate(r.checkoutDate) || '';
-
-            // 2. Ignorar reservas já finalizadas (checkout anterior a hoje)
-            if (!checkOut || checkOut < todayStr) return;
-
             const isCheckInToday = checkIn === todayStr;
+            const isPast = Boolean(checkOut && checkOut < todayStr);
+            const isActiveNow = Boolean(
+                checkIn && checkOut && checkIn <= todayStr && checkOut >= todayStr
+            );
 
-            // 3. Cobrança pendente: apenas para reservas não faturadas e vigentes
+            // 2. Cobrança pendente: para qualquer reserva não faturada que tenha saldo pendente (ativa OU finalizada)
             if (!isExcludedFromReservationCash(r)) {
                 const remaining = getRemainingAmount(r);
                 if (remaining > 1) {
                     const timeStr = r.checkInTime || '15:00';
+                    let timeLabel = '';
+                    if (isPast) {
+                        timeLabel = `Finalizada em ${formatDateDisplay(checkOut)}`;
+                    } else if (isCheckInToday) {
+                        timeLabel = `Entrada hoje às ${timeStr}`;
+                    } else if (isActiveNow) {
+                        timeLabel = `Hospedado (Saída: ${formatDateDisplay(checkOut)})`;
+                    } else {
+                        timeLabel = `Entrada: ${formatDateDisplay(checkIn)}`;
+                    }
+
                     items.push({
                         id: `pay-${r.id}`,
                         type: 'payment',
@@ -93,17 +104,21 @@ export const CRMActionsAlerts: React.FC<CRMActionsAlertsProps> = ({
                             (r.propertyId || 'lili') === 'lili'
                                 ? 'Flat da Lili'
                                 : `Flat ${r.flatNumber || 'N/A'}`,
-                        timeLabel: isCheckInToday
-                            ? `Entrada hoje às ${timeStr}`
-                            : `Entrada: ${formatDateDisplay(checkIn)}`,
-                        sortTime: `${checkIn}T${timeStr}`,
+                        timeLabel,
+                        sortTime: isCheckInToday
+                            ? `0_${checkIn}T${timeStr}`
+                            : isActiveNow
+                              ? `1_${checkOut}`
+                              : isPast
+                                ? `2_${checkOut}`
+                                : `3_${checkIn}`,
                         detail: `Saldo a cobrar: R$ ${remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                         remainingAmount: remaining,
                     });
                 }
             }
 
-            // 4. Vistoria pré check-in de hoje sem vistoria realizada
+            // 3. Vistoria pré check-in de hoje sem vistoria realizada
             if (isCheckInToday && !r.preCheckInInspection) {
                 const timeStr = r.checkInTime || '15:00';
                 items.push({
@@ -116,13 +131,13 @@ export const CRMActionsAlerts: React.FC<CRMActionsAlertsProps> = ({
                             ? 'Flat da Lili'
                             : `Flat ${r.flatNumber || 'N/A'}`,
                     timeLabel: `Check-in hoje às ${timeStr}`,
-                    sortTime: `${checkIn}T${timeStr}`,
+                    sortTime: `0_${checkIn}T${timeStr}`,
                     detail: 'Vistoria de entrada pendente de realização',
                 });
             }
         });
 
-        // Ordena por horário de entrada/saída (mais próximo primeiro)
+        // Ordena por prioridade operacional (entradas de hoje -> hospedados -> finalizadas com saldo -> futuras)
         items.sort((a, b) => a.sortTime.localeCompare(b.sortTime));
 
         return items;

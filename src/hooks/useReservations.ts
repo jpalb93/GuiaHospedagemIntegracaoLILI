@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import {
     subscribeToActiveReservations,
+    subscribeToPendingPaymentReservations,
     fetchHistoryReservations,
     saveReservation,
     updateReservation,
@@ -100,7 +101,34 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         };
     }, [userPermission, subKey]);
 
-    // --- 2. History Reservations (Infinite Query) ---
+    // --- 2. Real-time Pending Payments (Inclusive reservas finalizadas com saldo devedor) ---
+    const [pendingPaymentReservations, setPendingPaymentReservations] = useState<Reservation[]>([]);
+
+    useEffect(() => {
+        if (!userPermission) return;
+
+        let unsubscribe: (() => void) | undefined;
+        let disposed = false;
+
+        const setupPendingSub = async () => {
+            try {
+                unsubscribe = await subscribeToPendingPaymentReservations((data) => {
+                    if (!disposed) setPendingPaymentReservations(data);
+                }, userPermission.allowedProperties);
+            } catch (err) {
+                logger.warn('[useReservations] Falha ao escutar pagamentos pendentes', { err });
+            }
+        };
+
+        setupPendingSub();
+
+        return () => {
+            disposed = true;
+            if (unsubscribe) unsubscribe();
+        };
+    }, [userPermission, subKey]);
+
+    // --- 3. History Reservations (Infinite Query) ---
     const allowedProperties = userPermission?.allowedProperties;
 
     // We use 'historyReservations' string as key + user permissions to segregate cache
@@ -123,7 +151,16 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
     // Flatten pages into a single list
     const historyReservations = historyQuery.data?.pages.flatMap((page) => page.data) || [];
 
-    // --- 3. CRUD Mutations ---
+    // Lista consolidada e desduplicada de todas as reservas conhecidas (ativas + histórico + pendências de pagamento)
+    const allReservations = useMemo(() => {
+        const map = new Map<string, Reservation>();
+        activeReservations.forEach((r) => r.id && map.set(r.id, r));
+        historyReservations.forEach((r) => r.id && map.set(r.id, r));
+        pendingPaymentReservations.forEach((r) => r.id && map.set(r.id, r));
+        return Array.from(map.values());
+    }, [activeReservations, historyReservations, pendingPaymentReservations]);
+
+    // --- 4. CRUD Mutations ---
 
     const createMutation = useMutation({
         mutationFn: saveReservation,
@@ -183,6 +220,7 @@ export const useReservations = ({ userPermission, showToast }: UseReservationsOp
         activeSyncStatus,
         activeSyncError,
         historyReservations,
+        allReservations,
 
         // Pagination
         loadingHistory: historyQuery.isLoading || historyQuery.isFetchingNextPage,

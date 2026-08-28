@@ -347,6 +347,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                             {activeTab === 'home' && (
                                 <DashboardHome
                                     reservations={data.activeReservations}
+                                    allReservations={data.allReservations}
                                     onNavigate={(tab) =>
                                         setActiveTab(
                                             tab as

@@ -247,6 +247,45 @@ export const subscribeToActiveReservations = async (
     );
 };
 
+// --- Listener em tempo real de reservas com pagamento pendente/parcial (inclusive finalizadas) ---
+export const subscribeToPendingPaymentReservations = async (
+    callback: (reservations: Reservation[]) => void,
+    allowedProperties?: string[]
+) => {
+    if (allowedProperties && allowedProperties.length === 0) {
+        callback([]);
+        return () => undefined;
+    }
+
+    const db = await getFirestoreInstance();
+    const constraints: ReturnType<typeof where>[] = [
+        where('paymentStatus', 'in', ['pending', 'partial']),
+    ];
+
+    const isSingleRestrictedProperty =
+        allowedProperties?.length === 1 && allowedProperties[0] !== 'lili';
+    if (isSingleRestrictedProperty) {
+        constraints.push(where('propertyId', '==', allowedProperties[0]));
+    }
+
+    const q = query(collection(db, 'reservations'), ...constraints);
+
+    return onSnapshot(
+        q,
+        (snapshot) => {
+            let data = mapFirestoreDocs<Reservation>(snapshot);
+            if (allowedProperties?.length === 1 && allowedProperties[0] === 'lili') {
+                data = data.filter((r) => (r.propertyId || 'lili') === 'lili');
+            }
+            callback(data);
+        },
+        (error) => {
+            logger.warn('Erro no listener de pagamentos pendentes:', { error });
+            callback([]);
+        }
+    );
+};
+
 // --- Histórico Paginado (Sob Demanda) ---
 export const fetchHistoryReservations = async (
     lastDoc: QueryDocumentSnapshot<unknown, DocumentData> | null = null,

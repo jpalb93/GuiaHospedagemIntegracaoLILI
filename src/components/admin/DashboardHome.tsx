@@ -34,6 +34,7 @@ import CorporateInvoiceAlerts from './dashboard/CorporateInvoiceAlerts';
 
 interface DashboardHomeProps {
     reservations: Reservation[];
+    allReservations?: Reservation[];
     onNavigate: (tab: string) => void;
     userPermission?: UserPermission | null;
     onEditReservation: (res: Reservation) => void;
@@ -41,6 +42,7 @@ interface DashboardHomeProps {
 
 const DashboardHome: React.FC<DashboardHomeProps> = ({
     reservations,
+    allReservations,
     onNavigate,
     userPermission,
     onEditReservation,
@@ -72,6 +74,12 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
         if (propertyFilter === 'all') return reservations;
         return reservations.filter((r) => (r.propertyId || 'lili') === propertyFilter);
     }, [reservations, propertyFilter]);
+
+    const filteredAllReservations = useMemo(() => {
+        const source = allReservations || reservations;
+        if (propertyFilter === 'all') return source;
+        return source.filter((r) => (r.propertyId || 'lili') === propertyFilter);
+    }, [allReservations, reservations, propertyFilter]);
 
     const stats = useMemo(() => {
         const todayStr = getTodayDateStr();
@@ -190,7 +198,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
 
             {/* PRIORIDADE 1: CENTRAL DE AÇÕES PENDENTES HOJE (REPOSICIONADO PARA O TOPO DESTAQUE OPERACIONAL) */}
             <CRMActionsAlerts
-                reservations={filteredReservations}
+                reservations={filteredAllReservations}
                 onSelectReservation={(res) => setSelectedReservation(res)}
                 onEditReservation={onEditReservation}
                 onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
