@@ -18,6 +18,7 @@ import {
 import { Reservation, PropertyId } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
 import { Badge, Button } from '../../ui';
+import { formatDateBR } from '../../../utils/helpers';
 
 interface ReservationCardProps {
     reservation: Reservation;
@@ -173,6 +174,11 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
                 {res.paymentStatus === 'paid' && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Pago Integral
+                        {res.paidAt && (
+                            <span className="opacity-80 font-mono font-normal ml-0.5">
+                                ({formatDateBR(res.paidAt)})
+                            </span>
+                        )}
                     </span>
                 )}
                 {res.paymentStatus === 'partial' && (
@@ -182,6 +188,11 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
                             minimumFractionDigits: 2,
                         })}
                         )
+                        {res.paidAt && (
+                            <span className="opacity-80 font-mono font-normal">
+                                · {formatDateBR(res.paidAt)}
+                            </span>
+                        )}
                         {res.totalAmount !== undefined &&
                             ` · Resta R$ ${Math.max(0, res.totalAmount - (res.depositAmount || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                     </span>

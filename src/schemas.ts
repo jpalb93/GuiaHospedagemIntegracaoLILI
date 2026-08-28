@@ -5,6 +5,17 @@ export const PaymentMethodSchema = z.enum(['pix', 'money', 'card', 'transfer']);
 export const PaymentStatusSchema = z.enum(['paid', 'partial', 'pending', 'external', 'billed']);
 export const ReservationBillingModeSchema = z.enum(['reservation', 'corporate']);
 
+export const PaymentRecordSchema = z.object({
+    id: z.string(),
+    date: z.string(),
+    time: z.string().optional(),
+    amount: z.number().min(0),
+    method: PaymentMethodSchema,
+    type: z.string().optional(),
+    notes: z.string().optional(),
+    createdAt: z.string(),
+});
+
 const dateYmd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato inválido YYYY-MM-DD');
 
 // Schema base para GuestConfig
@@ -25,6 +36,8 @@ export const GuestConfigSchema = z.object({
     paymentStatus: PaymentStatusSchema.optional(),
     totalAmount: z.number().min(0).optional(),
     depositAmount: z.number().min(0).optional(),
+    paidAt: z.string().optional(),
+    payments: z.array(PaymentRecordSchema).optional(),
 
     // Alertas
     guestAlertActive: z.boolean().optional(),

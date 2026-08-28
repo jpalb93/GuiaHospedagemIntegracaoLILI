@@ -108,7 +108,7 @@ export const ReservationKPIs: React.FC<ReservationKPIsProps> = ({ allFiltered, t
             {/* 4. RECEITA CONFIRMADA */}
             <div className="p-6 sm:p-7 bg-white dark:bg-gray-800/90 rounded-[2.5rem] border border-gray-200/80 dark:border-gray-700/80 shadow-md hover:shadow-xl transition-all duration-300 flex items-center justify-between gap-4 group">
                 <div className="space-y-1.5 min-w-0">
-                    <span className="text-2xl sm:text-3xl font-extrabold font-heading text-emerald-600 dark:text-emerald-400 font-mono tracking-tight block truncate">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight block truncate">
                         R${' '}
                         {metrics.confirmedRevenue.toLocaleString('pt-BR', {
                             minimumFractionDigits: 2,

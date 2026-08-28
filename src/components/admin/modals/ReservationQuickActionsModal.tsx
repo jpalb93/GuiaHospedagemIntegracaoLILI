@@ -4,6 +4,7 @@ import {
     ClipboardCheck,
     FileText,
     Sparkles,
+    Shirt,
     MessageCircle,
     Send,
     Link as LinkIcon,
@@ -14,9 +15,11 @@ import {
     Trash2,
     Check,
     AlertTriangle,
+    Receipt,
 } from 'lucide-react';
 import { Reservation, PropertyId } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
+import { formatDateBR } from '../../../utils/helpers';
 
 interface ReservationQuickActionsModalProps {
     isOpen: boolean;
@@ -24,6 +27,7 @@ interface ReservationQuickActionsModalProps {
     reservation: Reservation | null;
     onOpenInspection?: (res: Reservation) => void;
     onOpenCleaning?: (res: Reservation) => void;
+    onOpenLaundry?: (res: Reservation) => void;
     onShareWhatsApp?: (res: Reservation) => void;
     onSendReminder?: (res: Reservation, type: 'checkin' | 'checkout') => void;
     onCopyLink?: (res: Reservation) => void;
@@ -40,6 +44,7 @@ export const ReservationQuickActionsModal: React.FC<ReservationQuickActionsModal
     reservation,
     onOpenInspection,
     onOpenCleaning,
+    onOpenLaundry,
     onShareWhatsApp,
     onSendReminder,
     onCopyLink,
@@ -70,6 +75,17 @@ export const ReservationQuickActionsModal: React.FC<ReservationQuickActionsModal
     const cleaningsCount = reservation.cleanings?.length || 0;
     const cleaningsTotal = (reservation.cleanings || []).reduce(
         (sum, item) => sum + (item.cost || 0),
+        0
+    );
+
+    // Laundries Count, Cycles & Total
+    const laundriesCount = reservation.laundries?.length || 0;
+    const laundriesTotal = (reservation.laundries || []).reduce(
+        (sum, item) => sum + (item.cost || 0),
+        0
+    );
+    const laundriesCycles = (reservation.laundries || []).reduce(
+        (sum, item) => sum + (item.cyclesCount || 1),
         0
     );
 
@@ -246,7 +262,54 @@ export const ReservationQuickActionsModal: React.FC<ReservationQuickActionsModal
                         </div>
                     </div>
 
-                    {/* 3 & 4. COMUNICAÇÃO & LINKS ÚTEIS (2-COL GRID) */}
+                    {/* 3. LAVAGEM DE ROUPA (LAVANDERIA) */}
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-2xl border border-gray-200 dark:border-gray-700/60 space-y-3">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div>
+                                <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 dark:text-white font-heading flex items-center gap-2">
+                                    <Shirt size={16} className="text-blue-500" />
+                                    Lavagem de Roupa
+                                </h3>
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                    Ciclos de lavagem e secagem (R$ 15/ciclo)
+                                </p>
+                            </div>
+                            {laundriesCount > 0 && (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 font-heading">
+                                    {laundriesCycles} ciclo(s) · R${' '}
+                                    {laundriesTotal.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                    })}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    onOpenLaundry?.(reservation);
+                                }}
+                                className="px-4 py-2.5 rounded-xl text-xs font-extrabold text-blue-900 bg-blue-200 hover:bg-blue-300 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm font-heading cursor-pointer"
+                            >
+                                <Shirt size={15} /> Adicionar Lavagem
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    onOpenLaundry?.(reservation);
+                                }}
+                                className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all flex items-center justify-center gap-2 font-heading cursor-pointer"
+                            >
+                                <FileText size={15} className="text-blue-500" /> Ver Lavanderia /
+                                Relatório
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* 4 & 5. COMUNICAÇÃO & LINKS ÚTEIS (2-COL GRID) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* COMUNICAÇÃO */}
                         <div className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-2xl border border-gray-200 dark:border-gray-700/60 space-y-3 flex flex-col justify-between">
@@ -337,11 +400,11 @@ export const ReservationQuickActionsModal: React.FC<ReservationQuickActionsModal
                             <div className="flex items-center justify-between text-xs font-extrabold text-emerald-900 dark:text-emerald-300 font-heading">
                                 <span>
                                     {isPaid
-                                        ? 'Pago Integral'
+                                        ? `Pago Integral${reservation.paidAt ? ` · ${formatDateBR(reservation.paidAt)}` : ''}`
                                         : isExternal
                                           ? 'Pagamento Externo'
                                           : depositAmount > 0
-                                            ? `Sinal pago: R$ ${depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} de R$ ${totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                                            ? `Sinal pago: R$ ${depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} de R$ ${totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}${reservation.paidAt ? ` · ${formatDateBR(reservation.paidAt)}` : ''}`
                                             : 'Aguardando Pagamento'}
                                 </span>
                                 <span className="font-mono">{percentPaid}%</span>
@@ -353,6 +416,76 @@ export const ReservationQuickActionsModal: React.FC<ReservationQuickActionsModal
                                 />
                             </div>
                         </div>
+
+                        {/* Extrato / Histórico Detalhado de Recebimentos */}
+                        {(() => {
+                            const paymentHistory =
+                                reservation.payments && reservation.payments.length > 0
+                                    ? reservation.payments
+                                    : depositAmount > 0
+                                      ? [
+                                            {
+                                                id: 'legacy_initial',
+                                                date:
+                                                    reservation.paidAt ||
+                                                    reservation.checkInDate ||
+                                                    '',
+                                                amount: depositAmount,
+                                                method: reservation.paymentMethod || 'pix',
+                                                type: isPaid ? 'full' : 'deposit',
+                                                notes: isPaid ? 'Quitação' : 'Sinal',
+                                                createdAt: reservation.createdAt,
+                                            },
+                                        ]
+                                      : [];
+
+                            if (paymentHistory.length === 0) return null;
+
+                            return (
+                                <div className="p-3 bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200/80 dark:border-gray-700/80 space-y-2">
+                                    <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-gray-400 font-heading">
+                                        <span className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                            <Receipt size={13} className="text-emerald-500" />
+                                            Extrato de Recebimentos ({paymentHistory.length})
+                                        </span>
+                                        <span className="text-emerald-600 dark:text-emerald-400 font-mono font-extrabold">
+                                            Total: R${' '}
+                                            {depositAmount.toLocaleString('pt-BR', {
+                                                minimumFractionDigits: 2,
+                                            })}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-0.5">
+                                        {paymentHistory.map((p, idx) => (
+                                            <div
+                                                key={p.id || idx}
+                                                className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200/60 dark:border-gray-700/60 text-xs"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-gray-700 dark:text-gray-300 text-[11px] font-bold">
+                                                        {p.date ? formatDateBR(p.date) : 'Data n/d'}
+                                                    </span>
+                                                    <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold uppercase bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-heading">
+                                                        {p.method?.toUpperCase() || 'PIX'}
+                                                    </span>
+                                                    {p.notes && (
+                                                        <span className="text-[10px] text-gray-400 dark:text-gray-400 truncate max-w-[110px]">
+                                                            {p.notes}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
+                                                    + R${' '}
+                                                    {p.amount.toLocaleString('pt-BR', {
+                                                        minimumFractionDigits: 2,
+                                                    })}
+                                                </strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             <button

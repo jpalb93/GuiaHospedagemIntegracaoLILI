@@ -95,6 +95,7 @@ export interface GuestConfig {
     paymentStatus?: PaymentStatus; // paid | partial | pending | external | billed
     totalAmount?: number; // Novo: Valor Total da Reserva (R$)
     depositAmount?: number; // Novo: Valor Pago do Sinal / Parcial (R$)
+    paidAt?: string; // Data em que o pagamento/quitação ou sinal foi realizado (YYYY-MM-DD)
     // NOVOS CAMPOS DE ALERTA ESPECÍFICO
     guestAlertActive?: boolean;
     guestAlertText?: string;
@@ -130,6 +131,12 @@ export interface GuestConfig {
 
     // REGISTRO DE LIMPEZAS ADICIONAIS (CUSTOS ADICIONAIS)
     cleanings?: CleaningRecord[];
+
+    // REGISTRO DE LAVANDERIA / LAVAGEM DE ROUPA (CUSTOS ADICIONAIS)
+    laundries?: LaundryRecord[];
+
+    // REGISTRO / EXTRATO DE PAGAMENTOS RECEBIDOS
+    payments?: PaymentRecord[];
 }
 
 export type CleaningType = 'full' | 'linen_change' | 'light' | 'disinfection' | 'custom';
@@ -139,12 +146,41 @@ export interface CleaningRecord {
     id: string;
     date: string; // Data (YYYY-MM-DD)
     time?: string; // Hora (HH:MM)
-    cleanerName: string; // Nome da camareira/limpador(a)
+    cleanerName?: string; // Nome da camareira/limpador(a) (opcional)
     type: CleaningType | string; // Tipo de limpeza
     typeLabel?: string; // Rótulo legível
     cost: number; // Valor cobrado (R$)
     paymentStatus: CleaningPaymentStatus;
     notes?: string; // Observações
+    createdAt: string; // Timestamp ISO
+}
+
+export type LaundryType = 'wash' | 'dry' | 'wash_and_dry' | 'custom';
+export type LaundryPaymentStatus = 'paid' | 'pending' | 'billed_corporate' | 'courtesy';
+
+export interface LaundryRecord {
+    id: string;
+    date: string; // Data (YYYY-MM-DD)
+    time?: string; // Hora (HH:MM)
+    cyclesCount?: number; // Quantidade de ciclos (1, 2, 3...) - padrão: 1
+    type: LaundryType | string; // Tipo de lavagem
+    typeLabel?: string; // Rótulo legível
+    cost: number; // Valor cobrado (R$ 15 por ciclo padrão)
+    paymentStatus: LaundryPaymentStatus;
+    notes?: string; // Observações
+    createdAt: string; // Timestamp ISO
+}
+
+export type PaymentRecordType = 'deposit' | 'installment' | 'full' | 'custom' | string;
+
+export interface PaymentRecord {
+    id: string;
+    date: string; // Data do pagamento (YYYY-MM-DD)
+    time?: string; // Hora do pagamento (HH:MM)
+    amount: number; // Valor pago nesta transação (R$)
+    method: PaymentMethod; // 'pix' | 'money' | 'card' | 'transfer'
+    type?: PaymentRecordType; // 'deposit' (sinal), 'installment' (parcial), 'full' (quitação), etc.
+    notes?: string; // Observações opcionais
     createdAt: string; // Timestamp ISO
 }
 
@@ -195,6 +231,8 @@ export type ReservationFormData = Pick<
     | 'paymentStatus'
     | 'totalAmount'
     | 'depositAmount'
+    | 'paidAt'
+    | 'payments'
     | 'email'
     | 'guestRating'
     | 'guestFeedback'
@@ -258,6 +296,7 @@ export interface AppConfig {
     messageTemplates?: MessageTemplates; // Novo: Templates de mensagem
     reservationTemplates?: ReservationTemplate[]; // Novo: Templates de Reserva
     defaultCleaningFee?: number; // Novo: Valor Padrão de Limpeza Adicional (ex: 50.00)
+    defaultLaundryFee?: number; // Novo: Valor Padrão de Lavagem de Roupa (ex: 15.00)
 }
 
 export interface ReservationTemplate {

@@ -18,6 +18,7 @@ import {
     UserPermission,
     PaymentMethod,
     PaymentStatus,
+    PaymentRecord,
     Reservation,
     ReservationTemplate,
     ReservationBillingMode,
@@ -73,6 +74,10 @@ interface ReservationFormProps {
         setTotalAmount: (v: number | '') => void;
         depositAmount: number | '';
         setDepositAmount: (v: number | '') => void;
+        paidAt: string;
+        setPaidAt: (v: string) => void;
+        payments?: PaymentRecord[];
+        setPayments?: (v: PaymentRecord[]) => void;
         guestRating: number;
         setGuestRating: (v: number) => void;
         guestFeedback: string;
@@ -275,6 +280,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     setTotalAmount={form.setTotalAmount}
                     depositAmount={form.depositAmount}
                     setDepositAmount={form.setDepositAmount}
+                    paidAt={form.paidAt}
+                    setPaidAt={form.setPaidAt}
+                    payments={form.payments}
+                    setPayments={form.setPayments}
                     isCorporate={form.billingMode === 'corporate'}
                 />
             </div>

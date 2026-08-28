@@ -1,5 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Reservation, PropertyId, UserPermission, PaymentMethod, PaymentStatus } from '../../types';
+import {
+    Reservation,
+    PropertyId,
+    UserPermission,
+    PaymentMethod,
+    PaymentStatus,
+    PaymentRecord,
+} from '../../types';
 import {
     ArrowRight,
     Calendar,
@@ -48,12 +55,16 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
         reservationId: string,
         paymentStatus: PaymentStatus,
         depositAmount: number,
-        paymentMethod?: PaymentMethod
+        paymentMethod?: PaymentMethod,
+        paidAt?: string,
+        payments?: PaymentRecord[]
     ) => {
         await updateReservation(reservationId, {
             paymentStatus,
             depositAmount,
             paymentMethod,
+            paidAt,
+            payments,
         });
     };
 

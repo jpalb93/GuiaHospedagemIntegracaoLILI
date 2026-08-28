@@ -18,6 +18,7 @@ import {
 import { Reservation, PropertyId } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
 import { Badge, Button } from '../../ui';
+import { formatDateBR } from '../../../utils/helpers';
 
 interface ReservationTableRowProps {
     reservation: Reservation;
@@ -164,6 +165,11 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                             <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 shadow-2xs">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />{' '}
                                 Pago Integral
+                                {res.paidAt && (
+                                    <span className="opacity-80 font-mono font-normal ml-0.5">
+                                        ({formatDateBR(res.paidAt)})
+                                    </span>
+                                )}
                             </span>
                         )}
                         {res.paymentStatus === 'partial' && (
@@ -175,6 +181,11 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
                                         minimumFractionDigits: 2,
                                     })}
                                     )
+                                    {res.paidAt && (
+                                        <span className="opacity-80 font-mono font-normal">
+                                            · {formatDateBR(res.paidAt)}
+                                        </span>
+                                    )}
                                 </span>
                                 {res.totalAmount !== undefined && (
                                     <span className="text-[11px] font-extrabold text-rose-700 dark:text-rose-400 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 font-mono tabular-nums">

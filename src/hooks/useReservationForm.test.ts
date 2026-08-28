@@ -38,6 +38,28 @@ describe('useReservationForm Hook', () => {
             checkOutTime: '10:00',
             guestCount: 3,
             paymentMethod: 'pix',
+            paymentStatus: 'paid',
+            totalAmount: 1000,
+            depositAmount: 1000,
+            paidAt: '2024-05-01',
+            payments: [
+                {
+                    id: 'p1',
+                    date: '2024-05-01',
+                    amount: 500,
+                    method: 'pix',
+                    type: 'deposit',
+                    createdAt: '2024-05-01T10:00:00.000Z',
+                },
+                {
+                    id: 'p2',
+                    date: '2024-05-05',
+                    amount: 500,
+                    method: 'card',
+                    type: 'full',
+                    createdAt: '2024-05-05T10:00:00.000Z',
+                },
+            ],
             status: 'active',
             createdAt: '2024-01-01',
             shortId: 'XYZ',
@@ -52,6 +74,9 @@ describe('useReservationForm Hook', () => {
         expect(result.current.propertyId).toBe('integracao');
         expect(result.current.flatNumber).toBe('202');
         expect(result.current.guestAlertActive).toBe(true);
+        expect(result.current.paidAt).toBe('2024-05-01');
+        expect(result.current.payments).toHaveLength(2);
+        expect(result.current.payments[0].amount).toBe(500);
     });
 
     it('should reset form', async () => {
@@ -61,9 +86,21 @@ describe('useReservationForm Hook', () => {
         act(() => {
             result.current.setGuestName('Modified');
             result.current.setPropertyId('integracao');
+            result.current.setPaidAt('2024-05-01');
+            result.current.setPayments([
+                {
+                    id: 'p1',
+                    date: '2024-05-01',
+                    amount: 200,
+                    method: 'pix',
+                    createdAt: '2024-05-01',
+                },
+            ]);
         });
 
         expect(result.current.guestName).toBe('Modified');
+        expect(result.current.paidAt).toBe('2024-05-01');
+        expect(result.current.payments).toHaveLength(1);
 
         // Then reset
         await act(async () => {
@@ -72,15 +109,29 @@ describe('useReservationForm Hook', () => {
 
         expect(result.current.guestName).toBe('');
         expect(result.current.propertyId).toBe('lili');
+        expect(result.current.paidAt).toBe('');
+        expect(result.current.payments).toEqual([]);
     });
 
     it('should get form values correctly', () => {
         const { result } = renderHook(() => useReservationForm());
 
+        const samplePayments = [
+            {
+                id: 'p1',
+                date: '2024-05-01',
+                amount: 200,
+                method: 'pix' as const,
+                createdAt: '2024-05-01',
+            },
+        ];
+
         act(() => {
             result.current.setGuestName(' Test Name ');
             result.current.setGuestPhone('123-456');
             result.current.setGuestCount(4);
+            result.current.setPaidAt('2024-05-01');
+            result.current.setPayments(samplePayments);
         });
 
         const values = result.current.getFormValues();
@@ -88,5 +139,7 @@ describe('useReservationForm Hook', () => {
         expect(values.guestName).toBe('Test Name'); // should trim
         expect(values.guestPhone).toBe('123456'); // should strip non-digits
         expect(values.guestCount).toBe(4);
+        expect(values.paidAt).toBe('2024-05-01');
+        expect(values.payments).toEqual(samplePayments);
     });
 });

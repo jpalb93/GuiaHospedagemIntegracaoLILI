@@ -125,8 +125,8 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                     ))}
                 </div>
 
-                {/* Comparativo — tabela elevada em Card estilo Matrix */}
-                <div className="bg-stone-900/50 border border-stone-800 rounded-3xl p-8 md:p-12 space-y-8 shadow-2xl backdrop-blur-md">
+                {/* Comparativo — Card estilo Matrix com visualização adaptativa (Cards no Mobile, Tabela no Desktop) */}
+                <div className="bg-stone-900/50 border border-stone-800 rounded-3xl p-5 sm:p-8 md:p-12 space-y-6 md:space-y-8 shadow-2xl backdrop-blur-md">
                     <div className="max-w-2xl space-y-2">
                         <div className="inline-flex items-center gap-1.5 text-orange-400 text-xs font-mono font-bold uppercase tracking-wider">
                             <Sparkles size={14} /> PROVA DE ECONOMIA
@@ -139,7 +139,103 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                         </p>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* --- VERSÃO MOBILE (Cards elegantes sem corte horizontal) --- */}
+                    <div className="space-y-3.5 md:hidden">
+                        {[
+                            {
+                                criterion: 'Custo mensal',
+                                flats: 'Economia de 30% a 50%',
+                                flatsColor: 'text-emerald-400',
+                                hotel: 'Diárias acumuladas',
+                                realEstate: 'Mobília + contas à parte',
+                            },
+                            {
+                                criterion: 'Refeições',
+                                flats: 'Cozinha completa no flat',
+                                flatsColor: 'text-white',
+                                hotel: 'Restaurante / room service',
+                                realEstate: 'Montar cozinha do zero',
+                            },
+                            {
+                                criterion: 'Burocracia',
+                                flats: 'Sem fiador / caução',
+                                flatsColor: 'text-white',
+                                hotel: 'Sem fiador (diária alta)',
+                                realEstate: 'Contrato longo + fiador',
+                                hasRealEstateAlert: true,
+                            },
+                            {
+                                criterion: 'Inclusos no valor',
+                                flats: 'Wi-Fi, limpeza, enxoval, manutenção',
+                                flatsColor: 'text-white',
+                                hotel: 'Apenas limpeza básica',
+                                realEstate: 'Tudo por conta da empresa',
+                            },
+                        ].map((item, idx) => (
+                            <div
+                                key={idx}
+                                className="bg-stone-950/80 border border-stone-800/90 rounded-2xl p-4 space-y-3 shadow-md relative overflow-hidden"
+                            >
+                                {/* Header do Critério */}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-stone-400">
+                                        {item.criterion}
+                                    </span>
+                                    <span className="text-[10px] font-mono font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                                        Vantagem Flat
+                                    </span>
+                                </div>
+
+                                {/* Destaque Principal: Flats Integração */}
+                                <div className="bg-gradient-to-r from-orange-500/15 via-orange-500/10 to-transparent border border-orange-500/35 rounded-xl p-3.5 flex items-center justify-between gap-3 shadow-inner">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center shrink-0">
+                                            <CheckCircle2 size={16} className="text-orange-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-mono font-bold text-orange-400 uppercase tracking-widest">
+                                                Flats Integração
+                                            </p>
+                                            <p
+                                                className={`text-sm font-heading font-bold ${item.flatsColor} leading-snug`}
+                                            >
+                                                {item.flats}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Comparativo com Alternativas */}
+                                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                                    <div className="bg-stone-900/70 border border-stone-800/80 rounded-xl p-2.5 space-y-1">
+                                        <p className="text-[10px] font-mono uppercase text-stone-400 font-semibold flex items-center gap-1">
+                                            <span>🏨</span> Hotel
+                                        </p>
+                                        <p className="text-xs text-stone-300 font-light leading-snug">
+                                            {item.hotel}
+                                        </p>
+                                    </div>
+                                    <div className="bg-stone-900/70 border border-stone-800/80 rounded-xl p-2.5 space-y-1">
+                                        <p className="text-[10px] font-mono uppercase text-stone-400 font-semibold flex items-center gap-1">
+                                            <span>🏢</span> Aluguel
+                                        </p>
+                                        <p className="text-xs text-stone-300 font-light leading-snug flex items-center gap-1">
+                                            {item.hasRealEstateAlert && (
+                                                <XCircle
+                                                    size={12}
+                                                    className="text-rose-400 shrink-0 inline"
+                                                />
+                                            )}
+                                            <span>{item.realEstate}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* --- VERSÃO DESKTOP (Tabela Completa Matrix) --- */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left text-sm border-collapse min-w-[620px]">
                             <thead>
                                 <tr className="border-b border-stone-800 text-stone-400 font-heading">

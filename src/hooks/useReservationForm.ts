@@ -3,6 +3,7 @@ import {
     PropertyId,
     PaymentMethod,
     PaymentStatus,
+    PaymentRecord,
     Reservation,
     ReservationBillingMode,
 } from '../types';
@@ -29,6 +30,8 @@ export const useReservationForm = () => {
     const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pending');
     const [totalAmount, setTotalAmount] = useState<number | ''>('');
     const [depositAmount, setDepositAmount] = useState<number | ''>('');
+    const [paidAt, setPaidAt] = useState<string>('');
+    const [payments, setPayments] = useState<PaymentRecord[]>([]);
     const [shortId, setShortId] = useState('');
     const [manualDeactivation, setManualDeactivation] = useState(false);
 
@@ -75,6 +78,8 @@ export const useReservationForm = () => {
         setPaymentStatus('pending');
         setTotalAmount('');
         setDepositAmount('');
+        setPaidAt('');
+        setPayments([]);
         setShortId('');
         setManualDeactivation(false);
         setGuestRating(5);
@@ -105,6 +110,8 @@ export const useReservationForm = () => {
         setPaymentStatus(res.paymentStatus || 'pending');
         setTotalAmount(res.totalAmount !== undefined ? res.totalAmount : '');
         setDepositAmount(res.depositAmount !== undefined ? res.depositAmount : '');
+        setPaidAt(res.paidAt || '');
+        setPayments(res.payments || []);
         setShortId(res.shortId || '');
         setManualDeactivation(res.manualDeactivation || false);
         setGuestRating(res.guestRating || 5);
@@ -147,6 +154,12 @@ export const useReservationForm = () => {
             paymentStatus: isCorporate ? 'billed' : ((paymentStatus || 'pending') as PaymentStatus),
             totalAmount: isCorporate ? undefined : parseAmount(totalAmount),
             depositAmount: isCorporate ? undefined : parseAmount(depositAmount),
+            paidAt: isCorporate ? undefined : paidAt ? paidAt : undefined,
+            payments: isCorporate
+                ? undefined
+                : payments && payments.length > 0
+                  ? payments
+                  : undefined,
             shortId,
             manualDeactivation,
             guestRating,
@@ -175,6 +188,8 @@ export const useReservationForm = () => {
         paymentStatus,
         totalAmount,
         depositAmount,
+        paidAt,
+        payments,
         shortId,
         manualDeactivation,
         guestRating,
@@ -223,6 +238,10 @@ export const useReservationForm = () => {
         setTotalAmount,
         depositAmount,
         setDepositAmount,
+        paidAt,
+        setPaidAt,
+        payments,
+        setPayments,
         shortId,
         setShortId,
         manualDeactivation,

@@ -85,6 +85,10 @@ export const useAdminDashboard = () => {
         setTotalAmount,
         depositAmount,
         setDepositAmount,
+        paidAt,
+        setPaidAt,
+        payments,
+        setPayments,
         shortId,
         manualDeactivation,
         setManualDeactivation,
@@ -322,6 +326,8 @@ export const useAdminDashboard = () => {
                 paymentMethod: isCorporate
                     ? null
                     : (overrides?.paymentMethod ?? formValues.paymentMethod ?? null),
+                paidAt: isCorporate ? null : (overrides?.paidAt ?? formValues.paidAt ?? null),
+                payments: isCorporate ? null : (overrides?.payments ?? formValues.payments ?? null),
                 manualDeactivation:
                     overrides?.manualDeactivation ?? formValues.manualDeactivation ?? false,
             };
@@ -332,6 +338,8 @@ export const useAdminDashboard = () => {
                 payload.totalAmount = null;
                 payload.depositAmount = null;
                 payload.paymentMethod = null;
+                payload.paidAt = null;
+                payload.payments = null;
             } else if (editingId) {
                 // Limpa vínculo corporativo se desmarcado na edição
                 payload.companyId = null;
@@ -454,6 +462,10 @@ export const useAdminDashboard = () => {
             setTotalAmount,
             depositAmount,
             setDepositAmount,
+            paidAt,
+            setPaidAt,
+            payments,
+            setPayments,
             guestRating,
             setGuestRating,
             guestFeedback,

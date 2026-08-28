@@ -7,7 +7,9 @@ import {
     SavedInspectionData,
     PaymentStatus,
     PaymentMethod,
+    PaymentRecord,
     CleaningRecord,
+    LaundryRecord,
 } from '../../../types';
 import { useAdminSettings } from '../../../hooks/useAdminSettings';
 import { updateReservation } from '../../../services/firebase/reservations';
@@ -15,6 +17,7 @@ import { normalizeToISODate } from '../../../utils/dateFormatting';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import InspectionModal, { InspectionType } from '../InspectionModal';
 import CleaningModal from '../CleaningModal';
+import LaundryModal from '../LaundryModal';
 import ReservationQuickActionsModal from '../modals/ReservationQuickActionsModal';
 import PaymentRegistrationModal from '../modals/PaymentRegistrationModal';
 
@@ -105,6 +108,10 @@ const ReservationList: React.FC<ReservationListProps> = ({
     const [cleaningModalOpen, setCleaningModalOpen] = useState(false);
     const [cleaningReservation, setCleaningReservation] = useState<Reservation | null>(null);
 
+    // Laundry Modal State
+    const [laundryModalOpen, setLaundryModalOpen] = useState(false);
+    const [laundryReservation, setLaundryReservation] = useState<Reservation | null>(null);
+
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -113,13 +120,17 @@ const ReservationList: React.FC<ReservationListProps> = ({
         reservationId: string,
         paymentStatus: PaymentStatus,
         depositAmount: number,
-        paymentMethod?: PaymentMethod
+        paymentMethod?: PaymentMethod,
+        paidAt?: string,
+        payments?: PaymentRecord[]
     ) => {
         try {
             await updateReservation(reservationId, {
                 paymentStatus,
                 depositAmount,
                 paymentMethod,
+                paidAt,
+                payments,
             });
             showToast('Pagamento registrado com sucesso!', 'success');
         } catch (_error) {
@@ -134,134 +145,142 @@ const ReservationList: React.FC<ReservationListProps> = ({
     };
 
     // Optimized filtering and grouping
-    const { leavingToday, staying, upcoming, historyList, todayStr, groupedHistory, allFiltered } =
-        useMemo(() => {
-            const allReservations = [...historyReservations, ...activeReservations];
-            const uniqueReservations = Array.from(
-                new Map(allReservations.map((item: Reservation) => [item.id, item])).values()
-            );
+    const {
+        arrivingToday,
+        leavingToday,
+        staying,
+        upcoming,
+        historyList,
+        todayStr,
+        groupedHistory,
+        allFiltered,
+    } = useMemo(() => {
+        const allReservations = [...historyReservations, ...activeReservations];
+        const uniqueReservations = Array.from(
+            new Map(allReservations.map((item: Reservation) => [item.id, item])).values()
+        );
 
-            const today = new Date();
-            const todayStrVal = today.toLocaleDateString('en-CA');
+        const today = new Date();
+        const todayStrVal = today.toLocaleDateString('en-CA');
 
-            const filteredList = uniqueReservations.filter((res: Reservation) => {
-                const term = searchTerm.toLowerCase();
-                const nameMatch = res.guestName.toLowerCase().includes(term);
-                const notesMatch = res.adminNotes?.toLowerCase().includes(term);
-                const propertyMatch =
-                    propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
-                const statusMatch = statusFilter === 'all' || res.status === statusFilter;
-                const flatMatch =
-                    flatFilter === 'all' ||
-                    (flatFilter === 'lili'
-                        ? (res.propertyId || 'lili') === 'lili'
-                        : res.flatNumber === flatFilter);
+        const filteredList = uniqueReservations.filter((res: Reservation) => {
+            const term = searchTerm.toLowerCase();
+            const nameMatch = res.guestName.toLowerCase().includes(term);
+            const notesMatch = res.adminNotes?.toLowerCase().includes(term);
+            const propertyMatch =
+                propertyFilter === 'all' || (res.propertyId || 'lili') === propertyFilter;
+            const statusMatch = statusFilter === 'all' || res.status === statusFilter;
+            const flatMatch =
+                flatFilter === 'all' ||
+                (flatFilter === 'lili'
+                    ? (res.propertyId || 'lili') === 'lili'
+                    : res.flatNumber === flatFilter);
 
-                let dateMatch = true;
-                if (dateRange.start || dateRange.end) {
-                    const rawTarget =
-                        dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
-                    const targetDate = normalizeToISODate(rawTarget);
-                    if (targetDate) {
-                        if (dateRange.start && targetDate < dateRange.start) dateMatch = false;
-                        if (dateRange.end && targetDate > dateRange.end) dateMatch = false;
-                    } else {
-                        dateMatch = false;
-                    }
-                }
-
-                return (
-                    (nameMatch || notesMatch) &&
-                    propertyMatch &&
-                    statusMatch &&
-                    flatMatch &&
-                    dateMatch
-                );
-            });
-
-            const leavingTodayArr: Reservation[] = [];
-            const stayingArr: Reservation[] = [];
-            const upcomingArr: Reservation[] = [];
-            const historyListArr: Reservation[] = [];
-
-            filteredList.forEach((res: Reservation) => {
-                const checkInISO = normalizeToISODate(res.checkInDate);
-                const checkOutISO = normalizeToISODate(res.checkoutDate);
-                if (!checkOutISO || !checkInISO) return;
-
-                if (checkOutISO < todayStrVal) {
-                    historyListArr.push(res);
-                } else if (checkOutISO === todayStrVal) {
-                    leavingTodayArr.push(res);
-                } else if (checkInISO > todayStrVal) {
-                    upcomingArr.push(res);
+            let dateMatch = true;
+            if (dateRange.start || dateRange.end) {
+                const rawTarget = dateRange.type === 'checkin' ? res.checkInDate : res.checkoutDate;
+                const targetDate = normalizeToISODate(rawTarget);
+                if (targetDate) {
+                    if (dateRange.start && targetDate < dateRange.start) dateMatch = false;
+                    if (dateRange.end && targetDate > dateRange.end) dateMatch = false;
                 } else {
-                    stayingArr.push(res);
+                    dateMatch = false;
                 }
-            });
-
-            const sortByFlatNumber = (a: Reservation, b: Reservation) => {
-                const getFlatNum = (res: Reservation) => {
-                    if ((res.propertyId || 'lili') === 'lili') return 0;
-                    const num = parseInt(res.flatNumber || '0', 10);
-                    return isNaN(num) ? 9999 : num;
-                };
-                const diff = getFlatNum(a) - getFlatNum(b);
-                if (diff !== 0) return diff;
-                const aIn = normalizeToISODate(a.checkInDate);
-                const bIn = normalizeToISODate(b.checkInDate);
-                return aIn.localeCompare(bIn);
-            };
-
-            leavingTodayArr.sort(sortByFlatNumber);
-            stayingArr.sort(sortByFlatNumber);
-            upcomingArr.sort(sortByFlatNumber);
-            historyListArr.sort(sortByFlatNumber);
-
-            interface HistoryGroup {
-                label: string;
-                items: Reservation[];
             }
-            const groupedHistoryArr = historyListArr.reduce(
-                (groups: HistoryGroup[], res: Reservation) => {
-                    const groupingDate = normalizeToISODate(res.checkInDate || res.checkoutDate);
-                    if (!groupingDate) return groups;
-                    const [y, m] = groupingDate.split('-');
-                    const date = new Date(parseInt(y), parseInt(m) - 1, 1);
-                    const labelRaw = date.toLocaleDateString('pt-BR', {
-                        month: 'long',
-                        year: 'numeric',
-                    });
-                    const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
-                    const lastGroup = groups[groups.length - 1];
-                    if (lastGroup && lastGroup.label === label) {
-                        lastGroup.items.push(res);
-                    } else {
-                        groups.push({ label, items: [res] });
-                    }
-                    return groups;
-                },
-                []
-            );
 
-            return {
-                leavingToday: leavingTodayArr,
-                staying: stayingArr,
-                upcoming: upcomingArr,
-                historyList: historyListArr,
-                todayStr: todayStrVal,
-                groupedHistory: groupedHistoryArr,
-                allFiltered: filteredList,
+            return (
+                (nameMatch || notesMatch) && propertyMatch && statusMatch && flatMatch && dateMatch
+            );
+        });
+
+        const arrivingTodayArr: Reservation[] = [];
+        const leavingTodayArr: Reservation[] = [];
+        const stayingArr: Reservation[] = [];
+        const upcomingArr: Reservation[] = [];
+        const historyListArr: Reservation[] = [];
+
+        filteredList.forEach((res: Reservation) => {
+            const checkInISO = normalizeToISODate(res.checkInDate);
+            const checkOutISO = normalizeToISODate(res.checkoutDate);
+            if (!checkOutISO || !checkInISO) return;
+
+            if (checkOutISO < todayStrVal) {
+                historyListArr.push(res);
+            } else if (checkInISO === todayStrVal) {
+                arrivingTodayArr.push(res);
+            } else if (checkOutISO === todayStrVal) {
+                leavingTodayArr.push(res);
+            } else if (checkInISO > todayStrVal) {
+                upcomingArr.push(res);
+            } else {
+                stayingArr.push(res);
+            }
+        });
+
+        const sortByFlatNumber = (a: Reservation, b: Reservation) => {
+            const getFlatNum = (res: Reservation) => {
+                if ((res.propertyId || 'lili') === 'lili') return 0;
+                const num = parseInt(res.flatNumber || '0', 10);
+                return isNaN(num) ? 9999 : num;
             };
-        }, [
-            activeReservations,
-            historyReservations,
-            searchTerm,
-            propertyFilter,
-            statusFilter,
-            flatFilter,
-            dateRange,
-        ]);
+            const diff = getFlatNum(a) - getFlatNum(b);
+            if (diff !== 0) return diff;
+            const aIn = normalizeToISODate(a.checkInDate);
+            const bIn = normalizeToISODate(b.checkInDate);
+            return aIn.localeCompare(bIn);
+        };
+
+        arrivingTodayArr.sort(sortByFlatNumber);
+        leavingTodayArr.sort(sortByFlatNumber);
+        stayingArr.sort(sortByFlatNumber);
+        upcomingArr.sort(sortByFlatNumber);
+        historyListArr.sort(sortByFlatNumber);
+
+        interface HistoryGroup {
+            label: string;
+            items: Reservation[];
+        }
+        const groupedHistoryArr = historyListArr.reduce(
+            (groups: HistoryGroup[], res: Reservation) => {
+                const groupingDate = normalizeToISODate(res.checkInDate || res.checkoutDate);
+                if (!groupingDate) return groups;
+                const [y, m] = groupingDate.split('-');
+                const date = new Date(parseInt(y), parseInt(m) - 1, 1);
+                const labelRaw = date.toLocaleDateString('pt-BR', {
+                    month: 'long',
+                    year: 'numeric',
+                });
+                const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
+                const lastGroup = groups[groups.length - 1];
+                if (lastGroup && lastGroup.label === label) {
+                    lastGroup.items.push(res);
+                } else {
+                    groups.push({ label, items: [res] });
+                }
+                return groups;
+            },
+            []
+        );
+
+        return {
+            arrivingToday: arrivingTodayArr,
+            leavingToday: leavingTodayArr,
+            staying: stayingArr,
+            upcoming: upcomingArr,
+            historyList: historyListArr,
+            todayStr: todayStrVal,
+            groupedHistory: groupedHistoryArr,
+            allFiltered: filteredList,
+        };
+    }, [
+        activeReservations,
+        historyReservations,
+        searchTerm,
+        propertyFilter,
+        statusFilter,
+        flatFilter,
+        dateRange,
+    ]);
 
     // Link and message helpers
     const getLinkForReservation = (res: Reservation) => {
@@ -381,6 +400,29 @@ const ReservationList: React.FC<ReservationListProps> = ({
         } catch (error) {
             console.error('Erro ao salvar limpezas:', error);
             showToast('Erro ao salvar registros de limpeza', 'error');
+            throw error;
+        }
+    };
+
+    const handleOpenLaundry = (res: Reservation) => {
+        setLaundryReservation(res);
+        setLaundryModalOpen(true);
+    };
+
+    const handleSaveLaundries = async (reservationId: string, laundries: LaundryRecord[]) => {
+        try {
+            await updateReservation(reservationId, {
+                laundries,
+            });
+            setLaundryReservation((prev) => (prev ? { ...prev, laundries } : null));
+            queryClient.invalidateQueries({
+                queryKey: ['historyReservations'],
+                refetchType: 'all',
+            });
+            showToast('Registros de lavagem de roupa atualizados!', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar lavanderia:', error);
+            showToast('Erro ao salvar registros de lavagem', 'error');
             throw error;
         }
     };
@@ -514,6 +556,19 @@ const ReservationList: React.FC<ReservationListProps> = ({
                     selectedIds={selectedIds}
                     onBulkDelete={handleBulkDelete}
                     onClearSelection={() => setSelectedIds([])}
+                />
+
+                {/* Section: Chegando Hoje (Check-in Hoje) - ALTA PRIORIDADE */}
+                <ReservationSection
+                    title="Chegando Hoje"
+                    list={arrivingToday}
+                    statusColor="border-orange-500"
+                    showEmpty={false}
+                    selectedIds={selectedIds}
+                    onToggleSelection={toggleSelection}
+                    onOpenInspection={handleOpenInspection}
+                    onQuickView={(res) => setQuickActionsReservation(res)}
+                    onOpenPaymentModal={(res) => setPaymentModalReservation(res)}
                 />
 
                 {/* Section: Saindo Hoje */}
@@ -661,6 +716,7 @@ const ReservationList: React.FC<ReservationListProps> = ({
                 reservation={quickActionsReservation}
                 onOpenInspection={handleOpenInspection}
                 onOpenCleaning={handleOpenCleaning}
+                onOpenLaundry={handleOpenLaundry}
                 onShareWhatsApp={handleShareListWhatsApp}
                 onSendReminder={sendReminder}
                 onCopyLink={handleCopyListLink}
@@ -685,6 +741,15 @@ const ReservationList: React.FC<ReservationListProps> = ({
                 defaultFee={settings?.data?.defaultCleaningFee ?? 50}
                 propertyId={(cleaningReservation?.propertyId as PropertyId) || 'integracao'}
                 onSaveCleanings={handleSaveCleanings}
+            />
+
+            <LaundryModal
+                isOpen={laundryModalOpen}
+                onClose={() => setLaundryModalOpen(false)}
+                reservation={laundryReservation}
+                defaultFee={settings?.data?.defaultLaundryFee ?? 15}
+                propertyId={(laundryReservation?.propertyId as PropertyId) || 'integracao'}
+                onSaveLaundries={handleSaveLaundries}
             />
         </div>
     );

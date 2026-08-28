@@ -244,6 +244,52 @@ const ReservationQuickViewModal: React.FC<ReservationQuickViewModalProps> = ({
                                         </div>
                                     </>
                                 )}
+                                {reservation.paidAt &&
+                                    (reservation.paymentStatus === 'paid' ||
+                                        reservation.paymentStatus === 'partial') &&
+                                    (!reservation.payments || reservation.payments.length <= 1) && (
+                                        <div className="flex justify-between items-center text-[11px] text-stone-500 dark:text-stone-400 font-medium pt-1 border-t border-stone-100 dark:border-gray-700/60">
+                                            <span>
+                                                {reservation.paymentStatus === 'paid'
+                                                    ? 'Data do Pagamento:'
+                                                    : 'Data do Sinal:'}
+                                            </span>
+                                            <span className="font-bold text-stone-700 dark:text-stone-300 font-mono">
+                                                {formatDateDisplay(reservation.paidAt)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                {reservation.payments && reservation.payments.length > 0 && (
+                                    <div className="pt-2 border-t border-stone-200/80 dark:border-gray-700/80 space-y-1.5">
+                                        <span className="text-[11px] font-extrabold uppercase text-stone-500 dark:text-stone-400 font-heading">
+                                            Histórico de Recebimentos ({reservation.payments.length}
+                                            )
+                                        </span>
+                                        <div className="space-y-1">
+                                            {reservation.payments.map((p, idx) => (
+                                                <div
+                                                    key={p.id || idx}
+                                                    className="flex justify-between items-center text-[11px] p-1.5 bg-stone-100 dark:bg-gray-700/60 rounded-lg"
+                                                >
+                                                    <span className="font-mono text-stone-600 dark:text-stone-300">
+                                                        {p.date ? formatDateDisplay(p.date) : ''} ·{' '}
+                                                        <strong className="uppercase font-heading">
+                                                            {p.method}
+                                                        </strong>
+                                                        {p.notes ? ` (${p.notes})` : ''}
+                                                    </span>
+                                                    <strong className="font-mono text-emerald-700 dark:text-emerald-400">
+                                                        + R${' '}
+                                                        {p.amount.toLocaleString('pt-BR', {
+                                                            minimumFractionDigits: 2,
+                                                        })}
+                                                    </strong>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : null}
                         {reservation.paymentStatus === 'external' && (

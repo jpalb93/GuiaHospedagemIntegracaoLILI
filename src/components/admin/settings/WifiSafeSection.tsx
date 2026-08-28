@@ -120,6 +120,39 @@ const WifiSafeSection: React.FC<WifiSafeSectionProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Default Laundry Fee */}
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 md:col-span-2">
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
+                    <span className="text-blue-500 font-extrabold text-base">🧺</span> Custos
+                    Adicionais: Lavagem de Roupa (Valor por Ciclo)
+                </h3>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Valor cobrado por ciclo de lavagem/secagem de roupa nas reservas dos
+                            Flats Integração.
+                        </p>
+                    </div>
+                    <div className="w-full sm:w-48">
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            Valor por Ciclo (R$)
+                        </label>
+                        <input
+                            type="number"
+                            step="0.5"
+                            value={localSettings.defaultLaundryFee ?? 15}
+                            onChange={(e) =>
+                                setLocalSettings({
+                                    ...localSettings,
+                                    defaultLaundryFee: parseFloat(e.target.value) || 0,
+                                })
+                            }
+                            className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold font-mono text-gray-900 dark:text-white"
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

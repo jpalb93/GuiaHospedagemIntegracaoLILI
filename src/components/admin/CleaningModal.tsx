@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     X,
     Sparkles,
@@ -77,6 +77,17 @@ const CleaningModal: React.FC<CleaningModalProps> = ({
     const [paymentStatus, setPaymentStatus] = useState<CleaningPaymentStatus>('pending');
     const [notes, setNotes] = useState('');
 
+    const resetForm = useCallback(() => {
+        setDate(new Date().toISOString().split('T')[0]);
+        setTime(getCurrentTimeStr());
+        setCleanerName('');
+        setType('full');
+        setCost(defaultFee);
+        setPaymentStatus('pending');
+        setNotes('');
+        setEditingRecordId(null);
+    }, [defaultFee]);
+
     useEffect(() => {
         if (!isOpen) return;
         setCleanings(reservation?.cleanings || []);
@@ -86,18 +97,7 @@ const CleaningModal: React.FC<CleaningModalProps> = ({
         setDeletingId(null);
         setSaveSuccess(false);
         resetForm();
-    }, [isOpen, reservation, defaultFee]);
-
-    const resetForm = () => {
-        setDate(new Date().toISOString().split('T')[0]);
-        setTime(getCurrentTimeStr());
-        setCleanerName('');
-        setType('full');
-        setCost(defaultFee);
-        setPaymentStatus('pending');
-        setNotes('');
-        setEditingRecordId(null);
-    };
+    }, [isOpen, reservation, resetForm]);
 
     if (!isOpen || !reservation) return null;
 

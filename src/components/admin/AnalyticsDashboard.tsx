@@ -799,9 +799,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ reservations })
                                                     </span>
                                                 )}
                                                 {res.paymentStatus === 'paid' && !isCorporate && (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-green-100 text-green-800 border border-green-300 dark:bg-green-900/40 dark:text-green-300">
-                                                        🟢 Pago
-                                                    </span>
+                                                    <div className="flex flex-col items-start gap-0.5">
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-green-100 text-green-800 border border-green-300 dark:bg-green-900/40 dark:text-green-300">
+                                                            🟢 Pago
+                                                        </span>
+                                                        {res.paidAt && (
+                                                            <span className="text-[10px] text-green-700 dark:text-green-400 font-mono font-medium ml-1">
+                                                                {formatDateBR(res.paidAt)}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 )}
                                                 {res.paymentStatus === 'partial' &&
                                                     !isCorporate && (
@@ -810,6 +817,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ reservations })
                                                                 🟡 Sinal (R${' '}
                                                                 {money(res.depositAmount || 0)})
                                                             </span>
+                                                            {res.paidAt && (
+                                                                <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono font-medium ml-1">
+                                                                    Em: {formatDateBR(res.paidAt)}
+                                                                </span>
+                                                            )}
                                                             {res.totalAmount !== undefined && (
                                                                 <span className="text-[10px] text-amber-700 dark:text-amber-400 font-extrabold ml-1">
                                                                     Resta R${' '}
