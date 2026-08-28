@@ -789,3 +789,60 @@ select {
 .dark select {
     color: #f9fafb;
 }
+
+/* =============================================
+   SISTEMA DE SCROLLBAR MODERNA & ELEGANTE
+   ============================================= */
+
+/* Suporte nativo W3C / Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+}
+
+.dark * {
+    scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+/* Suporte Webkit (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.35);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.65);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.25);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(209, 213, 219, 0.5);
+}
+
+/* =============================================
+   REMOÇÃO DOS SPINNERS / SETAS FEIAS EM INPUTS NUMBER
+   ============================================= */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+input[type='number'] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}

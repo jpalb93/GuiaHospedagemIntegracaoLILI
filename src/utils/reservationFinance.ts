@@ -6,6 +6,7 @@ import { Reservation } from '../types';
  */
 export function isExcludedFromReservationCash(r: Reservation): boolean {
     if (r.billingMode === 'corporate') return true;
+    if (r.companyId || r.contractId || r.allocationId) return true;
     if (r.paymentStatus === 'billed') return true;
     if (r.paymentStatus === 'external') return true;
     if (r.isExternal === true) return true;

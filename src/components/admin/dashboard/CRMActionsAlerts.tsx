@@ -8,7 +8,11 @@ import {
     Clock,
     AlertCircle,
 } from 'lucide-react';
-import { formatDateDisplay, getTodayDateStr } from '../../../utils/dateFormatting';
+import {
+    formatDateDisplay,
+    getTodayDateStr,
+    normalizeToISODate,
+} from '../../../utils/dateFormatting';
 
 import { isExcludedFromReservationCash } from '../../../utils/reservationFinance';
 
@@ -50,8 +54,11 @@ export const CRMActionsAlerts: React.FC<CRMActionsAlertsProps> = ({
         }
         const total = r.totalAmount || 0;
         const deposit = r.depositAmount || 0;
-        if (r.paymentStatus === 'partial') {
-            return Math.max(0, total - deposit);
+        const paidInPayments = r.payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+        const effectivePaid = Math.max(deposit, paidInPayments);
+
+        if (r.paymentStatus === 'partial' || effectivePaid > 0) {
+            return Math.max(0, total - effectivePaid);
         }
         return total;
     };
@@ -61,12 +68,19 @@ export const CRMActionsAlerts: React.FC<CRMActionsAlertsProps> = ({
         const items: PendingActionItem[] = [];
 
         reservations.forEach((r) => {
-            const checkIn = r.checkInDate || '';
-            const checkOut = r.checkoutDate || '';
+            // 1. Ignorar reservas canceladas ou desativadas manualmente
+            if (r.status === 'cancelled' || r.manualDeactivation) return;
+
+            const checkIn = normalizeToISODate(r.checkInDate) || '';
+            const checkOut = normalizeToISODate(r.checkoutDate) || '';
+
+            // 2. Ignorar reservas já finalizadas (checkout anterior a hoje)
+            if (!checkOut || checkOut < todayStr) return;
+
             const isCheckInToday = checkIn === todayStr;
 
-            // 1. Cobrança pendente para reservas ativas ou com entrada hoje
-            if (checkOut >= todayStr) {
+            // 3. Cobrança pendente: apenas para reservas não faturadas e vigentes
+            if (!isExcludedFromReservationCash(r)) {
                 const remaining = getRemainingAmount(r);
                 if (remaining > 1) {
                     const timeStr = r.checkInTime || '15:00';
@@ -89,7 +103,7 @@ export const CRMActionsAlerts: React.FC<CRMActionsAlertsProps> = ({
                 }
             }
 
-            // 2. Vistoria pré check-in de hoje sem vistoria realizada
+            // 4. Vistoria pré check-in de hoje sem vistoria realizada
             if (isCheckInToday && !r.preCheckInInspection) {
                 const timeStr = r.checkInTime || '15:00';
                 items.push({
