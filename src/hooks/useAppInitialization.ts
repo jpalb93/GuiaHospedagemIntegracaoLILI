@@ -25,6 +25,12 @@ export const useAppInitialization = () => {
     const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform();
 
     const [appState, setAppState] = useState<AppState>(() => {
+        // O prerender do site só percorre rotas públicas. Sem window, começar em LANDING
+        // permite que o conteúdo editorial e seus metadados sejam renderizados no HTML inicial.
+        if (typeof window === 'undefined') {
+            return { mode: 'LANDING', config: { guestName: '', lockCode: '' } };
+        }
+
         if (isNative) {
             return { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } };
         }

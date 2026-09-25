@@ -7,6 +7,7 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import GuideList from './pages/GuideList';
+import BododromoArticle from './pages/articles/Bododromo';
 
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -47,9 +48,6 @@ const WineRouteArticle = lazy(
 );
 const GuideArticleLoader = lazy(
     () => import(/* webpackChunkName: "guide-loader" */ './components/GuideArticleLoader')
-);
-const BododromoArticle = lazy(
-    () => import(/* webpackChunkName: "article-bododromo" */ './pages/articles/Bododromo')
 );
 const RioSaoFranciscoArticle = lazy(
     () => import(/* webpackChunkName: "article-rio" */ './pages/articles/RioSaoFrancisco')

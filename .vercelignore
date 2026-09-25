@@ -1,0 +1,8 @@
+.git
+.agents
+dist
+dist-ssr
+stats.html
+bundle-analysis.html
+SEO-REPORT.html
+*.md
