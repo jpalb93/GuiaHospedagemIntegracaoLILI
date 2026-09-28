@@ -345,18 +345,22 @@ export const fetchCalendarReservations = async (
 ): Promise<Reservation[]> => {
     if (!isSuperAdmin && allowedProperties?.length === 0) return [];
     const db = await getFirestoreInstance();
+    const isSingleRestrictedProperty =
+        !isSuperAdmin && allowedProperties?.length === 1 && allowedProperties[0] !== 'lili';
     const restrictedProperty =
         !isSuperAdmin && allowedProperties?.length === 1 ? allowedProperties[0] : undefined;
-    const constraints =
-        restrictedProperty && restrictedProperty !== 'lili'
-            ? [
-                  where('propertyId', '==', restrictedProperty),
-                  where('checkoutDate', '>=', monthStart),
-              ]
-            : [where('checkoutDate', '>=', monthStart)];
+
+    // Para gestores de um único imóvel (ex: flatsintegracao), consultar somente por propertyId
+    // evita depender de um índice composto no Firestore (propertyId + checkoutDate). O filtro de data
+    // do mês é aplicado em memória com precisão sobre o snapshot do servidor.
+    const constraints = isSingleRestrictedProperty
+        ? [where('propertyId', '==', allowedProperties![0])]
+        : [where('checkoutDate', '>=', monthStart)];
+
     const snapshot = await getDocsFromServer(query(collection(db, 'reservations'), ...constraints));
     return mapFirestoreDocs<Reservation>(snapshot).filter(
         (reservation) =>
+            normalizeToISODate(reservation.checkoutDate) >= monthStart &&
             normalizeToISODate(reservation.checkInDate) < nextMonthStart &&
             (!restrictedProperty || (reservation.propertyId || 'lili') === restrictedProperty)
     );
