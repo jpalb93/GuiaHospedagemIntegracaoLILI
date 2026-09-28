@@ -25,21 +25,25 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
     useEffect(() => {
         let unsubscribe: (() => void) | undefined;
         let disposed = false;
+        let authChangeVersion = 0;
 
         const handleAuthChange = async (u: User | null) => {
             if (disposed) return;
+            const version = ++authChangeVersion;
+            setAuthLoading(true);
+            setUserPermission(null);
             try {
                 setUser(u);
                 if (u && u.email) {
                     const perm = await getUserPermission(u.email);
-                    if (!disposed) setUserPermission(perm);
+                    if (!disposed && version === authChangeVersion) setUserPermission(perm);
                 } else {
                     setUserPermission(null);
                 }
             } catch {
-                if (!disposed) setUserPermission(null);
+                if (!disposed && version === authChangeVersion) setUserPermission(null);
             } finally {
-                if (!disposed) setAuthLoading(false);
+                if (!disposed && version === authChangeVersion) setAuthLoading(false);
             }
         };
 

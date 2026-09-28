@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Reservation } from '../../types';
+import { Reservation, UserPermission } from '../../types';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCalendarReservations } from '../../services/firebase/reservations';
 import { PROPERTIES } from '../../config/properties';
 import {
     ChevronLeft,
@@ -18,7 +20,7 @@ import {
 import ExcelGridCalendar from './ExcelGridCalendar';
 
 interface ReservationCalendarProps {
-    reservations: Reservation[];
+    userPermission: UserPermission | null;
     onEditReservation: (res: Reservation) => void;
 }
 
@@ -32,7 +34,7 @@ interface CalendarDayItem {
 }
 
 const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
-    reservations,
+    userPermission,
     onEditReservation,
 }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -40,6 +42,22 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
     const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
     const [calendarView, setCalendarView] = useState<'excel' | 'traditional'>('excel');
     const [selectedDayModalDate, setSelectedDayModalDate] = useState<Date | null>(null);
+    const monthStart = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+    const nextMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    const nextMonthStart = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}-01`;
+    const calendarQuery = useQuery({
+        queryKey: ['calendarReservations', monthStart, userPermission?.email, userPermission?.role],
+        queryFn: () =>
+            fetchCalendarReservations(
+                monthStart,
+                nextMonthStart,
+                userPermission?.allowedProperties,
+                userPermission?.role === 'super_admin'
+            ),
+        enabled: !!userPermission,
+        staleTime: 0,
+        refetchOnMount: 'always',
+    });
 
     const prevMonth = () =>
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -55,7 +73,7 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
 
     // FILTRAGEM DAS RESERVAS
     const filteredReservations = useMemo(() => {
-        return reservations.filter((res) => {
+        return (calendarQuery.data || []).filter((res) => {
             if (res.status === 'cancelled') return false;
 
             // Filtro por Unidade / Propriedade
@@ -79,7 +97,7 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
 
             return true;
         });
-    }, [reservations, selectedFlatFilter, paymentStatusFilter]);
+    }, [calendarQuery.data, selectedFlatFilter, paymentStatusFilter]);
 
     // GERAÇÃO DOS DIAS DA GRADE DO CALENDÁRIO (INCLUINDO DIAS DOS MESES ANTERIOR E PRÓXIMO)
     const calendarGridDays = useMemo(() => {
@@ -378,7 +396,22 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
             </div>
 
             {/* EXIBIÇÃO: MODO PLANILHA OU MODO TRADICIONAL */}
-            {calendarView === 'excel' ? (
+            {calendarQuery.isError ? (
+                <div role="alert" className="p-6 text-sm text-red-600">
+                    Não foi possível carregar as reservas deste mês. Nenhum dado foi alterado.
+                    <button
+                        type="button"
+                        className="ml-3 underline"
+                        onClick={() => calendarQuery.refetch()}
+                    >
+                        Tentar novamente
+                    </button>
+                </div>
+            ) : calendarQuery.isFetching ? (
+                <p role="status" className="p-6 text-sm">
+                    Carregando reservas do mês…
+                </p>
+            ) : calendarView === 'excel' ? (
                 <ExcelGridCalendar
                     currentDate={currentDate}
                     filteredReservations={filteredReservations}

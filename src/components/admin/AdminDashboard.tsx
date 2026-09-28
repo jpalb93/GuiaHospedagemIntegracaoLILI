@@ -423,10 +423,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
                             {activeTab === 'calendar' && (
                                 <ReservationCalendar
-                                    reservations={[
-                                        ...data.activeReservations,
-                                        ...data.historyReservations,
-                                    ]}
+                                    userPermission={auth.userPermission}
                                     onEditReservation={(res) => {
                                         form.handleStartEdit(res);
                                         setActiveTab('create');

@@ -70,7 +70,7 @@ const ReservationList: React.FC<ReservationListProps> = ({
     const { settings } = useAdminSettings();
 
     const [listCopiedId, setListCopiedId] = useState<string | null>(null);
-    const [openHistoryGroups, setOpenHistoryGroups] = useState<number[]>([0]);
+    const [openHistoryGroups, setOpenHistoryGroups] = useState<string[] | null>(null);
     const [propertyFilter, setPropertyFilter] = useState<PropertyId | 'all'>('all');
     const [flatFilter, setFlatFilter] = useState<string>('all');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -237,29 +237,31 @@ const ReservationList: React.FC<ReservationListProps> = ({
         historyListArr.sort(sortByFlatNumber);
 
         interface HistoryGroup {
+            key: string;
             label: string;
             items: Reservation[];
         }
-        const groupedHistoryArr = historyListArr.reduce(
-            (groups: HistoryGroup[], res: Reservation) => {
-                const groupingDate = normalizeToISODate(res.checkInDate || res.checkoutDate);
-                if (!groupingDate) return groups;
-                const [y, m] = groupingDate.split('-');
-                const date = new Date(parseInt(y), parseInt(m) - 1, 1);
-                const labelRaw = date.toLocaleDateString('pt-BR', {
-                    month: 'long',
-                    year: 'numeric',
-                });
-                const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
-                const lastGroup = groups[groups.length - 1];
-                if (lastGroup && lastGroup.label === label) {
-                    lastGroup.items.push(res);
-                } else {
-                    groups.push({ label, items: [res] });
-                }
-                return groups;
-            },
-            []
+        const historyGroups = new Map<string, HistoryGroup>();
+        historyListArr.forEach((res: Reservation) => {
+            const groupingDate = normalizeToISODate(res.checkInDate || res.checkoutDate);
+            if (!groupingDate) return;
+            const [y, m] = groupingDate.split('-');
+            const key = `${y}-${m}`;
+            const existing = historyGroups.get(key);
+            if (existing) {
+                existing.items.push(res);
+                return;
+            }
+            const date = new Date(parseInt(y), parseInt(m) - 1, 1);
+            const labelRaw = date.toLocaleDateString('pt-BR', {
+                month: 'long',
+                year: 'numeric',
+            });
+            const label = labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1);
+            historyGroups.set(key, { key, label, items: [res] });
+        });
+        const groupedHistoryArr = Array.from(historyGroups.values()).sort((a, b) =>
+            b.key.localeCompare(a.key)
         );
 
         return {
@@ -341,10 +343,13 @@ const ReservationList: React.FC<ReservationListProps> = ({
         window.open(whatsappUrl, '_blank');
     };
 
-    const toggleHistoryGroup = (index: number) => {
-        setOpenHistoryGroups((prev) =>
-            prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-        );
+    const toggleHistoryGroup = (key: string) => {
+        setOpenHistoryGroups((prev) => {
+            const current = prev ?? groupedHistory.slice(0, 1).map((group) => group.key);
+            return current.includes(key)
+                ? current.filter((item) => item !== key)
+                : [...current, key];
+        });
     };
 
     const handleOpenInspection = (res: Reservation) => {
@@ -614,7 +619,9 @@ const ReservationList: React.FC<ReservationListProps> = ({
                 <HistorySection
                     historyList={historyList}
                     groupedHistory={groupedHistory}
-                    openHistoryGroups={openHistoryGroups}
+                    openHistoryGroups={
+                        openHistoryGroups ?? groupedHistory.slice(0, 1).map((group) => group.key)
+                    }
                     toggleHistoryGroup={toggleHistoryGroup}
                     hasMoreHistory={hasMoreHistory}
                     loadingHistory={loadingHistory}

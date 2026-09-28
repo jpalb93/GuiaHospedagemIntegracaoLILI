@@ -336,6 +336,32 @@ export const fetchHistoryReservations = async (
     };
 };
 
+// Calendário: carrega o período inteiro, independentemente da paginação do histórico.
+export const fetchCalendarReservations = async (
+    monthStart: string,
+    nextMonthStart: string,
+    allowedProperties?: string[],
+    isSuperAdmin = false
+): Promise<Reservation[]> => {
+    if (!isSuperAdmin && allowedProperties?.length === 0) return [];
+    const db = await getFirestoreInstance();
+    const restrictedProperty =
+        !isSuperAdmin && allowedProperties?.length === 1 ? allowedProperties[0] : undefined;
+    const constraints =
+        restrictedProperty && restrictedProperty !== 'lili'
+            ? [
+                  where('propertyId', '==', restrictedProperty),
+                  where('checkoutDate', '>=', monthStart),
+              ]
+            : [where('checkoutDate', '>=', monthStart)];
+    const snapshot = await getDocsFromServer(query(collection(db, 'reservations'), ...constraints));
+    return mapFirestoreDocs<Reservation>(snapshot).filter(
+        (reservation) =>
+            normalizeToISODate(reservation.checkInDate) < nextMonthStart &&
+            (!restrictedProperty || (reservation.propertyId || 'lili') === restrictedProperty)
+    );
+};
+
 // --- SYNCHRONIZED FAVORITES (GUEST) ---
 export const toggleFavoritePlace = async (
     reservationId: string,
