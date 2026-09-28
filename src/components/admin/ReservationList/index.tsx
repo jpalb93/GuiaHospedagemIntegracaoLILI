@@ -234,7 +234,9 @@ const ReservationList: React.FC<ReservationListProps> = ({
         leavingTodayArr.sort(sortByFlatNumber);
         stayingArr.sort(sortByFlatNumber);
         upcomingArr.sort(sortByFlatNumber);
-        historyListArr.sort(sortByFlatNumber);
+        historyListArr.sort((a, b) =>
+            normalizeToISODate(b.checkInDate).localeCompare(normalizeToISODate(a.checkInDate))
+        );
 
         interface HistoryGroup {
             key: string;
@@ -628,7 +630,6 @@ const ReservationList: React.FC<ReservationListProps> = ({
                     loadMoreHistory={loadMoreHistory}
                     selectedIds={selectedIds}
                     onToggleSelection={toggleSelection}
-                    onOpenInspection={handleOpenInspection}
                     onQuickView={(res) => setQuickActionsReservation(res)}
                 />
 
