@@ -15,6 +15,7 @@ import { sendMessageToGemini } from '../services/geminiService';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import { useLanguage } from '../hooks/useLanguage';
+import { getFirstName } from '../utils/helpers';
 import VoiceModeModal from './modals/VoiceModeModal';
 
 interface ChatWidgetProps {
@@ -88,10 +89,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction })
 
     // Mensagem inicial dinâmica
     useEffect(() => {
+        const firstName = getFirstName(guestName, t('Visitante', 'Guest', 'Visitante'));
         const initialText = t(
-            `Olá, ${guestName}! Sou o Concierge Virtual do flat. Posso ajudar com dicas de Petrolina, regras da casa ou dúvidas gerais?`,
-            `Hello, ${guestName}! I'm the Virtual Concierge. Can I help you with tips about Petrolina, house rules, or general questions?`,
-            `¡Hola, ${guestName}! Soy el Conserje Virtual. ¿Puedo ayudarte con consejos sobre Petrolina, reglas de la casa o preguntas generales?`
+            `Olá, ${firstName}! Sou o Concierge Virtual do flat. Posso ajudar com dicas de Petrolina, regras da casa ou dúvidas gerais?`,
+            `Hello, ${firstName}! I'm the Virtual Concierge. Can I help you with tips about Petrolina, house rules, or general questions?`,
+            `¡Hola, ${firstName}! Soy el Conserje Virtual. ¿Puedo ayudarte con consejos sobre Petrolina, reglas de la casa o preguntas generales?`
         );
 
         if (messages.length === 0) {
@@ -151,7 +153,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ guestName, systemInstruction })
             const responseText = await sendMessageToGemini(
                 userText,
                 history,
-                guestName,
+                getFirstName(guestName) || guestName,
                 finalInstruction
             );
 

@@ -32,6 +32,7 @@ import {
     TimeOfDaySuggestion,
     GuestConfig,
 } from '../types';
+import { getFirstName } from '../utils/helpers';
 import OptimizedImage from './ui/OptimizedImage';
 
 // --- SKELETON DE CARREGAMENTO ---
@@ -405,8 +406,7 @@ const SmartSuggestion: React.FC<SmartSuggestionProps> = ({
     })();
 
     const cleanHostPhone = (hostPhone || '').replace(/\D/g, '');
-    const guestFirstName =
-        config?.guestName?.trim()?.split(' ')[0] || t('Hóspede', 'Guest', 'Huésped');
+    const guestFirstName = getFirstName(config?.guestName, t('Hóspede', 'Guest', 'Huésped'));
     const flatUnit = config?.flatNumber
         ? `Flat ${config.flatNumber}`
         : t('meu Flat', 'my Flat', 'mi Flat');

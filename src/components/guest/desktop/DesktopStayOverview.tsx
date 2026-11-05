@@ -15,6 +15,7 @@ import type { GuestConfig } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
 import { useLanguage } from '../../../hooks/useLanguage';
 import { dayUsePhase } from '../../../utils/reservationStay';
+import { getFirstName } from '../../../utils/helpers';
 import './DesktopStayOverview.css';
 
 export interface DesktopStayOverviewProps {
@@ -145,7 +146,10 @@ const DesktopStayOverview: React.FC<DesktopStayOverviewProps> = ({
                 <div className="gd-stay-welcome-copy">
                     <p className="gd-stay-greeting">
                         {t('Olá', 'Hello', 'Hola')}
-                        {config.guestName ? `, ${config.guestName}` : ''}.
+                        {getFirstName(config.guestName)
+                            ? `, ${getFirstName(config.guestName)}`
+                            : ''}
+                        .
                     </p>
                     <h2 id="gd-stay-heading">{headline}</h2>
                     <p className="gd-stay-description">{description}</p>

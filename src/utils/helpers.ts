@@ -29,3 +29,17 @@ export const formatDateBR = (dateStr: string): string => {
 export const onlyNumbers = (str: string): string => {
     return str.replace(/\D/g, '');
 };
+
+/**
+ * Extrai apenas o primeiro nome do hóspede, removendo sobrenomes e espaços extras.
+ * Ex: "João Victor Gomes" -> "João"
+ * @param fullName - Nome completo do hóspede
+ * @param fallback - Valor padrão se o nome for vazio
+ * @returns Primeiro nome
+ */
+export const getFirstName = (fullName?: string | null, fallback = ''): string => {
+    if (!fullName) return fallback;
+    const trimmed = fullName.trim();
+    if (!trimmed) return fallback;
+    return trimmed.split(/\s+/)[0] || fallback;
+};

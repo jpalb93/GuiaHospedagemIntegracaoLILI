@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Plane, X, Download } from 'lucide-react';
 import { analytics } from '../../../services/analytics';
+import { getFirstName } from '../../../utils/helpers';
 
 interface CouponBoardingPassProps {
     isOpen: boolean;
@@ -17,18 +18,24 @@ const CouponBoardingPass: React.FC<CouponBoardingPassProps> = ({
     // Generate unique coupon code - memoized to be stable and avoid effect loops
     // Generate random values only ONCE on mount using lazy state
     const [boardingData] = React.useState(() => {
-        const firstName = guestName.split(' ')[0].toUpperCase();
+        const rawFirstName = getFirstName(guestName, 'Hóspede');
+        const firstNameCode = rawFirstName.toUpperCase();
         const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const cCode = `LILI2024-${firstName}`;
+        const cCode = `LILI2024-${firstNameCode}`;
         const tNumber = `#${randomCode}`;
 
         // Generate random heights for barcode
         const barcodeHeights = Array.from({ length: 30 }).map(() => Math.random() * 20 + 10);
 
-        return { couponCode: cCode, ticketNumber: tNumber, barcodeHeights };
+        return {
+            couponCode: cCode,
+            ticketNumber: tNumber,
+            barcodeHeights,
+            passengerFirstName: rawFirstName,
+        };
     });
 
-    const { couponCode, ticketNumber, barcodeHeights } = boardingData;
+    const { couponCode, ticketNumber, barcodeHeights, passengerFirstName } = boardingData;
 
     const validityText = React.useMemo(() => {
         // ... validity logic ...
@@ -99,7 +106,7 @@ const CouponBoardingPass: React.FC<CouponBoardingPassProps> = ({
                                     Passageiro
                                 </p>
                                 <p className="text-lg font-bold text-gray-900 dark:text-white font-heading">
-                                    {guestName}
+                                    {passengerFirstName}
                                 </p>
                             </div>
 

@@ -17,6 +17,7 @@ import { DEFAULT_SLIDES } from '../../constants';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 import LogoLili from '../LogoLili';
 import { hapticFeedback } from '../../utils/haptics';
+import { getFirstName } from '../../utils/helpers';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface HeroSectionProps {
@@ -110,7 +111,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
     const greeting = getGreeting();
     const isIntegracao = config.propertyId === 'integracao';
-    const guestFirstName = config.guestName?.trim()?.split(' ')[0] || 'Visitante';
+    const guestFirstName = getFirstName(config.guestName, 'Visitante');
     const unitBadge = config.flatNumber
         ? `Flat ${config.flatNumber}`
         : isIntegracao

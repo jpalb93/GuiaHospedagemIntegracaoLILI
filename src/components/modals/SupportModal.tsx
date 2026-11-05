@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
 import { useLanguage } from '../../hooks/useLanguage';
+import { getFirstName } from '../../utils/helpers';
 
 interface SupportModalProps {
     isOpen: boolean;
@@ -39,7 +40,8 @@ const SupportModal: React.FC<SupportModalProps> = ({
 
     const openWhatsApp = (subject: string, text: string) => {
         if (navigator.vibrate) navigator.vibrate(50);
-        const message = `Olá! Sou ${guestName} (${propertyName}${unitInfo}).\n\n*Assunto: ${subject}*\n${text}`;
+        const guestFirstName = getFirstName(guestName, 'hóspede');
+        const message = `Olá! Sou ${guestFirstName} (${propertyName}${unitInfo}).\n\n*Assunto: ${subject}*\n${text}`;
         const phone = hostPhone || HOST_PHONE;
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');

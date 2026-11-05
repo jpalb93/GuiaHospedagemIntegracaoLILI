@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { triggerConfetti } from '../utils/confetti';
+import { getFirstName } from '../utils/helpers';
 import { GuestConfig } from '../types';
 import { useGuestStay } from '../hooks/useGuestStay';
 import { useGuestData } from '../hooks/useGuestData';
@@ -593,7 +594,9 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                                                 )}
                                             </h3>
                                             <p className="text-stone-100/90 text-sm mb-6 leading-relaxed font-medium">
-                                                {t('Olá', 'Hello')}, {config.guestName}!{' '}
+                                                {getFirstName(config.guestName)
+                                                    ? `${t('Olá', 'Hello')}, ${getFirstName(config.guestName)}! `
+                                                    : ''}
                                                 {t(
                                                     'Espero que tenha amado a estadia. Se puder deixar uma avaliação rápida no Google, ajuda muito o nosso trabalho!',
                                                     'Hope you loved your stay. Leaving a quick review on Google helps us a lot!'

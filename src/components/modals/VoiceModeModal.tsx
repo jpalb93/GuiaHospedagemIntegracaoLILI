@@ -5,6 +5,7 @@ import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import { sendMessageToGemini } from '../../services/geminiService';
 import { ChatMessage } from '../../types';
+import { getFirstName } from '../../utils/helpers';
 
 interface VoiceModeModalProps {
     isOpen: boolean;
@@ -57,10 +58,11 @@ const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
             4. Do NOT use markdown (*, #) or emojis.
             `;
 
+            const guestFirstName = getFirstName(guestName);
             const response = await sendMessageToGemini(
                 text,
                 newHistory,
-                guestName,
+                guestFirstName || guestName,
                 voiceInstruction
             );
 
@@ -103,10 +105,11 @@ const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setStatus('idle');
             // Speak initial greeting
+            const guestFirstName = getFirstName(guestName);
             const greeting = t(
-                `Olá ${guestName}, estou ouvindo.`,
-                `Hi ${guestName}, I'm listening.`,
-                `Hola ${guestName}, te escucho.`
+                guestFirstName ? `Olá ${guestFirstName}, estou ouvindo.` : 'Olá, estou ouvindo.',
+                guestFirstName ? `Hi ${guestFirstName}, I'm listening.` : "Hi, I'm listening.",
+                guestFirstName ? `Hola ${guestFirstName}, te escucho.` : 'Hola, te escucho.'
             );
             speak(greeting, currentLang, true); // Use Cloud TTS
         } else {

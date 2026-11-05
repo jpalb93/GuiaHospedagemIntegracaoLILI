@@ -15,6 +15,7 @@ import { Button } from '../ui';
 import { useLanguage } from '../../hooks/useLanguage';
 import { HOST_PHONE } from '../../constants';
 import { PROPERTIES } from '../../config/properties';
+import { getFirstName } from '../../utils/helpers';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -64,8 +65,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     const handleNotifyCheckoutWhatsApp = () => {
         if (navigator.vibrate) navigator.vibrate(50);
+        const guestFirstName = getFirstName(config.guestName, 'hóspede');
         const unitInfo = config.flatNumber ? ` (Flat ${config.flatNumber})` : '';
-        const msg = `Olá! Sou ${config.guestName || 'hóspede'}${unitInfo} do ${property.name}. Acabei de realizar o check-out e já deixei a chave no Self Checkout! Muito obrigado pela estadia! ✨`;
+        const msg = `Olá! Sou ${guestFirstName}${unitInfo} do ${property.name}. Acabei de realizar o check-out e já deixei a chave no Self Checkout! Muito obrigado pela estadia! ✨`;
         const phone = hostPhone || property.hostPhone || HOST_PHONE;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     };

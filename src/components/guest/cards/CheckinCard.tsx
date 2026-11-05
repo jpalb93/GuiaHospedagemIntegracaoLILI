@@ -4,6 +4,7 @@ import { GuestConfig } from '../../../types';
 import HolographicCard from '../../ui/HolographicCard';
 import Button from '../../ui/Button';
 import { triggerConfetti } from '../../../utils/confetti';
+import { getFirstName } from '../../../utils/helpers';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
 import { useLanguage } from '../../../hooks/useLanguage';
 import AccessTicket from './AccessTicket';
@@ -88,7 +89,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     className={`text-xl font-display font-semibold ${theme.text.primary} mb-2 flex items-center justify-center gap-2`}
                 >
                     {isSingleNight
-                        ? `${t('Veio rapidinho', 'Quick visit', 'Visita rápida')}, ${config.guestName?.split(' ')[0]}? 👋`
+                        ? `${t('Veio rapidinho', 'Quick visit', 'Visita rápida')}${getFirstName(config.guestName) ? `, ${getFirstName(config.guestName)}` : ''}? 👋`
                         : t(
                               'Feliz em te receber! 😄',
                               'Happy to welcome you! 😄',

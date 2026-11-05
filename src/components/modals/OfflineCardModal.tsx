@@ -15,6 +15,7 @@ import {
 import { useLanguage } from '../../hooks/useLanguage';
 import { GuestConfig } from '../../types';
 import { PROPERTIES } from '../../config/properties';
+import { getFirstName } from '../../utils/helpers';
 
 interface OfflineCardModalProps {
     isOpen: boolean;
@@ -123,7 +124,7 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                         <div className="flex items-center justify-center gap-1.5 text-stone-300/80 text-xs font-medium">
                             <User size={12} className="text-amber-400" />
                             <span>
-                                {config.guestName ||
+                                {getFirstName(config.guestName) ||
                                     t('Hóspede Especial', 'Special Guest', 'Huésped Especial')}
                             </span>
                         </div>

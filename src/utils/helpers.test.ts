@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateShortId, formatDateBR, onlyNumbers } from './helpers';
+import { generateShortId, formatDateBR, onlyNumbers, getFirstName } from './helpers';
 
 describe('helpers', () => {
     describe('generateShortId', () => {
@@ -38,6 +38,26 @@ describe('helpers', () => {
 
         it('should return empty string if no numbers', () => {
             expect(onlyNumbers('abc')).toBe('');
+        });
+    });
+
+    describe('getFirstName', () => {
+        it('should extract only the first name from full names', () => {
+            expect(getFirstName('João Victor')).toBe('João');
+            expect(getFirstName('Maria Silva Santos')).toBe('Maria');
+            expect(getFirstName('Carlos')).toBe('Carlos');
+        });
+
+        it('should handle leading/trailing and multiple whitespace', () => {
+            expect(getFirstName('  Ana   Paula  ')).toBe('Ana');
+        });
+
+        it('should return fallback if name is empty, null or undefined', () => {
+            expect(getFirstName('', 'Visitante')).toBe('Visitante');
+            expect(getFirstName(null, 'Hóspede')).toBe('Hóspede');
+            expect(getFirstName(undefined, 'Convidado')).toBe('Convidado');
+            expect(getFirstName('   ', 'Visitante')).toBe('Visitante');
+            expect(getFirstName('')).toBe('');
         });
     });
 });
