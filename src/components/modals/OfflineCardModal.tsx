@@ -77,95 +77,108 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                         </h2>
                         <div className="flex items-center justify-center gap-2 text-white/50 text-xs font-medium">
                             <User size={12} />
-                            <span>{config.guestName || t('Visitante VIP', 'VIP Guest', 'Visitante VIP')}</span>
+                            <span>
+                                {config.guestName ||
+                                    t('Visitante VIP', 'VIP Guest', 'Visitante VIP')}
+                            </span>
                         </div>
                     </div>
 
                     {/* Main Access Code (Redesigned as "Placa") */}
-                    <div className="mb-6 relative z-10 flex justify-center">
-                        <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg px-8 py-4 text-center border border-white/10 shadow-xl relative overflow-hidden min-w-[180px]">
+                    <div className="mb-5 relative z-10 flex justify-center">
+                        <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl px-8 py-3.5 text-center border border-white/10 shadow-xl relative overflow-hidden min-w-[180px]">
                             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-500 to-rose-500"></div>
 
-                            <p className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-1">
-                                {isIntegracao
-                                    ? t('Unidade', 'Unit', 'Unidad')
-                                    : config.propertyId === 'lili'
-                                        ? 'Flat'
-                                        : t('Senha Porta', 'Door Code', 'Código Puerta')}
+                            <p className="text-[10px] text-gray-300 uppercase tracking-[0.2em] font-bold mb-1">
+                                {t('Unidade', 'Unit', 'Unidad')}
                             </p>
 
                             <div className="flex items-center justify-center gap-3">
                                 <span className="text-3xl font-mono font-bold text-white tracking-widest drop-shadow-md">
                                     {isIntegracao
-                                        ? config.flatNumber
-                                        : config.propertyId === 'lili'
-                                            ? '304'
-                                            : isPasswordReleased
-                                                ? config.lockCode
-                                                : '****'}
+                                        ? config.flatNumber || '---'
+                                        : config.flatNumber || '304'}
                                 </span>
-                                {!isIntegracao && config.propertyId !== 'lili' && (
-                                    <Bell size={24} className="text-amber-500 animate-pulse" />
-                                )}
                             </div>
-
-                            {!isIntegracao && config.propertyId !== 'lili' && (
-                                <p className="text-[9px] text-gray-500 font-medium mt-2 flex items-center justify-center gap-1">
-                                    {t('Toque no', 'Tap on', 'Toca en')} <Bell size={10} className="text-amber-500" /> {t('após digitar a senha', 'after typing code', 'tras digitar el código')}
-                                </p>
-                            )}
                         </div>
                     </div>
 
                     {/* Secondary Codes Grid */}
                     <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
-                        {/* Door Code (if applicable) */}
+                        {/* Safe Code (Step 1) */}
+                        <button
+                            onClick={() => isPasswordReleased && handleCopy(safeCode, 'safe')}
+                            disabled={!isPasswordReleased}
+                            className={`bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl p-3 flex flex-col items-center justify-between transition-all group/item ${isIntegracao ? 'col-span-2' : ''}`}
+                        >
+                            <div className="flex items-center gap-1.5 mb-1 text-gray-300 group-hover/item:text-white transition-colors">
+                                <Lock size={14} className="text-amber-400" />
+                                <span className="text-[10px] uppercase tracking-wider font-bold">
+                                    {isIntegracao
+                                        ? t('Cofre (2 Chaves)', 'Safe (2 Keys)', 'Cofre (2 Llaves)')
+                                        : t(
+                                              '1º Cofre (Portão)',
+                                              '1st Safe (Gate)',
+                                              '1º Cofre (Portón)'
+                                          )}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 my-0.5">
+                                <span className="text-xl font-mono font-bold text-white tracking-wider">
+                                    {isPasswordReleased ? safeCode : '****'}
+                                </span>
+                                {isPasswordReleased && copiedField === 'safe' && (
+                                    <Check size={14} className="text-green-400" />
+                                )}
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-medium">
+                                {isIntegracao
+                                    ? t(
+                                          'Na entrada do prédio',
+                                          'At building entrance',
+                                          'En la entrada'
+                                      )
+                                    : t(
+                                          'Chave do portão na rua',
+                                          'Street gate key',
+                                          'Llave del portón'
+                                      )}
+                            </span>
+                        </button>
+
+                        {/* Door Code (Step 2 - Lili) */}
                         {!isIntegracao && (
                             <button
                                 onClick={() =>
                                     isPasswordReleased && handleCopy(config.lockCode || '', 'door')
                                 }
                                 disabled={!isPasswordReleased}
-                                className="bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl p-3 flex flex-col items-center transition-all group/item"
+                                className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl p-3 flex flex-col items-center justify-between transition-all group/item"
                             >
-                                <div className="flex items-center gap-2 mb-1 text-gray-400 group-hover/item:text-white transition-colors">
-                                    <Lock size={14} />
-                                    <span className="text-[9px] uppercase tracking-widest font-bold">
-                                        {t('Porta', 'Door', 'Puerta')}
+                                <div className="flex items-center gap-1.5 mb-1 text-gray-300 group-hover/item:text-white transition-colors">
+                                    <Lock size={14} className="text-orange-400" />
+                                    <span className="text-[10px] uppercase tracking-wider font-bold">
+                                        {t('2º Porta Flat', '2nd Flat Door', '2º Puerta Piso')}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-lg font-mono font-bold text-white">
+                                <div className="flex items-center gap-1.5 my-0.5">
+                                    <span className="text-xl font-mono font-bold text-white tracking-wider">
                                         {isPasswordReleased ? config.lockCode : '****'}
                                     </span>
+                                    {isPasswordReleased && (
+                                        <Bell size={16} className="text-amber-400 animate-pulse" />
+                                    )}
                                     {isPasswordReleased && copiedField === 'door' && (
-                                        <Check size={12} className="text-green-400" />
+                                        <Check size={14} className="text-green-400" />
                                     )}
                                 </div>
+                                <span className="text-[10px] text-amber-300/90 font-medium flex items-center gap-1">
+                                    {t('Toque no', 'Tap', 'Toca')}{' '}
+                                    <Bell size={10} className="text-amber-400" />{' '}
+                                    {t('após senha', 'after code', 'tras clave')}
+                                </span>
                             </button>
                         )}
-
-                        {/* Safe Code */}
-                        <button
-                            onClick={() => isPasswordReleased && handleCopy(safeCode, 'safe')}
-                            disabled={!isPasswordReleased}
-                            className={`bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl p-3 flex flex-col items-center transition-all group/item ${isIntegracao ? 'col-span-2' : ''}`}
-                        >
-                            <div className="flex items-center gap-2 mb-1 text-gray-400 group-hover/item:text-white transition-colors">
-                                <Lock size={14} />
-                                <span className="text-[9px] uppercase tracking-widest font-bold">
-                                    {t('Cofre', 'Safe', 'Caja Fuerte')}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-lg font-mono font-bold text-white">
-                                    {isPasswordReleased ? safeCode : '****'}
-                                </span>
-                                {isPasswordReleased && copiedField === 'safe' && (
-                                    <Check size={12} className="text-green-400" />
-                                )}
-                            </div>
-                        </button>
                     </div>
 
                     {/* WiFi Section with QR Code Toggle */}
@@ -203,7 +216,11 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
                                         />
                                     </div>
                                     <p className="text-[10px] text-gray-400">
-                                        {t('Escaneie para conectar', 'Scan to connect', 'Escanea para conectar')}
+                                        {t(
+                                            'Escaneie para conectar',
+                                            'Scan to connect',
+                                            'Escanea para conectar'
+                                        )}
                                     </p>
                                 </div>
                             ) : (
@@ -254,7 +271,11 @@ const OfflineCardModal: React.FC<OfflineCardModalProps> = ({
             </div>
 
             <p className="text-white/30 text-xs mt-8 text-center max-w-xs font-medium">
-                {t('Salve este card para acesso offline.', 'Save this card for offline access.', 'Guarda este card para acceso offline.')}
+                {t(
+                    'Salve este card para acesso offline.',
+                    'Save this card for offline access.',
+                    'Guarda este card para acceso offline.'
+                )}
             </p>
         </div>
     );

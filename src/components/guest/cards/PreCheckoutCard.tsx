@@ -9,6 +9,7 @@ import AccessTicket from './AccessTicket';
 
 interface PreCheckoutCardProps {
     config: GuestConfig;
+    safeCode?: string;
     wifiCopied: boolean;
     addressCopied: boolean;
     currentWifiSSID: string;
@@ -25,6 +26,7 @@ interface PreCheckoutCardProps {
 
 const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
     config,
+    safeCode,
     onOpenSupport,
     onEmergency,
     onCopyWifi,
@@ -38,8 +40,6 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
         <div
             className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
         >
-            {/* Background Effects Removed */}
-
             {/* Header: Title + Actions */}
             <div className="flex justify-between items-start mb-4 relative z-10">
                 <h2
@@ -78,11 +78,15 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
             </div>
 
             {/* Message */}
-            <div className="mb-6 relative z-10 text-center">
+            <div className="mb-4 relative z-10 text-center">
                 <h3
                     className={`text-lg font-heading font-bold ${theme.text.primary} flex items-center justify-center gap-2`}
                 >
-                    {t('Sua estadia está chegando ao fim 🥲', 'Your stay is coming to an end 🥲', 'Su estancia está llegando a su fin 🥲')}
+                    {t(
+                        'Sua estadia está chegando ao fim 🥲',
+                        'Your stay is coming to an end 🥲',
+                        'Su estancia está llegando a su fin 🥲'
+                    )}
                 </h3>
             </div>
 
@@ -100,7 +104,9 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                     >
                         {config.checkOutTime || '11:00'}
                     </p>
-                    <p className="text-xs text-gray-400 font-medium">{t('Amanhã', 'Tomorrow', 'Mañana')}</p>
+                    <p className="text-xs text-gray-400 font-medium">
+                        {t('Amanhã', 'Tomorrow', 'Mañana')}
+                    </p>
                 </div>
                 <Button
                     onClick={() => {
@@ -115,7 +121,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                 </Button>
             </div>
 
-            {/* COMPACT DOOR CODE */}
+            {/* COMPACT ACCESS TICKET: SAFE + DOOR/UNIT */}
             <div className="mb-3 w-full">
                 <AccessTicket
                     propertyId={config.propertyId || 'lili'}
@@ -124,9 +130,15 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                             ? config.flatNumber || ''
                             : config.lockCode || ''
                     }
-                    label={config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha', 'Code', 'Código')}
+                    safeCode={safeCode}
+                    label={
+                        config.propertyId === 'integracao'
+                            ? t('Unidade', 'Unit', 'Unidad')
+                            : t('Senha', 'Code', 'Código')
+                    }
                     theme={theme}
                     alwaysVisible={true}
+                    variant="small"
                 />
             </div>
 
@@ -139,7 +151,9 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
+                {config.propertyId === 'lili'
+                    ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili')
+                    : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
             </Button>
         </div>
     );

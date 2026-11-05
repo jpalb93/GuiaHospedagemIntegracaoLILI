@@ -8,15 +8,19 @@ import {
     Lightbulb,
     UserCheck,
     AlertCircle,
-    Tv,
+    Camera,
 } from 'lucide-react';
 import { useLanguage } from '../../../../hooks/useLanguage';
+
+interface RulesSheetProps {
+    onOpenKeyDetails?: () => void;
+}
 
 /**
  * Conteúdo do sheet "Regras & Avisos"
  * Contém as regras do flat e informações importantes para o hóspede
  */
-const RulesSheet: React.FC = () => {
+const RulesSheet: React.FC<RulesSheetProps> = ({ onOpenKeyDetails }) => {
     const { t } = useLanguage();
 
     return (
@@ -43,7 +47,11 @@ const RulesSheet: React.FC = () => {
                 <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle size={18} className="text-red-500" />
                     <h4 className="font-heading font-bold text-sm text-red-800 dark:text-red-200">
-                        {t('Atenção: Voltagem 220V', 'Warning: 220V Voltage', 'Atención: Voltaje 220V')}
+                        {t(
+                            'Atenção: Voltagem 220V',
+                            'Warning: 220V Voltage',
+                            'Atención: Voltaje 220V'
+                        )}
                     </h4>
                 </div>
                 <p className="text-xs text-red-700 dark:text-red-300 leading-relaxed">
@@ -71,8 +79,19 @@ const RulesSheet: React.FC = () => {
                     )}
                 </p>
                 <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                    {t('Local: Na calçada entre o totem e o poste (', 'Location: On the sidewalk between the totem and the pole (', 'Ubicación: En la acera entre el tótem y el poste (')}
-                    <span className="font-bold">{t('não colocar no vizinho', 'do not place at the neighbor\'s', 'no colocar en el vecino')}</span>).
+                    {t(
+                        'Local: Na calçada entre o totem e o poste (',
+                        'Location: On the sidewalk between the totem and the pole (',
+                        'Ubicación: En la acera entre el tótem y el poste ('
+                    )}
+                    <span className="font-bold">
+                        {t(
+                            'não colocar no vizinho',
+                            "do not place at the neighbor's",
+                            'no colocar en el vecino'
+                        )}
+                    </span>
+                    ).
                 </p>
             </div>
 
@@ -81,7 +100,11 @@ const RulesSheet: React.FC = () => {
                 <div className="flex items-center gap-2 mb-2">
                     <Droplets size={18} className="text-amber-500" />
                     <h4 className="font-heading font-bold text-sm text-amber-800 dark:text-amber-200">
-                        {t('Cuidado com o Enxoval', 'Care with Linen', 'Cuidado con la Ropa de Cama')}
+                        {t(
+                            'Cuidado com o Enxoval',
+                            'Care with Linen',
+                            'Cuidado con la Ropa de Cama'
+                        )}
                     </h4>
                 </div>
                 <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
@@ -103,9 +126,17 @@ const RulesSheet: React.FC = () => {
                 </div>
                 <ul className="space-y-2 mb-3">
                     {[
-                        t('Apague luzes e desligue o AC', 'Turn off lights and AC', 'Apague luces y aire acondicionado'),
+                        t(
+                            'Apague luzes e desligue o AC',
+                            'Turn off lights and AC',
+                            'Apague luces y aire acondicionado'
+                        ),
                         t('Feche as janelas', 'Close the windows', 'Cierre las ventanas'),
-                        t('Chave: Devolva na caixinha "Self Checkout"', 'Key: Return in the "Self Checkout" box', 'Llave: Devuélvala en la cajita "Self Checkout"'),
+                        t(
+                            'Chave: Devolva na caixinha "Self Checkout"',
+                            'Key: Return in the "Self Checkout" box',
+                            'Llave: Devuélvala en la cajita "Self Checkout"'
+                        ),
                     ].map((item, idx) => (
                         <li
                             key={idx}
@@ -123,28 +154,108 @@ const RulesSheet: React.FC = () => {
                         </li>
                     ))}
                 </ul>
-                <button className="px-3 py-2 bg-white dark:bg-green-900/40 border border-green-200 dark:border-green-800 rounded-lg text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide flex items-center gap-1.5 shadow-sm hover:bg-green-50 dark:hover:bg-green-900/60 transition-colors min-h-[32px]">
-                    <Tv size={12} /> {t('Ver Foto', 'See Photo', 'Ver Foto')}
+                <button
+                    type="button"
+                    onClick={onOpenKeyDetails}
+                    className="px-3 py-2 bg-white dark:bg-green-900/40 border border-green-200 dark:border-green-800 rounded-lg text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide flex items-center gap-1.5 shadow-sm hover:bg-green-50 dark:hover:bg-green-900/60 active:scale-95 transition-all min-h-[32px] cursor-pointer"
+                >
+                    <Camera size={14} /> {t('Ver Foto', 'See Photo', 'Ver Foto')}
                 </button>
             </div>
 
             {/* Lista de Proibições */}
             <div className="space-y-2.5 pl-1">
-                <RuleItem icon={Ban} text={t('Limpeza por conta do hóspede durante a estadia', 'Cleaning by guest during stay', 'Limpieza por cuenta del huésped durante la estancia')} />
-                <RuleItem icon={Ban} text={t('Não deixar pertences no hall ou áreas comuns', 'Do not leave belongings in the hall or common areas', 'No dejar pertenencias en el pasillo o áreas comunes')} />
-                <RuleItem icon={Ban} text={t('Proibido fumar dentro do flat', 'No smoking inside the flat', 'Prohibido fumar dentro del piso')} />
-                <RuleItem icon={Ban} text={t('Proibido som alto', 'Loud music prohibited', 'Prohibida la música alta')} />
-                <RuleItem icon={Ban} text={t('Não são permitidos animais', 'No pets allowed', 'No se permiten mascotas')} />
-                <RuleItem icon={Ban} text={t('Não permitimos festas/eventos', 'No parties/events allowed', 'No se permiten fiestas/eventos')} />
-                <RuleItem icon={Ban} text={t('Não usar para qualquer atividade ilegal', 'Do not use for any illegal activity', 'No usar para ninguna actividad ilegal')} />
-                <RuleItem icon={Ban} text={t('Não secar roupas na cama ou sofá', 'Do not dry clothes on bed or sofa', 'No secar ropa en la cama o sofá')} />
-                <RuleItem icon={Lightbulb} text={t('Usar AC com portas/janelas fechadas', 'Use AC with doors/windows closed', 'Usar AA con puertas/ventanas cerradas')} positive />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Limpeza por conta do hóspede durante a estadia',
+                        'Cleaning by guest during stay',
+                        'Limpieza por cuenta del huésped durante la estancia'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Não deixar pertences no hall ou áreas comuns',
+                        'Do not leave belongings in the hall or common areas',
+                        'No dejar pertenencias en el pasillo o áreas comunes'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Proibido fumar dentro do flat',
+                        'No smoking inside the flat',
+                        'Prohibido fumar dentro del piso'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Proibido som alto',
+                        'Loud music prohibited',
+                        'Prohibida la música alta'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Não são permitidos animais',
+                        'No pets allowed',
+                        'No se permiten mascotas'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Não permitimos festas/eventos',
+                        'No parties/events allowed',
+                        'No se permiten fiestas/eventos'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Não usar para qualquer atividade ilegal',
+                        'Do not use for any illegal activity',
+                        'No usar para ninguna actividad ilegal'
+                    )}
+                />
+                <RuleItem
+                    icon={Ban}
+                    text={t(
+                        'Não secar roupas na cama ou sofá',
+                        'Do not dry clothes on bed or sofa',
+                        'No secar ropa en la cama o sofá'
+                    )}
+                />
                 <RuleItem
                     icon={Lightbulb}
-                    text={t('Usar água e energia de forma responsável', 'Use water and energy responsibly', 'Usar agua y energía de manera responsable')}
+                    text={t(
+                        'Usar AC com portas/janelas fechadas',
+                        'Use AC with doors/windows closed',
+                        'Usar AA con puertas/ventanas cerradas'
+                    )}
                     positive
                 />
-                <RuleItem icon={AlertCircle} text={t('Avisar imediatamente sobre danos', 'Report damages immediately', 'Reportar daños inmediatamente')} warning />
+                <RuleItem
+                    icon={Lightbulb}
+                    text={t(
+                        'Usar água e energia de forma responsável',
+                        'Use water and energy responsibly',
+                        'Usar agua y energía de manera responsable'
+                    )}
+                    positive
+                />
+                <RuleItem
+                    icon={AlertCircle}
+                    text={t(
+                        'Avisar imediatamente sobre danos',
+                        'Report damages immediately',
+                        'Reportar daños inmediatamente'
+                    )}
+                    warning
+                />
             </div>
         </div>
     );
@@ -161,8 +272,8 @@ const RuleItem: React.FC<RuleItemProps> = ({ icon: Icon, text, positive, warning
     const colorClass = warning
         ? 'text-red-600 dark:text-red-400'
         : positive
-            ? 'text-green-600 dark:text-green-400'
-            : 'text-gray-600 dark:text-gray-400';
+          ? 'text-green-600 dark:text-green-400'
+          : 'text-gray-600 dark:text-gray-400';
 
     const iconColorClass = warning ? 'text-red-500' : positive ? 'text-green-500' : 'text-gray-400';
 

@@ -9,6 +9,7 @@ import AccessTicket from './AccessTicket';
 interface PreCheckinCardProps {
     isPasswordReleased: boolean;
     config: GuestConfig;
+    safeCode?: string;
     onOpenCheckin: () => void;
     onOpenSupport: () => void;
     onSaveAccess: () => void;
@@ -18,6 +19,7 @@ interface PreCheckinCardProps {
 const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
     isPasswordReleased,
     config,
+    safeCode,
     onOpenCheckin,
     onOpenSupport,
     onSaveAccess,
@@ -57,14 +59,26 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                     {/* Message: Passwords Released */}
                     <div className="mb-6 relative z-10 text-center">
                         <h3 className={`text-lg font-heading font-bold ${theme.text.primary} mb-2`}>
-                            {t('Seu Check-in é Amanhã! 🤩', 'Your Check-in is Tomorrow! 🤩', '¡Tu Check-in es Mañana! 🤩')}
+                            {t(
+                                'Seu Check-in é Amanhã! 🤩',
+                                'Your Check-in is Tomorrow! 🤩',
+                                '¡Tu Check-in es Mañana! 🤩'
+                            )}
                         </h3>
                         <p
                             className={`text-xs ${theme.text.secondary} font-medium leading-relaxed max-w-xs mx-auto`}
                         >
-                            {t('Suas senhas já estão liberadas!', 'Your passwords are now released!', '¡Tus contraseñas ya están liberadas!')}
+                            {t(
+                                'Suas senhas já estão liberadas!',
+                                'Your passwords are now released!',
+                                '¡Tus contraseñas ya están liberadas!'
+                            )}
                             <br />
-                            {t('Salve seu acesso agora mesmo.', 'Save your access right now.', 'Guarda tu acceso ahora mismo.')}
+                            {t(
+                                'Salve seu acesso agora mesmo.',
+                                'Save your access right now.',
+                                'Guarda tu acceso ahora mismo.'
+                            )}
                         </p>
                     </div>
 
@@ -77,18 +91,33 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                                     ? config.flatNumber || ''
                                     : config.lockCode || ''
                             }
+                            safeCode={safeCode}
                             label={
-                                config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha de Acesso', 'Access Code', 'Código de Acceso')
+                                config.propertyId === 'integracao'
+                                    ? t('Unidade', 'Unit', 'Unidad')
+                                    : t('Senha de Acesso', 'Access Code', 'Código de Acceso')
                             }
                             subLabel={
                                 config.propertyId === 'integracao'
-                                    ? t('Chaves no cofre', 'Keys in safeBox', 'Llaves en caja fuerte')
-                                    : t('Toque no sino após digitar', 'Ring bell after typing', 'Toca el timbre tras digitar')
+                                    ? t(
+                                          'Chaves no cofre',
+                                          'Keys in safeBox',
+                                          'Llaves en caja fuerte'
+                                      )
+                                    : t(
+                                          'Toque no sino após digitar',
+                                          'Ring bell after typing',
+                                          'Toca el timbre tras digitar'
+                                      )
                             }
                             theme={theme}
                         />
-                        <p className="text-[10px] text-center text-gray-500 mt-2">
-                            {t('Toque para salvar o cartão de acesso', 'Tap to save access card', 'Toca para guardar la tarjeta de acceso')}
+                        <p className="text-[10px] text-center text-gray-400 mt-2">
+                            {t(
+                                'Toque para salvar o cartão de acesso',
+                                'Tap to save access card',
+                                'Toca para guardar la tarjeta de acceso'
+                            )}
                         </p>
                     </div>
 
@@ -100,7 +129,11 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                         fullWidth
                         className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg relative z-10`}
                     >
-                        {t('Ver Instruções Completas', 'View Full Instructions', 'Ver Instrucciones Completas')}
+                        {t(
+                            'Ver Instruções Completas',
+                            'View Full Instructions',
+                            'Ver Instrucciones Completas'
+                        )}
                     </Button>
                 </>
             ) : (
@@ -108,14 +141,26 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                     {/* Message: Coming Soon */}
                     <div className="mb-6 relative z-10 text-center">
                         <h3 className={`text-lg font-heading font-bold ${theme.text.primary} mb-2`}>
-                            {t('Sua viagem está chegando! ✈️', 'Your trip is coming! ✈️', '¡Tu viaje se acerca! ✈️')}
+                            {t(
+                                'Sua viagem está chegando! ✈️',
+                                'Your trip is coming! ✈️',
+                                '¡Tu viaje se acerca! ✈️'
+                            )}
                         </h3>
                         <p
                             className={`text-xs ${theme.text.secondary} font-medium leading-relaxed max-w-xs mx-auto`}
                         >
-                            {t('Falta pouco para te recebermos.', "We can't wait to welcome you.", 'Falta poco para recibirte.')}
+                            {t(
+                                'Falta pouco para te recebermos.',
+                                "We can't wait to welcome you.",
+                                'Falta poco para recibirte.'
+                            )}
                             <br />
-                            {t('Confira os detalhes da sua chegada.', 'Check your arrival details.', 'Consulta los detalles de tu llegada.')}
+                            {t(
+                                'Confira os detalhes da sua chegada.',
+                                'Check your arrival details.',
+                                'Consulta los detalles de tu llegada.'
+                            )}
                         </p>
                     </div>
 
@@ -133,7 +178,8 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                             <p
                                 className={`text-sm font-bold bg-white/5 px-3 py-1 rounded-full border border-white/10 mt-1 ${theme.text.accent}`}
                             >
-                                {t('A partir das', 'From', 'A partir de')} {config.checkInTime || '14:00'}
+                                {t('A partir das', 'From', 'A partir de')}{' '}
+                                {config.checkInTime || '14:00'}
                             </p>
                         </div>
                     </div>

@@ -29,8 +29,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
     const favorite = place.id ? isFavorite(place.id) : false;
 
     // Translatable Content
-    const displayName = t(place.name, place.name_en || '[SEM TRADUÇÃO]', place.name_es);
-    const displayDescription = t(place.description, place.description_en, place.description_es);
+    const displayName = t(place.name, place.name_en || place.name, place.name_es || place.name);
+    const displayDescription = t(
+        place.description,
+        place.description_en || place.description,
+        place.description_es || place.description
+    );
 
     const handleToggleFavorite = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -38,7 +42,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
             toggleFavorite(place.id);
         }
     };
-
 
     const toggleExpand = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -97,7 +100,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                         />
                         {place.eventDate && (
                             <div className="absolute inset-0 bg-pink-900/40 flex items-center justify-center">
-                                <span className="text-[10px] font-bold text-white">{getFormattedEventDate()}</span>
+                                <span className="text-[10px] font-bold text-white">
+                                    {getFormattedEventDate()}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -112,42 +117,50 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                 {(() => {
                                     const rawTag = place.tags?.[0] || place.category || 'Local';
                                     const tagMap: Record<string, string> = {
-                                        'burgers': t('Hambúrguer', 'Burgers', 'Hamburguesas'),
-                                        'pizza': t('Pizza', 'Pizza', 'Pizza'),
-                                        'japonesa': t('Japonesa', 'Japanese', 'Japonesa'),
-                                        'doces': t('Doces', 'Sweets', 'Dulces'),
-                                        'brasileira': t('Brasileira', 'Brazilian', 'Brasileña'),
-                                        'saudavel': t('Saudável', 'Healthy', 'Saludable'),
-                                        'bebidas': t('Bebidas', 'Drinks', 'Bebidas'),
-                                        'almoço': t('Almoço', 'Lunch', 'Almuerzo'),
-                                        'espetinho': t('Espetinho', 'Skewers', 'Brochetas'),
-                                        'local': t('Local', 'Place', 'Lugar'),
-                                        'lanches': t('Lanches', 'Snacks', 'Bocadillos'),
-                                        'jantar': t('Jantar', 'Dinner', 'Cena'),
-                                        'café': t('Café', 'Coffee', 'Café'),
-                                        'padaria': t('Padaria', 'Bakery', 'Panadería'),
-                                        'sorvete': t('Sorvete', 'Ice Cream', 'Helado'),
-                                        'açaí': t('Açaí', 'Acai', 'Açaí'),
-                                        'massas': t('Massas', 'Pasta', 'Pastas'),
+                                        burgers: t('Hambúrguer', 'Burgers', 'Hamburguesas'),
+                                        pizza: t('Pizza', 'Pizza', 'Pizza'),
+                                        japonesa: t('Japonesa', 'Japanese', 'Japonesa'),
+                                        doces: t('Doces', 'Sweets', 'Dulces'),
+                                        brasileira: t('Brasileira', 'Brazilian', 'Brasileña'),
+                                        saudavel: t('Saudável', 'Healthy', 'Saludable'),
+                                        bebidas: t('Bebidas', 'Drinks', 'Bebidas'),
+                                        almoço: t('Almoço', 'Lunch', 'Almuerzo'),
+                                        espetinho: t('Espetinho', 'Skewers', 'Brochetas'),
+                                        local: t('Local', 'Place', 'Lugar'),
+                                        lanches: t('Lanches', 'Snacks', 'Bocadillos'),
+                                        jantar: t('Jantar', 'Dinner', 'Cena'),
+                                        café: t('Café', 'Coffee', 'Café'),
+                                        padaria: t('Padaria', 'Bakery', 'Panadería'),
+                                        sorvete: t('Sorvete', 'Ice Cream', 'Helado'),
+                                        açaí: t('Açaí', 'Acai', 'Açaí'),
+                                        massas: t('Massas', 'Pasta', 'Pastas'),
                                         'frutos do mar': t('Frutos do Mar', 'Seafood', 'Mariscos'),
-                                        'carnes': t('Carnes', 'Steakhouse', 'Carnes'),
-                                        'vegetariano': t('Vegetariano', 'Vegetarian', 'Vegetariano'),
-                                        'vegano': t('Vegano', 'Vegan', 'Vegano'),
-                                        'bar': t('Bar', 'Bar', 'Bar'),
-                                        'pub': t('Pub', 'Pub', 'Pub'),
-                                        'balada': t('Balada', 'Club', 'Discoteca'),
-                                        'música ao vivo': t('Música ao Vivo', 'Live Music', 'Música en Vivo'),
+                                        carnes: t('Carnes', 'Steakhouse', 'Carnes'),
+                                        vegetariano: t('Vegetariano', 'Vegetarian', 'Vegetariano'),
+                                        vegano: t('Vegano', 'Vegan', 'Vegano'),
+                                        bar: t('Bar', 'Bar', 'Bar'),
+                                        pub: t('Pub', 'Pub', 'Pub'),
+                                        balada: t('Balada', 'Club', 'Discoteca'),
+                                        'música ao vivo': t(
+                                            'Música ao Vivo',
+                                            'Live Music',
+                                            'Música en Vivo'
+                                        ),
                                         'happy hour': t('Happy Hour', 'Happy Hour', 'Happy Hour'),
-                                        'delivery': t('Delivery', 'Delivery', 'Entrega'),
-                                        'retirada': t('Retirada', 'Pick-up', 'Recogida'),
-                                        'rodízio': t('Rodízio', 'All-you-can-eat', 'Rodizio'),
+                                        delivery: t('Delivery', 'Delivery', 'Entrega'),
+                                        retirada: t('Retirada', 'Pick-up', 'Recogida'),
+                                        rodízio: t('Rodízio', 'All-you-can-eat', 'Rodizio'),
                                         'self-service': t('Self-Service', 'Buffet', 'Buffet'),
                                         'a la carte': t('À La Carte', 'À La Carte', 'A la Carta'),
                                         'fast food': t('Fast Food', 'Fast Food', 'Comida Rápida'),
-                                        'gourmet': t('Gourmet', 'Gourmet', 'Gourmet'),
-                                        'artesanal': t('Artesanal', 'Artisanal', 'Artesanal'),
-                                        'regional': t('Regional', 'Regional', 'Regional'),
-                                        'internacional': t('Internacional', 'International', 'Internacional'),
+                                        gourmet: t('Gourmet', 'Gourmet', 'Gourmet'),
+                                        artesanal: t('Artesanal', 'Artisanal', 'Artesanal'),
+                                        regional: t('Regional', 'Regional', 'Regional'),
+                                        internacional: t(
+                                            'Internacional',
+                                            'International',
+                                            'Internacional'
+                                        ),
                                     };
                                     return tagMap[rawTag.toLowerCase()] || rawTag;
                                 })()}
@@ -161,7 +174,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                         </div>
                     </div>
 
-
                     {/* Favorite Heart */}
                     <button
                         onClick={handleToggleFavorite}
@@ -174,8 +186,19 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                     </button>
 
                     {/* Chevron / Toggle Indicator */}
-                    <div className={`p-2 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-orange-500' : ''}`}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <div
+                        className={`p-2 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-orange-500' : ''}`}
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </div>
@@ -213,7 +236,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                 </button>
                                 {(place.orderLink || place.whatsapp) && !place.eventDate && (
                                     <a
-                                        href={place.orderLink || (place.whatsapp ? `https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}` : '#')}
+                                        href={
+                                            place.orderLink ||
+                                            (place.whatsapp
+                                                ? `https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}`
+                                                : '#')
+                                        }
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={(e) => e.stopPropagation()}
@@ -256,51 +284,75 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none"></div>
                             <div className="absolute bottom-0 left-0 w-full p-6">
                                 <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
-                                    <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
-                                        <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
-                                            {displayName}
-                                        </h2>
-                                    </h2>
+                                    {displayName}
                                 </h2>
                                 <div className="flex flex-wrap gap-1.5">
                                     {place.tags.slice(0, 3).map((tag, idx) => {
                                         const tagMap: Record<string, string> = {
-                                            'burgers': t('Hambúrguer', 'Burgers', 'Hamburguesas'),
-                                            'pizza': t('Pizza', 'Pizza', 'Pizza'),
-                                            'japonesa': t('Japonesa', 'Japanese', 'Japonesa'),
-                                            'doces': t('Doces', 'Sweets', 'Dulces'),
-                                            'brasileira': t('Brasileira', 'Brazilian', 'Brasileña'),
-                                            'saudavel': t('Saudável', 'Healthy', 'Saludable'),
-                                            'bebidas': t('Bebidas', 'Drinks', 'Bebidas'),
-                                            'almoço': t('Almoço', 'Lunch', 'Almuerzo'),
-                                            'espetinho': t('Espetinho', 'Skewers', 'Brochetas'),
-                                            'local': t('Local', 'Place', 'Lugar'),
-                                            'lanches': t('Lanches', 'Snacks', 'Bocadillos'),
-                                            'jantar': t('Jantar', 'Dinner', 'Cena'),
-                                            'café': t('Café', 'Coffee', 'Café'),
-                                            'padaria': t('Padaria', 'Bakery', 'Panadería'),
-                                            'sorvete': t('Sorvete', 'Ice Cream', 'Helado'),
-                                            'açaí': t('Açaí', 'Acai', 'Açaí'),
-                                            'massas': t('Massas', 'Pasta', 'Pastas'),
-                                            'frutos do mar': t('Frutos do Mar', 'Seafood', 'Mariscos'),
-                                            'carnes': t('Carnes', 'Steakhouse', 'Carnes'),
-                                            'vegetariano': t('Vegetariano', 'Vegetarian', 'Vegetariano'),
-                                            'vegano': t('Vegano', 'Vegan', 'Vegano'),
-                                            'bar': t('Bar', 'Bar', 'Bar'),
-                                            'pub': t('Pub', 'Pub', 'Pub'),
-                                            'balada': t('Balada', 'Club', 'Discoteca'),
-                                            'música ao vivo': t('Música ao Vivo', 'Live Music', 'Música en Vivo'),
-                                            'happy hour': t('Happy Hour', 'Happy Hour', 'Happy Hour'),
-                                            'delivery': t('Delivery', 'Delivery', 'Entrega'),
-                                            'retirada': t('Retirada', 'Pick-up', 'Recogida'),
-                                            'rodízio': t('Rodízio', 'All-you-can-eat', 'Rodizio'),
+                                            burgers: t('Hambúrguer', 'Burgers', 'Hamburguesas'),
+                                            pizza: t('Pizza', 'Pizza', 'Pizza'),
+                                            japonesa: t('Japonesa', 'Japanese', 'Japonesa'),
+                                            doces: t('Doces', 'Sweets', 'Dulces'),
+                                            brasileira: t('Brasileira', 'Brazilian', 'Brasileña'),
+                                            saudavel: t('Saudável', 'Healthy', 'Saludable'),
+                                            bebidas: t('Bebidas', 'Drinks', 'Bebidas'),
+                                            almoço: t('Almoço', 'Lunch', 'Almuerzo'),
+                                            espetinho: t('Espetinho', 'Skewers', 'Brochetas'),
+                                            local: t('Local', 'Place', 'Lugar'),
+                                            lanches: t('Lanches', 'Snacks', 'Bocadillos'),
+                                            jantar: t('Jantar', 'Dinner', 'Cena'),
+                                            café: t('Café', 'Coffee', 'Café'),
+                                            padaria: t('Padaria', 'Bakery', 'Panadería'),
+                                            sorvete: t('Sorvete', 'Ice Cream', 'Helado'),
+                                            açaí: t('Açaí', 'Acai', 'Açaí'),
+                                            massas: t('Massas', 'Pasta', 'Pastas'),
+                                            'frutos do mar': t(
+                                                'Frutos do Mar',
+                                                'Seafood',
+                                                'Mariscos'
+                                            ),
+                                            carnes: t('Carnes', 'Steakhouse', 'Carnes'),
+                                            vegetariano: t(
+                                                'Vegetariano',
+                                                'Vegetarian',
+                                                'Vegetariano'
+                                            ),
+                                            vegano: t('Vegano', 'Vegan', 'Vegano'),
+                                            bar: t('Bar', 'Bar', 'Bar'),
+                                            pub: t('Pub', 'Pub', 'Pub'),
+                                            balada: t('Balada', 'Club', 'Discoteca'),
+                                            'música ao vivo': t(
+                                                'Música ao Vivo',
+                                                'Live Music',
+                                                'Música en Vivo'
+                                            ),
+                                            'happy hour': t(
+                                                'Happy Hour',
+                                                'Happy Hour',
+                                                'Happy Hour'
+                                            ),
+                                            delivery: t('Delivery', 'Delivery', 'Entrega'),
+                                            retirada: t('Retirada', 'Pick-up', 'Recogida'),
+                                            rodízio: t('Rodízio', 'All-you-can-eat', 'Rodizio'),
                                             'self-service': t('Self-Service', 'Buffet', 'Buffet'),
-                                            'a la carte': t('À La Carte', 'À La Carte', 'A la Carta'),
-                                            'fast food': t('Fast Food', 'Fast Food', 'Comida Rápida'),
-                                            'gourmet': t('Gourmet', 'Gourmet', 'Gourmet'),
-                                            'artesanal': t('Artesanal', 'Artisanal', 'Artesanal'),
-                                            'regional': t('Regional', 'Regional', 'Regional'),
-                                            'internacional': t('Internacional', 'International', 'Internacional'),
+                                            'a la carte': t(
+                                                'À La Carte',
+                                                'À La Carte',
+                                                'A la Carta'
+                                            ),
+                                            'fast food': t(
+                                                'Fast Food',
+                                                'Fast Food',
+                                                'Comida Rápida'
+                                            ),
+                                            gourmet: t('Gourmet', 'Gourmet', 'Gourmet'),
+                                            artesanal: t('Artesanal', 'Artisanal', 'Artesanal'),
+                                            regional: t('Regional', 'Regional', 'Regional'),
+                                            internacional: t(
+                                                'Internacional',
+                                                'International',
+                                                'Internacional'
+                                            ),
                                         };
                                         return (
                                             <span
@@ -362,7 +414,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                             </p>
                                             {place.distance && (
                                                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1 font-medium font-sans">
-                                                    <Car size={12} /> {t('Aprox.', 'Approx.', 'Aprox.')} {place.distance}
+                                                    <Car size={12} />{' '}
+                                                    {t('Aprox.', 'Approx.', 'Aprox.')}{' '}
+                                                    {place.distance}
                                                 </p>
                                             )}
                                         </div>
@@ -390,7 +444,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
                                             className="flex items-center justify-center gap-2 w-full bg-orange-600 text-white font-bold font-sans py-3.5 rounded-xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98] text-sm"
                                         >
                                             <ExternalLink size={18} />
-                                            {t('Abrir no Google Maps', 'Open in Google Maps', 'Abrir en Google Maps')}
+                                            {t(
+                                                'Abrir no Google Maps',
+                                                'Open in Google Maps',
+                                                'Abrir en Google Maps'
+                                            )}
                                         </a>
                                     )}
 
@@ -429,4 +487,3 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
 };
 
 export default React.memo(PlaceCard);
-

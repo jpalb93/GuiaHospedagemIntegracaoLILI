@@ -35,6 +35,9 @@ interface GuestRecommendationsProps {
     emergencyRef?: React.RefObject<HTMLDivElement>;
     propertyId?: string;
     places?: PlaceRecommendation[]; // All dynamic places for favorites filter
+    onOpenKeyDetails?: () => void;
+    requestedSheet?: string | null;
+    onRequestedSheetHandled?: () => void;
 }
 
 /**
@@ -49,6 +52,9 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     emergencyRef,
     propertyId = 'lili',
     places = [],
+    onOpenKeyDetails,
+    requestedSheet,
+    onRequestedSheetHandled,
 }) => {
     const { t } = useLanguage();
     const [activeSheet, setActiveSheet] = useState<string | null>(null);
@@ -63,6 +69,15 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
             setActiveSheet('SOS & Emergência');
         }
     }, [openEmergency]);
+
+    // Abre uma sheet específica quando solicitado externamente (ex: SmartSuggestion)
+    useEffect(() => {
+        if (requestedSheet) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setActiveSheet(requestedSheet);
+            onRequestedSheetHandled?.();
+        }
+    }, [requestedSheet, onRequestedSheetHandled]);
 
     return (
         <>
@@ -173,7 +188,12 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 title={t('Regras & Avisos', 'Rules & Notices', 'Reglas y Avisos')}
                 icon={AlertTriangle}
             >
-                <RulesSheet />
+                <RulesSheet
+                    onOpenKeyDetails={() => {
+                        handleClose();
+                        onOpenKeyDetails?.();
+                    }}
+                />
             </BottomSheet>
 
             {/* Mercados e Serviços */}

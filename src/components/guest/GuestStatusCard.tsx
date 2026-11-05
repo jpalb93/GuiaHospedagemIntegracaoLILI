@@ -17,6 +17,7 @@ interface GuestStatusCardProps {
     addressCopied: boolean;
     currentWifiSSID: string;
     currentWifiPass: string;
+    currentSafeCode?: string;
     isLoadingWifi?: boolean;
     onOpenCheckin: () => void;
     onOpenCheckout: () => void;
@@ -29,7 +30,7 @@ interface GuestStatusCardProps {
     onOpenSupport: () => void;
     onEmergency: () => void;
     onSaveAccess: () => void;
-    onOpenReview?: () => void; // Added optional prop for review
+    onOpenReview?: () => void;
 }
 
 const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
@@ -41,6 +42,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
     addressCopied,
     currentWifiSSID,
     currentWifiPass,
+    currentSafeCode,
     isLoadingWifi = false,
     onOpenCheckin,
     onOpenCheckout,
@@ -52,7 +54,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
     onOpenSupport,
     onEmergency,
     onSaveAccess,
-    onOpenReview = () => { }, // Default no-op
+    onOpenReview = () => {},
 }) => {
     if (!isTimeVerified) return <CardSkeleton />;
 
@@ -62,6 +64,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                 <PreCheckinCard
                     isPasswordReleased={isPasswordReleased}
                     config={config}
+                    safeCode={currentSafeCode}
                     onOpenCheckin={onOpenCheckin}
                     onOpenSupport={onOpenSupport}
                     onSaveAccess={onSaveAccess}
@@ -73,6 +76,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
                 <CheckinCard
                     isSingleNight={isSingleNight}
                     config={config}
+                    safeCode={currentSafeCode}
                     wifiCopied={wifiCopied}
                     addressCopied={addressCopied}
                     currentWifiSSID={currentWifiSSID}
@@ -92,6 +96,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
             return (
                 <MiddleStayCard
                     config={config}
+                    safeCode={currentSafeCode}
                     wifiCopied={wifiCopied}
                     addressCopied={addressCopied}
                     currentWifiSSID={currentWifiSSID}
@@ -110,6 +115,7 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
             return (
                 <PreCheckoutCard
                     config={config}
+                    safeCode={currentSafeCode}
                     wifiCopied={wifiCopied}
                     addressCopied={addressCopied}
                     currentWifiSSID={currentWifiSSID}
@@ -128,6 +134,9 @@ const GuestStatusCard: React.FC<GuestStatusCardProps> = ({
             return (
                 <CheckoutCard
                     config={config}
+                    addressCopied={addressCopied}
+                    onCopyAddress={onCopyAddress}
+                    onOpenDriverMode={onOpenDriverMode}
                     onOpenSupport={onOpenSupport}
                     onEmergency={onEmergency}
                     onOpenCheckout={onOpenCheckout}

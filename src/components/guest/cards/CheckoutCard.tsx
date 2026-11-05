@@ -12,6 +12,9 @@ import { hapticFeedback } from '../../../utils/haptics';
 
 interface CheckoutCardProps {
     config: GuestConfig;
+    addressCopied?: boolean;
+    onCopyAddress?: () => void;
+    onOpenDriverMode?: () => void;
     onOpenSupport: () => void;
     onEmergency: () => void;
     onOpenCheckout: () => void;
@@ -20,6 +23,9 @@ interface CheckoutCardProps {
 
 const CheckoutCard: React.FC<CheckoutCardProps> = ({
     config,
+    addressCopied = false,
+    onCopyAddress: onCopyAddressProp,
+    onOpenDriverMode: onOpenDriverModeProp,
     onOpenSupport,
     onEmergency,
     onOpenCheckout,
@@ -28,14 +34,20 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
     const [showReviewModal, setShowReviewModal] = React.useState(false);
-    // Hardcoded address state for checkout card as it's not passed down
-    const addressCopied = false;
+
     const onCopyAddress = () => {
+        if (onCopyAddressProp) {
+            onCopyAddressProp();
+            return;
+        }
         hapticFeedback('light');
         navigator.clipboard.writeText('R. São José, 475B, Centro, Petrolina - PE');
-        triggerConfetti(document.getElementById('checkout-address') as HTMLElement);
     };
     const onOpenDriverMode = () => {
+        if (onOpenDriverModeProp) {
+            onOpenDriverModeProp();
+            return;
+        }
         window.open(
             `https://www.google.com/maps/search/?api=1&query=R.+São+José,+475B,+Centro,+Petrolina+-+PE`,
             '_blank'
@@ -195,12 +207,16 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg relative z-10 mb-4`}
             >
-                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili') : t('Fale Conosco', 'Talk to Us')}
+                {config.propertyId === 'lili'
+                    ? t('Fale com a Lili', 'Talk to Lili')
+                    : t('Fale Conosco', 'Talk to Us')}
             </Button>
 
             {/* CHECKOUT TIME (Bottom) */}
             <div className="flex items-center justify-center gap-2 text-red-100/60 relative z-10 mt-auto">
-                <p className="text-[10px] font-medium">{t('Liberar o flat até às', 'Vacate flat by')}</p>
+                <p className="text-[10px] font-medium">
+                    {t('Liberar o flat até às', 'Vacate flat by')}
+                </p>
                 <p
                     className={`text-sm font-mono font-bold ${theme.text.primary} bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20`}
                 >

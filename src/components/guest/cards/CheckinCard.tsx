@@ -11,6 +11,7 @@ import AccessTicket from './AccessTicket';
 interface CheckinCardProps {
     isSingleNight: boolean;
     config: GuestConfig;
+    safeCode?: string;
     wifiCopied: boolean;
     addressCopied: boolean;
     currentWifiSSID: string;
@@ -29,6 +30,7 @@ interface CheckinCardProps {
 const CheckinCard: React.FC<CheckinCardProps> = ({
     isSingleNight,
     config,
+    safeCode,
     wifiCopied,
     addressCopied,
     currentWifiSSID,
@@ -50,14 +52,14 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
         <div
             className={`flex flex-col ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative w-full animate-gold-pulse`}
         >
-            {/* Background Effects Removed */}
-
             {/* Header: Title + Actions */}
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <h2
-                    className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${isSingleNight ? 'text-orange-400' : 'text-gray-500'}`}
+                    className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${isSingleNight ? 'text-orange-400' : 'text-gray-400'}`}
                 >
-                    {isSingleNight ? t('Estadia Rápida', 'Quick Stay', 'Estancia Rápida') : t('Acesso Rápido', 'Quick Access', 'Acceso Rápido')}
+                    {isSingleNight
+                        ? t('Estadia Rápida', 'Quick Stay', 'Estancia Rápida')
+                        : t('Acesso Rápido', 'Quick Access', 'Acceso Rápido')}
                 </h2>
                 <div className="flex gap-2">
                     <button
@@ -85,14 +87,26 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 >
                     {isSingleNight
                         ? `${t('Veio rapidinho', 'Quick visit', 'Visita rápida')}, ${config.guestName?.split(' ')[0]}? 👋`
-                        : t('Feliz em te receber! 😄', 'Happy to welcome you! 😄', '¡Feliz de recibirte! 😄')}
+                        : t(
+                              'Feliz em te receber! 😄',
+                              'Happy to welcome you! 😄',
+                              '¡Feliz de recibirte! 😄'
+                          )}
                 </h3>
                 <p
                     className={`text-xs ${theme.text.secondary} font-medium leading-relaxed max-w-xs mx-auto`}
                 >
                     {isSingleNight
-                        ? t('Aproveite ao máximo sua estadia!', 'Make the most of your stay!', '¡Aprovecha al máximo tu estadía!')
-                        : t('Faça o check-in sem estresse com o passo a passo!', 'Stress-free check-in with our guide!', '¡Haz el check-in sin estrés con nuestra guía!')}
+                        ? t(
+                              'Aproveite ao máximo sua estadia!',
+                              'Make the most of your stay!',
+                              '¡Aprovecha al máximo tu estadía!'
+                          )
+                        : t(
+                              'Faça o check-in sem estresse com o passo a passo!',
+                              'Stress-free check-in with our guide!',
+                              '¡Haz el check-in sin estrés con nuestra guía!'
+                          )}
                 </p>
             </div>
 
@@ -109,7 +123,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 </Button>
             )}
 
-            {/* ACCESS TICKET (Replaces HolographicCard for Access) */}
+            {/* ACCESS TICKET (Safe + Door/Unit) */}
             <div className="mb-4 relative z-10 w-full">
                 <AccessTicket
                     propertyId={config.propertyId || 'lili'}
@@ -118,11 +132,20 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             ? config.flatNumber || ''
                             : config.lockCode || ''
                     }
-                    label={config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha de Acesso', 'Access Code', 'Código de Acceso')}
+                    safeCode={safeCode}
+                    label={
+                        config.propertyId === 'integracao'
+                            ? t('Unidade', 'Unit', 'Unidad')
+                            : t('Senha de Acesso', 'Access Code', 'Código de Acceso')
+                    }
                     subLabel={
                         config.propertyId === 'integracao'
                             ? t('Chaves no cofre', 'Keys in safeBox', 'Llaves en caja fuerte')
-                            : t('Toque no sino após digitar', 'Ring bell after typing', 'Toca el timbre tras digitar')
+                            : t(
+                                  'Toque no sino após digitar',
+                                  'Ring bell after typing',
+                                  'Toca el timbre tras digitar'
+                              )
                     }
                     theme={theme}
                 />
@@ -164,7 +187,9 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             )}
                         </p>
                         <p className="text-[9px] text-blue-400 font-medium">
-                            {wifiCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
+                            {wifiCopied
+                                ? t('Copiado!', 'Copied!', '¡Copiado!')
+                                : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
                         </p>
                     </div>
                 </HolographicCard>
@@ -184,6 +209,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                                 e.stopPropagation();
                                 onOpenDriverMode();
                             }}
+                            aria-label="Modo Motorista"
                             className="p-1 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
                         >
                             <Maximize2 size={14} />
@@ -204,7 +230,9 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             R. São José, 475B
                         </p>
                         <p className="text-[9px] text-purple-400 font-medium">
-                            {addressCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}
+                            {addressCopied
+                                ? t('Copiado!', 'Copied!', '¡Copiado!')
+                                : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}
                         </p>
                     </div>
                 </HolographicCard>
@@ -219,7 +247,11 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                     fullWidth
                     className="mb-3 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25"
                 >
-                    {t('Passo a Passo do Check-in', 'Check-in Walkthrough', 'Guía Paso a Paso del Check-in')}
+                    {t(
+                        'Passo a Passo do Check-in',
+                        'Check-in Walkthrough',
+                        'Guía Paso a Paso del Check-in'
+                    )}
                 </Button>
             )}
 
@@ -227,7 +259,8 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 <div className="mb-4 bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 flex items-center justify-between relative z-10">
                     <div>
                         <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide flex items-center gap-1">
-                            <CalendarHeart size={12} /> {t('Check-out Amanhã', 'Check-out Tomorrow', 'Check-out Mañana')}
+                            <CalendarHeart size={12} />{' '}
+                            {t('Check-out Amanhã', 'Check-out Tomorrow', 'Check-out Mañana')}
                         </p>
                         <p className="text-xs text-orange-200 font-bold">
                             {t('Até às', 'Until', 'Hasta las')} {config.checkOutTime || '11:00'}
@@ -254,14 +287,21 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
+                {config.propertyId === 'lili'
+                    ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili')
+                    : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
             </Button>
 
             {!isSingleNight && (
                 <div className="mt-4 pt-4 border-t border-white/5 flex justify-center items-center gap-2 text-orange-300/80">
                     <CalendarHeart size={14} />
                     <p className="text-[10px] font-bold font-sans">
-                        {t('Check-in liberado a partir das', 'Check-in available from', 'Check-in disponible desde')} {config.checkInTime || '14:00'}
+                        {t(
+                            'Check-in liberado a partir das',
+                            'Check-in available from',
+                            'Check-in disponible desde'
+                        )}{' '}
+                        {config.checkInTime || '14:00'}
                     </p>
                 </div>
             )}

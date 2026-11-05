@@ -31,7 +31,7 @@ import StoriesBar from './guest/StoriesBar';
 import GuestHeader from './guest/GuestHeader';
 import GuestStatusCard from './guest/GuestStatusCard';
 import GuestRecommendations from './guest/GuestRecommendations';
-import StoryViewer, { StoryItem } from './StoryViewer'; // Mantido por enquanto, ou mover para components/guest
+import StoryViewer, { StoryItem } from './StoryViewer';
 
 // Modais
 import CheckinModal from './modals/CheckinModal';
@@ -121,12 +121,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 return dateA.localeCompare(dateB);
             });
 
-        console.log(
-            '[GuestView] Calculated activeEvents:',
-            filtered.length,
-            'from total events:',
-            events.length
-        );
         return filtered;
     }, [mergePlaces]);
 
@@ -154,13 +148,13 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                         type: 'event',
                         title: evt.name,
                         title_en: evt.name_en,
-                        title_es: evt.name_es, // Sync
+                        title_es: evt.name_es,
                         subtitle: subtitle || 'Em breve',
-                        subtitle_en: subtitle, // Date
-                        subtitle_es: subtitle, // Date
+                        subtitle_en: subtitle,
+                        subtitle_es: subtitle,
                         content: evt.description,
                         content_en: evt.description_en,
-                        content_es: evt.description_es, // Sync
+                        content_es: evt.description_es,
                         image: evt.imageUrl,
                         link: evt.orderLink,
                         icon: CalendarHeart,
@@ -169,43 +163,41 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 });
                 setCurrentStories(eventStories);
             } else if (type === 'tips') {
-                // Mapeia as dicas dinâmicas para o formato de StoryItem
                 const tipStories: StoryItem[] = tips.map((tip) => ({
                     id: tip.id || tip.title,
                     type: tip.type,
                     title: tip.title,
                     title_en: tip.title_en,
-                    title_es: tip.title_es, // Sync
+                    title_es: tip.title_es,
                     subtitle: tip.subtitle,
                     subtitle_en: tip.subtitle_en,
-                    subtitle_es: tip.subtitle_es, // Sync
+                    subtitle_es: tip.subtitle_es,
                     content: tip.content,
                     content_en: tip.content_en,
-                    content_es: tip.content_es, // Sync
+                    content_es: tip.content_es,
                     image: tip.image,
-                    icon: getIcon(tip.iconName), // Mapeia string -> Componente
-                    color: 'from-blue-800 to-blue-900', // Cor padrão ou vinda do banco se tiver
+                    icon: getIcon(tip.iconName),
+                    color: 'from-blue-800 to-blue-900',
                 }));
                 setCurrentStories(tipStories);
             } else {
-                // Usa as curiosidades dinâmicas (do banco ou fallback)
-                const sourceCuriosities = curiosities && curiosities.length > 0 ? curiosities : []; // Fallback vazio
+                const sourceCuriosities = curiosities && curiosities.length > 0 ? curiosities : [];
 
                 const shuffled = [...sourceCuriosities].sort(() => 0.5 - Math.random()).slice(0, 5);
                 const shuffledImages = [...CURIOSITY_STORY_IMAGES].sort(() => 0.5 - Math.random());
 
                 const curiosityStories: StoryItem[] = shuffled.map((item, idx) => ({
-                    id: item.id || `curiosity-${idx}`, // Prefer ID if available (self-healed)
+                    id: item.id || `curiosity-${idx}`,
                     type: 'curiosity',
                     title: 'Você Sabia?',
                     title_en: 'Did You Know?',
-                    title_es: '¿Sabías Qué?', // Static translation
+                    title_es: '¿Sabías Qué?',
                     subtitle: 'Curiosidade de Petrolina',
                     subtitle_en: 'Curiosity about Petrolina',
-                    subtitle_es: 'Curiosidad sobre Petrolina', // Static translation
+                    subtitle_es: 'Curiosidad sobre Petrolina',
                     content: item.text,
                     content_en: item.text_en,
-                    content_es: item.text_es, // Sync dynamic content
+                    content_es: item.text_es,
                     icon: Sparkles,
                     image: item.image || shuffledImages[idx % shuffledImages.length],
                 }));
@@ -218,8 +210,9 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
         [activeEvents, tips, curiosities, formatFriendlyDate, stories, modals]
     );
 
-    // Emergency Logic
+    // Emergency & Requested Sheet Logic
     const [openEmergency, setOpenEmergency] = React.useState(false);
+    const [requestedSheet, setRequestedSheet] = React.useState<string | null>(null);
     const emergencyRef = React.useRef<HTMLDivElement>(null);
 
     const handleEmergencyClick = useCallback(() => {
@@ -235,7 +228,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
 
     // Security Logic (from API)
     const currentWifiPass = config.wifiPass || 'Disponível no check-in';
-    // Se estiver carregando, não usa o fallback ainda para evitar flicker
     const currentWifiSSID = appSettings?.wifiSSID || (loadingSettings ? '' : 'Flat_Petrolina_5G');
     const currentSafeCode = appSettings?.safeCode || config.safeCode || '----';
 
@@ -256,7 +248,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
             </div>
 
             {/* MODAIS */}
-            {/* ... (modals remain the same) ... */}
             <CheckinModal
                 isOpen={modals.isCheckinModalOpen}
                 onClose={() => modals.setIsCheckinModalOpen(false)}
@@ -289,6 +280,8 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 isOpen={modals.showDriverMode}
                 onClose={() => modals.setShowDriverMode(false)}
                 address={flatAddress}
+                propertyId={config.propertyId || 'lili'}
+                flatNumber={config.flatNumber}
             />
 
             <VideoModal
@@ -313,7 +306,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                 onClose={() => modals.setIsStoryOpen(false)}
                 items={currentStories}
                 startIndex={stories.storyStartIndex}
-                // Adiciona música apenas para as Dicas/Curiosidades
                 audioSrc={currentStoriesType === 'curiosities' ? '/music/juazeiro.mp3' : undefined}
             />
 
@@ -328,7 +320,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
             </div>
 
             {/* STORIES BAR */}
-            {/* DEBUG LOG: {console.log(...)} */}
             <div className="animate-fade-up" style={{ animationDelay: '200ms' }}>
                 <StoriesBar
                     activeEvents={activeEvents}
@@ -359,6 +350,7 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                             addressCopied={clipboard.addressCopied}
                             currentWifiSSID={currentWifiSSID}
                             currentWifiPass={currentWifiPass}
+                            currentSafeCode={currentSafeCode}
                             isLoadingWifi={loadingSettings}
                             onOpenCheckin={() => modals.setIsCheckinModalOpen(true)}
                             onOpenCheckout={() => modals.setIsCheckoutModalOpen(true)}
@@ -382,6 +374,8 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                         <SmartSuggestion
                             stayStage={stayStage}
                             onCheckoutClick={() => modals.setIsCheckoutModalOpen(true)}
+                            onCheckinClick={() => modals.setIsCheckinModalOpen(true)}
+                            onOpenCategorySheet={(sheetName) => setRequestedSheet(sheetName)}
                             isTimeVerified={isTimeVerified}
                             customSuggestions={smartSuggestions}
                             places={dynamicPlaces}
@@ -454,6 +448,9 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                         emergencyRef={emergencyRef}
                         propertyId={config.propertyId || 'lili'}
                         places={dynamicPlaces}
+                        onOpenKeyDetails={checkout.handleOpenKeyDetails}
+                        requestedSheet={requestedSheet}
+                        onRequestedSheetHandled={() => setRequestedSheet(null)}
                     />
                 </motion.div>
 
@@ -493,7 +490,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
             </motion.div>
 
             <div className="animate-fade-up" style={{ animationDelay: '700ms' }}>
-                {/* CORREÇÃO: Lógica de seleção do prompt para evitar misturar personas */}
                 <React.Suspense
                     fallback={
                         <div className="h-14 w-14 rounded-full bg-white/10 animate-pulse fixed bottom-4 right-4" />
@@ -504,23 +500,18 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                         systemInstruction={(() => {
                             const propId = config.propertyId || 'lili';
 
-                            // 1. Tenta pegar a configuração específica da propriedade
                             let finalPrompt = appSettings?.aiSystemPrompts?.[propId];
 
-                            // 2. Se for a Lili e não tiver específico, tenta o campo legado (global)
                             if (!finalPrompt && propId === 'lili') {
                                 finalPrompt = appSettings?.aiSystemPrompt;
                             }
 
-                            // 3. Verifica se temos traduções (se o usuário estiver em outro idioma)
                             if (currentLang === 'en' && appSettings?.aiSystemPrompt_en) {
                                 return appSettings.aiSystemPrompt_en;
                             } else if (currentLang === 'es' && appSettings?.aiSystemPrompt_es) {
                                 return appSettings.aiSystemPrompt_es;
                             }
 
-                            // 4. Se o prompt encontrado for vazio ou apenas espaços, usa o Default do código (properties.ts)
-                            // Isso previne que um save vazio quebre a IA
                             if (!finalPrompt || !finalPrompt.trim()) {
                                 finalPrompt = property.ai.systemPrompt;
                             }
@@ -530,16 +521,6 @@ const GuestView: React.FC<GuestViewProps> = ({ config }) => {
                     />
                 </React.Suspense>
             </div>
-
-            <SupportModal
-                isOpen={modals.isSupportModalOpen}
-                onClose={() => modals.setIsSupportModalOpen(false)}
-                guestName={config.guestName}
-                hostPhone={
-                    appSettings?.hostPhones?.[config.propertyId || 'lili'] || property.hostPhone
-                }
-                propertyId={config.propertyId}
-            />
 
             {/* Discreet Footer */}
             <footer className="mt-12 pb-8 flex flex-col items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-500">

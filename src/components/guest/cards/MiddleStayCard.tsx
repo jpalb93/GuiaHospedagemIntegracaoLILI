@@ -10,6 +10,7 @@ import AccessTicket from './AccessTicket';
 
 interface MiddleStayCardProps {
     config: GuestConfig;
+    safeCode?: string;
     wifiCopied: boolean;
     addressCopied: boolean;
     currentWifiSSID: string;
@@ -26,6 +27,7 @@ interface MiddleStayCardProps {
 
 const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
     config,
+    safeCode,
     wifiCopied,
     addressCopied,
     currentWifiSSID,
@@ -46,8 +48,6 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
         <div
             className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
         >
-            {/* Background Effects Removed */}
-
             {/* Header: Title + Actions */}
             <div className="flex justify-between items-start mb-4 relative z-10">
                 <h2
@@ -79,29 +79,35 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 <h3
                     className={`text-lg font-heading font-bold ${theme.text.primary} flex items-center justify-center gap-2`}
                 >
-                    <Sparkles size={16} className="text-orange-400" /> {t('Aproveite sua estadia!', 'Enjoy your stay!', '¡Disfruta tu estadía!')}
+                    <Sparkles size={16} className="text-orange-400" />{' '}
+                    {t('Aproveite sua estadia!', 'Enjoy your stay!', '¡Disfruta tu estadía!')}
                 </h3>
             </div>
 
-            {/* COMPACT GRID: DOOR & WI-FI */}
-            <div className="grid grid-cols-2 gap-3 mb-4 relative z-10">
-                {/* Door Code (Compact) */}
-                <div className="col-span-1 h-full">
-                    <AccessTicket
-                        propertyId={config.propertyId || 'lili'}
-                        code={
-                            config.propertyId === 'integracao'
-                                ? config.flatNumber || ''
-                                : config.lockCode || ''
-                        }
-                        label={config.propertyId === 'integracao' ? t('Unidade', 'Unit', 'Unidad') : t('Senha', 'Code', 'Código')}
-                        theme={theme}
-                        alwaysVisible={true}
-                        variant="small"
-                    />
-                </div>
+            {/* FULL-WIDTH ACCESS TICKET: SAFE + DOOR/UNIT */}
+            <div className="mb-3 relative z-10 w-full">
+                <AccessTicket
+                    propertyId={config.propertyId || 'lili'}
+                    code={
+                        config.propertyId === 'integracao'
+                            ? config.flatNumber || ''
+                            : config.lockCode || ''
+                    }
+                    safeCode={safeCode}
+                    label={
+                        config.propertyId === 'integracao'
+                            ? t('Unidade', 'Unit', 'Unidad')
+                            : t('Senha', 'Code', 'Código')
+                    }
+                    theme={theme}
+                    alwaysVisible={true}
+                    variant="small"
+                />
+            </div>
 
-                {/* Wi-Fi (Compact) */}
+            {/* GRID: WI-FI & ADDRESS */}
+            <div className="grid grid-cols-2 gap-3 mb-4 relative z-10">
+                {/* Wi-Fi */}
                 <HolographicCard
                     onClick={(e) => {
                         triggerConfetti(e.currentTarget as HTMLElement);
@@ -128,54 +134,57 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                                 currentWifiSSID
                             )}
                         </p>
-                        <p className="text-[8px] text-blue-400 font-medium">
-                            {wifiCopied ? t('Copiado!', 'Copied!', '¡Copiado!') : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
+                        <p className="text-[9px] text-blue-400 font-medium">
+                            {wifiCopied
+                                ? t('Copiado!', 'Copied!', '¡Copiado!')
+                                : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
                         </p>
                     </div>
                 </HolographicCard>
-            </div>
 
-            {/* ADDRESS CARD (Horizontal) */}
-            <HolographicCard
-                onClick={(e) => {
-                    triggerConfetti(e.currentTarget as HTMLElement);
-                    onCopyAddress();
-                }}
-                className={`w-full mb-4 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col justify-center cursor-pointer hover:bg-white/5 transition-all group relative z-10 ${addressCopied ? 'ring-1 ring-green-500/50' : ''}`}
-                title="R. São José, 475B"
-            >
-                <div className="absolute top-2 right-2 z-20">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenDriverMode();
-                        }}
-                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
-                    >
-                        <Maximize2 size={16} />
-                    </button>
-                </div>
-                <div className="flex items-center gap-3">
+                {/* Address */}
+                <HolographicCard
+                    onClick={(e) => {
+                        triggerConfetti(e.currentTarget as HTMLElement);
+                        onCopyAddress();
+                    }}
+                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group relative h-full ${addressCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                    title="R. São José, 475B"
+                >
+                    <div className="absolute top-2 right-2 z-20">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenDriverMode();
+                            }}
+                            aria-label="Modo Motorista"
+                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                        >
+                            <Maximize2 size={14} />
+                        </button>
+                    </div>
                     <div
-                        className={`p-2.5 rounded-lg flex items-center justify-center ${addressCopied ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-300'}`}
+                        className={`p-1.5 rounded-lg flex items-center justify-center mb-1 ${addressCopied ? 'text-green-400' : 'text-purple-400'}`}
                     >
                         {addressCopied ? <Check size={20} /> : <MapPin size={20} />}
                     </div>
-                    <div className="text-left">
+                    <div className="w-full">
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
                             {t('Endereço', 'Address', 'Dirección')}
                         </p>
                         <p
-                            className={`text-sm font-bold ${theme.text.primary} leading-none mb-0.5`}
+                            className={`text-xs font-bold ${theme.text.primary} truncate leading-none mb-1`}
                         >
                             R. São José, 475B
                         </p>
-                        <p className="text-[9px] text-gray-500 font-medium">
-                            Centro, Petrolina - PE
+                        <p className="text-[9px] text-purple-400 font-medium">
+                            {addressCopied
+                                ? t('Copiado!', 'Copied!', '¡Copiado!')
+                                : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}
                         </p>
                     </div>
-                </div>
-            </HolographicCard>
+                </HolographicCard>
+            </div>
 
             <Button
                 onClick={() => {
@@ -186,7 +195,9 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 leftIcon={<MessageCircle size={16} />}
                 className={`${theme.button.primary} text-[11px] uppercase tracking-wide shadow-lg`}
             >
-                {config.propertyId === 'lili' ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili') : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
+                {config.propertyId === 'lili'
+                    ? t('Fale com a Lili', 'Talk to Lili', 'Hablar con Lili')
+                    : t('Fale Conosco', 'Talk to Us', 'Habla con Nosotros')}
             </Button>
         </div>
     );
