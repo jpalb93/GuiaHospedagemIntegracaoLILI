@@ -27,7 +27,7 @@ interface MiddleStayCardProps {
 
 const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
     config,
-    safeCode,
+    safeCode: _safeCode,
     wifiCopied,
     addressCopied,
     currentWifiSSID,
@@ -45,6 +45,12 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
     const { t } = useLanguage();
     const isIntegracao = config.propertyId === 'integracao';
     const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
+
+    const displayUnit = config.flatNumber
+        ? /^flat\b/i.test(config.flatNumber.trim())
+            ? config.flatNumber
+            : `${t('Flat', 'Flat', 'Flat')} ${config.flatNumber}`
+        : t('Sua Unidade', 'Your Unit', 'Tu Unidad');
 
     return (
         <div
@@ -86,20 +92,32 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                 </h3>
             </div>
 
-            {/* FULL-WIDTH ACCESS TICKET: SAFE + DOOR/UNIT */}
+            {/* FULL-WIDTH ACCESS TICKET: ONLY DOOR CODE (LILI) OR UNIT (INTEGRAÇÃO) DURING STAY */}
             <div className="mb-3 relative z-10 w-full">
                 <AccessTicket
                     propertyId={config.propertyId || 'lili'}
-                    code={
-                        config.propertyId === 'integracao'
-                            ? config.flatNumber || ''
-                            : config.lockCode || ''
-                    }
-                    safeCode={safeCode}
+                    code={isIntegracao ? displayUnit : config.lockCode || ''}
                     label={
-                        config.propertyId === 'integracao'
-                            ? t('Unidade', 'Unit', 'Unidad')
-                            : t('Senha', 'Code', 'Código')
+                        isIntegracao
+                            ? t('Sua Unidade', 'Your Unit', 'Tu Unidad')
+                            : t(
+                                  'Senha da Porta (Flat)',
+                                  'Door Code (Flat)',
+                                  'Código de la Puerta (Piso)'
+                              )
+                    }
+                    subLabel={
+                        isIntegracao
+                            ? t(
+                                  'Chaves em mãos • Portaria e Flat',
+                                  'Keys in hand • Reception & Flat',
+                                  'Llaves en mano • Recepción y Flat'
+                              )
+                            : t(
+                                  'Toque no 🔔 após digitar',
+                                  'Ring 🔔 after typing',
+                                  'Toca el 🔔 tras digitar'
+                              )
                     }
                     theme={theme}
                     alwaysVisible={true}

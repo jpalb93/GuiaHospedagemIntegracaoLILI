@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Key, Bell, Eye, Lock, Check } from 'lucide-react';
+import { Key, Bell, Eye, Lock, Check, DoorOpen } from 'lucide-react';
 import { PropertyId } from '../../../types';
 import { ThemeColors } from '../../../hooks/useGuestTheme';
 import { triggerConfetti } from '../../../utils/confetti';
@@ -140,7 +140,11 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                     <div
                         className={`rounded-lg ${isIntegracao ? 'bg-sky-500/15 text-sky-300' : 'bg-amber-500/15 text-amber-300'} ${isSmall ? 'p-1' : 'p-1.5'}`}
                     >
-                        <Key size={isSmall ? 12 : 14} />
+                        {isIntegracao && !hasDualCodes ? (
+                            <DoorOpen size={isSmall ? 12 : 14} />
+                        ) : (
+                            <Key size={isSmall ? 12 : 14} />
+                        )}
                     </div>
                 </div>
 
@@ -348,12 +352,18 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                     />
                                 </div>
                             )}
-                            {subLabel && (
-                                <p
-                                    className={`font-medium flex items-center justify-center gap-1 ${theme.text.secondary} ${isSmall ? 'text-[9px]' : 'text-[10px]'}`}
-                                >
-                                    {subLabel}
+                            {copiedField === 'code' ? (
+                                <p className="text-[10px] text-emerald-400 font-bold flex items-center justify-center gap-1">
+                                    <Check size={11} /> {t('Copiado!', 'Copied!', '¡Copiado!')}
                                 </p>
+                            ) : (
+                                subLabel && (
+                                    <p
+                                        className={`font-medium flex items-center justify-center gap-1 ${theme.text.secondary} ${isSmall ? 'text-[9px]' : 'text-[10px]'}`}
+                                    >
+                                        {subLabel}
+                                    </p>
+                                )
                             )}
                         </div>
                     )}
