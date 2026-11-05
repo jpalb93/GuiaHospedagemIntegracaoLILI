@@ -23,6 +23,7 @@ const routeToFileMap = {
     '/lili': 'src/components/LandingLili/index.tsx',
     '/politica-privacidade': 'src/pages/PrivacyPolicy.tsx',
     '/guia': 'src/pages/GuideList.tsx',
+    '/guia/day-use-petrolina': 'src/pages/articles/DayUse.tsx',
     '/guia/roteiro-vinho-petrolina': 'src/pages/articles/WineRoute.tsx',
     '/guia/onde-comer-petrolina-bododromo': 'src/pages/articles/Bododromo.tsx',
     '/guia/rio-sao-francisco-rodeadouro-barquinha': 'src/pages/articles/RioSaoFrancisco.tsx',
@@ -30,7 +31,7 @@ const routeToFileMap = {
     '/guia/hospedagem-proximo-hospitais-petrolina': 'src/pages/articles/MedicalStay.tsx',
     '/guia/flat-ou-hotel-petrolina-comparativo': 'src/pages/articles/FlatVsHotel.tsx',
     '/guia/onde-ficar-petrolina-sao-joao-guia': 'src/pages/articles/SaoJoao.tsx',
-    '/guia/aluguel-mensal-petrolina-flat-mobiliado': 'src/pages/articles/MonthlyStay.tsx'
+    '/guia/aluguel-mensal-petrolina-flat-mobiliado': 'src/pages/articles/MonthlyStay.tsx',
 };
 
 const getFileDate = (route) => {
@@ -47,7 +48,7 @@ const getFileDate = (route) => {
 const generateSitemap = () => {
     console.log('🗺️  Generating sitemap.xml...');
 
-    const urls = routes.map(route => {
+    const urls = routes.map((route) => {
         // Determine lastmod based on actual file modification time
         let lastmod = getFileDate(route);
         let priority = '0.8';
@@ -56,10 +57,7 @@ const generateSitemap = () => {
         if (route === '/') {
             priority = '1.0';
             changefreq = 'weekly';
-        } else if (
-            route === '/hospedagem-em-petrolina' ||
-            route === '/flat-centro-petrolina'
-        ) {
+        } else if (route === '/hospedagem-em-petrolina' || route === '/flat-centro-petrolina') {
             priority = '0.9';
             changefreq = 'monthly';
         } else if (route === '/guia') {
@@ -82,6 +80,11 @@ ${urls.join('\n')}
 
     try {
         fs.writeFileSync(SITEMAP_PATH, sitemapContent);
+        // Vite copies public/ before this script runs. Keep the deploy artifact current too.
+        const distDir = path.resolve(__dirname, '../../dist');
+        if (fs.existsSync(distDir)) {
+            fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapContent);
+        }
         console.log(`✅ Sitemap generated successfully at ${SITEMAP_PATH}`);
     } catch (error) {
         console.error('❌ Error writing sitemap:', error);

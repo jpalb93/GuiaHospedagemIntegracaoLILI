@@ -72,7 +72,11 @@ function handleCors(req: VercelRequest, res: VercelResponse): boolean {
     return false;
 }
 
-async function checkRateLimit(req: VercelRequest, res: VercelResponse, limit = 30): Promise<boolean> {
+async function checkRateLimit(
+    req: VercelRequest,
+    res: VercelResponse,
+    limit = 30
+): Promise<boolean> {
     try {
         const ip =
             (Array.isArray(req.headers['x-forwarded-for'])
@@ -167,6 +171,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             reservationData = reservationSnap.data() || {};
         }
 
+        if (reservationData.stayType === 'day_use') {
+            const exit =
+                typeof reservationData.checkoutDate === 'string' &&
+                typeof reservationData.checkOutTime === 'string'
+                    ? Date.parse(
+                          `${reservationData.checkoutDate}T${reservationData.checkOutTime}:00-03:00`
+                      )
+                    : NaN;
+            if (
+                reservationData.status === 'cancelled' ||
+                reservationData.manualDeactivation ||
+                !Number.isFinite(exit) ||
+                Date.now() >= exit
+            ) {
+                return res.status(410).json({ error: 'Day use encerrado ou desativado' });
+            }
+        }
+
         // 2. Fetch Global Config (for Wi-Fi)
         const configRef = db.collection('app_config').doc('general');
         const configSnap = await configRef.get();
@@ -196,6 +218,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // 4. Sanitize Data
         const safeConfig = {
+            stayType: reservationData.stayType || 'overnight',
             guestName: reservationData.guestName,
             checkInDate: reservationData.checkInDate,
             checkoutDate: reservationData.checkoutDate,

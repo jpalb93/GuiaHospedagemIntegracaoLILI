@@ -37,7 +37,6 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
         if (alwaysVisible) return true;
         if (propertyId === 'integracao' && !safeCode) return true;
 
-        // Check localStorage
         const saved = localStorage.getItem(storageKey);
         return saved === 'true';
     });
@@ -78,7 +77,6 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
         handleCopy(code, 'code', document.getElementById('access-code-display'));
     }, [code, handleCopy]);
 
-    // Long press for copy action with visual feedback
     const longPress = useLongPress({
         delay: 500,
         onClick: handleCopyCode,
@@ -90,23 +88,28 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
     const isSmall = variant === 'small';
     const isIntegracao = propertyId === 'integracao';
     const hasDualCodes = Boolean(safeCode && safeCode !== '----');
+    const notchBg = isIntegracao ? 'bg-[#111922]' : 'bg-[#1C1614]';
 
     return (
         <div
             id="access-ticket"
             className={`relative w-full overflow-hidden rounded-xl border ${theme.border} shadow-lg transition-all duration-300 group h-full`}
-            style={{ backgroundColor: isIntegracao ? '#1E293B' : '#252535' }}
+            style={{ backgroundColor: isIntegracao ? '#1A2634' : '#28201D' }}
         >
             {/* Ticket Notch Effects (Visual only) */}
-            <div className="absolute top-1/2 -left-1.5 w-3 h-3 rounded-full bg-[#1E1E2E] transform -translate-y-1/2" />
-            <div className="absolute top-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1E1E2E] transform -translate-y-1/2" />
+            <div
+                className={`absolute top-1/2 -left-1.5 w-3 h-3 rounded-full ${notchBg} transform -translate-y-1/2`}
+            />
+            <div
+                className={`absolute top-1/2 -right-1.5 w-3 h-3 rounded-full ${notchBg} transform -translate-y-1/2`}
+            />
 
             {/* Top Decoration Line */}
             <div
-                className={`absolute top-0 left-0 right-0 h-[3px] opacity-80 ${
+                className={`absolute top-0 left-0 right-0 h-[3px] opacity-90 ${
                     isIntegracao
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
-                        : 'bg-gradient-to-r from-orange-500 to-purple-600'
+                        ? 'bg-gradient-to-r from-sky-400 via-cyan-500 to-amber-400'
+                        : 'bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600'
                 }`}
             />
 
@@ -135,7 +138,7 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                             : label}
                     </p>
                     <div
-                        className={`rounded-lg ${isIntegracao ? 'bg-cyan-500/10 text-cyan-400' : 'bg-white/5 text-gray-300'} ${isSmall ? 'p-1' : 'p-1.5'}`}
+                        className={`rounded-lg ${isIntegracao ? 'bg-sky-500/15 text-sky-300' : 'bg-amber-500/15 text-amber-300'} ${isSmall ? 'p-1' : 'p-1.5'}`}
                     >
                         <Key size={isSmall ? 12 : 14} />
                     </div>
@@ -149,14 +152,14 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                     {!isRevealed && !isAnimating && (
                         <div className="flex flex-col items-center animate-fade-in py-1">
                             <div className="mb-2 p-2.5 bg-white/5 rounded-full">
-                                <Lock size={22} className="text-gray-300" />
+                                <Lock size={22} className="text-stone-300" />
                             </div>
                             <button
                                 onClick={handleReveal}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 ${
                                     isIntegracao
-                                        ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                                        : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                                        ? 'bg-sky-600 text-white hover:bg-sky-500'
+                                        : 'bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 border border-amber-400/30'
                                 }`}
                             >
                                 <Eye size={14} />{' '}
@@ -187,11 +190,11 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                         {t('Unidade', 'Unit', 'Unidad')}
                                     </span>
                                     <span
-                                        className={`font-mono font-bold tracking-widest text-white ${isSmall ? 'text-lg' : 'text-2xl'}`}
+                                        className={`font-mono font-bold tracking-widest text-stone-50 ${isSmall ? 'text-lg' : 'text-2xl'}`}
                                     >
                                         {code || '---'}
                                     </span>
-                                    <span className="text-[10px] text-cyan-300/90 font-medium mt-0.5">
+                                    <span className="text-[10px] text-sky-300/90 font-medium mt-0.5">
                                         Flats Integração
                                     </span>
                                 </div>
@@ -202,7 +205,7 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                         e.stopPropagation();
                                         handleCopy(safeCode!, 'safe', e.currentTarget);
                                     }}
-                                    className="bg-black/25 hover:bg-black/35 border border-white/10 rounded-xl p-2.5 flex flex-col items-center justify-center transition-colors cursor-pointer"
+                                    className="bg-black/25 hover:bg-black/35 border border-amber-500/20 rounded-xl p-2.5 flex flex-col items-center justify-center transition-colors cursor-pointer"
                                     title={t(
                                         'Toque para copiar a senha do cofre',
                                         'Tap to copy safe code',
@@ -216,15 +219,15 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                             '1º Cofre (Calle)'
                                         )}
                                         {copiedField === 'safe' && (
-                                            <Check size={11} className="text-green-400" />
+                                            <Check size={11} className="text-emerald-400" />
                                         )}
                                     </span>
                                     <span
-                                        className={`font-mono font-bold tracking-widest text-white ${isSmall ? 'text-lg' : 'text-2xl'}`}
+                                        className={`font-mono font-bold tracking-widest text-stone-50 ${isSmall ? 'text-lg' : 'text-2xl'}`}
                                     >
                                         {safeCode}
                                     </span>
-                                    <span className="text-[10px] text-gray-300 font-medium mt-0.5">
+                                    <span className="text-[10px] text-stone-300 font-medium mt-0.5">
                                         {copiedField === 'safe'
                                             ? t('Copiado!', 'Copied!', '¡Copiado!')
                                             : t('Chave do portão', 'Gate key', 'Llave del portón')}
@@ -240,21 +243,21 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                         e.stopPropagation();
                                         handleCopy(safeCode!, 'safe', e.currentTarget);
                                     }}
-                                    className="bg-black/25 hover:bg-black/35 border border-cyan-500/30 rounded-xl p-2.5 flex flex-col items-center justify-center transition-colors cursor-pointer"
+                                    className="bg-black/25 hover:bg-black/35 border border-sky-500/30 rounded-xl p-2.5 flex flex-col items-center justify-center transition-colors cursor-pointer"
                                     title={t(
                                         'Toque para copiar a senha do cofre',
                                         'Tap to copy safe code',
                                         'Toca para copiar el código del cofre'
                                     )}
                                 >
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 mb-0.5 flex items-center gap-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-300 mb-0.5 flex items-center gap-1">
                                         {t('Senha do Cofre', 'Safe Code', 'Clave del Cofre')}
                                         {copiedField === 'safe' && (
-                                            <Check size={11} className="text-green-400" />
+                                            <Check size={11} className="text-emerald-400" />
                                         )}
                                     </span>
                                     <span
-                                        className={`font-mono font-bold tracking-widest text-white ${isSmall ? 'text-lg' : 'text-2xl'}`}
+                                        className={`font-mono font-bold tracking-widest text-stone-50 ${isSmall ? 'text-lg' : 'text-2xl'}`}
                                     >
                                         {safeCode}
                                     </span>
@@ -286,21 +289,21 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-orange-300 mb-0.5 flex items-center gap-1">
                                         {t('2º Porta Flat', '2nd Flat Door', '2º Puerta Piso')}
                                         {copiedField === 'code' && (
-                                            <Check size={11} className="text-green-400" />
+                                            <Check size={11} className="text-emerald-400" />
                                         )}
                                     </span>
                                     <div className="flex items-center justify-center gap-1.5">
                                         <span
-                                            className={`font-mono font-bold tracking-widest text-white ${isSmall ? 'text-lg' : 'text-2xl'}`}
+                                            className={`font-mono font-bold tracking-widest text-stone-50 ${isSmall ? 'text-lg' : 'text-2xl'}`}
                                         >
                                             {code}
                                         </span>
                                         <Bell
                                             size={isSmall ? 14 : 18}
-                                            className="text-orange-400 animate-pulse shrink-0"
+                                            className="text-amber-400 animate-pulse shrink-0"
                                         />
                                     </div>
-                                    <span className="text-[10px] text-gray-300 font-medium mt-0.5">
+                                    <span className="text-[10px] text-stone-300 font-medium mt-0.5">
                                         {copiedField === 'code'
                                             ? t('Copiado!', 'Copied!', '¡Copiado!')
                                             : t(
@@ -323,25 +326,24 @@ const AccessTicket: React.FC<AccessTicketProps> = ({
                         >
                             <div className="flex items-center justify-center gap-2 mb-0.5">
                                 <p
-                                    className={`text-center font-mono font-bold tracking-widest transition-all ${
+                                    className={`text-center font-mono font-bold tracking-widest transition-all text-stone-50 ${
                                         isSmall ? 'text-lg' : 'text-2xl'
                                     }`}
-                                    style={{ color: theme.text.primary }}
                                 >
                                     {code}
                                 </p>
                                 {!isIntegracao && (
                                     <Bell
                                         size={isSmall ? 14 : 20}
-                                        className="text-orange-500 animate-pulse"
+                                        className="text-amber-400 animate-pulse"
                                     />
                                 )}
                             </div>
 
                             {longPress.isLongPressing && (
-                                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-stone-700 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-blue-500 transition-all"
+                                        className="h-full bg-amber-500 transition-all"
                                         style={{ width: `${longPress.progress * 100}%` }}
                                     />
                                 </div>

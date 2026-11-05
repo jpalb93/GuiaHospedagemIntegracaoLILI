@@ -7,6 +7,7 @@ export const ROUTES = [
     '/lili',
     '/politica-privacidade',
     '/guia',
+    '/guia/day-use-petrolina',
     '/guia/roteiro-vinho-petrolina',
     '/guia/onde-comer-petrolina-bododromo',
     '/guia/rio-sao-francisco-rodeadouro-barquinha',
@@ -14,5 +15,5 @@ export const ROUTES = [
     '/guia/hospedagem-proximo-hospitais-petrolina',
     '/guia/flat-ou-hotel-petrolina-comparativo',
     '/guia/onde-ficar-petrolina-sao-joao-guia',
-    '/guia/aluguel-mensal-petrolina-flat-mobiliado'
+    '/guia/aluguel-mensal-petrolina-flat-mobiliado',
 ];

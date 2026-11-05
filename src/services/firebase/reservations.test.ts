@@ -62,6 +62,126 @@ describe('Firebase Reservations Service', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(firestore.collection).mockReturnValue({} as any);
+        vi.mocked(firestore.doc).mockReturnValue({} as any);
+        vi.mocked(firestore.getDocsFromServer).mockResolvedValue({ docs: [] } as any);
+        vi.mocked(firestore.getDoc).mockResolvedValue({
+            exists: () => true,
+            data: () => mockReservation,
+        } as any);
+    });
+
+    describe('day use persistence and scheduling', () => {
+        const dayUse: Reservation = {
+            guestName: 'Ana',
+            propertyId: 'integracao',
+            flatNumber: '201',
+            stayType: 'day_use',
+            guestCount: 1,
+            checkInDate: '2026-10-28',
+            checkoutDate: '2026-10-28',
+            checkInTime: '08:00',
+            checkOutTime: '12:00',
+            status: 'active',
+            createdAt: '2026-10-01',
+            totalAmount: 80,
+            paymentStatus: 'partial',
+            depositAmount: 40,
+        };
+
+        it('persists the modality, same-day period and payment amount', async () => {
+            vi.mocked(firestore.addDoc).mockResolvedValue({ id: 'new-day-use' } as any);
+            await saveReservation(dayUse);
+            expect(firestore.getDocsFromServer).toHaveBeenCalled();
+            expect(firestore.addDoc).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    stayType: 'day_use',
+                    checkoutDate: dayUse.checkInDate,
+                    checkInTime: '08:00',
+                    checkOutTime: '12:00',
+                    totalAmount: 80,
+                    depositAmount: 40,
+                })
+            );
+        });
+
+        it('rejects an invalid multi-day use before writing', async () => {
+            await expect(
+                saveReservation({ ...dayUse, checkoutDate: '2026-10-29' })
+            ).rejects.toThrow('mesmo dia');
+            expect(firestore.addDoc).not.toHaveBeenCalled();
+        });
+
+        it('rejects an occupied morning from the confirmed server snapshot', async () => {
+            vi.mocked(firestore.getDocsFromServer).mockResolvedValue({
+                docs: [
+                    {
+                        id: 'other',
+                        data: () => ({
+                            ...dayUse,
+                            stayType: 'overnight',
+                            checkInDate: '2026-10-27',
+                            checkInTime: '15:00',
+                            checkOutTime: '13:00',
+                        }),
+                    },
+                ],
+            } as any);
+            await expect(saveReservation(dayUse)).rejects.toThrow('já possui uma reserva');
+            expect(firestore.addDoc).not.toHaveBeenCalled();
+        });
+
+        it('prevents an overnight edit from overlapping an existing day use', async () => {
+            vi.mocked(firestore.getDoc).mockResolvedValue({
+                exists: () => true,
+                data: () => ({
+                    ...dayUse,
+                    id: 'overnight',
+                    stayType: 'overnight',
+                    checkInDate: '2026-10-27',
+                    checkOutTime: '07:00',
+                }),
+            } as any);
+            vi.mocked(firestore.getDocsFromServer).mockResolvedValue({
+                docs: [{ id: 'day-use', data: () => dayUse }],
+            } as any);
+            await expect(updateReservation('overnight', { checkOutTime: '13:00' })).rejects.toThrow(
+                'já possui uma reserva'
+            );
+            expect(firestore.updateDoc).not.toHaveBeenCalled();
+        });
+
+        it('allows editing itself and keeps the custom schedule', async () => {
+            vi.mocked(firestore.getDoc).mockResolvedValue({
+                exists: () => true,
+                data: () => dayUse,
+            } as any);
+            vi.mocked(firestore.getDocsFromServer).mockResolvedValue({
+                docs: [{ id: 'day-use', data: () => dayUse }],
+            } as any);
+            await updateReservation('day-use', { checkInTime: '13:00', checkOutTime: '17:00' });
+            expect(firestore.updateDoc).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ checkInTime: '13:00', checkOutTime: '17:00' })
+            );
+        });
+
+        it('allows a regular afternoon arrival after day use', async () => {
+            vi.mocked(firestore.getDocsFromServer).mockResolvedValue({
+                docs: [{ id: 'day-use', data: () => dayUse }],
+            } as any);
+            vi.mocked(firestore.addDoc).mockResolvedValue({ id: 'next-stay' } as any);
+            await expect(
+                saveReservation({
+                    ...dayUse,
+                    stayType: 'overnight',
+                    checkoutDate: '2026-10-29',
+                    checkInTime: '15:00',
+                    checkOutTime: '13:00',
+                })
+            ).resolves.toBe('next-stay');
+        });
     });
 
     describe('saveReservation', () => {

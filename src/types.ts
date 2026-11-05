@@ -104,6 +104,8 @@ export interface GuestConfig {
     guestRating?: number; // 1 a 5 estrelas
     guestFeedback?: string; // Comentários internos sobre o comportamento
 
+    /** Ausente em reservas legadas = hospedagem com pernoite. */
+    stayType?: 'overnight' | 'day_use';
     checkInDate?: string; // Data de Check-in (YYYY-MM-DD)
     checkoutDate?: string; // Data de expiração do link (YYYY-MM-DD)
     checkInTime?: string; // Horário de Check-in
@@ -223,6 +225,7 @@ export type ReservationFormData = Pick<
     | 'guestAlertActive'
     | 'guestAlertText'
     | 'checkInDate'
+    | 'stayType'
     | 'checkoutDate'
     | 'checkInTime'
     | 'checkOutTime'

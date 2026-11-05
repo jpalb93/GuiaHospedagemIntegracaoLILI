@@ -5,8 +5,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
-                heading: ['Inter', '-apple-system', 'sans-serif'],
+                sans: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                heading: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'sans-serif'],
+                display: ['Fraunces', 'Georgia', 'serif'],
                 mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
             },
             colors: {
@@ -24,6 +25,18 @@ export default {
                     100: '#ffedd5',
                     500: '#f97316',
                     600: '#ea580c',
+                },
+                terracotta: {
+                    50: '#fdf5f2',
+                    100: '#fbe8e0',
+                    200: '#f6d2c4',
+                    300: '#efb29b',
+                    400: '#e48867',
+                    500: '#d66540',
+                    600: '#c8522d',
+                    700: '#a74022',
+                    800: '#893620',
+                    900: '#712f1e',
                 },
             },
             animation: {

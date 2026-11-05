@@ -27,13 +27,13 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
+    const isIntegracao = config.propertyId === 'integracao';
+    const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
 
     return (
         <div
-            className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
+            className={`flex flex-col h-full ${theme.background} ${theme.backgroundGradient} p-4 rounded-3xl text-stone-50 shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
         >
-            {/* Background Effects Removed */}
-
             {/* Header */}
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <h2
@@ -58,7 +58,9 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                 <>
                     {/* Message: Passwords Released */}
                     <div className="mb-6 relative z-10 text-center">
-                        <h3 className={`text-lg font-heading font-bold ${theme.text.primary} mb-2`}>
+                        <h3
+                            className={`text-xl font-display font-semibold ${theme.text.primary} mb-2`}
+                        >
                             {t(
                                 'Seu Check-in é Amanhã! 🤩',
                                 'Your Check-in is Tomorrow! 🤩',
@@ -82,7 +84,7 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                         </p>
                     </div>
 
-                    {/* ACCESS TICKET (Replaces HolographicCard for Access) */}
+                    {/* ACCESS TICKET */}
                     <div className="mb-4 relative z-10" onClick={() => onSaveAccess()}>
                         <AccessTicket
                             propertyId={config.propertyId || 'lili'}
@@ -112,7 +114,7 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                             }
                             theme={theme}
                         />
-                        <p className="text-[10px] text-center text-gray-400 mt-2">
+                        <p className="text-[10px] text-center text-stone-400 mt-2">
                             {t(
                                 'Toque para salvar o cartão de acesso',
                                 'Tap to save access card',
@@ -140,7 +142,9 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                 <>
                     {/* Message: Coming Soon */}
                     <div className="mb-6 relative z-10 text-center">
-                        <h3 className={`text-lg font-heading font-bold ${theme.text.primary} mb-2`}>
+                        <h3
+                            className={`text-xl font-display font-semibold ${theme.text.primary} mb-2`}
+                        >
                             {t(
                                 'Sua viagem está chegando! ✈️',
                                 'Your trip is coming! ✈️',
@@ -166,13 +170,15 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
 
                     {/* INFO CARD */}
                     <div
-                        className={`bg-[#252535] p-4 rounded-xl border ${theme.border} shadow-lg relative overflow-hidden mb-4 text-center`}
+                        className={`${subCardBg} p-4 rounded-xl border ${theme.border} shadow-lg relative overflow-hidden mb-4 text-center`}
                     >
                         <div className="flex flex-col items-center justify-center gap-1">
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">
+                            <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">
                                 Check-in
                             </p>
-                            <p className={`text-xl font-bold ${theme.text.primary} tracking-wide`}>
+                            <p
+                                className={`text-xl font-mono font-bold ${theme.text.primary} tracking-wide`}
+                            >
                                 {formatFriendlyDate(config.checkInDate)}
                             </p>
                             <p

@@ -106,19 +106,27 @@ const ExcelGridCalendar: React.FC<ExcelGridCalendarProps> = ({
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span>
-                        <span className="text-gray-700 dark:text-gray-200">🟠 Deu Sinal (Parcial)</span>
+                        <span className="text-gray-700 dark:text-gray-200">
+                            🟠 Deu Sinal (Parcial)
+                        </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-3 h-3 rounded-full bg-red-500 inline-block shadow-sm"></span>
-                        <span className="text-gray-700 dark:text-gray-200">🔴 Pagamento Pendente</span>
+                        <span className="text-gray-700 dark:text-gray-200">
+                            🔴 Pagamento Pendente
+                        </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-3 h-3 rounded-full bg-slate-500 inline-block shadow-sm"></span>
                         <span className="text-gray-700 dark:text-gray-200">Pagamento externo</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <span className="bg-red-600 text-white font-black animate-pulse px-1 rounded text-[9px] uppercase">SAÍDA</span>
-                        <span className="text-red-600 dark:text-red-400 font-bold animate-pulse">= Dia de Saída (Check-out)</span>
+                        <span className="bg-red-600 text-white font-black animate-pulse px-1 rounded text-[9px] uppercase">
+                            SAÍDA
+                        </span>
+                        <span className="text-red-600 dark:text-red-400 font-bold animate-pulse">
+                            = Dia de Saída (Check-out)
+                        </span>
                     </div>
                 </div>
             </div>
@@ -127,8 +135,7 @@ const ExcelGridCalendar: React.FC<ExcelGridCalendarProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {daysList.map((dateObj) => {
                     const dateStr = dateObj.toLocaleDateString('en-CA');
-                    const isToday =
-                        dateStr === new Date().toLocaleDateString('en-CA');
+                    const isToday = dateStr === new Date().toLocaleDateString('en-CA');
 
                     return (
                         <div
@@ -143,81 +150,119 @@ const ExcelGridCalendar: React.FC<ExcelGridCalendarProps> = ({
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-gray-200 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-[11px] font-extrabold text-gray-800 dark:text-gray-200 uppercase tracking-tight">
-                                        <th className="py-1.5 px-2 font-mono text-xs border-r border-gray-300 dark:border-gray-700" colSpan={2}>
+                                        <th
+                                            className="py-1.5 px-2 font-mono text-xs border-r border-gray-300 dark:border-gray-700"
+                                            colSpan={2}
+                                        >
                                             {formatDayHeader(dateObj)}
                                         </th>
                                         <th className="py-1.5 px-1 text-center w-14 border-r border-gray-300 dark:border-gray-700">
                                             ENTRADA
                                         </th>
-                                        <th className="py-1.5 px-1 text-center w-14">
-                                            SAIDA
-                                        </th>
+                                        <th className="py-1.5 px-1 text-center w-14">SAIDA</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {unitsList.map((unitKey) => {
+                                    {unitsList.flatMap((unitKey) => {
                                         // Busca se existe reserva nesta unidade neste dia
-                                        const activeRes = filteredReservations.find((res) => {
-                                            const isTargetUnit =
-                                                unitKey === 'Lili'
-                                                    ? (res.propertyId || 'lili') === 'lili'
-                                                    : res.flatNumber === unitKey;
+                                        const unitReservations = filteredReservations.filter(
+                                            (res) => {
+                                                const isTargetUnit =
+                                                    unitKey === 'Lili'
+                                                        ? (res.propertyId || 'lili') === 'lili'
+                                                        : res.flatNumber === unitKey;
 
-                                            if (!isTargetUnit) return false;
-                                            if (!res.checkInDate || !res.checkoutDate) return false;
+                                                if (!isTargetUnit) return false;
+                                                if (!res.checkInDate || !res.checkoutDate)
+                                                    return false;
 
-                                            // Ocupado se a data atual estiver entre check-in e check-out
-                                            return (
-                                                dateStr >= res.checkInDate &&
-                                                dateStr <= res.checkoutDate
-                                            );
-                                        });
-
-                                        if (activeRes) {
-                                            const isPaid = activeRes.paymentStatus === 'paid';
-                                            const isPartial = activeRes.paymentStatus === 'partial';
-                                            const isExternal = activeRes.paymentStatus === 'external';
-                                            const isCheckoutDay = dateStr === activeRes.checkoutDate;
-
-                                            // Verde pago, laranja sinal, cinza externo, vermelho pendente
-                                            let bgClass = 'bg-red-500 text-white font-bold';
-                                            if (isPaid) {
-                                                bgClass = 'bg-emerald-600 text-white font-bold';
-                                            } else if (isPartial) {
-                                                bgClass = 'bg-amber-500 text-white font-bold';
-                                            } else if (isExternal) {
-                                                bgClass = 'bg-slate-500 text-white font-bold';
+                                                // Ocupado se a data atual estiver entre check-in e check-out
+                                                return (
+                                                    dateStr >= res.checkInDate &&
+                                                    dateStr <= res.checkoutDate
+                                                );
                                             }
+                                        );
 
-                                            return (
-                                                <tr
-                                                    key={unitKey}
-                                                    onClick={() => onEditReservation(activeRes)}
-                                                    className={`cursor-pointer hover:opacity-90 transition-opacity border-b border-gray-200 dark:border-gray-700 text-xs ${bgClass}`}
-                                                    title={`Clique para editar a reserva de ${activeRes.guestName}${
-                                                        isCheckoutDay ? ' • DIA DE SAÍDA!' : ''
-                                                    }`}
-                                                >
-                                                    <td className="py-1 px-2 border-r border-white/20 font-extrabold w-12 font-mono shrink-0">
-                                                        {unitKey}
-                                                    </td>
-                                                    <td className="py-1 px-2 border-r border-white/20 truncate max-w-[90px] font-bold">
-                                                        {activeRes.guestName}
-                                                    </td>
-                                                    <td className="py-1 px-1 text-center text-[10px] border-r border-white/20 font-mono font-semibold">
-                                                        {formatDateShort(activeRes.checkInDate)}
-                                                    </td>
-                                                    <td className="py-1 px-1 text-center text-[10px] font-mono font-semibold">
-                                                        {isCheckoutDay ? (
-                                                            <span className="bg-red-600 text-white font-black animate-pulse px-1 rounded text-[9px] leading-none inline-block uppercase">
-                                                                SAÍDA
-                                                            </span>
-                                                        ) : (
-                                                            formatDateShort(activeRes.checkoutDate)
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
+                                        if (unitReservations.length) {
+                                            return unitReservations
+                                                .sort((a, b) =>
+                                                    (a.checkInTime || '').localeCompare(
+                                                        b.checkInTime || ''
+                                                    )
+                                                )
+                                                .map((activeRes) => {
+                                                    const isPaid =
+                                                        activeRes.paymentStatus === 'paid';
+                                                    const isPartial =
+                                                        activeRes.paymentStatus === 'partial';
+                                                    const isExternal =
+                                                        activeRes.paymentStatus === 'external';
+                                                    const isCheckoutDay =
+                                                        dateStr === activeRes.checkoutDate;
+
+                                                    // Verde pago, laranja sinal, cinza externo, vermelho pendente
+                                                    let bgClass = 'bg-red-500 text-white font-bold';
+                                                    if (isPaid) {
+                                                        bgClass =
+                                                            'bg-emerald-600 text-white font-bold';
+                                                    } else if (isPartial) {
+                                                        bgClass =
+                                                            'bg-amber-500 text-white font-bold';
+                                                    } else if (isExternal) {
+                                                        bgClass =
+                                                            'bg-slate-500 text-white font-bold';
+                                                    }
+
+                                                    return (
+                                                        <tr
+                                                            key={`${unitKey}-${activeRes.id}`}
+                                                            onClick={() =>
+                                                                onEditReservation(activeRes)
+                                                            }
+                                                            className={`cursor-pointer hover:opacity-90 transition-opacity border-b border-gray-200 dark:border-gray-700 text-xs ${bgClass}`}
+                                                            title={`Clique para editar a reserva de ${activeRes.guestName}${
+                                                                isCheckoutDay
+                                                                    ? ' • DIA DE SAÍDA!'
+                                                                    : ''
+                                                            }`}
+                                                        >
+                                                            <td className="py-1 px-2 border-r border-white/20 font-extrabold w-12 font-mono shrink-0">
+                                                                {unitKey}
+                                                            </td>
+                                                            <td className="py-1 px-2 border-r border-white/20 truncate max-w-[90px] font-bold">
+                                                                {activeRes.guestName}
+                                                                {activeRes.stayType ===
+                                                                    'day_use' && (
+                                                                    <span className="block text-[10px]">
+                                                                        Day use
+                                                                    </span>
+                                                                )}
+                                                            </td>
+                                                            <td className="py-1 px-1 text-center text-[10px] border-r border-white/20 font-mono font-semibold">
+                                                                {activeRes.stayType === 'day_use'
+                                                                    ? activeRes.checkInTime
+                                                                    : formatDateShort(
+                                                                          activeRes.checkInDate
+                                                                      )}
+                                                            </td>
+                                                            <td className="py-1 px-1 text-center text-[10px] font-mono font-semibold">
+                                                                {activeRes.stayType ===
+                                                                'day_use' ? (
+                                                                    activeRes.checkOutTime
+                                                                ) : isCheckoutDay ? (
+                                                                    <span className="bg-red-600 text-white font-black animate-pulse px-1 rounded text-[9px] leading-none inline-block uppercase">
+                                                                        SAÍDA
+                                                                    </span>
+                                                                ) : (
+                                                                    formatDateShort(
+                                                                        activeRes.checkoutDate
+                                                                    )
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                });
                                         }
 
                                         // FLAT LIVRE / DESOCUPADO NESTE DIA

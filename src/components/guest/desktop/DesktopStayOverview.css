@@ -1,0 +1,295 @@
+.gd-stay-overview {
+    color: var(--gd-ink);
+    min-width: 0;
+}
+.gd-stay-welcome {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 32px;
+    align-items: center;
+    padding-bottom: 30px;
+}
+.gd-stay-welcome-copy {
+    padding: 10px 0;
+    min-width: 0;
+}
+.gd-stay-greeting {
+    font-size: 15px;
+    color: var(--gd-muted);
+    margin: 0 0 12px;
+    overflow-wrap: anywhere;
+}
+.gd-stay-welcome h2 {
+    font-size: clamp(28px, 2.6vw, 40px);
+    line-height: 1.17;
+    letter-spacing: -0.035em;
+    font-weight: 650;
+    margin: 0 0 16px;
+    text-wrap: balance;
+}
+.gd-stay-description {
+    margin: 0 0 24px;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--gd-muted);
+    max-width: 55ch;
+}
+.gd-stay-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: var(--gd-accent);
+    color: white;
+    border: 1px solid transparent;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: filter 0.15s;
+    text-align: left;
+}
+.gd-stay-primary:hover {
+    filter: brightness(0.88);
+}
+.dark .gd-stay-primary {
+    color: var(--gd-surface);
+}
+.gd-stay-primary svg {
+    flex-shrink: 0;
+}
+.gd-stay-release-note {
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 12px 0 0;
+    color: var(--gd-muted);
+}
+.gd-stay-checkout-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gd-accent);
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 44px;
+    margin-top: 8px;
+    text-align: left;
+}
+.gd-stay-photo {
+    align-self: stretch;
+    min-height: 260px;
+    max-height: 340px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--gd-accent-soft);
+}
+.gd-stay-photo img {
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    max-height: 340px;
+    object-fit: cover;
+    display: block;
+}
+.gd-stay-photo-fallback {
+    height: 100%;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+    color: var(--gd-accent);
+}
+.gd-stay-reservation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-top: 1px solid var(--gd-border);
+    border-bottom: 1px solid var(--gd-border);
+    padding: 22px 0;
+}
+.gd-stay-reservation-property {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+.gd-stay-reservation-property > svg {
+    color: var(--gd-accent);
+    flex-shrink: 0;
+}
+.gd-stay-reservation-property strong {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+.gd-stay-reservation-property span {
+    display: block;
+    font-size: 12px;
+    color: var(--gd-muted);
+    margin-top: 5px;
+}
+.gd-stay-dates {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-shrink: 0;
+    margin: 0;
+}
+.gd-stay-dates dt {
+    font-size: 12px;
+    color: var(--gd-muted);
+    margin-bottom: 6px;
+}
+.gd-stay-dates dd {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+.gd-stay-dates dd > span {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gd-muted);
+    margin-top: 4px;
+}
+.gd-stay-date-arrow {
+    color: var(--gd-muted);
+}
+.gd-stay-discover {
+    padding-top: 32px;
+}
+.gd-stay-section-heading h3 {
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0 0 7px;
+}
+.gd-stay-section-heading p {
+    color: var(--gd-muted);
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.6;
+}
+.gd-stay-feature-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 20px;
+    gap: 24px;
+}
+.gd-stay-feature-links button {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    text-align: left;
+    padding: 16px 0;
+    border-top: 1px solid var(--gd-border);
+    min-width: 0;
+}
+.gd-stay-feature-links button > svg:first-child {
+    color: var(--gd-accent);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.gd-stay-feature-links button > svg:last-child {
+    margin-top: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--gd-muted);
+}
+.gd-stay-feature-links button strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.gd-stay-feature-links button span span {
+    display: block;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--gd-muted);
+}
+.gd-stay-feature-links button:hover strong {
+    color: var(--gd-accent);
+}
+.gd-stay-bottom-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 24px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gd-border);
+}
+.gd-stay-story-links {
+    display: flex;
+    gap: 10px 24px;
+    flex-wrap: wrap;
+}
+.gd-stay-story-links button,
+.gd-stay-support {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    min-height: 38px;
+    font-size: 12px;
+    color: var(--gd-muted);
+    text-align: left;
+}
+.gd-stay-story-links button:hover,
+.gd-stay-support:hover {
+    color: var(--gd-accent);
+}
+.gd-stay-support {
+    font-weight: 600;
+    color: var(--gd-accent);
+}
+.gd-stay-day-use {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--gd-muted);
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 18px;
+}
+.gd-stay-day-use svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.gd-stay-overview button:focus-visible {
+    outline: 2px solid var(--gd-accent);
+    outline-offset: 5px;
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+    .gd-stay-welcome {
+        gap: 24px;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    }
+    .gd-stay-welcome h2 {
+        font-size: 30px;
+    }
+    .gd-stay-reservation {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .gd-stay-dates {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .gd-stay-feature-links {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gd-stay-primary {
+        transition: none;
+    }
+}

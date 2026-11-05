@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { StickyNote, Flag, Star } from 'lucide-react';
 
 interface NotesSectionProps {
@@ -24,15 +24,20 @@ const NotesSection: React.FC<NotesSectionProps> = ({
     guestFeedback,
     setGuestFeedback,
 }) => {
+    const fieldId = useId();
     return (
         <>
             {propertyId === 'lili' && (
                 <>
                     <div>
-                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                        <label
+                            htmlFor={`${fieldId}-welcome`}
+                            className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase ml-1"
+                        >
                             Boas-vindas (Hóspede vê)
                         </label>
                         <textarea
+                            id={`${fieldId}-welcome`}
                             value={welcomeMessage}
                             onChange={(e) => setWelcomeMessage(e.target.value)}
                             onBlur={() => setWelcomeMessage((prev: string) => prev.trim())}
@@ -51,11 +56,17 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Avaliação do Hóspede
                             </label>
-                            <div className="flex gap-2">
+                            <div
+                                role="group"
+                                aria-label="Avaliação do hóspede"
+                                className="flex flex-wrap gap-2"
+                            >
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                         key={star}
                                         type="button"
+                                        aria-label={`Avaliar com ${star} ${star === 1 ? 'estrela' : 'estrelas'}`}
+                                        aria-pressed={guestRating === star}
                                         onClick={() => setGuestRating(star)}
                                         className={`p-1 transition-transform hover:scale-110 ${guestRating >= star ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
                                     >
@@ -69,10 +80,14 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label
+                                htmlFor={`${fieldId}-feedback`}
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
                                 Feedback Interno
                             </label>
                             <textarea
+                                id={`${fieldId}-feedback`}
                                 value={guestFeedback}
                                 onChange={(e) => setGuestFeedback(e.target.value)}
                                 className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm min-h-[60px] text-gray-900 dark:text-gray-100"
@@ -87,10 +102,14 @@ const NotesSection: React.FC<NotesSectionProps> = ({
             )}
 
             <div>
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
+                <label
+                    htmlFor={`${fieldId}-notes`}
+                    className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase ml-1 flex items-center gap-1"
+                >
                     <StickyNote size={12} /> Observações Internas
                 </label>
                 <textarea
+                    id={`${fieldId}-notes`}
                     value={adminNotes}
                     onChange={(e) => setAdminNotes(e.target.value)}
                     onBlur={() => setAdminNotes((prev: string) => prev.trim())}

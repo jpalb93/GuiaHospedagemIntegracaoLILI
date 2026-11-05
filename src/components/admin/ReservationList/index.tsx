@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { dayUsePhase } from '../../../utils/reservationStay';
 import { useQueryClient } from '@tanstack/react-query';
 import {
     Reservation,
@@ -73,6 +74,12 @@ const ReservationList: React.FC<ReservationListProps> = ({
     const [openHistoryGroups, setOpenHistoryGroups] = useState<string[] | null>(null);
     const [propertyFilter, setPropertyFilter] = useState<PropertyId | 'all'>('all');
     const [flatFilter, setFlatFilter] = useState<string>('all');
+    const [stayTypeFilter, setStayTypeFilter] = useState<'all' | 'overnight' | 'day_use'>('all');
+    const [clock, setClock] = useState(() => new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setClock(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     // Advanced Filters State
@@ -189,7 +196,12 @@ const ReservationList: React.FC<ReservationListProps> = ({
             }
 
             return (
-                (nameMatch || notesMatch) && propertyMatch && statusMatch && flatMatch && dateMatch
+                (nameMatch || notesMatch) &&
+                propertyMatch &&
+                statusMatch &&
+                flatMatch &&
+                dateMatch &&
+                (stayTypeFilter === 'all' || (res.stayType || 'overnight') === stayTypeFilter)
             );
         });
 
@@ -204,8 +216,11 @@ const ReservationList: React.FC<ReservationListProps> = ({
             const checkOutISO = normalizeToISODate(res.checkoutDate);
             if (!checkOutISO || !checkInISO) return;
 
-            if (checkOutISO < todayStrVal) {
+            const phase = dayUsePhase(res, clock);
+            if (checkOutISO < todayStrVal || phase === 'finished') {
                 historyListArr.push(res);
+            } else if (phase === 'active') {
+                leavingTodayArr.push(res);
             } else if (checkInISO === todayStrVal) {
                 arrivingTodayArr.push(res);
             } else if (checkOutISO === todayStrVal) {
@@ -283,6 +298,8 @@ const ReservationList: React.FC<ReservationListProps> = ({
         propertyFilter,
         statusFilter,
         flatFilter,
+        stayTypeFilter,
+        clock,
         dateRange,
     ]);
 
@@ -458,6 +475,9 @@ const ReservationList: React.FC<ReservationListProps> = ({
             'Status',
             'Check-in',
             'Check-out',
+            'Modalidade',
+            'Hora de entrada',
+            'Hora de saída',
             'Telefone',
             'Email',
             'Link',
@@ -473,6 +493,9 @@ const ReservationList: React.FC<ReservationListProps> = ({
                     res.status,
                     res.checkInDate || '',
                     res.checkoutDate || '',
+                    res.stayType === 'day_use' ? 'Day use' : 'Hospedagem',
+                    res.checkInTime || '',
+                    res.checkOutTime || '',
                     `"${res.guestPhone || ''}"`,
                     res.email || '',
                     link,
@@ -495,6 +518,7 @@ const ReservationList: React.FC<ReservationListProps> = ({
     };
 
     const handleClearFilters = () => {
+        setStayTypeFilter('all');
         setStatusFilter('all');
         setFlatFilter('all');
         setPropertyFilter('all');
@@ -503,6 +527,7 @@ const ReservationList: React.FC<ReservationListProps> = ({
     };
 
     const hasActiveFilters =
+        stayTypeFilter !== 'all' ||
         statusFilter !== 'all' ||
         flatFilter !== 'all' ||
         dateRange.start !== '' ||
@@ -541,6 +566,8 @@ const ReservationList: React.FC<ReservationListProps> = ({
 
             {/* ADVANCED FILTERS PANEL */}
             <AdvancedFilters
+                stayTypeFilter={stayTypeFilter}
+                setStayTypeFilter={setStayTypeFilter}
                 showFilters={showFilters}
                 statusFilter={statusFilter}
                 setStatusFilter={setStatusFilter}

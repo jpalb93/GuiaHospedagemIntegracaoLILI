@@ -35,9 +35,12 @@ import TemplateManager from './TemplateManager';
 import DangerZone from './DangerZone';
 import GeneratedLinkActions from './GeneratedLinkActions';
 import CorporateLinkSection from './CorporateLinkSection';
+import './ReservationForm.css';
 
 interface ReservationFormProps {
     form: {
+        stayType: 'overnight' | 'day_use';
+        setStayType: (v: 'overnight' | 'day_use') => void;
         guestName: string;
         setGuestName: (v: string | ((prev: string) => string)) => void;
         guestPhone: string;
@@ -150,11 +153,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     };
 
     return (
-        <div className="p-4 md:p-8 space-y-6 relative max-w-4xl mx-auto">
+        <div className="reservation-form p-2 sm:p-4 md:p-8 flex flex-col gap-6 relative max-w-4xl mx-auto">
             {/* BOTÃO LIMPAR / CANCELAR */}
             <button
                 onClick={resetForm}
-                className="absolute top-4 right-4 md:top-8 md:right-8 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
+                type="button"
+                aria-label={editingId ? 'Cancelar edição' : 'Limpar formulário'}
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8 min-w-11 min-h-11 p-2 text-gray-600 dark:text-gray-300 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
                 title="Limpar/Cancelar"
             >
                 {editingId ? <X size={20} className="text-red-500" /> : <Eraser size={20} />}
@@ -162,14 +167,14 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
             {/* BANNER IA CONCIERGE OU EDIÇÃO */}
             {editingId ? (
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3.5 rounded-2xl flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3.5 pr-14 rounded-2xl flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                     <Sparkles size={16} className="text-blue-500 animate-pulse" /> Você está
                     editando a reserva de <strong className="underline">{form.guestName}</strong>.
                 </div>
             ) : (
-                <div className="flex gap-2">
+                <div className="space-y-3">
                     <div
-                        className={`p-3.5 flex-1 rounded-2xl border flex items-center gap-3 text-xs font-bold ${
+                        className={`p-3.5 pr-14 flex-1 rounded-2xl border flex items-center gap-3 text-xs font-bold ${
                             apiKeyStatus === 'ok'
                                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
                                 : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
@@ -237,7 +242,44 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                 </div>
 
                 {/* 1. SELEÇÃO DE DATAS DE CHECK-IN E CHECKOUT */}
+                {form.propertyId === 'integracao' && (
+                    <div className="space-y-2">
+                        <label
+                            htmlFor="reservation-stay-type"
+                            className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                            Modalidade da reserva
+                        </label>
+                        <select
+                            id="reservation-stay-type"
+                            value={form.stayType}
+                            onChange={(e) =>
+                                form.setStayType(e.target.value as 'overnight' | 'day_use')
+                            }
+                            disabled={form.billingMode === 'corporate'}
+                            className="w-full min-h-11 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 px-3 py-3 font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
+                        >
+                            <option value="overnight">Hospedagem com pernoite</option>
+                            <option value="day_use">Day use — sem pernoite</option>
+                        </select>
+                        {form.billingMode === 'corporate' && (
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Day use é cadastrado como reserva avulsa, sem vínculo com contrato
+                                mensal.
+                            </p>
+                        )}
+                        {form.stayType === 'day_use' && (
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Individual, sem visitantes. Ao alterar a entrada, a saída é sugerida
+                                4 horas depois e pode ser ajustada manualmente. Manhã: 8h às 12h.
+                                Outros horários podem ser ajustados após confirmar disponibilidade.
+                                Informe o valor total do período.
+                            </p>
+                        )}
+                    </div>
+                )}
                 <DatesSection
+                    isDayUse={form.stayType === 'day_use'}
                     checkInDate={form.checkInDate}
                     setCheckInDate={form.setCheckInDate}
                     checkoutDate={form.checkoutDate}
@@ -250,6 +292,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
                 {/* 2. DISPONIBILIDADE EM TEMPO REAL, PROPRIEDADE E SELEÇÃO DE FLAT */}
                 <PropertySection
+                    stayType={form.stayType}
+                    checkInTime={form.checkInTime}
+                    checkOutTime={form.checkOutTime}
                     propertyId={form.propertyId}
                     setPropertyId={form.setPropertyId}
                     flatNumber={form.flatNumber}

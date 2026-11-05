@@ -40,6 +40,10 @@ describe('Guest Service', () => {
     });
 
     describe('fetchGuestConfig', () => {
+        it('returns null for a day use that has ended (410)', async () => {
+            vi.mocked(global.fetch).mockResolvedValue({ ok: false, status: 410 } as Response);
+            expect(await fetchGuestConfig('DAYUSE')).toBeNull();
+        });
         it('should fetch config successfully', async () => {
             (global.fetch as any).mockResolvedValue({
                 ok: true,

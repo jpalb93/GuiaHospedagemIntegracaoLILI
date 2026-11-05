@@ -2,7 +2,9 @@
 .agents
 dist
 dist-ssr
+audits
 stats.html
 bundle-analysis.html
 SEO-REPORT.html
 *.md
+

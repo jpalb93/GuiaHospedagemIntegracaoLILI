@@ -14,16 +14,17 @@ export const useReservationForm = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [guestName, setGuestName] = useState('');
     const [guestPhone, setGuestPhone] = useState('');
-    const [propertyId, setPropertyId] = useState<PropertyId>('lili');
+    const [propertyId, setPropertyIdState] = useState<PropertyId>('lili');
     const [flatNumber, setFlatNumber] = useState('');
     const [lockCode, setLockCode] = useState('');
     const [welcomeMessage, setWelcomeMessage] = useState('');
     const [adminNotes, setAdminNotes] = useState('');
     const [guestAlertActive, setGuestAlertActive] = useState(false);
     const [guestAlertText, setGuestAlertText] = useState('');
-    const [checkInDate, setCheckInDate] = useState('');
+    const [stayType, setStayTypeState] = useState<'overnight' | 'day_use'>('overnight');
+    const [checkInDate, setCheckInDateState] = useState('');
     const [checkoutDate, setCheckoutDate] = useState('');
-    const [checkInTime, setCheckInTime] = useState('14:00');
+    const [checkInTime, setCheckInTimeState] = useState('14:00');
     const [checkOutTime, setCheckOutTime] = useState('11:00');
     const [guestCount, setGuestCount] = useState<number>(1);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
@@ -35,7 +36,7 @@ export const useReservationForm = () => {
     const [shortId, setShortId] = useState('');
     const [manualDeactivation, setManualDeactivation] = useState(false);
 
-    const [billingMode, setBillingMode] = useState<ReservationBillingMode>('reservation');
+    const [billingMode, setBillingModeState] = useState<ReservationBillingMode>('reservation');
     const [companyId, setCompanyId] = useState('');
     const [contractId, setContractId] = useState('');
     const [allocationId, setAllocationId] = useState('');
@@ -45,6 +46,77 @@ export const useReservationForm = () => {
 
     const [generatedLink, setGeneratedLink] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+
+    const setCheckInTime = useCallback(
+        (value: string) => {
+            setCheckInTimeState(value);
+            if (stayType !== 'day_use') return;
+            if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
+                setCheckOutTime('');
+                return;
+            }
+            const [hours, minutes] = value.split(':').map(Number);
+            const exitMinutes = hours * 60 + minutes + 4 * 60;
+            // Day use stays on the same date; do not silently wrap into the next day.
+            setCheckOutTime(
+                exitMinutes < 24 * 60
+                    ? `${String(Math.floor(exitMinutes / 60)).padStart(2, '0')}:${String(exitMinutes % 60).padStart(2, '0')}`
+                    : ''
+            );
+        },
+        [stayType]
+    );
+
+    const setCheckInDate = useCallback(
+        (value: string) => {
+            setCheckInDateState(value);
+            if (stayType === 'day_use') setCheckoutDate(value);
+        },
+        [stayType]
+    );
+
+    const setStayType = useCallback(
+        (value: 'overnight' | 'day_use') => {
+            if (value === 'day_use' && (propertyId !== 'integracao' || billingMode === 'corporate'))
+                return;
+            setStayTypeState(value);
+            if (value === 'day_use') {
+                setCheckoutDate(checkInDate);
+                setCheckInTimeState('08:00');
+                setCheckOutTime('12:00');
+                setGuestCount(1);
+            } else {
+                setCheckInTimeState(PROPERTIES[propertyId].defaults.checkInTime);
+                setCheckOutTime(PROPERTIES[propertyId].defaults.checkOutTime);
+                if (checkInDate && checkoutDate <= checkInDate) {
+                    const nextDay = new Date(`${checkInDate}T12:00:00Z`);
+                    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+                    setCheckoutDate(nextDay.toISOString().slice(0, 10));
+                }
+            }
+        },
+        [propertyId, billingMode, checkInDate, checkoutDate]
+    );
+
+    const setPropertyId = useCallback(
+        (value: PropertyId) => {
+            if (stayType === 'day_use' && value !== 'integracao') {
+                setStayType('overnight');
+                setCheckInTimeState(PROPERTIES[value].defaults.checkInTime);
+                setCheckOutTime(PROPERTIES[value].defaults.checkOutTime);
+            }
+            setPropertyIdState(value);
+        },
+        [stayType, setStayType]
+    );
+
+    const setBillingMode = useCallback(
+        (value: ReservationBillingMode) => {
+            if (stayType === 'day_use' && value === 'corporate') setStayType('overnight');
+            setBillingModeState(value);
+        },
+        [stayType, setStayType]
+    );
 
     const resetForm = useCallback(async () => {
         const officialNow = await fetchOfficialTime();
@@ -58,13 +130,14 @@ export const useReservationForm = () => {
         const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
         const t_dd = String(tomorrow.getDate()).padStart(2, '0');
 
-        setCheckInDate(`${yyyy}-${mm}-${dd}`);
+        setStayTypeState('overnight');
+        setCheckInDateState(`${yyyy}-${mm}-${dd}`);
         setCheckoutDate(`${t_yyyy}-${t_mm}-${t_dd}`);
-        setCheckInTime(PROPERTIES[propertyId].defaults.checkInTime);
+        setCheckInTimeState(PROPERTIES[propertyId].defaults.checkInTime);
         setCheckOutTime(PROPERTIES[propertyId].defaults.checkOutTime);
         setGuestName('');
         setGuestPhone('');
-        setPropertyId('lili');
+        setPropertyIdState('lili');
         setFlatNumber('');
         setLockCode('');
         setWelcomeMessage('');
@@ -84,7 +157,7 @@ export const useReservationForm = () => {
         setManualDeactivation(false);
         setGuestRating(5);
         setGuestFeedback('');
-        setBillingMode('reservation');
+        setBillingModeState('reservation');
         setCompanyId('');
         setContractId('');
         setAllocationId('');
@@ -94,16 +167,17 @@ export const useReservationForm = () => {
         setEditingId(res.id!);
         setGuestName(res.guestName);
         setGuestPhone(res.guestPhone || '');
-        setPropertyId(res.propertyId || 'lili');
+        setPropertyIdState(res.propertyId || 'lili');
         setFlatNumber(res.flatNumber || '');
         setLockCode(res.lockCode || '');
         setWelcomeMessage(res.welcomeMessage || '');
         setAdminNotes(res.adminNotes || '');
         setGuestAlertActive(res.guestAlertActive || false);
         setGuestAlertText(res.guestAlertText || '');
-        setCheckInDate(res.checkInDate || '');
+        setStayTypeState(res.stayType || 'overnight');
+        setCheckInDateState(res.checkInDate || '');
         setCheckoutDate(res.checkoutDate || '');
-        setCheckInTime(res.checkInTime || '14:00');
+        setCheckInTimeState(res.checkInTime || '14:00');
         setCheckOutTime(res.checkOutTime || '11:00');
         setGuestCount(res.guestCount || 1);
         setPaymentMethod(res.paymentMethod || '');
@@ -116,7 +190,7 @@ export const useReservationForm = () => {
         setManualDeactivation(res.manualDeactivation || false);
         setGuestRating(res.guestRating || 5);
         setGuestFeedback(res.guestFeedback || '');
-        setBillingMode(res.billingMode === 'corporate' ? 'corporate' : 'reservation');
+        setBillingModeState(res.billingMode === 'corporate' ? 'corporate' : 'reservation');
         setCompanyId(res.companyId || '');
         setContractId(res.contractId || '');
         setAllocationId(res.allocationId || '');
@@ -134,6 +208,7 @@ export const useReservationForm = () => {
         const isCorporate = billingMode === 'corporate';
 
         return {
+            stayType,
             guestName: guestName.trim(),
             guestPhone: guestPhone.replace(/\D/g, ''),
             propertyId,
@@ -170,6 +245,7 @@ export const useReservationForm = () => {
             allocationId: isCorporate && allocationId ? allocationId : undefined,
         };
     }, [
+        stayType,
         guestName,
         guestPhone,
         propertyId,
@@ -201,6 +277,8 @@ export const useReservationForm = () => {
     ]);
 
     return {
+        stayType,
+        setStayType,
         editingId,
         guestName,
         setGuestName,

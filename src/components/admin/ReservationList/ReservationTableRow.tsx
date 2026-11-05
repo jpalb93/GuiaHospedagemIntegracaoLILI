@@ -19,6 +19,7 @@ import { Reservation, PropertyId } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
 import { Badge, Button } from '../../ui';
 import { formatDateBR } from '../../../utils/helpers';
+import StayTypeBadge from '../StayTypeBadge';
 
 interface ReservationTableRowProps {
     reservation: Reservation;
@@ -108,6 +109,7 @@ const ReservationTableRow: React.FC<ReservationTableRowProps> = ({
 
                             {/* Flat Badge & Additional Cleanings Badge */}
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <StayTypeBadge reservation={res} />
                                 <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-stone-100 dark:bg-gray-800 text-stone-700 dark:text-gray-300 border border-stone-200 dark:border-gray-700 shadow-2xs">
                                     {res.flatNumber ? `Flat ${res.flatNumber}` : 'Sem nº'}
                                 </span>

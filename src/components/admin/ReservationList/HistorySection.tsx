@@ -3,6 +3,7 @@ import { ArrowUpRight, CalendarDays, ChevronDown, ChevronUp, Loader2 } from 'luc
 import { Reservation } from '../../../types';
 import { Button } from '../../ui';
 import { formatDateBR } from '../../../utils/helpers';
+import StayTypeBadge from '../StayTypeBadge';
 
 interface HistoryGroup {
     key: string;
@@ -124,6 +125,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({
                                                                 : 'Não informado'}
                                                 </span>
                                             </div>
+                                            <StayTypeBadge reservation={res} />
                                             <p className="mt-3 inline-flex max-w-full items-center gap-1.5 rounded-lg bg-stone-100/80 px-2 py-1 text-xs font-medium text-stone-700 dark:bg-gray-900/60 dark:text-stone-200">
                                                 <CalendarDays
                                                     size={14}

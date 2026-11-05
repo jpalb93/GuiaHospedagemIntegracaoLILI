@@ -47,15 +47,17 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
+    const isIntegracao = config.propertyId === 'integracao';
+    const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
 
     return (
         <div
-            className={`flex flex-col ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative w-full animate-gold-pulse`}
+            className={`flex flex-col ${theme.background} ${theme.backgroundGradient} p-4 rounded-3xl text-stone-50 shadow-2xl border ${theme.border} relative w-full animate-gold-pulse`}
         >
             {/* Header: Title + Actions */}
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <h2
-                    className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${isSingleNight ? 'text-orange-400' : 'text-gray-400'}`}
+                    className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${isSingleNight ? 'text-amber-400' : theme.text.secondary}`}
                 >
                     {isSingleNight
                         ? t('Estadia Rápida', 'Quick Stay', 'Estancia Rápida')
@@ -83,7 +85,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
             {/* Welcome Message */}
             <div className="mb-6 relative z-10 text-center">
                 <h3
-                    className={`text-xl font-heading font-bold ${theme.text.primary} mb-2 flex items-center justify-center gap-2`}
+                    className={`text-xl font-display font-semibold ${theme.text.primary} mb-2 flex items-center justify-center gap-2`}
                 >
                     {isSingleNight
                         ? `${t('Veio rapidinho', 'Quick visit', 'Visita rápida')}, ${config.guestName?.split(' ')[0]}? 👋`
@@ -117,7 +119,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         onOpenCheckin();
                     }}
                     fullWidth
-                    className="mb-4 relative z-10 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs uppercase tracking-wide shadow-lg shadow-purple-900/20 border border-white/10"
+                    className="mb-4 relative z-10 py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-xs uppercase tracking-wide shadow-lg shadow-orange-950/30 border border-white/10"
                 >
                     {t('Como fazer Check-in', 'How to Check-in', 'Cómo hacer el Check-in')}
                 </Button>
@@ -159,34 +161,36 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         triggerConfetti(e.currentTarget as HTMLElement);
                         onCopyWifi();
                     }}
-                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${wifiCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                    className={`col-span-1 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${wifiCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
                     title={`${t('Senha', 'Pass', 'Clave')}: ${currentWifiPass}`}
                 >
                     <div className="absolute top-2 right-2">
                         <Maximize2
                             size={10}
-                            className="text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="text-stone-500 opacity-0 group-hover:opacity-100 transition-opacity"
                         />
                     </div>
                     <div
-                        className={`p-2 rounded-lg flex items-center justify-center mb-2 ${wifiCopied ? 'text-green-400' : 'text-blue-400'}`}
+                        className={`p-2 rounded-lg flex items-center justify-center mb-2 ${wifiCopied ? 'text-emerald-400' : isIntegracao ? 'text-sky-400' : 'text-amber-400'}`}
                     >
                         {wifiCopied ? <Check size={24} /> : <Wifi size={24} />}
                     </div>
                     <div className="w-full">
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
                             {t('Wi-Fi', 'Wi-Fi', 'Wi-Fi')}
                         </p>
                         <p
                             className={`text-sm font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
                         >
                             {isLoadingWifi ? (
-                                <span className="inline-block w-24 h-4 bg-gray-700/50 animate-pulse rounded" />
+                                <span className="inline-block w-24 h-4 bg-stone-700/50 animate-pulse rounded" />
                             ) : (
                                 currentWifiSSID
                             )}
                         </p>
-                        <p className="text-[9px] text-blue-400 font-medium">
+                        <p
+                            className={`text-[9px] font-medium ${isIntegracao ? 'text-sky-400' : 'text-amber-400'}`}
+                        >
                             {wifiCopied
                                 ? t('Copiado!', 'Copied!', '¡Copiado!')
                                 : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
@@ -200,7 +204,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         triggerConfetti(e.currentTarget as HTMLElement);
                         onCopyAddress();
                     }}
-                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group relative ${addressCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                    className={`col-span-1 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group relative ${addressCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
                     title="R. São José, 475B"
                 >
                     <div className="absolute top-2 right-2 z-20">
@@ -210,18 +214,18 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                                 onOpenDriverMode();
                             }}
                             aria-label="Modo Motorista"
-                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-stone-400 hover:text-white"
                         >
                             <Maximize2 size={14} />
                         </button>
                     </div>
                     <div
-                        className={`p-2 rounded-lg flex items-center justify-center mb-2 ${addressCopied ? 'text-green-400' : 'text-purple-400'}`}
+                        className={`p-2 rounded-lg flex items-center justify-center mb-2 ${addressCopied ? 'text-emerald-400' : 'text-orange-400'}`}
                     >
                         {addressCopied ? <Check size={24} /> : <MapPin size={24} />}
                     </div>
                     <div className="w-full">
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
                             {t('Local', 'Local', 'Ubicación')}
                         </p>
                         <p
@@ -229,7 +233,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         >
                             R. São José, 475B
                         </p>
-                        <p className="text-[9px] text-purple-400 font-medium">
+                        <p className="text-[9px] text-orange-400 font-medium">
                             {addressCopied
                                 ? t('Copiado!', 'Copied!', '¡Copiado!')
                                 : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}
@@ -245,7 +249,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                         onOpenCheckin();
                     }}
                     fullWidth
-                    className="mb-3 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25"
+                    className="mb-3 py-3.5 bg-gradient-to-r from-[#C85A32] to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-900/30"
                 >
                     {t(
                         'Passo a Passo do Check-in',
@@ -258,11 +262,11 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
             {isSingleNight && (
                 <div className="mb-4 bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 flex items-center justify-between relative z-10">
                     <div>
-                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wide flex items-center gap-1">
+                        <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1">
                             <CalendarHeart size={12} />{' '}
                             {t('Check-out Amanhã', 'Check-out Tomorrow', 'Check-out Mañana')}
                         </p>
-                        <p className="text-xs text-orange-200 font-bold">
+                        <p className="text-xs text-amber-100 font-bold">
                             {t('Até às', 'Until', 'Hasta las')} {config.checkOutTime || '11:00'}
                         </p>
                     </div>
@@ -271,7 +275,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             if (navigator.vibrate) navigator.vibrate(50);
                             onOpenCheckout();
                         }}
-                        className="px-3 py-1.5 bg-orange-500/20 text-orange-300 text-[9px] font-bold uppercase rounded-lg shadow-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+                        className="px-3 py-1.5 bg-amber-500/20 text-amber-200 text-[9px] font-bold uppercase rounded-lg shadow-sm border border-amber-500/30 hover:bg-amber-500/30 transition-colors"
                     >
                         {t('Ver Regras', 'View Rules', 'Ver Reglas')}
                     </button>
@@ -293,7 +297,7 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
             </Button>
 
             {!isSingleNight && (
-                <div className="mt-4 pt-4 border-t border-white/5 flex justify-center items-center gap-2 text-orange-300/80">
+                <div className="mt-4 pt-4 border-t border-white/10 flex justify-center items-center gap-2 text-amber-300/85">
                     <CalendarHeart size={14} />
                     <p className="text-[10px] font-bold font-sans">
                         {t(

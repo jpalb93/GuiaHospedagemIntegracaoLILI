@@ -17,10 +17,11 @@ const VideoModal: React.FC<VideoModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/95 z-[150] flex flex-col items-center justify-center p-4 animate-fadeIn backdrop-blur-md">
+        <div className="fixed inset-0 bg-[#0D0A09]/95 z-[150] flex flex-col items-center justify-center p-4 animate-fadeIn backdrop-blur-md">
             <button
                 onClick={onClose}
-                className="absolute top-6 right-6 text-white/70 hover:text-white p-3 bg-white/10 rounded-full transition-colors z-50"
+                aria-label="Fechar vídeo"
+                className="absolute top-6 right-6 text-white/80 hover:text-white p-3 bg-white/10 hover:bg-white/20 border border-white/15 rounded-full transition-all active:scale-95 z-50"
             >
                 <X size={24} />
             </button>
@@ -28,8 +29,8 @@ const VideoModal: React.FC<VideoModalProps> = ({
             <div
                 className={`
         w-full 
-        bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 ring-1 ring-white/10 relative animate-scaleIn
-        ${isVertical ? 'max-w-[350px] aspect-[9/16] max-h-[80vh]' : 'max-w-4xl aspect-video'}
+        bg-[#1C1614] rounded-3xl overflow-hidden shadow-2xl border border-amber-500/20 ring-1 ring-white/10 relative animate-scaleIn
+        ${isVertical ? 'max-w-[350px] aspect-[9/16] max-h-[82vh]' : 'max-w-4xl aspect-video'}
       `}
             >
                 <iframe

@@ -23,7 +23,7 @@ import { useLanguage } from '../../../hooks/useLanguage';
 import FlatAmenitiesSheet from './sheets/FlatAmenitiesSheet';
 import RulesSheet from './sheets/RulesSheet';
 import EmergencySheet from './sheets/EmergencySheet';
-import FavoritesSheet from './sheets/FavoritesSheet'; // New import
+import FavoritesSheet from './sheets/FavoritesSheet';
 import ExpandablePlaceList from './ExpandablePlaceList';
 import AccordionCategoryGroup from './AccordionCategoryGroup';
 
@@ -34,16 +34,12 @@ interface GuestRecommendationsProps {
     openEmergency?: boolean;
     emergencyRef?: React.RefObject<HTMLDivElement>;
     propertyId?: string;
-    places?: PlaceRecommendation[]; // All dynamic places for favorites filter
+    places?: PlaceRecommendation[];
     onOpenKeyDetails?: () => void;
     requestedSheet?: string | null;
     onRequestedSheetHandled?: () => void;
 }
 
-/**
- * Componente principal de recomendações para o hóspede
- * Refatorado para usar subcomponentes: sheets individuais para cada seção
- */
 const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
     mergePlaces,
     hasContent,
@@ -81,10 +77,10 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
 
     return (
         <>
-            {/* Grid de Seções */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Grid de Seções — Paleta Sol do São Francisco & Terracota */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
                 {/* Coluna 1 */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
                     <SectionCard
                         title={t(
                             'O Flat & Comodidades',
@@ -92,14 +88,14 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                             'El Flat y Comodidades'
                         )}
                         icon={Home}
-                        color="bg-orange-500"
+                        color="bg-gradient-to-br from-[#C85A32] to-orange-600"
                         isTrigger={true}
                         onToggle={() => handleOpen('O Flat & Comodidades')}
                     />
                     <SectionCard
                         title={t('Regras & Avisos', 'Rules & Notices', 'Reglas y Avisos')}
                         icon={AlertTriangle}
-                        color="bg-red-500"
+                        color="bg-gradient-to-br from-amber-600 to-orange-700"
                         isTrigger={true}
                         onToggle={() => handleOpen('Regras & Avisos')}
                     />
@@ -110,7 +106,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                             'Mercados y Servicios'
                         )}
                         icon={ShoppingBasket}
-                        color="bg-green-500"
+                        color="bg-gradient-to-br from-emerald-600 to-teal-700"
                         isTrigger={true}
                         onToggle={() => handleOpen('Mercados e Serviços')}
                     />
@@ -121,39 +117,39 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                             'Bares y Restaurantes'
                         )}
                         icon={Utensils}
-                        color="bg-red-500"
+                        color="bg-gradient-to-br from-[#B84A24] to-[#8F3518]"
                         isTrigger={true}
                         onToggle={() => handleOpen('Bares e Restaurantes')}
                     />
                 </div>
 
                 {/* Coluna 2 */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
                     <SectionCard
                         title={t('Meus Favoritos', 'My Favorites', 'Mis Favoritos')}
-                        icon={Heart} // Using Heart icon
-                        color="bg-pink-600" // Distinct color
+                        icon={Heart}
+                        color="bg-gradient-to-br from-rose-500 to-orange-600"
                         isTrigger={true}
                         onToggle={() => handleOpen('Meus Favoritos')}
                     />
                     <SectionCard
                         title={t('Cafés e Padarias', 'Cafes & Bakeries', 'Cafés y Panaderías')}
                         icon={Coffee}
-                        color="bg-amber-600"
+                        color="bg-gradient-to-br from-amber-500 to-amber-700"
                         isTrigger={true}
                         onToggle={() => handleOpen('Cafés e Padarias')}
                     />
                     <SectionCard
                         title={t('Passeios & Lazer', 'Tours & Leisure', 'Paseos y Ocio')}
                         icon={Map}
-                        color="bg-blue-500"
+                        color="bg-gradient-to-br from-sky-600 to-cyan-700"
                         isTrigger={true}
                         onToggle={() => handleOpen('Passeios & Lazer')}
                     />
                     <SectionCard
                         title={t('Eventos & Agenda', 'Events & Agenda', 'Eventos y Agenda')}
                         icon={CalendarHeart}
-                        color="bg-pink-500"
+                        color="bg-gradient-to-br from-orange-500 to-rose-600"
                         isTrigger={true}
                         onToggle={() => handleOpen('Eventos & Agenda')}
                     />
@@ -161,7 +157,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                         <SectionCard
                             title={t('SOS & Emergência', 'SOS & Emergency', 'SOS y Emergencia')}
                             icon={HeartPulse}
-                            color="bg-red-600"
+                            color="bg-gradient-to-br from-red-600 to-red-700"
                             isTrigger={true}
                             onToggle={() => handleOpen('SOS & Emergência')}
                         />
@@ -208,7 +204,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                         {
                             id: 'markets',
                             title: t('Mercados', 'Markets', 'Mercados'),
-                            icon: <ShoppingBasket size={18} className="text-green-600" />,
+                            icon: <ShoppingBasket size={18} className="text-emerald-600" />,
                             places: mergePlaces([], 'essentials'),
                             visible: hasContent([], 'essentials'),
                         },
@@ -309,14 +305,14 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                                 'Salads & Healthy',
                                 'Ensaladas y Saludable'
                             ),
-                            icon: <Salad size={18} className="text-green-500" />,
+                            icon: <Salad size={18} className="text-emerald-500" />,
                             places: mergePlaces([], 'salads'),
                             visible: hasContent([], 'salads'),
                         },
                         {
                             id: 'pizza',
                             title: t('Pizzas & Massas', 'Pizzas & Pasta', 'Pizzas y Pastas'),
-                            icon: <Pizza size={18} className="text-red-500" />,
+                            icon: <Pizza size={18} className="text-orange-600" />,
                             places: mergePlaces([], 'pasta'),
                             visible: hasContent([], 'pasta'),
                         },
@@ -338,7 +334,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                                 'À La Carte & Fine Dining',
                                 'A La Carta y Refinados'
                             ),
-                            icon: <Utensils size={18} className="text-gray-500" />,
+                            icon: <Utensils size={18} className="text-amber-600" />,
                             places: mergePlaces([], 'alacarte'),
                             visible: hasContent([], 'alacarte'),
                         },
@@ -349,7 +345,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                                 'Self-Service & Lunch',
                                 'Buffet y Almuerzo'
                             ),
-                            icon: <Utensils size={18} className="text-green-600" />,
+                            icon: <Utensils size={18} className="text-emerald-600" />,
                             places: mergePlaces([], 'selfservice'),
                             visible: hasContent([], 'selfservice'),
                         },
@@ -385,8 +381,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                             visible: hasContent([], 'cafes'),
                         },
                     ]}
-                    initialOpenId="cafes" // Auto-open since it is the only one? Or let it be closed? User said "menus close others". If only one, maybe better open?
-                    // Let's stick to default behavior (first open).
+                    initialOpenId="cafes"
                 />
             </BottomSheet>
 
@@ -406,7 +401,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                                 'Must-See Tours',
                                 'Paseos Imperdibles'
                             ),
-                            icon: <Map size={18} className="text-blue-600" />,
+                            icon: <Map size={18} className="text-sky-600" />,
                             places: mergePlaces([], 'attractions'),
                             visible: hasContent([], 'attractions'),
                         },
@@ -450,7 +445,7 @@ const GuestRecommendations: React.FC<GuestRecommendationsProps> = ({
                 {activeEvents.length > 0 ? (
                     <ExpandablePlaceList places={activeEvents} />
                 ) : (
-                    <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <div className="text-center py-4 text-stone-500 dark:text-stone-400">
                         <p className="text-xs">
                             {t(
                                 'Nenhum evento programado para os próximos dias.',

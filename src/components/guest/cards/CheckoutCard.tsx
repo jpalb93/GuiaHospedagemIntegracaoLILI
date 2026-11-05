@@ -34,6 +34,8 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
     const [showReviewModal, setShowReviewModal] = React.useState(false);
+    const isIntegracao = config.propertyId === 'integracao';
+    const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
 
     const onCopyAddress = () => {
         if (onCopyAddressProp) {
@@ -56,13 +58,11 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
 
     return (
         <div
-            className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border border-red-500/20 relative overflow-hidden w-full animate-gold-pulse`}
+            className={`flex flex-col h-full ${theme.background} ${theme.backgroundGradient} p-4 rounded-3xl text-stone-50 shadow-2xl border border-orange-500/25 relative overflow-hidden w-full animate-gold-pulse`}
         >
-            {/* Background Effects Removed */}
-
             {/* Header */}
             <div className="flex justify-between items-start mb-4 relative z-10">
-                <h2 className="text-[10px] font-heading font-extrabold text-red-400 uppercase tracking-[0.15em] mt-1.5">
+                <h2 className="text-[10px] font-heading font-extrabold text-orange-400 uppercase tracking-[0.15em] mt-1.5">
                     {t('Dia da Saída', 'Departure Day')}
                 </h2>
                 <div className="flex gap-2">
@@ -77,26 +77,24 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
 
             {/* Main Message */}
             <div className="mb-3 relative z-10 text-center">
-                <h3 className={`text-lg font-heading font-bold ${theme.text.primary} mb-1`}>
+                <h3 className={`text-xl font-display font-semibold ${theme.text.primary} mb-1`}>
                     {t('Volte sempre, viu? 👋', 'Come back soon! 👋')}
                 </h3>
             </div>
 
-            {/* REVIEW BUTTON (New Position) */}
+            {/* REVIEW BUTTON */}
             <Button
                 onClick={() => {
                     onOpenReview();
-                    // Show incentive modal only for Lili property
                     if (config.propertyId === 'lili') {
                         setShowReviewModal(true);
                     } else {
-                        // Direct link for other properties
                         window.open(GOOGLE_REVIEW_LINK, '_blank');
                     }
                 }}
                 fullWidth
                 leftIcon={<Star size={14} className="fill-white" />}
-                className="mb-4 relative z-10 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-[11px] uppercase tracking-wide shadow-lg shadow-yellow-500/20"
+                className="mb-4 relative z-10 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-[11px] uppercase tracking-wide shadow-lg shadow-amber-500/20"
             >
                 {t('Avaliar Estadia', 'Rate Stay')}
             </Button>
@@ -117,12 +115,12 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                     href="https://maps.app.goo.gl/DiuYdP3HWXH4Ksj67"
                     target="_blank"
                     rel="noreferrer"
-                    className={`bg-[#252535] p-3 rounded-xl border ${theme.border} hover:border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-all hover:bg-white/5 active:scale-95 group`}
+                    className={`${subCardBg} p-3 rounded-xl border ${theme.border} hover:border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-all hover:bg-white/5 active:scale-95 group`}
                 >
-                    <div className="p-2 bg-blue-500/10 rounded-full text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+                    <div className="p-2 bg-sky-500/15 rounded-full text-sky-400 group-hover:bg-sky-500/25 transition-colors">
                         <Plane size={18} />
                     </div>
-                    <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">
+                    <span className="text-[10px] font-bold text-stone-200 uppercase tracking-wide">
                         {t('Aeroporto', 'Airport')}
                     </span>
                 </a>
@@ -131,12 +129,12 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                     href="https://maps.app.goo.gl/e3gXqN6SXhnHoJwc6"
                     target="_blank"
                     rel="noreferrer"
-                    className={`bg-[#252535] p-3 rounded-xl border ${theme.border} hover:border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-all hover:bg-white/5 active:scale-95 group`}
+                    className={`${subCardBg} p-3 rounded-xl border ${theme.border} hover:border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-all hover:bg-white/5 active:scale-95 group`}
                 >
-                    <div className="p-2 bg-orange-500/10 rounded-full text-orange-400 group-hover:bg-orange-500/20 transition-colors">
+                    <div className="p-2 bg-amber-500/15 rounded-full text-amber-400 group-hover:bg-amber-500/25 transition-colors">
                         <Bus size={18} />
                     </div>
-                    <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">
+                    <span className="text-[10px] font-bold text-stone-200 uppercase tracking-wide">
                         {t('Rodoviária', 'Bus Station')}
                     </span>
                 </a>
@@ -148,7 +146,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                     triggerConfetti(e.currentTarget as HTMLElement);
                     onCopyAddress();
                 }}
-                className={`w-full mb-3 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col justify-center cursor-pointer hover:bg-white/5 transition-all group relative z-10 ${addressCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                className={`w-full mb-3 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col justify-center cursor-pointer hover:bg-white/5 transition-all group relative z-10 ${addressCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
                 title="R. São José, 475B"
             >
                 <div className="absolute top-2 right-2 z-20">
@@ -157,19 +155,19 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                             e.stopPropagation();
                             onOpenDriverMode();
                         }}
-                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-stone-400 hover:text-white"
                     >
                         <Maximize2 size={16} />
                     </button>
                 </div>
                 <div className="flex items-center gap-3">
                     <div
-                        className={`p-2.5 rounded-lg flex items-center justify-center ${addressCopied ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-300'}`}
+                        className={`p-2.5 rounded-lg flex items-center justify-center ${addressCopied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-amber-300'}`}
                     >
                         {addressCopied ? <Check size={20} /> : <MapPin size={20} />}
                     </div>
                     <div className="text-left">
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
                             {t('Endereço', 'Address')}
                         </p>
                         <p
@@ -177,7 +175,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                         >
                             R. São José, 475B
                         </p>
-                        <p className="text-[9px] text-gray-500 font-medium">
+                        <p className="text-[9px] text-stone-400 font-medium">
                             Centro, Petrolina - PE
                         </p>
                     </div>
@@ -192,7 +190,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
                 }}
                 fullWidth
                 leftIcon={<LogOut size={16} />}
-                className="mb-3 relative z-10 py-3.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-xs uppercase tracking-wide shadow-lg shadow-red-900/20 border border-white/10"
+                className="mb-3 relative z-10 py-3.5 bg-gradient-to-r from-[#C85A32] to-orange-600 hover:from-orange-500 hover:to-amber-600 text-xs uppercase tracking-wide shadow-lg shadow-orange-950/30 border border-white/10"
             >
                 {t('Fazer Check-out Agora', 'Check-out Now')}
             </Button>
@@ -213,12 +211,12 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
             </Button>
 
             {/* CHECKOUT TIME (Bottom) */}
-            <div className="flex items-center justify-center gap-2 text-red-100/60 relative z-10 mt-auto">
+            <div className="flex items-center justify-center gap-2 text-orange-100/70 relative z-10 mt-auto">
                 <p className="text-[10px] font-medium">
                     {t('Liberar o flat até às', 'Vacate flat by')}
                 </p>
                 <p
-                    className={`text-sm font-mono font-bold ${theme.text.primary} bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20`}
+                    className={`text-sm font-mono font-bold ${theme.text.primary} bg-orange-500/15 px-2 py-0.5 rounded border border-orange-500/25`}
                 >
                     {config.checkOutTime || '11:00'}
                 </p>

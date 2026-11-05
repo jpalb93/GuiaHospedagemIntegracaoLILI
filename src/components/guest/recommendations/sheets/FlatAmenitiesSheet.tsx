@@ -1,5 +1,18 @@
 import React from 'react';
-import { Tv, Wind, Utensils, ShowerHead, Briefcase, MapPin, CheckCircle2 } from 'lucide-react';
+import {
+    Tv,
+    Wind,
+    Utensils,
+    ShowerHead,
+    Briefcase,
+    MapPin,
+    Sparkles,
+    Car,
+    Footprints,
+    Home,
+    CigaretteOff,
+    Check,
+} from 'lucide-react';
 import { useLanguage } from '../../../../hooks/useLanguage';
 
 interface FlatAmenitiesSheetProps {
@@ -14,63 +27,80 @@ const FlatAmenitiesSheet: React.FC<FlatAmenitiesSheetProps> = ({ propertyId }) =
     const { t } = useLanguage();
 
     return (
-        <div className="flex flex-col gap-6 text-gray-700 dark:text-gray-300">
-            {/* Intro */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                    {t(
-                        'Um flat todo equipado, confortável e novinho! Com 30m² cheios de estilo, é fácil de manter organizado e atende perfeitamente às necessidades do dia a dia.',
-                        'A fully equipped, comfortable and brand new flat! With 30m² full of style, it is easy to keep organized and perfectly meets daily needs.',
-                        '¡Un piso totalmente equipado, cómodo y nuevo! Con 30m² llenos de estilo, es fácil de mantener organizado y satisface perfectamente las necesidades diarias.'
-                    )}
-                </p>
+        <div className="flex flex-col gap-6 text-stone-700 dark:text-stone-300">
+            {/* Intro Editorial com Citação Hospitaleira */}
+            <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/15 dark:to-[#1C1614] p-5 rounded-2xl border border-amber-200/60 dark:border-amber-500/20 shadow-sm relative overflow-hidden">
+                <div className="flex items-start gap-3 relative z-10">
+                    <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-[#C85A32] dark:text-amber-400 shrink-0 mt-0.5">
+                        <Sparkles size={18} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-200 font-sans">
+                        {t(
+                            'Um flat todo equipado, confortável e novinho! Com 30m² cheios de estilo, é fácil de manter organizado e atende perfeitamente às necessidades do dia a dia.',
+                            'A fully equipped, comfortable and brand new flat! With 30m² full of style, it is easy to keep organized and perfectly meets daily needs.',
+                            '¡Un piso totalmente equipado, cómodo y nuevo! Con 30m² llenos de estilo, es fácil de mantener organizado y satisface perfectamente las necesidades diarias.'
+                        )}
+                    </p>
+                </div>
             </div>
 
             {/* Sobre a Localização */}
             <div>
                 <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-orange-100 dark:bg-orange-900/30 p-1.5 rounded-lg text-orange-600 dark:text-orange-400">
+                    <div className="bg-amber-100 dark:bg-amber-500/15 p-1.5 rounded-lg text-[#C85A32] dark:text-amber-400">
                         <MapPin size={16} />
                     </div>
-                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
                         {t('Sobre a Localização', 'About the Location', 'Sobre la Ubicación')}
                     </h4>
                 </div>
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 space-y-3 shadow-sm">
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {t('O flat fica na ', 'The flat is located at ', 'El piso está en ')}
-                        <strong className="text-gray-900 dark:text-white">
-                            Rua São José, 475 B
-                        </strong>
-                        {t(
-                            ', ao lado da Av. da Integração. Acesso rápido ao centro, shopping e hospitais.',
-                            ', next to Av. da Integração. Quick access to downtown, mall and hospitals.',
-                            ', al lado de Av. da Integração. Acceso rápido al centro, centro comercial y hospitales.'
-                        )}
-                    </p>
-                    <div className="space-y-2">
-                        <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
-                            <span className="bg-red-100 text-red-600 p-0.5 rounded">🚗</span>
-                            <span>
-                                <strong className="text-gray-800 dark:text-gray-200">
+                <div className="bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm">
+                    {/* Endereço */}
+                    <div className="pb-3 border-b border-stone-100 dark:border-stone-800">
+                        <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-sans">
+                            {t('O flat fica na ', 'The flat is located at ', 'El piso está en ')}
+                            <strong className="text-stone-900 dark:text-white font-bold">
+                                Rua São José, 475 B
+                            </strong>
+                            {t(
+                                ', ao lado da Av. da Integração. Acesso rápido ao centro, shopping e hospitais.',
+                                ', next to Av. da Integração. Quick access to downtown, mall and hospitals.',
+                                ', al lado de Av. da Integração. Acceso rápido al centro, centro comercial y hospitales.'
+                            )}
+                        </p>
+                    </div>
+
+                    {/* Pontos de Atenção (Estacionamento & Escadas) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/15 text-xs text-stone-600 dark:text-stone-300">
+                            <div className="p-1 rounded-md bg-amber-100 dark:bg-amber-500/20 text-[#C85A32] dark:text-amber-400 shrink-0">
+                                <Car size={14} />
+                            </div>
+                            <span className="leading-snug">
+                                <strong className="text-stone-900 dark:text-stone-100 font-semibold block">
                                     {t(
                                         'Não possuímos estacionamento',
                                         'We do not have parking',
                                         'No tenemos estacionamiento'
                                     )}
-                                </strong>{' '}
-                                (
-                                {t(
-                                    'vagas disponíveis na rua',
-                                    'street parking available',
-                                    'aparcamiento disponible en la calle'
-                                )}
-                                ).
+                                </strong>
+                                <span className="text-stone-500 dark:text-stone-400">
+                                    (
+                                    {t(
+                                        'vagas disponíveis na rua',
+                                        'street parking available',
+                                        'aparcamiento disponible en la calle'
+                                    )}
+                                    )
+                                </span>
                             </span>
                         </div>
-                        <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
-                            <span className="bg-orange-100 text-orange-600 p-0.5 rounded">👣</span>
-                            <span>
+
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/15 text-xs text-stone-600 dark:text-stone-300">
+                            <div className="p-1 rounded-md bg-amber-100 dark:bg-amber-500/20 text-[#C85A32] dark:text-amber-400 shrink-0">
+                                <Footprints size={14} />
+                            </div>
+                            <span className="leading-snug">
                                 {t(
                                     'O prédio não possui elevador (acesso por escadas).',
                                     'The building has no elevator (stairs access).',
@@ -79,17 +109,19 @@ const FlatAmenitiesSheet: React.FC<FlatAmenitiesSheetProps> = ({ propertyId }) =
                             </span>
                         </div>
                     </div>
-                    <div className="flex gap-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide pt-1">
-                        <span className="flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>{' '}
+
+                    {/* Estimativas de Deslocamento */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#C85A32]"></span>
                             {t(
                                 'Aeroporto: 15-20 min',
                                 'Airport: 15-20 min',
                                 'Aeropuerto: 15-20 min'
                             )}
                         </span>
-                        <span className="flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>{' '}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#C85A32]"></span>
                             {t(
                                 'Rodoviária: 10-15 min',
                                 'Bus Station: 10-15 min',
@@ -97,17 +129,20 @@ const FlatAmenitiesSheet: React.FC<FlatAmenitiesSheetProps> = ({ propertyId }) =
                             )}
                         </span>
                     </div>
-                    <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/20 rounded-xl p-3 mt-2">
-                        <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase mb-1">
+
+                    {/* Curiosidade Local */}
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50/50 dark:from-amber-500/10 dark:to-orange-500/5 border border-amber-200/70 dark:border-amber-500/20 rounded-xl p-3.5 mt-2">
+                        <p className="text-[11px] font-bold text-[#C85A32] dark:text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <span>✨</span>{' '}
                             {t('Curiosidade Local', 'Local Curiosity', 'Curiosidad Local')}
                         </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 italic">
+                        <p className="text-xs text-stone-600 dark:text-stone-300 italic leading-relaxed">
                             {t(
                                 'Quase em frente, você verá o icônico ',
                                 'Almost in front, you will see the iconic ',
                                 'Casi enfrente, verás el icónico '
                             )}
-                            <strong className="text-orange-800 dark:text-orange-300">
+                            <strong className="text-amber-900 dark:text-amber-200 not-italic font-bold">
                                 {t(
                                     'Monumento da Integração',
                                     'Integration Monument',
@@ -135,17 +170,22 @@ const FlatAmenitiesSheet: React.FC<FlatAmenitiesSheetProps> = ({ propertyId }) =
 const IntegracaoAmenities: React.FC = () => {
     const { t } = useLanguage();
     return (
-        <>
+        <div className="space-y-6">
             {/* Cozinha Privativa */}
             <div>
-                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">
-                    {t(
-                        'Na sua cozinha privativa:',
-                        'In your private kitchen:',
-                        'En su cocina privada:'
-                    )}
-                </h4>
-                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-amber-100 dark:bg-amber-500/15 p-1.5 rounded-lg text-[#C85A32] dark:text-amber-400">
+                        <Utensils size={16} />
+                    </div>
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                        {t(
+                            'Na sua cozinha privativa:',
+                            'In your private kitchen:',
+                            'En su cocina privada:'
+                        )}
+                    </h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     {[
                         t('Produtos de limpeza', 'Cleaning products', 'Productos de limpieza'),
                         t('Micro-ondas', 'Microwave', 'Microondas'),
@@ -155,10 +195,13 @@ const IntegracaoAmenities: React.FC = () => {
                     ].map((item, idx) => (
                         <div
                             key={idx}
-                            className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                            className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 shadow-sm text-xs font-medium text-stone-700 dark:text-stone-300"
                         >
-                            <CheckCircle2 size={12} className="text-green-500 shrink-0" />
-                            <span>{item}</span>
+                            <Check
+                                size={14}
+                                className="text-[#C85A32] dark:text-amber-400 shrink-0"
+                            />
+                            <span className="truncate">{item}</span>
                         </div>
                     ))}
                 </div>
@@ -166,14 +209,19 @@ const IntegracaoAmenities: React.FC = () => {
 
             {/* Banheiro Privativo */}
             <div>
-                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">
-                    {t(
-                        'No seu banheiro privativo:',
-                        'In your private bathroom:',
-                        'En su baño privado:'
-                    )}
-                </h4>
-                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-sky-100 dark:bg-sky-500/15 p-1.5 rounded-lg text-sky-600 dark:text-sky-400">
+                        <ShowerHead size={16} />
+                    </div>
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                        {t(
+                            'No seu banheiro privativo:',
+                            'In your private bathroom:',
+                            'En su baño privado:'
+                        )}
+                    </h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     {[
                         t('Vaso sanitário', 'Toilet', 'Inodoro'),
                         t('Banheira ou chuveiro', 'Bath or shower', 'Bañera o ducha'),
@@ -182,10 +230,10 @@ const IntegracaoAmenities: React.FC = () => {
                     ].map((item, idx) => (
                         <div
                             key={idx}
-                            className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                            className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 shadow-sm text-xs font-medium text-stone-700 dark:text-stone-300"
                         >
-                            <CheckCircle2 size={12} className="text-green-500 shrink-0" />
-                            <span>{item}</span>
+                            <Check size={14} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                            <span className="truncate">{item}</span>
                         </div>
                     ))}
                 </div>
@@ -193,14 +241,19 @@ const IntegracaoAmenities: React.FC = () => {
 
             {/* Comodidades do Apartamento */}
             <div>
-                <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200 mb-3">
-                    {t(
-                        'Comodidades do apartamento:',
-                        'Apartment amenities:',
-                        'Comodidades del apartamento:'
-                    )}
-                </h4>
-                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-orange-100 dark:bg-orange-500/15 p-1.5 rounded-lg text-[#C85A32] dark:text-amber-400">
+                        <Home size={16} />
+                    </div>
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                        {t(
+                            'Comodidades do apartamento:',
+                            'Apartment amenities:',
+                            'Comodidades del apartamento:'
+                        )}
+                    </h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     {[
                         t('Ar-condicionado', 'Air conditioning', 'Aire acondicionado'),
                         t('Cozinha', 'Kitchen', 'Cocina'),
@@ -243,23 +296,31 @@ const IntegracaoAmenities: React.FC = () => {
                     ].map((item, idx) => (
                         <div
                             key={idx}
-                            className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400"
+                            className="flex items-start gap-2 p-2.5 rounded-xl bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 shadow-sm text-xs font-medium text-stone-700 dark:text-stone-300"
                         >
-                            <CheckCircle2 size={12} className="text-green-500 shrink-0 mt-0.5" />
-                            <span>{item}</span>
+                            <Check
+                                size={13}
+                                className="text-[#C85A32] dark:text-amber-400 shrink-0 mt-0.5"
+                            />
+                            <span className="leading-tight">{item}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Fumantes */}
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-gray-200 mt-2">
-                <span>{t('Fumantes:', 'Smokers:', 'Fumadores:')}</span>
-                <span className="font-normal text-gray-600 dark:text-gray-400">
-                    {t('Não é permitido fumar', 'No smoking', 'Prohibido fumar')}
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-stone-100/80 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 text-xs text-stone-800 dark:text-stone-200">
+                <CigaretteOff size={16} className="text-stone-500 dark:text-stone-400 shrink-0" />
+                <span>
+                    <strong className="font-bold mr-1">
+                        {t('Fumantes:', 'Smokers:', 'Fumadores:')}
+                    </strong>
+                    <span className="text-stone-600 dark:text-stone-400">
+                        {t('Não é permitido fumar', 'No smoking', 'Prohibido fumar')}
+                    </span>
                 </span>
             </div>
-        </>
+        </div>
     );
 };
 
@@ -269,18 +330,18 @@ const IntegracaoAmenities: React.FC = () => {
 const LiliAmenities: React.FC = () => {
     const { t } = useLanguage();
     return (
-        <>
+        <div className="space-y-6">
             {/* Sala de Estar */}
             <div>
                 <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600 dark:text-blue-400">
+                    <div className="bg-amber-100 dark:bg-amber-500/15 p-1.5 rounded-lg text-[#C85A32] dark:text-amber-400">
                         <Tv size={16} />
                     </div>
-                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
                         {t('Sala de Estar', 'Living Room', 'Sala de Estar')}
                     </h4>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     {[
                         t('TV de 50"', '50" TV', 'TV de 50"'),
                         t('Cafeteira', 'Coffee maker', 'Cafetera'),
@@ -289,11 +350,13 @@ const LiliAmenities: React.FC = () => {
                     ].map((item, idx) => (
                         <div
                             key={idx}
-                            className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm"
+                            className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 shadow-sm text-xs font-medium text-stone-700 dark:text-stone-300"
                         >
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                {item}
-                            </span>
+                            <Check
+                                size={14}
+                                className="text-[#C85A32] dark:text-amber-400 shrink-0"
+                            />
+                            <span className="truncate">{item}</span>
                         </div>
                     ))}
                 </div>
@@ -302,14 +365,14 @@ const LiliAmenities: React.FC = () => {
             {/* Cozinha Completa */}
             <div>
                 <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-green-100 dark:bg-green-900/30 p-1.5 rounded-lg text-green-600 dark:text-green-400">
+                    <div className="bg-emerald-100 dark:bg-emerald-500/15 p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400">
                         <Utensils size={16} />
                     </div>
-                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
                         {t('Cozinha Completa', 'Full Kitchen', 'Cocina Completa')}
                     </h4>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     {[
                         t('Frigobar', 'Mini-Fridge', 'Frigobar'),
                         t('Microondas', 'Microwave', 'Microondas'),
@@ -320,15 +383,17 @@ const LiliAmenities: React.FC = () => {
                     ].map((item, idx) => (
                         <div
                             key={idx}
-                            className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm"
+                            className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 shadow-sm text-xs font-medium text-stone-700 dark:text-stone-300"
                         >
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                {item}
-                            </span>
+                            <Check
+                                size={14}
+                                className="text-emerald-600 dark:text-emerald-400 shrink-0"
+                            />
+                            <span className="truncate">{item}</span>
                         </div>
                     ))}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-1">
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-2 pl-1 italic">
                     {t(
                         '+ Panelas, louça e talheres.',
                         '+ Pots, crockery and cutlery.',
@@ -340,14 +405,14 @@ const LiliAmenities: React.FC = () => {
             {/* Quarto Acolhedor */}
             <div>
                 <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg text-purple-600 dark:text-purple-400">
+                    <div className="bg-orange-100 dark:bg-orange-500/15 p-1.5 rounded-lg text-orange-600 dark:text-orange-400">
                         <Wind size={16} />
                     </div>
-                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">
+                    <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
                         {t('Quarto Acolhedor', 'Cozy Bedroom', 'Habitación Acogedora')}
                     </h4>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     {[
                         t('Ar-condicionado', 'Air conditioning', 'Aire acondicionado'),
                         t('Ventilador', 'Fan', 'Ventilador'),
@@ -357,28 +422,30 @@ const LiliAmenities: React.FC = () => {
                     ].map((item, idx) => (
                         <div
                             key={idx}
-                            className="border border-gray-100 dark:border-gray-700 rounded-xl p-2.5 text-center bg-white dark:bg-gray-800 shadow-sm"
+                            className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 shadow-sm text-xs font-medium text-stone-700 dark:text-stone-300"
                         >
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                {item}
-                            </span>
+                            <Check
+                                size={14}
+                                className="text-orange-600 dark:text-orange-400 shrink-0"
+                            />
+                            <span className="truncate">{item}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Banheiro & Home Office */}
-            <div className="grid grid-cols-2 gap-4">
-                <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 rounded-2xl p-4 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-cyan-100 dark:bg-cyan-900/30 p-1.5 rounded-lg text-cyan-600 dark:text-cyan-400">
+                        <div className="bg-sky-100 dark:bg-sky-500/15 p-1.5 rounded-lg text-sky-600 dark:text-sky-400">
                             <ShowerHead size={16} />
                         </div>
-                        <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">
+                        <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
                             {t('Banheiro', 'Bathroom', 'Baño')}
                         </h4>
                     </div>
-                    <ul className="space-y-1.5">
+                    <ul className="space-y-2">
                         {[
                             t('Chuveiro Elétrico', 'Electric Shower', 'Ducha Eléctrica'),
                             t('Secador de Cabelo', 'Hair dryer', 'Secador de pelo'),
@@ -386,32 +453,36 @@ const LiliAmenities: React.FC = () => {
                         ].map((item, idx) => (
                             <li
                                 key={idx}
-                                className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5"
+                                className="text-xs text-stone-600 dark:text-stone-400 flex items-center gap-2"
                             >
-                                <span className="w-1 h-1 rounded-full bg-cyan-500"></span> {item}
+                                <Check size={12} className="text-sky-500 shrink-0" />
+                                <span>{item}</span>
                             </li>
                         ))}
                     </ul>
                 </div>
-                <div>
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-lg text-indigo-600 dark:text-indigo-400">
-                            <Briefcase size={16} />
+
+                <div className="bg-white dark:bg-[#241C19] border border-stone-200/80 dark:border-amber-500/15 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="bg-amber-100 dark:bg-amber-500/15 p-1.5 rounded-lg text-[#C85A32] dark:text-amber-400">
+                                <Briefcase size={16} />
+                            </div>
+                            <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                                {t('Home Office', 'Home Office', 'Oficina en Casa')}
+                            </h4>
                         </div>
-                        <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-200">
-                            {t('Home Office', 'Home Office', 'Oficina en Casa')}
-                        </h4>
+                        <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-sans">
+                            {t(
+                                'Espaço com iluminação confortável e conexão rápida. Ideal para reuniões e estudos.',
+                                'Space with comfortable lighting and fast connection. Ideal for meetings and studies.',
+                                'Espacio con iluminación cómoda y conexión rápida. Ideal para reuniones y estudios.'
+                            )}
+                        </p>
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                        {t(
-                            'Espaço com iluminação confortável e conexão rápida. Ideal para reuniões e estudos.',
-                            'Space with comfortable lighting and fast connection. Ideal for meetings and studies.',
-                            'Espacio con iluminación cómoda y conexión rápida. Ideal para reuniones y estudios.'
-                        )}
-                    </p>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

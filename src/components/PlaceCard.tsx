@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { PlaceRecommendation } from '../types';
 import {
     MapPin,
@@ -23,10 +24,20 @@ interface PlaceCardProps {
 
 const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(true); // Default expanded as per UX request
     const { isFavorite, toggleFavorite } = useFavorites();
     const { t } = useLanguage();
     const favorite = place.id ? isFavorite(place.id) : false;
+
+    // Travar scroll do body quando o modal estiver aberto
+    useEffect(() => {
+        if (isOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [isOpen]);
 
     // Translatable Content
     const displayName = t(place.name, place.name_en || place.name, place.name_es || place.name);
@@ -41,11 +52,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
         if (place.id) {
             toggleFavorite(place.id);
         }
-    };
-
-    const toggleExpand = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsExpanded(!isExpanded);
     };
 
     const openModal = (e: React.MouseEvent) => {
@@ -82,406 +88,417 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
 
     return (
         <>
-            {/* --- CARD EXPANDÍVEL --- */}
-            <div
-                className={`flex flex-col bg-white dark:bg-gray-800 rounded-[20px] overflow-hidden border border-gray-100 dark:border-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:bg-gray-750 transition-all duration-300 w-full group relative ${isExpanded ? 'ring-2 ring-orange-100 dark:ring-gray-600' : ''}`}
-            >
-                {/* Header Collapsed (Always Visible) */}
+            {/* --- CARD EDITORIAL DE LUGAR --- */}
+            <div className="flex flex-col bg-white dark:bg-[#1F1916] rounded-[22px] overflow-hidden border border-stone-200/80 dark:border-amber-500/15 shadow-[0_2px_10px_rgba(28,22,20,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(28,22,20,0.09)] transition-all duration-300 w-full group mb-3">
+                {/* Imagem de Capa Panorâmica (Única) com Tags Flutuantes */}
                 <div
-                    onClick={toggleExpand}
-                    className="flex items-center p-3 cursor-pointer min-h-[72px]"
+                    onClick={openModal}
+                    className="w-full h-36 sm:h-44 relative overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-800"
                 >
-                    {/* Tiny Thumbnail */}
-                    <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
-                        <OptimizedImage
-                            src={place.imageUrl}
-                            alt={place.name}
-                            className="w-full h-full object-cover"
-                        />
-                        {place.eventDate && (
-                            <div className="absolute inset-0 bg-pink-900/40 flex items-center justify-center">
-                                <span className="text-[10px] font-bold text-white">
-                                    {getFormattedEventDate()}
-                                </span>
-                            </div>
-                        )}
+                    <OptimizedImage
+                        src={place.imageUrl}
+                        alt={place.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    />
+
+                    {/* Vinheta fotográfica suave */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+
+                    {/* Tag Culinária / Categoria Flutuante (Esquerda) */}
+                    <div className="absolute top-3 left-3 z-10">
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-md text-amber-200 border border-white/15 shadow-sm">
+                            {(() => {
+                                const rawTag = place.tags?.[0] || place.category || 'Local';
+                                const tagMap: Record<string, string> = {
+                                    burgers: t('Hambúrguer', 'Burgers', 'Hamburguesas'),
+                                    pizza: t('Pizza', 'Pizza', 'Pizza'),
+                                    japonesa: t('Japonesa', 'Japanese', 'Japonesa'),
+                                    doces: t('Doces', 'Sweets', 'Dulces'),
+                                    brasileira: t('Brasileira', 'Brazilian', 'Brasileña'),
+                                    saudavel: t('Saudável', 'Healthy', 'Saludable'),
+                                    bebidas: t('Bebidas', 'Drinks', 'Bebidas'),
+                                    almoço: t('Almoço', 'Lunch', 'Almuerzo'),
+                                    espetinho: t('Espetinho', 'Skewers', 'Brochetas'),
+                                    local: t('Local', 'Place', 'Lugar'),
+                                    lanches: t('Lanches', 'Snacks', 'Bocadillos'),
+                                    jantar: t('Jantar', 'Dinner', 'Cena'),
+                                    café: t('Café', 'Coffee', 'Café'),
+                                    padaria: t('Padaria', 'Bakery', 'Panadería'),
+                                    sorvete: t('Sorvete', 'Ice Cream', 'Helado'),
+                                    açaí: t('Açaí', 'Acai', 'Açaí'),
+                                    massas: t('Massas', 'Pasta', 'Pastas'),
+                                    'frutos do mar': t('Frutos do Mar', 'Seafood', 'Mariscos'),
+                                    carnes: t('Carnes', 'Steakhouse', 'Carnes'),
+                                    vegetariano: t('Vegetariano', 'Vegetarian', 'Vegetariano'),
+                                    vegano: t('Vegano', 'Vegan', 'Vegano'),
+                                    bar: t('Bar', 'Bar', 'Bar'),
+                                    pub: t('Pub', 'Pub', 'Pub'),
+                                    balada: t('Balada', 'Club', 'Discoteca'),
+                                    'música ao vivo': t(
+                                        'Música ao Vivo',
+                                        'Live Music',
+                                        'Música en Vivo'
+                                    ),
+                                    'happy hour': t('Happy Hour', 'Happy Hour', 'Happy Hour'),
+                                    delivery: t('Delivery', 'Delivery', 'Entrega'),
+                                    retirada: t('Retirada', 'Pick-up', 'Recogida'),
+                                    rodízio: t('Rodízio', 'All-you-can-eat', 'Rodizio'),
+                                    'self-service': t('Self-Service', 'Buffet', 'Buffet'),
+                                    'a la carte': t('À La Carte', 'À La Carte', 'A la Carta'),
+                                    'fast food': t('Fast Food', 'Fast Food', 'Comida Rápida'),
+                                    gourmet: t('Gourmet', 'Gourmet', 'Gourmet'),
+                                    artesanal: t('Artesanal', 'Artisanal', 'Artesanal'),
+                                    regional: t('Regional', 'Regional', 'Regional'),
+                                    internacional: t(
+                                        'Internacional',
+                                        'International',
+                                        'Internacional'
+                                    ),
+                                };
+                                return tagMap[rawTag.toLowerCase()] || rawTag;
+                            })()}
+                        </span>
                     </div>
 
-                    {/* Basic Info */}
-                    <div className="ml-3 flex-1 min-w-0 flex flex-col justify-center">
-                        <h4 className="font-heading font-bold text-gray-900 dark:text-white text-sm leading-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1 notranslate">
-                            {displayName}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">
-                                {(() => {
-                                    const rawTag = place.tags?.[0] || place.category || 'Local';
-                                    const tagMap: Record<string, string> = {
-                                        burgers: t('Hambúrguer', 'Burgers', 'Hamburguesas'),
-                                        pizza: t('Pizza', 'Pizza', 'Pizza'),
-                                        japonesa: t('Japonesa', 'Japanese', 'Japonesa'),
-                                        doces: t('Doces', 'Sweets', 'Dulces'),
-                                        brasileira: t('Brasileira', 'Brazilian', 'Brasileña'),
-                                        saudavel: t('Saudável', 'Healthy', 'Saludable'),
-                                        bebidas: t('Bebidas', 'Drinks', 'Bebidas'),
-                                        almoço: t('Almoço', 'Lunch', 'Almuerzo'),
-                                        espetinho: t('Espetinho', 'Skewers', 'Brochetas'),
-                                        local: t('Local', 'Place', 'Lugar'),
-                                        lanches: t('Lanches', 'Snacks', 'Bocadillos'),
-                                        jantar: t('Jantar', 'Dinner', 'Cena'),
-                                        café: t('Café', 'Coffee', 'Café'),
-                                        padaria: t('Padaria', 'Bakery', 'Panadería'),
-                                        sorvete: t('Sorvete', 'Ice Cream', 'Helado'),
-                                        açaí: t('Açaí', 'Acai', 'Açaí'),
-                                        massas: t('Massas', 'Pasta', 'Pastas'),
-                                        'frutos do mar': t('Frutos do Mar', 'Seafood', 'Mariscos'),
-                                        carnes: t('Carnes', 'Steakhouse', 'Carnes'),
-                                        vegetariano: t('Vegetariano', 'Vegetarian', 'Vegetariano'),
-                                        vegano: t('Vegano', 'Vegan', 'Vegano'),
-                                        bar: t('Bar', 'Bar', 'Bar'),
-                                        pub: t('Pub', 'Pub', 'Pub'),
-                                        balada: t('Balada', 'Club', 'Discoteca'),
-                                        'música ao vivo': t(
-                                            'Música ao Vivo',
-                                            'Live Music',
-                                            'Música en Vivo'
-                                        ),
-                                        'happy hour': t('Happy Hour', 'Happy Hour', 'Happy Hour'),
-                                        delivery: t('Delivery', 'Delivery', 'Entrega'),
-                                        retirada: t('Retirada', 'Pick-up', 'Recogida'),
-                                        rodízio: t('Rodízio', 'All-you-can-eat', 'Rodizio'),
-                                        'self-service': t('Self-Service', 'Buffet', 'Buffet'),
-                                        'a la carte': t('À La Carte', 'À La Carte', 'A la Carta'),
-                                        'fast food': t('Fast Food', 'Fast Food', 'Comida Rápida'),
-                                        gourmet: t('Gourmet', 'Gourmet', 'Gourmet'),
-                                        artesanal: t('Artesanal', 'Artisanal', 'Artesanal'),
-                                        regional: t('Regional', 'Regional', 'Regional'),
-                                        internacional: t(
-                                            'Internacional',
-                                            'International',
-                                            'Internacional'
-                                        ),
-                                    };
-                                    return tagMap[rawTag.toLowerCase()] || rawTag;
-                                })()}
-                            </span>
-                            {place.distance && !place.eventDate && (
-                                <span className="flex items-center text-[10px] text-gray-400">
-                                    <span className="w-0.5 h-0.5 rounded-full bg-gray-300 mx-1.5" />
-                                    {cleanDistance(place.distance)}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Favorite Heart */}
+                    {/* Botão de Favoritar (Direita) */}
                     <button
+                        type="button"
                         onClick={handleToggleFavorite}
-                        className="p-2 mr-1 text-gray-400 active:scale-95 transition-all outline-none"
+                        aria-label="Salvar nos favoritos"
+                        className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/45 backdrop-blur-md text-white border border-white/15 hover:bg-black/60 active:scale-90 transition-all outline-none"
                     >
                         <Heart
-                            size={20}
-                            className={`transition-colors duration-300 ${favorite ? 'fill-red-500 text-red-500' : 'text-gray-300 hover:text-gray-400'}`}
+                            size={16}
+                            className={`transition-colors duration-300 ${
+                                favorite ? 'fill-red-500 text-red-500' : 'text-white/90'
+                            }`}
                         />
                     </button>
 
-                    {/* Chevron / Toggle Indicator */}
-                    <div
-                        className={`p-2 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-orange-500' : ''}`}
-                    >
-                        <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <path d="M6 9l6 6 6-6" />
-                        </svg>
+                    {/* Informações de Distância ou Data na Base da Imagem */}
+                    <div className="absolute bottom-2.5 left-3 right-3 z-10 flex items-center justify-between">
+                        {place.distance && !place.eventDate && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/55 backdrop-blur-md text-stone-200 text-[10px] font-bold">
+                                <Car size={11} className="text-amber-300" />
+                                <span>{cleanDistance(place.distance)}</span>
+                            </span>
+                        )}
+
+                        {place.eventDate && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#C85A32] text-white text-[10px] font-bold shadow-sm">
+                                <Calendar size={11} />
+                                <span>{getFormattedEventDate()}</span>
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                {/* Expanded Content (Animated) */}
-                <div
-                    className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
-                >
-                    <div className="overflow-hidden">
-                        <div className="p-3 pt-0 pb-4">
-                            {/* Full Image (Click to open modal) */}
-                            <div
-                                onClick={openModal}
-                                className="w-full h-32 rounded-xl overflow-hidden relative group/image cursor-pointer mb-3"
+                {/* Corpo do Card */}
+                <div className="p-4 sm:p-5 flex flex-col justify-between flex-1">
+                    <div>
+                        <h4
+                            onClick={openModal}
+                            className="font-heading font-bold text-stone-900 dark:text-stone-100 text-base leading-snug group-hover:text-[#C85A32] dark:group-hover:text-amber-300 transition-colors line-clamp-1 notranslate cursor-pointer mb-1.5"
+                        >
+                            {displayName}
+                        </h4>
+
+                        <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed line-clamp-2 font-sans font-medium mb-4">
+                            {displayDescription}
+                        </p>
+                    </div>
+
+                    {/* Barra de Ações com Design Harmonioso */}
+                    <div className="flex items-center gap-2 pt-1 border-t border-stone-100 dark:border-white/5">
+                        <button
+                            type="button"
+                            onClick={openModal}
+                            className="flex-1 py-2.5 bg-stone-100/80 dark:bg-white/5 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-amber-500/15 text-xs font-bold rounded-xl hover:bg-stone-200/70 dark:hover:bg-white/10 active:scale-95 transition-all text-center"
+                        >
+                            {t('Mais Detalhes', 'More Details', 'Más Detalles')}
+                        </button>
+
+                        {(place.orderLink || place.whatsapp) && !place.eventDate && (
+                            <a
+                                href={
+                                    place.orderLink ||
+                                    (place.whatsapp
+                                        ? `https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}`
+                                        : '#')
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`flex-1 py-2.5 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all ${
+                                    isAttraction
+                                        ? 'bg-gradient-to-r from-sky-600 to-indigo-600 shadow-sky-950/20 hover:from-sky-500 hover:to-indigo-500'
+                                        : 'bg-gradient-to-r from-[#C85A32] to-orange-600 shadow-orange-950/20 hover:from-orange-600 hover:to-orange-700'
+                                }`}
                             >
-                                <OptimizedImage
-                                    src={place.imageUrl}
-                                    alt={place.name}
-                                    className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-500"
-                                />
-                                <div className="absolute inset-0 bg-black/10 group-hover/image:bg-transparent transition-colors" />
-                            </div>
-
-                            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3 font-sans font-medium mb-3">
-                                {displayDescription}
-                            </p>
-
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={openModal}
-                                    className="flex-1 py-2 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                                >
-                                    {t('Mais Informações', 'More Info', 'Más Información')}
-                                </button>
-                                {(place.orderLink || place.whatsapp) && !place.eventDate && (
-                                    <a
-                                        href={
-                                            place.orderLink ||
-                                            (place.whatsapp
-                                                ? `https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}`
-                                                : '#')
-                                        }
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={(e) => e.stopPropagation()}
-                                        className={`flex-1 py-2 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all ${isAttraction ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'}`}
-                                    >
-                                        <ActionIcon size={12} />
-                                        {isAttraction
-                                            ? t('Reservar', 'Book', 'Reservar')
-                                            : t('Pedir', 'Order', 'Pedir')}
-                                    </a>
-                                )}
-                            </div>
-                        </div>
+                                <ActionIcon size={14} />
+                                <span>
+                                    {isAttraction
+                                        ? t('Reservar', 'Book', 'Reservar')
+                                        : t('Fazer Pedido', 'Order Now', 'Pedir')}
+                                </span>
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* --- MODAL DE DETALHES (POP-UP) --- */}
-            {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
-                    <div
-                        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
-                        onClick={() => setIsOpen(false)}
-                    ></div>
-
-                    <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[28px] overflow-hidden shadow-2xl relative z-10 animate-scaleIn flex flex-col max-h-[90vh] border border-white/10">
-                        <button
+            {/* --- MODAL DE DETALHES COMPLETO (POP-UP VIP) --- */}
+            {isOpen &&
+                typeof document !== 'undefined' &&
+                ReactDOM.createPortal(
+                    <div className="fixed inset-0 z-[180] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+                        <div
+                            className="absolute inset-0 bg-[#0E0B0A]/80 backdrop-blur-md transition-opacity"
                             onClick={() => setIsOpen(false)}
-                            className="absolute top-3 right-3 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors z-20"
-                        >
-                            <X size={18} />
-                        </button>
+                        ></div>
 
-                        <div className="h-56 shrink-0 relative bg-gray-100 dark:bg-gray-700">
-                            <OptimizedImage
-                                src={place.imageUrl}
-                                alt={place.name}
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none"></div>
-                            <div className="absolute bottom-0 left-0 w-full p-6">
-                                <h2 className="text-2xl font-heading font-bold text-white leading-tight pr-8 mb-2 shadow-sm notranslate">
-                                    {displayName}
-                                </h2>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {place.tags.slice(0, 3).map((tag, idx) => {
-                                        const tagMap: Record<string, string> = {
-                                            burgers: t('Hambúrguer', 'Burgers', 'Hamburguesas'),
-                                            pizza: t('Pizza', 'Pizza', 'Pizza'),
-                                            japonesa: t('Japonesa', 'Japanese', 'Japonesa'),
-                                            doces: t('Doces', 'Sweets', 'Dulces'),
-                                            brasileira: t('Brasileira', 'Brazilian', 'Brasileña'),
-                                            saudavel: t('Saudável', 'Healthy', 'Saludable'),
-                                            bebidas: t('Bebidas', 'Drinks', 'Bebidas'),
-                                            almoço: t('Almoço', 'Lunch', 'Almuerzo'),
-                                            espetinho: t('Espetinho', 'Skewers', 'Brochetas'),
-                                            local: t('Local', 'Place', 'Lugar'),
-                                            lanches: t('Lanches', 'Snacks', 'Bocadillos'),
-                                            jantar: t('Jantar', 'Dinner', 'Cena'),
-                                            café: t('Café', 'Coffee', 'Café'),
-                                            padaria: t('Padaria', 'Bakery', 'Panadería'),
-                                            sorvete: t('Sorvete', 'Ice Cream', 'Helado'),
-                                            açaí: t('Açaí', 'Acai', 'Açaí'),
-                                            massas: t('Massas', 'Pasta', 'Pastas'),
-                                            'frutos do mar': t(
-                                                'Frutos do Mar',
-                                                'Seafood',
-                                                'Mariscos'
-                                            ),
-                                            carnes: t('Carnes', 'Steakhouse', 'Carnes'),
-                                            vegetariano: t(
-                                                'Vegetariano',
-                                                'Vegetarian',
-                                                'Vegetariano'
-                                            ),
-                                            vegano: t('Vegano', 'Vegan', 'Vegano'),
-                                            bar: t('Bar', 'Bar', 'Bar'),
-                                            pub: t('Pub', 'Pub', 'Pub'),
-                                            balada: t('Balada', 'Club', 'Discoteca'),
-                                            'música ao vivo': t(
-                                                'Música ao Vivo',
-                                                'Live Music',
-                                                'Música en Vivo'
-                                            ),
-                                            'happy hour': t(
-                                                'Happy Hour',
-                                                'Happy Hour',
-                                                'Happy Hour'
-                                            ),
-                                            delivery: t('Delivery', 'Delivery', 'Entrega'),
-                                            retirada: t('Retirada', 'Pick-up', 'Recogida'),
-                                            rodízio: t('Rodízio', 'All-you-can-eat', 'Rodizio'),
-                                            'self-service': t('Self-Service', 'Buffet', 'Buffet'),
-                                            'a la carte': t(
-                                                'À La Carte',
-                                                'À La Carte',
-                                                'A la Carta'
-                                            ),
-                                            'fast food': t(
-                                                'Fast Food',
-                                                'Fast Food',
-                                                'Comida Rápida'
-                                            ),
-                                            gourmet: t('Gourmet', 'Gourmet', 'Gourmet'),
-                                            artesanal: t('Artesanal', 'Artisanal', 'Artesanal'),
-                                            regional: t('Regional', 'Regional', 'Regional'),
-                                            internacional: t(
-                                                'Internacional',
-                                                'International',
-                                                'Internacional'
-                                            ),
-                                        };
-                                        return (
-                                            <span
-                                                key={idx}
-                                                className="text-[9px] font-bold font-sans uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-lg backdrop-blur-md border border-white/10 shadow-sm"
-                                            >
-                                                {tagMap[tag.toLowerCase()] || tag}
-                                            </span>
-                                        );
-                                    })}
+                        <div className="bg-[#FAF7F2] dark:bg-[#1C1614] w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl relative z-10 animate-slideUp sm:animate-scaleIn flex flex-col max-h-[92vh] border border-stone-200/80 dark:border-amber-500/15">
+                            {/* Botão Fechar */}
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                aria-label="Fechar detalhes do local"
+                                className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white p-2.5 rounded-full backdrop-blur-md border border-white/20 transition-all z-20 active:scale-95 shadow-lg"
+                            >
+                                <X size={18} />
+                            </button>
+
+                            {/* Topo: Imagem Imersiva com Título sobre Vinheta Escura */}
+                            <div className="h-60 sm:h-64 shrink-0 relative bg-stone-900">
+                                <OptimizedImage
+                                    src={place.imageUrl}
+                                    alt={place.name}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1614] via-[#1C1614]/40 to-transparent pointer-events-none"></div>
+
+                                <div className="absolute bottom-0 left-0 w-full p-6">
+                                    <div className="flex flex-wrap gap-1.5 mb-2.5">
+                                        {place.tags.slice(0, 3).map((tag, idx) => {
+                                            const tagMap: Record<string, string> = {
+                                                burgers: t('Hambúrguer', 'Burgers', 'Hamburguesas'),
+                                                pizza: t('Pizza', 'Pizza', 'Pizza'),
+                                                japonesa: t('Japonesa', 'Japanese', 'Japonesa'),
+                                                doces: t('Doces', 'Sweets', 'Dulces'),
+                                                brasileira: t(
+                                                    'Brasileira',
+                                                    'Brazilian',
+                                                    'Brasileña'
+                                                ),
+                                                saudavel: t('Saudável', 'Healthy', 'Saludable'),
+                                                bebidas: t('Bebidas', 'Drinks', 'Bebidas'),
+                                                almoço: t('Almoço', 'Lunch', 'Almuerzo'),
+                                                espetinho: t('Espetinho', 'Skewers', 'Brochetas'),
+                                                local: t('Local', 'Place', 'Lugar'),
+                                                lanches: t('Lanches', 'Snacks', 'Bocadillos'),
+                                                jantar: t('Jantar', 'Dinner', 'Cena'),
+                                                café: t('Café', 'Coffee', 'Café'),
+                                                padaria: t('Padaria', 'Bakery', 'Panadería'),
+                                                sorvete: t('Sorvete', 'Ice Cream', 'Helado'),
+                                                açaí: t('Açaí', 'Acai', 'Açaí'),
+                                                massas: t('Massas', 'Pasta', 'Pastas'),
+                                                'frutos do mar': t(
+                                                    'Frutos do Mar',
+                                                    'Seafood',
+                                                    'Mariscos'
+                                                ),
+                                                carnes: t('Carnes', 'Steakhouse', 'Carnes'),
+                                                vegetariano: t(
+                                                    'Vegetariano',
+                                                    'Vegetarian',
+                                                    'Vegetariano'
+                                                ),
+                                                vegano: t('Vegano', 'Vegan', 'Vegano'),
+                                                bar: t('Bar', 'Bar', 'Bar'),
+                                                pub: t('Pub', 'Pub', 'Pub'),
+                                                balada: t('Balada', 'Club', 'Discoteca'),
+                                                'música ao vivo': t(
+                                                    'Música ao Vivo',
+                                                    'Live Music',
+                                                    'Música en Vivo'
+                                                ),
+                                                'happy hour': t(
+                                                    'Happy Hour',
+                                                    'Happy Hour',
+                                                    'Happy Hour'
+                                                ),
+                                                delivery: t('Delivery', 'Delivery', 'Entrega'),
+                                                retirada: t('Retirada', 'Pick-up', 'Recogida'),
+                                                rodízio: t('Rodízio', 'All-you-can-eat', 'Rodizio'),
+                                                'self-service': t(
+                                                    'Self-Service',
+                                                    'Buffet',
+                                                    'Buffet'
+                                                ),
+                                                'a la carte': t(
+                                                    'À La Carte',
+                                                    'À La Carte',
+                                                    'A la Carta'
+                                                ),
+                                                'fast food': t(
+                                                    'Fast Food',
+                                                    'Fast Food',
+                                                    'Comida Rápida'
+                                                ),
+                                                gourmet: t('Gourmet', 'Gourmet', 'Gourmet'),
+                                                artesanal: t('Artesanal', 'Artisanal', 'Artesanal'),
+                                                regional: t('Regional', 'Regional', 'Regional'),
+                                                internacional: t(
+                                                    'Internacional',
+                                                    'International',
+                                                    'Internacional'
+                                                ),
+                                            };
+                                            return (
+                                                <span
+                                                    key={idx}
+                                                    className="text-[10px] font-bold font-sans uppercase tracking-wider bg-amber-500/25 text-amber-200 px-2.5 py-0.5 rounded-full backdrop-blur-md border border-amber-400/30 shadow-sm"
+                                                >
+                                                    {tagMap[tag.toLowerCase()] || tag}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                    <h2 className="text-2xl sm:text-3xl font-display font-semibold text-stone-50 leading-tight pr-6 drop-shadow-md notranslate">
+                                        {displayName}
+                                    </h2>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="p-6 overflow-y-auto">
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-6 font-sans font-medium">
-                                {displayDescription}
-                            </p>
+                            {/* Conteúdo do Modal com Scroll Suave */}
+                            <div className="p-6 overflow-y-auto space-y-4">
+                                <p className="text-stone-700 dark:text-stone-300 leading-relaxed text-sm font-sans font-medium">
+                                    {displayDescription}
+                                </p>
 
-                            <div className="space-y-5">
-                                {place.eventDate && (
-                                    <div className="flex items-start gap-3 bg-pink-50 dark:bg-pink-900/20 p-4 rounded-2xl border border-pink-100 dark:border-pink-800/30">
-                                        <div className="bg-pink-100 dark:bg-pink-900/40 p-2 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm">
-                                            <Calendar size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-pink-500 dark:text-pink-400 uppercase font-bold mb-0.5 font-heading tracking-wider">
-                                                {t('Quando', 'When', 'Cuándo')}
-                                            </p>
-                                            <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug">
-                                                {place.eventDate.split('-').reverse().join('/')}
-                                                {place.eventEndDate &&
-                                                    ` ${t('até', 'until', 'hasta')} ${place.eventEndDate.split('-').reverse().join('/')}`}
-                                            </p>
-                                            {place.eventTime && (
-                                                <div className="mt-1 flex items-center gap-1 text-xs text-pink-700 dark:text-pink-300 font-medium">
-                                                    <Clock size={12} />
-                                                    {place.eventTime}{' '}
-                                                    {place.eventEndTime
-                                                        ? `- ${place.eventEndTime}`
-                                                        : ''}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {place.address && (
-                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="bg-white dark:bg-gray-700 p-2 rounded-xl text-orange-500 dark:text-orange-400 shadow-sm border border-orange-50 dark:border-orange-900/30">
-                                            <MapPin size={18} />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-bold mb-0.5 font-heading tracking-wider">
-                                                {t('Localização', 'Location', 'Ubicación')}
-                                            </p>
-                                            <p className="text-gray-900 dark:text-white text-sm font-bold font-sans leading-snug notranslate">
-                                                {place.address}
-                                            </p>
-                                            {place.distance && (
-                                                <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1 font-medium font-sans">
-                                                    <Car size={12} />{' '}
-                                                    {t('Aprox.', 'Approx.', 'Aprox.')}{' '}
-                                                    {place.distance}
+                                <div className="space-y-3.5">
+                                    {place.eventDate && (
+                                        <div className="flex items-start gap-3.5 bg-amber-50/80 dark:bg-amber-500/10 p-4 rounded-2xl border border-amber-200/70 dark:border-amber-500/25 shadow-sm">
+                                            <div className="bg-amber-100 dark:bg-amber-500/20 p-2.5 rounded-xl text-[#C85A32] dark:text-amber-300 shrink-0">
+                                                <Calendar size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-[#C85A32] dark:text-amber-400 uppercase font-bold mb-0.5 font-heading tracking-wider">
+                                                    {t('Quando', 'When', 'Cuándo')}
                                                 </p>
-                                            )}
+                                                <p className="text-stone-900 dark:text-stone-100 text-sm font-bold font-sans leading-snug">
+                                                    {place.eventDate.split('-').reverse().join('/')}
+                                                    {place.eventEndDate &&
+                                                        ` ${t('até', 'until', 'hasta')} ${place.eventEndDate.split('-').reverse().join('/')}`}
+                                                </p>
+                                                {place.eventTime && (
+                                                    <div className="mt-1 flex items-center gap-1.5 text-xs text-stone-600 dark:text-amber-200/80 font-medium">
+                                                        <Clock size={12} />
+                                                        <span>
+                                                            {place.eventTime}{' '}
+                                                            {place.eventEndTime
+                                                                ? `- ${place.eventEndTime}`
+                                                                : ''}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
+                                    )}
+
+                                    {place.address && (
+                                        <div className="flex items-start gap-3.5 bg-white dark:bg-[#241C19] p-4 rounded-2xl border border-stone-200/80 dark:border-amber-500/15 shadow-sm">
+                                            <div className="bg-amber-50 dark:bg-amber-500/15 p-2.5 rounded-xl text-[#C85A32] dark:text-amber-400 border border-amber-200/60 dark:border-amber-500/20 shrink-0">
+                                                <MapPin size={18} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase font-bold mb-0.5 font-heading tracking-wider">
+                                                    {t('Localização', 'Location', 'Ubicación')}
+                                                </p>
+                                                <p className="text-stone-900 dark:text-stone-100 text-sm font-bold font-sans leading-snug notranslate">
+                                                    {place.address}
+                                                </p>
+                                                {place.distance && (
+                                                    <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 flex items-center gap-1 font-medium font-sans">
+                                                        <Car size={12} />{' '}
+                                                        <span>
+                                                            {t('Aprox.', 'Approx.', 'Aprox.')}{' '}
+                                                            {place.distance}
+                                                        </span>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Bloco de Ações Principais com Respiro Amplo */}
+                                    <div className="flex flex-col gap-2.5 pt-2 pb-2">
+                                        {place.orderLink && (
+                                            <a
+                                                href={place.orderLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#C85A32] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold font-sans py-3.5 rounded-2xl transition-all shadow-lg shadow-orange-950/20 active:scale-[0.98] text-sm"
+                                            >
+                                                <ActionIcon size={18} />
+                                                <span>{actionLabel}</span>
+                                            </a>
+                                        )}
+
+                                        {place.address && googleMapsUrl && (
+                                            <a
+                                                href={googleMapsUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`flex items-center justify-center gap-2 w-full font-bold font-sans py-3.5 rounded-2xl transition-all active:scale-[0.98] text-sm ${
+                                                    place.orderLink
+                                                        ? 'bg-white dark:bg-[#241C19] border border-stone-200/90 dark:border-amber-500/25 text-stone-800 dark:text-amber-200 hover:bg-amber-50/50 dark:hover:bg-[#2C221E] shadow-sm'
+                                                        : 'bg-gradient-to-r from-[#C85A32] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-950/20'
+                                                }`}
+                                            >
+                                                <ExternalLink size={18} />
+                                                <span>
+                                                    {t(
+                                                        'Abrir no Google Maps',
+                                                        'Open in Google Maps',
+                                                        'Abrir en Google Maps'
+                                                    )}
+                                                </span>
+                                            </a>
+                                        )}
+
+                                        {place.phoneNumber && (
+                                            <a
+                                                href={`tel:${place.phoneNumber.replace(/[^0-9]/g, '')}`}
+                                                className="flex items-center justify-center gap-2 w-full bg-white dark:bg-[#241C19] border border-stone-200/90 dark:border-amber-500/20 text-stone-800 dark:text-stone-200 font-bold font-sans py-3.5 rounded-2xl hover:bg-stone-100 dark:hover:bg-[#2C221E] transition-all active:scale-[0.98] text-sm shadow-sm"
+                                            >
+                                                <Phone
+                                                    size={18}
+                                                    className="text-emerald-600 dark:text-emerald-400"
+                                                />
+                                                <span>
+                                                    {t('Ligar Agora', 'Call Now', 'Llamar Ahora')}
+                                                </span>
+                                            </a>
+                                        )}
+
+                                        {place.whatsapp && (
+                                            <a
+                                                href={`https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center justify-center gap-2 w-full bg-emerald-600 text-white font-bold font-sans py-3.5 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-950/20 active:scale-[0.98] text-sm"
+                                            >
+                                                <MessageCircle size={18} />
+                                                <span>WhatsApp</span>
+                                            </a>
+                                        )}
                                     </div>
-                                )}
-
-                                <div className="flex flex-col gap-2.5">
-                                    {place.orderLink && (
-                                        <a
-                                            href={place.orderLink}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`flex items-center justify-center gap-2 w-full text-white font-bold font-sans py-3.5 rounded-xl transition-all shadow-lg active:scale-[0.98] text-sm ${isAttraction ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-500/20' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/20'}`}
-                                        >
-                                            <ActionIcon size={18} />
-                                            {actionLabel}
-                                        </a>
-                                    )}
-
-                                    {place.address && googleMapsUrl && !place.orderLink && (
-                                        <a
-                                            href={googleMapsUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center justify-center gap-2 w-full bg-orange-600 text-white font-bold font-sans py-3.5 rounded-xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98] text-sm"
-                                        >
-                                            <ExternalLink size={18} />
-                                            {t(
-                                                'Abrir no Google Maps',
-                                                'Open in Google Maps',
-                                                'Abrir en Google Maps'
-                                            )}
-                                        </a>
-                                    )}
-
-                                    {place.phoneNumber && (
-                                        <a
-                                            href={`tel:${place.phoneNumber.replace(/[^0-9]/g, '')}`}
-                                            className="flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-bold font-sans py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-200 transition-all active:scale-[0.98] text-sm"
-                                        >
-                                            <Phone
-                                                size={18}
-                                                className="text-green-600 dark:text-green-400"
-                                            />
-                                            {t('Ligar Agora', 'Call Now', 'Llamar Ahora')}
-                                        </a>
-                                    )}
-
-                                    {place.whatsapp && (
-                                        <a
-                                            href={`https://wa.me/55${place.whatsapp.replace(/[^0-9]/g, '')}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold font-sans py-3.5 rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 active:scale-[0.98] text-sm"
-                                        >
-                                            <MessageCircle size={18} />
-                                            WhatsApp
-                                        </a>
-                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </div>,
+                    document.body
+                )}
         </>
     );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import {
     User,
     Phone,
@@ -26,6 +26,7 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
     setGuestPhone,
     previousGuests,
 }) => {
+    const fieldId = useId();
     const handleSelectGuest = (item: GuestHistoryItem) => {
         const { reservation } = item;
         setGuestName(reservation.guestName);
@@ -69,7 +70,12 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
     return (
         <div className="grid grid-cols-1 gap-4">
             <div>
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1">Hóspede</label>
+                <label
+                    htmlFor={`${fieldId}-name`}
+                    className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase ml-1"
+                >
+                    Hóspede
+                </label>
                 <div className="relative group">
                     <User
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500"
@@ -77,6 +83,9 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
                     />
                     <input
                         type="text"
+                        id={`${fieldId}-name`}
+                        autoComplete="name"
+                        aria-required="true"
                         value={guestName}
                         onChange={handleNameChange}
                         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
@@ -91,9 +100,9 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
                                     onClick={() => selectGuest(item)}
                                     className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex justify-between items-center transition-colors group/item border-b border-gray-100 dark:border-gray-700 last:border-0"
                                 >
-                                    <div className="flex flex-col gap-0.5">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover/item:text-orange-600 dark:group-hover/item:text-orange-400 transition-colors">
+                                    <div className="min-w-0 flex flex-col gap-0.5">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="min-w-0 break-words text-sm font-bold text-gray-800 dark:text-gray-200 group-hover/item:text-orange-700 dark:group-hover/item:text-orange-300 transition-colors">
                                                 {item.reservation.guestName}
                                             </span>
                                             {item.visitCount > 1 && (
@@ -107,7 +116,7 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-gray-400">
+                                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-300">
                                             {item.reservation.guestPhone && (
                                                 <span className="flex items-center gap-1">
                                                     <Phone size={10} />{' '}
@@ -149,7 +158,10 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
             </div>
 
             <div>
-                <label className="text-xs font-bold text-gray-400 uppercase ml-1">
+                <label
+                    htmlFor={`${fieldId}-phone`}
+                    className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase ml-1"
+                >
                     WhatsApp (Opcional)
                 </label>
                 <div className="relative group">
@@ -159,6 +171,8 @@ const GuestInfoSection: React.FC<GuestInfoSectionProps> = ({
                     />
                     <input
                         type="tel"
+                        id={`${fieldId}-phone`}
+                        autoComplete="tel-national"
                         value={guestPhone}
                         onChange={handlePhoneChange}
                         className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-gray-100"

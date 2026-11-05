@@ -96,6 +96,19 @@ service cloud.firestore {
 
     // 2. RESERVAS (Multi-Tenant) - COM VALIDAÇÃO ANTI-SPAM
     match /reservations/{document} {
+      function hasValidStayType() {
+        let data = request.resource.data;
+        return !('stayType' in data) || data.stayType == 'overnight'
+          || (data.stayType == 'day_use'
+            && data.propertyId == 'integracao'
+            && data.guestCount == 1
+            && (!('billingMode' in data) || data.billingMode != 'corporate')
+            && data.checkInDate == data.checkoutDate
+            && data.checkInTime is string && data.checkInTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+            && data.checkOutTime is string && data.checkOutTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+            && data.checkOutTime > data.checkInTime
+            && data.flatNumber is string && data.flatNumber.size() > 0);
+      }
       // Função para validar dados mínimos de uma reserva (previne spam)
       function isValidReservation() {
         let data = request.resource.data;
@@ -107,7 +120,7 @@ service cloud.firestore {
       }
 
       // Admin cria dentro do seu imóvel; a landing cria somente um pedido mínimo e pendente.
-      allow create: if (isLoggedAdmin() && isValidReservation()
+      allow create: if (isLoggedAdmin() && isValidReservation() && hasValidStayType()
                          && hasPropertyAccess(request.resource.data.propertyId)
                          && hasValidCorporateLink(request.resource.data))
                     || isValidPublicBooking();
@@ -115,6 +128,7 @@ service cloud.firestore {
       // Atualizações administrativas aceitam reservas legadas sem telefone.
       // Sem propertyId, somente o super admin pode acessar e corrigir o documento.
       allow update: if isLoggedAdmin()
+                    && hasValidStayType()
                     && hasReservationAccess(resource.data)
                     && hasReservationAccess(request.resource.data)
                     && (!('propertyId' in resource.data) || 'propertyId' in request.resource.data)

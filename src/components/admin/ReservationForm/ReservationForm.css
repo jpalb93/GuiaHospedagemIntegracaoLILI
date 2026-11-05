@@ -1,0 +1,28 @@
+/* Scoped to the reservation form: keep dense desktop layouts and comfortable mobile controls. */
+.reservation-form :is(input, select, textarea) {
+    min-width: 0;
+}
+.reservation-form :is(input, textarea)::placeholder {
+    color: #6b7280;
+    opacity: 1;
+}
+.dark .reservation-form :is(input, textarea)::placeholder {
+    color: #9ca3af;
+}
+.reservation-form button:focus-visible {
+    outline: 2px solid #c2410c;
+    outline-offset: 3px;
+}
+.dark .reservation-form button:focus-visible {
+    outline-color: #fb923c;
+}
+@media (max-width: 639px) {
+    .reservation-form :is(input:not([type='checkbox']), select, textarea) {
+        min-height: 44px;
+        font-size: 16px;
+    }
+    .reservation-form button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}

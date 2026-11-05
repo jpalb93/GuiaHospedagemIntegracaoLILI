@@ -3,6 +3,7 @@ import { Reservation, UserPermission } from '../../types';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCalendarReservations } from '../../services/firebase/reservations';
 import { PROPERTIES } from '../../config/properties';
+import StayTypeBadge from './StayTypeBadge';
 import {
     ChevronLeft,
     ChevronRight,
@@ -504,7 +505,7 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                                     type="button"
                                                     onClick={() => onEditReservation(res)}
                                                     className="w-full text-left text-[10px] font-extrabold px-1.5 py-1 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/70 transition-all shadow-2xs flex items-center justify-between gap-1 truncate group/btn"
-                                                    title={`Saída (Check-out): ${res.guestName} - Flat ${flatLabel}`}
+                                                    title={`${res.stayType === 'day_use' ? 'Day use — saída' : 'Saída (Check-out)'}: ${res.guestName} - Flat ${flatLabel} · ${res.checkOutTime || ''}`}
                                                 >
                                                     <span className="truncate flex items-center gap-1">
                                                         <LogOut
@@ -515,7 +516,9 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                                             {flatLabel ? `${flatLabel} ` : ''}
                                                         </span>
                                                         <span className="truncate">
-                                                            {guestFirstName}
+                                                            {res.stayType === 'day_use'
+                                                                ? `Day use ${res.checkOutTime}`
+                                                                : guestFirstName}
                                                         </span>
                                                     </span>
                                                     {renderPaymentBadge(res.paymentStatus)}
@@ -537,7 +540,7 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                                     type="button"
                                                     onClick={() => onEditReservation(res)}
                                                     className="w-full text-left text-[10px] font-extrabold px-1.5 py-1 rounded-l-md rounded-r-xs border border-l-4 border-l-emerald-500 border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/70 transition-all shadow-2xs flex items-center justify-between gap-1 truncate"
-                                                    title={`Entrada (Check-in): ${res.guestName} - Flat ${flatLabel}`}
+                                                    title={`${res.stayType === 'day_use' ? 'Day use — entrada' : 'Entrada (Check-in)'}: ${res.guestName} - Flat ${flatLabel} · ${res.checkInTime || ''}`}
                                                 >
                                                     <span className="truncate flex items-center gap-1">
                                                         <LogIn
@@ -548,7 +551,9 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                                             {flatLabel ? `${flatLabel} ` : ''}
                                                         </span>
                                                         <span className="truncate">
-                                                            {guestFirstName}
+                                                            {res.stayType === 'day_use'
+                                                                ? `Day use ${res.checkInTime}`
+                                                                : guestFirstName}
                                                         </span>
                                                     </span>
                                                     {renderPaymentBadge(res.paymentStatus)}
@@ -727,6 +732,9 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                                             <div>
                                                                 <div className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
                                                                     <span>{res.guestName}</span>
+                                                                    <StayTypeBadge
+                                                                        reservation={res}
+                                                                    />
                                                                     <span className="text-xs px-2 py-0.5 rounded bg-rose-200 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 font-mono">
                                                                         Flat{' '}
                                                                         {res.flatNumber || 'S/N'}
@@ -773,6 +781,9 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                                             <div>
                                                                 <div className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
                                                                     <span>{res.guestName}</span>
+                                                                    <StayTypeBadge
+                                                                        reservation={res}
+                                                                    />
                                                                     <span className="text-xs px-2 py-0.5 rounded bg-emerald-200 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-mono">
                                                                         Flat{' '}
                                                                         {res.flatNumber || 'S/N'}

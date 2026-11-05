@@ -1,4 +1,5 @@
 import React from 'react';
+import StayTypeBadge from '../StayTypeBadge';
 import {
     X,
     Calendar,
@@ -78,6 +79,7 @@ const ReservationQuickViewModal: React.FC<ReservationQuickViewModalProps> = ({
                             <h2 className="text-lg sm:text-xl font-bold text-white truncate leading-snug tracking-tight">
                                 {reservation.guestName}
                             </h2>
+                            <StayTypeBadge reservation={reservation} />
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-orange-500/20 text-orange-300 border border-orange-500/30 font-heading">
                                     <MapPin size={12} className="shrink-0 text-orange-400" />

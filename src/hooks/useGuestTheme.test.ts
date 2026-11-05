@@ -3,68 +3,67 @@ import { renderHook } from '@testing-library/react';
 import { useGuestTheme } from './useGuestTheme';
 
 describe('useGuestTheme', () => {
-    describe('Lili Theme (Default)', () => {
-        it('should return lili theme for lili property', () => {
+    describe('Lili Theme (Default — Sol do São Francisco & Terracota)', () => {
+        it('should return warm stone/terracotta theme for lili property', () => {
             const { result } = renderHook(() => useGuestTheme('lili'));
 
-            expect(result.current.background).toBe('bg-[#1E1E2E]');
-            expect(result.current.text.primary).toBe('text-white');
-            expect(result.current.text.accent).toBe('text-purple-400');
-            expect(result.current.button.primary).toContain('bg-purple-600');
+            expect(result.current.background).toBe('bg-[#1C1614]');
+            expect(result.current.text.primary).toBe('text-stone-50');
+            expect(result.current.text.accent).toBe('text-amber-400');
+            expect(result.current.button.primary).toContain('from-orange-600');
         });
 
-        it('should have purple/gold magical theme colors', () => {
+        it('should have golden amber/terracotta highlight and glow colors', () => {
             const { result } = renderHook(() => useGuestTheme('lili'));
 
-            expect(result.current.text.highlight).toBe('text-amber-400');
-            expect(result.current.effects.glow).toBe('shadow-purple-500/20');
-            expect(result.current.effects.blob1).toBe('bg-purple-500/20');
+            expect(result.current.text.highlight).toBe('text-orange-400');
+            expect(result.current.effects.glow).toBe('shadow-amber-500/15');
+            expect(result.current.effects.blob1).toBe('bg-amber-500/15');
         });
 
-        it('should have proper border styling', () => {
+        it('should have proper warm border styling', () => {
             const { result } = renderHook(() => useGuestTheme('lili'));
 
-            expect(result.current.border).toBe('border-white/5');
+            expect(result.current.border).toBe('border-amber-500/20');
         });
     });
 
-    describe('Integracao Theme', () => {
+    describe('Integracao Theme (Rio São Francisco & Pedra Executiva)', () => {
         it('should return integracao theme for integracao property', () => {
             const { result } = renderHook(() => useGuestTheme('integracao'));
 
-            expect(result.current.background).toBe('bg-[#0F172A]');
-            expect(result.current.text.accent).toBe('text-cyan-400');
-            expect(result.current.button.primary).toContain('bg-cyan-600');
+            expect(result.current.background).toBe('bg-[#111922]');
+            expect(result.current.text.accent).toBe('text-sky-400');
+            expect(result.current.button.primary).toContain('from-sky-600');
         });
 
-        it('should have navy/cyan executive theme colors', () => {
+        it('should have river sky/amber executive theme colors', () => {
             const { result } = renderHook(() => useGuestTheme('integracao'));
 
-            expect(result.current.text.highlight).toBe('text-sky-300');
-            expect(result.current.effects.glow).toBe('shadow-cyan-500/10');
-            expect(result.current.border).toBe('border-cyan-500/20');
+            expect(result.current.text.highlight).toBe('text-amber-300');
+            expect(result.current.effects.glow).toBe('shadow-sky-500/15');
+            expect(result.current.border).toBe('border-sky-500/20');
         });
 
         it('should have gradient background', () => {
             const { result } = renderHook(() => useGuestTheme('integracao'));
 
             expect(result.current.backgroundGradient).toContain('bg-gradient-to-br');
-            expect(result.current.backgroundGradient).toContain('#0F172A');
+            expect(result.current.backgroundGradient).toContain('#111922');
         });
 
         it('should have slate secondary button', () => {
             const { result } = renderHook(() => useGuestTheme('integracao'));
 
-            expect(result.current.button.secondary).toContain('bg-slate-700/50');
+            expect(result.current.button.secondary).toContain('bg-slate-800/70');
         });
     });
 
     describe('Theme Memoization', () => {
         it('should memoize theme based on propertyId', () => {
-            const { result, rerender } = renderHook(
-                ({ propertyId }) => useGuestTheme(propertyId),
-                { initialProps: { propertyId: 'lili' as const } }
-            );
+            const { result, rerender } = renderHook(({ propertyId }) => useGuestTheme(propertyId), {
+                initialProps: { propertyId: 'lili' as const },
+            });
 
             const firstTheme = result.current;
 
@@ -75,17 +74,16 @@ describe('useGuestTheme', () => {
         });
 
         it('should return new theme when propertyId changes', () => {
-            const { result, rerender } = renderHook(
-                ({ propertyId }) => useGuestTheme(propertyId),
-                { initialProps: { propertyId: 'lili' as const } }
-            );
+            const { result, rerender } = renderHook(({ propertyId }) => useGuestTheme(propertyId), {
+                initialProps: { propertyId: 'lili' as const },
+            });
 
             const liliTheme = result.current;
 
             rerender({ propertyId: 'integracao' });
 
             expect(result.current).not.toBe(liliTheme);
-            expect(result.current.text.accent).toBe('text-cyan-400'); // Integracao theme
+            expect(result.current.text.accent).toBe('text-sky-400'); // Integracao theme
         });
     });
 

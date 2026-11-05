@@ -9,6 +9,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useReservations } from './useReservations';
 import { useReservationForm } from './useReservationForm';
 import { useBlockedDates } from './useBlockedDates';
+import { getStayValidationError } from '../utils/reservationStay';
 
 export const useAdminDashboard = () => {
     // Use extracted auth hook
@@ -49,6 +50,8 @@ export const useAdminDashboard = () => {
     // Use extracted form hook
     const reservationForm = useReservationForm();
     const {
+        stayType,
+        setStayType,
         editingId,
         guestName,
         setGuestName,
@@ -171,8 +174,14 @@ export const useAdminDashboard = () => {
     // Reset form wrapper that also resets blocked dates
     const resetForm = useCallback(async () => {
         await resetReservationForm();
+        if (
+            userPermission?.role !== 'super_admin' &&
+            userPermission?.allowedProperties.length === 1
+        ) {
+            setPropertyId(userPermission.allowedProperties[0]);
+        }
         await resetBlockedForm();
-    }, [resetReservationForm, resetBlockedForm]);
+    }, [resetReservationForm, resetBlockedForm, userPermission, setPropertyId]);
 
     // --- DATA LISTENERS (Blocked Dates Only - Reservations handled by useReservations) ---
     useEffect(() => {
@@ -302,13 +311,9 @@ export const useAdminDashboard = () => {
             return;
         }
 
-        const start = new Date(checkInDate);
-        const end = new Date(checkoutDate);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-
-        if (end <= start) {
-            showToast('O Check-out deve ser DEPOIS do Check-in.', 'error');
+        const stayError = getStayValidationError({ ...getFormValues(), ...overrides });
+        if (stayError) {
+            showToast(stayError, 'error');
             return;
         }
 
@@ -353,7 +358,7 @@ export const useAdminDashboard = () => {
                 // Não envia createdAt — preserva a data original no Firestore
                 await updateReservation(editingId, payload as Partial<Reservation>);
                 showToast('Reserva atualizada com sucesso!', 'success');
-                resetReservationForm();
+                await resetForm();
             } else {
                 // create: remove nulls via cleanData no saveReservation
                 const createPayload = { ...payload };
@@ -370,7 +375,7 @@ export const useAdminDashboard = () => {
                 showToast('Reserva criada! Link curto gerado.', 'success');
             }
         } catch (e) {
-            showToast('Erro ao salvar reserva.', 'error');
+            showToast(e instanceof Error ? e.message : 'Erro ao salvar reserva.', 'error');
             logger.error('Erro ao salvar reserva.', { error: e });
         } finally {
             setIsSaving(false);
@@ -428,6 +433,8 @@ export const useAdminDashboard = () => {
             refreshHistory,
         },
         form: {
+            stayType,
+            setStayType,
             guestName,
             setGuestName,
             guestPhone,

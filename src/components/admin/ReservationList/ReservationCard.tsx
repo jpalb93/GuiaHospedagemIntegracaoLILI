@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import StayTypeBadge from '../StayTypeBadge';
 import {
     CalendarDays,
     StickyNote,
@@ -100,6 +101,7 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
                                 {res.guestName}
                             </button>
                         </h3>
+                        <StayTypeBadge reservation={res} />
                         {res.flatNumber && (
                             <span className="text-[11px] font-bold text-stone-500 dark:text-gray-400 font-heading">
                                 Flat {res.flatNumber}

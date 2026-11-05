@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChevronDown } from 'lucide-react';
+import { DAY_USE_FAQS } from '../../data/dayUse';
 
 const FAQS = [
+    DAY_USE_FAQS[0],
     {
         question: 'A hospedagem fica no Centro de Petrolina?',
         answer: 'Sim. Os Flats Integração ficam na R. São José, 475 B, Centro de Petrolina (PE), perto de hospitais, comércio e polos de trabalho.',

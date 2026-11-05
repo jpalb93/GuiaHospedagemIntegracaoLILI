@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Lock, KeyRound, Building2, Sparkles, AlertTriangle, Users } from 'lucide-react';
 import { PropertyId, UserPermission, Reservation } from '../../../types';
 import { PROPERTIES } from '../../../config/properties';
@@ -6,6 +6,9 @@ import { checkAvailabilityForPeriod } from '../../../utils/availability';
 import { formatDateBR } from '../../../utils/helpers';
 
 interface PropertySectionProps {
+    stayType?: Reservation['stayType'];
+    checkInTime?: string;
+    checkOutTime?: string;
     propertyId: PropertyId;
     setPropertyId: (v: PropertyId) => void;
     flatNumber: string;
@@ -22,6 +25,9 @@ interface PropertySectionProps {
 }
 
 const PropertySection: React.FC<PropertySectionProps> = ({
+    stayType,
+    checkInTime,
+    checkOutTime,
     propertyId,
     setPropertyId,
     flatNumber,
@@ -36,6 +42,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({
     editingId,
     userPermission,
 }) => {
+    const fieldId = useId();
     const showPropertySelector =
         !userPermission ||
         userPermission.role === 'super_admin' ||
@@ -55,7 +62,8 @@ const PropertySection: React.FC<PropertySectionProps> = ({
         checkoutDate,
         reservations,
         currentProperty.units || [],
-        editingId
+        editingId,
+        { stayType, checkInTime, checkOutTime }
     );
 
     const selectedUnitStatus = availabilitySummary.unitsStatus.find(
@@ -88,62 +96,84 @@ const PropertySection: React.FC<PropertySectionProps> = ({
             )}
 
             {/* PAINEL DE DISPONIBILIDADE INTELIGENTE */}
-            {checkInDate && checkoutDate && checkInDate < checkoutDate && (
-                <div className="p-4 rounded-2xl border transition-all bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
-                            <Sparkles size={14} className="text-amber-500 animate-pulse" />
-                            Disponibilidade ({formatDateBR(checkInDate)} até {formatDateBR(checkoutDate)})
-                        </span>
-                        <span
-                            className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full border ${
-                                availabilitySummary.isAvailable
-                                    ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300'
-                                    : 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/40 dark:text-red-300'
-                            }`}
-                        >
-                            {propertyId === 'integracao'
-                                ? `${availabilitySummary.availableUnitsCount} de ${availabilitySummary.totalUnits} flats livres`
-                                : availabilitySummary.isAvailable
-                                  ? '🟢 Livre no Período'
-                                  : '🔴 Já Reservado'}
-                        </span>
+            {checkInDate &&
+                checkoutDate &&
+                (checkInDate < checkoutDate || stayType === 'day_use') && (
+                    <div className="p-4 rounded-2xl border transition-all bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                                <Sparkles size={14} className="text-amber-500 animate-pulse" />
+                                Disponibilidade ({formatDateBR(checkInDate)}{' '}
+                                {stayType === 'day_use'
+                                    ? `${checkInTime}–${checkOutTime}`
+                                    : `até ${formatDateBR(checkoutDate)}`}
+                                )
+                            </span>
+                            <span
+                                className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full border ${
+                                    availabilitySummary.isAvailable
+                                        ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300'
+                                        : 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/40 dark:text-red-300'
+                                }`}
+                            >
+                                {propertyId === 'integracao'
+                                    ? `${availabilitySummary.availableUnitsCount} de ${availabilitySummary.totalUnits} flats livres`
+                                    : availabilitySummary.isAvailable
+                                      ? '🟢 Livre no Período'
+                                      : '🔴 Já Reservado'}
+                            </span>
+                        </div>
+
+                        {/* CONFLITO LILI */}
+                        {propertyId === 'lili' && !availabilitySummary.isAvailable && (
+                            <div className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2.5 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-2">
+                                <AlertTriangle size={14} className="shrink-0" />
+                                <span>
+                                    Atenção: O Flat da Lili já está reservado no período por{' '}
+                                    <strong>
+                                        {availabilitySummary.overlappingReservations[0]?.guestName}
+                                    </strong>{' '}
+                                    (
+                                    {formatDateBR(
+                                        availabilitySummary.overlappingReservations[0]
+                                            ?.checkInDate || ''
+                                    )}{' '}
+                                    a{' '}
+                                    {formatDateBR(
+                                        availabilitySummary.overlappingReservations[0]
+                                            ?.checkoutDate || ''
+                                    )}
+                                    ).
+                                </span>
+                            </div>
+                        )}
+
+                        {/* CONFLITO FLAT INTEGRAÇÃO SELECIONADO */}
+                        {propertyId === 'integracao' &&
+                            selectedUnitStatus &&
+                            !selectedUnitStatus.isAvailable && (
+                                <div className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2.5 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-2">
+                                    <AlertTriangle size={14} className="shrink-0" />
+                                    <span>
+                                        Atenção: O Flat {flatNumber} já está reservado por{' '}
+                                        <strong>{selectedUnitStatus.occupyingGuest}</strong> (
+                                        {formatDateBR(selectedUnitStatus.occupyingCheckIn || '')} a{' '}
+                                        {formatDateBR(selectedUnitStatus.occupyingCheckout || '')}).
+                                    </span>
+                                </div>
+                            )}
                     </div>
-
-                    {/* CONFLITO LILI */}
-                    {propertyId === 'lili' && !availabilitySummary.isAvailable && (
-                        <div className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2.5 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-2">
-                            <AlertTriangle size={14} className="shrink-0" />
-                            <span>
-                                Atenção: O Flat da Lili já está reservado no período por{' '}
-                                <strong>{availabilitySummary.overlappingReservations[0]?.guestName}</strong> (
-                                {formatDateBR(availabilitySummary.overlappingReservations[0]?.checkInDate || '')} a{' '}
-                                {formatDateBR(availabilitySummary.overlappingReservations[0]?.checkoutDate || '')}).
-                            </span>
-                        </div>
-                    )}
-
-                    {/* CONFLITO FLAT INTEGRAÇÃO SELECIONADO */}
-                    {propertyId === 'integracao' && selectedUnitStatus && !selectedUnitStatus.isAvailable && (
-                        <div className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2.5 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-2">
-                            <AlertTriangle size={14} className="shrink-0" />
-                            <span>
-                                Atenção: O Flat {flatNumber} já está reservado por{' '}
-                                <strong>{selectedUnitStatus.occupyingGuest}</strong> (
-                                {formatDateBR(selectedUnitStatus.occupyingCheckIn || '')} a{' '}
-                                {formatDateBR(selectedUnitStatus.occupyingCheckout || '')}).
-                            </span>
-                        </div>
-                    )}
-                </div>
-            )}
+                )}
 
             {/* SELEÇÃO DO FLAT & HÓSPEDES */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* NÚMERO DO FLAT */}
                 {propertyId === 'lili' ? (
                     <div>
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                        <label
+                            htmlFor={`${fieldId}-lock`}
+                            className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider block mb-1"
+                        >
                             Senha Porta
                         </label>
                         <div className="relative group">
@@ -154,6 +184,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                             <input
                                 type="text"
                                 inputMode="numeric"
+                                id={`${fieldId}-lock`}
                                 value={lockCode}
                                 onChange={handleNumericInput(setLockCode)}
                                 className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-mono tracking-widest text-gray-900 dark:text-gray-100"
@@ -163,7 +194,10 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                     </div>
                 ) : (
                     <div>
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                        <label
+                            htmlFor={`${fieldId}-flat`}
+                            className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider block mb-1"
+                        >
                             Número do Flat
                         </label>
                         <div className="relative group">
@@ -173,6 +207,8 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                             />
                             {currentProperty.units && currentProperty.units.length > 0 ? (
                                 <select
+                                    id={`${fieldId}-flat`}
+                                    aria-required="true"
                                     value={flatNumber}
                                     onChange={(e) => setFlatNumber(e.target.value)}
                                     className={`w-full bg-gray-50 dark:bg-gray-900/50 border rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 font-bold cursor-pointer appearance-none ${
@@ -186,14 +222,22 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                                         <option
                                             key={u.unit}
                                             value={u.unit}
-                                            className={u.isAvailable ? 'text-green-700 font-bold' : 'text-red-600 font-medium'}
+                                            className={
+                                                u.isAvailable
+                                                    ? 'text-green-700 font-bold'
+                                                    : 'text-red-600 font-medium'
+                                            }
                                         >
-                                            Flat {u.unit} {u.isAvailable ? '— 🟢 Livre' : `— 🔴 Ocupado (${u.occupyingGuest})`}
+                                            Flat {u.unit}{' '}
+                                            {u.isAvailable
+                                                ? '— 🟢 Livre'
+                                                : `— 🔴 Ocupado (${u.occupyingGuest})`}
                                         </option>
                                     ))}
                                 </select>
                             ) : (
                                 <input
+                                    id={`${fieldId}-flat`}
                                     type="text"
                                     value={flatNumber}
                                     onChange={(e) => setFlatNumber(e.target.value)}
@@ -207,7 +251,10 @@ const PropertySection: React.FC<PropertySectionProps> = ({
 
                 {/* QUANTIDADE DE HÓSPEDES */}
                 <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                    <label
+                        htmlFor={`${fieldId}-guests`}
+                        className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider block mb-1"
+                    >
                         Hóspedes / Pessoas
                     </label>
                     <div className="relative group">
@@ -216,6 +263,9 @@ const PropertySection: React.FC<PropertySectionProps> = ({
                             size={20}
                         />
                         <select
+                            aria-label="Quantidade de hóspedes"
+                            id={`${fieldId}-guests`}
+                            disabled={stayType === 'day_use'}
                             value={guestCount}
                             onChange={(e) => setGuestCount(Number(e.target.value))}
                             className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-orange-500 font-bold text-gray-900 dark:text-gray-100 cursor-pointer"

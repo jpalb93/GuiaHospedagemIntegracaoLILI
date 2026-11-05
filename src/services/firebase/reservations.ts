@@ -29,6 +29,43 @@ import { generateShortId } from '../../utils/helpers';
 import { normalizeToISODate } from '../../utils/dateFormatting';
 import { mapFirestoreDocs } from './mappers';
 import { logAction } from './logs'; // Import logAction
+import { getStayValidationError, reservationsOverlap } from '../../utils/reservationStay';
+
+// Consulta confirmada pelo servidor; não aceita apenas o cache/lista paginada da tela.
+async function checkDayUseSchedule(reservation: Reservation, editingId?: string) {
+    if (reservation.status === 'cancelled') return;
+    if (reservation.stayType === 'day_use') {
+        const error = getStayValidationError(reservation);
+        if (error) throw new Error(error);
+        if (!reservation.flatNumber?.trim())
+            throw new Error('Defina o número do flat para o day use.');
+    }
+    if (
+        reservation.propertyId !== 'integracao' ||
+        !reservation.flatNumber ||
+        !reservation.checkInDate ||
+        !reservation.checkoutDate
+    )
+        return;
+    const db = await getFirestoreInstance();
+    const snapshot = await getDocsFromServer(
+        query(collection(db, 'reservations'), where('propertyId', '==', 'integracao'))
+    );
+    const conflict = snapshot.docs.find((document) => {
+        if (document.id === editingId) return false;
+        const other = document.data() as Reservation;
+        return (
+            other.status !== 'cancelled' &&
+            other.flatNumber?.trim() === reservation.flatNumber?.trim() &&
+            (reservation.stayType === 'day_use' || other.stayType === 'day_use') &&
+            reservationsOverlap(reservation, other)
+        );
+    });
+    if (conflict)
+        throw new Error(
+            'Este flat já possui uma reserva no horário informado. Ajuste o horário ou escolha outro flat.'
+        );
+}
 
 export type ReservationSyncStatus = 'connecting' | 'synced' | 'cached' | 'pending' | 'error';
 
@@ -57,6 +94,7 @@ const prepareReservationUpdate = (data: Record<string, unknown>) => {
 };
 
 export const saveReservation = async (reservation: Reservation): Promise<string> => {
+    await checkDayUseSchedule(reservation);
     const data = {
         ...reservation,
         shortId: reservation.shortId || generateShortId(),
@@ -123,6 +161,23 @@ export const getReservation = async (id: string): Promise<Reservation | null> =>
 };
 
 export const updateReservation = async (id: string, data: Partial<Reservation>) => {
+    const scheduleFields = [
+        'stayType',
+        'propertyId',
+        'flatNumber',
+        'checkInDate',
+        'checkoutDate',
+        'checkInTime',
+        'checkOutTime',
+        'guestCount',
+        'billingMode',
+        'status',
+    ];
+    if (scheduleFields.some((key) => key in data)) {
+        const existing = await getReservation(id);
+        if (!existing) throw new Error('Reserva não encontrada para validar a alteração.');
+        await checkDayUseSchedule({ ...existing, ...data }, id);
+    }
     // Não sobrescrever id/createdAt; null remove o campo no Firestore
     const { id: _discard, createdAt: _createdAt, ...rest } = data as Record<string, unknown>;
     const updateData = prepareReservationUpdate(rest);

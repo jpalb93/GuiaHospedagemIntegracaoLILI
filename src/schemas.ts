@@ -48,6 +48,7 @@ export const GuestConfigSchema = z.object({
     guestFeedback: z.string().optional(),
 
     // Datas e Horários
+    stayType: z.enum(['overnight', 'day_use']).optional(),
     checkInDate: dateYmd.optional(),
     checkoutDate: dateYmd.optional(),
     checkInTime: z.string().optional(),

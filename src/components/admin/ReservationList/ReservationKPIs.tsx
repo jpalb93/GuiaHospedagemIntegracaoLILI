@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, LogIn, LogOut, DollarSign } from 'lucide-react';
 import { Reservation } from '../../../types';
+import { dayUsePhase } from '../../../utils/reservationStay';
 
 interface ReservationKPIsProps {
     reservations: Reservation[];
@@ -25,7 +26,7 @@ export const ReservationKPIs: React.FC<ReservationKPIsProps> = ({ allFiltered, t
             if (checkOut === todayStr) {
                 checkOutTodayCount++;
             }
-            if (checkIn <= todayStr && checkOut >= todayStr) {
+            if (checkIn <= todayStr && checkOut >= todayStr && dayUsePhase(res) !== 'finished') {
                 activeCount++;
             } else if (checkIn > todayStr && res.status !== 'cancelled') {
                 activeCount++;

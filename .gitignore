@@ -32,3 +32,6 @@ storybook-static
 .env*.local
 scratch/
 .env*
+audits/
+.impeccable/
+previews/

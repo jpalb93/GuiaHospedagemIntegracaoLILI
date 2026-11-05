@@ -59,6 +59,18 @@ export const RevenueTrendWidget: React.FC<RevenueTrendWidgetProps> = ({ reservat
             if (!r.checkInDate || !r.checkoutDate) return;
             if (isExcludedFromReservationCash(r)) return;
 
+            if (r.status === 'cancelled') return;
+            if (r.stayType === 'day_use') {
+                uniqueDaysSet.add(r.checkInDate);
+                const existing = dailyMap.get(r.checkInDate) || {
+                    dateStr: r.checkInDate,
+                    revenue: 0,
+                    nights: 0,
+                };
+                existing.revenue += r.totalAmount || 0;
+                dailyMap.set(r.checkInDate, existing);
+                return;
+            }
             const checkIn = new Date(r.checkInDate + 'T00:00:00');
             const checkOut = new Date(r.checkoutDate + 'T00:00:00');
             const stayNights = Math.max(
@@ -135,13 +147,18 @@ export const RevenueTrendWidget: React.FC<RevenueTrendWidgetProps> = ({ reservat
             if (!r.checkInDate || !r.checkoutDate) return;
             if (isExcludedFromReservationCash(r)) return;
             if (r.checkInDate.startsWith(currentMonthStr)) {
-                const stayNights = Math.max(
-                    1,
-                    Math.round(
-                        (new Date(r.checkoutDate).getTime() - new Date(r.checkInDate).getTime()) /
-                            (1000 * 3600 * 24)
-                    )
-                );
+                if (r.status === 'cancelled') return;
+                const stayNights =
+                    r.stayType === 'day_use'
+                        ? 0
+                        : Math.max(
+                              1,
+                              Math.round(
+                                  (new Date(r.checkoutDate).getTime() -
+                                      new Date(r.checkInDate).getTime()) /
+                                      (1000 * 3600 * 24)
+                              )
+                          );
                 totNights += stayNights;
                 if (r.paymentStatus === 'paid') {
                     pdNights += stayNights;
@@ -150,7 +167,7 @@ export const RevenueTrendWidget: React.FC<RevenueTrendWidgetProps> = ({ reservat
                     const dep = r.depositAmount || 0;
                     recRev += dep;
                     pndRev += Math.max(0, (r.totalAmount || 0) - dep);
-                    pdNights += 1;
+                    pdNights += Math.min(stayNights, 1);
                 } else {
                     pndNights += stayNights;
                     pndRev += r.totalAmount || 0;
@@ -158,7 +175,16 @@ export const RevenueTrendWidget: React.FC<RevenueTrendWidgetProps> = ({ reservat
             }
         });
 
-        const adr = totNights > 0 ? currentMonthRev / totNights : 0;
+        const dayUseRevenue = reservations
+            .filter(
+                (r) =>
+                    r.stayType === 'day_use' &&
+                    r.status !== 'cancelled' &&
+                    !isExcludedFromReservationCash(r) &&
+                    r.checkInDate?.startsWith(currentMonthStr)
+            )
+            .reduce((sum, r) => sum + (r.totalAmount || 0), 0);
+        const adr = totNights > 0 ? (currentMonthRev - dayUseRevenue) / totNights : 0;
 
         return {
             daysWithDataCount: uniqueDaysSet.size,

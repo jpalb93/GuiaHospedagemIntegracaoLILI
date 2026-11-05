@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { DollarSign, Sparkles, Calendar, Receipt, Trash2, Pencil, Check, Plus } from 'lucide-react';
+import React, { useId, useState } from 'react';
+import { DollarSign, Sparkles, Calendar, Receipt, Trash2, Pencil, Plus } from 'lucide-react';
 import { PaymentMethod, PaymentStatus, PaymentRecord } from '../../../types';
 import { getTodayDateStr } from '../../../utils/dateFormatting';
 import { formatDateBR } from '../../../utils/helpers';
+import PaymentRecordEditor from './PaymentRecordEditor';
 
 interface PaymentSectionProps {
     paymentMethod: PaymentMethod | '';
@@ -35,6 +36,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
     setPayments,
     isCorporate = false,
 }) => {
+    const fieldId = useId();
     const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
     const [editDate, setEditDate] = useState<string>('');
     const [editMethod, setEditMethod] = useState<PaymentMethod>('pix');
@@ -89,16 +91,24 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
         <div className="space-y-4">
             {/* STATUS DO PAGAMENTO */}
             <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1.5">
+                <p
+                    id={`${fieldId}-status`}
+                    className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider block mb-1.5"
+                >
                     Status do Pagamento
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                </p>
+                <div
+                    role="group"
+                    aria-labelledby={`${fieldId}-status`}
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                >
                     <button
                         type="button"
                         onClick={() => handleSelectStatus('paid')}
+                        aria-pressed={paymentStatus === 'paid'}
                         className={`py-3 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all border ${
                             paymentStatus === 'paid'
-                                ? 'bg-green-500 text-white border-green-600 shadow-md scale-[1.02]'
+                                ? 'bg-green-700 text-white border-green-800'
                                 : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
                         }`}
                     >
@@ -109,9 +119,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     <button
                         type="button"
                         onClick={() => handleSelectStatus('partial')}
+                        aria-pressed={paymentStatus === 'partial'}
                         className={`py-3 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all border ${
                             paymentStatus === 'partial'
-                                ? 'bg-amber-500 text-white border-amber-600 shadow-md scale-[1.02]'
+                                ? 'bg-amber-800 text-white border-amber-900'
                                 : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800'
                         }`}
                     >
@@ -122,9 +133,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     <button
                         type="button"
                         onClick={() => handleSelectStatus('pending')}
+                        aria-pressed={paymentStatus === 'pending'}
                         className={`py-3 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all border ${
                             paymentStatus === 'pending' || !paymentStatus
-                                ? 'bg-red-500 text-white border-red-600 shadow-md scale-[1.02]'
+                                ? 'bg-red-700 text-white border-red-800'
                                 : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
                         }`}
                     >
@@ -135,9 +147,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     <button
                         type="button"
                         onClick={() => handleSelectStatus('external')}
+                        aria-pressed={paymentStatus === 'external'}
                         className={`py-3 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all border ${
                             isExternal
-                                ? 'bg-slate-700 text-white border-slate-800 shadow-md scale-[1.02]'
+                                ? 'bg-slate-700 text-white border-slate-800'
                                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 dark:bg-slate-800/40 dark:text-slate-300 dark:border-slate-600'
                         }`}
                     >
@@ -164,7 +177,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     >
                         {/* VALOR DA RESERVA */}
                         <div>
-                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                            <label
+                                htmlFor={`${fieldId}-total`}
+                                className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider block mb-1"
+                            >
                                 Valor Total da Reserva (R$)
                             </label>
                             <div className="relative group">
@@ -174,6 +190,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                                 />
                                 <input
                                     type="number"
+                                    id={`${fieldId}-total`}
+                                    inputMode="decimal"
                                     step="0.01"
                                     min="0"
                                     value={totalAmount}
@@ -189,11 +207,15 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
                         {/* FORMA DE PAGAMENTO */}
                         <div>
-                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                            <label
+                                htmlFor={`${fieldId}-method`}
+                                className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider block mb-1"
+                            >
                                 Forma de Pagamento
                             </label>
                             <div className="relative group">
                                 <select
+                                    id={`${fieldId}-method`}
                                     value={paymentMethod}
                                     onChange={(e) =>
                                         setPaymentMethod(e.target.value as PaymentMethod | '')
@@ -212,7 +234,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                         {(paymentStatus === 'paid' || paymentStatus === 'partial') && (
                             <div className="animate-fadeIn">
                                 <div className="flex items-center justify-between mb-1">
-                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <label
+                                        htmlFor={`${fieldId}-paid-at`}
+                                        className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5"
+                                    >
                                         <Calendar size={14} className="text-emerald-500" />
                                         {paymentStatus === 'paid'
                                             ? 'Data do Pagamento'
@@ -231,6 +256,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                                 <div className="relative group">
                                     <input
                                         type="date"
+                                        id={`${fieldId}-paid-at`}
                                         value={paidAt || ''}
                                         onChange={(e) => setPaidAt?.(e.target.value)}
                                         className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-2xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-gray-900 dark:text-gray-100 cursor-pointer"
@@ -244,7 +270,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     {paymentStatus === 'partial' && (
                         <div className="p-4 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl animate-fadeIn space-y-3">
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                                <label className="text-xs font-extrabold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                                <label
+                                    htmlFor={`${fieldId}-deposit`}
+                                    className="text-xs font-extrabold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5"
+                                >
                                     <Sparkles size={14} className="text-amber-500" /> Valor Já Pago
                                     de Sinal (R$)
                                 </label>
@@ -266,6 +295,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                                 />
                                 <input
                                     type="number"
+                                    id={`${fieldId}-deposit`}
+                                    inputMode="decimal"
                                     step="0.01"
                                     min="0"
                                     value={depositAmount}
@@ -281,14 +312,14 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     )}
 
                     {/* HISTÓRICO / EXTRATO DE LANÇAMENTOS DESTA RESERVA */}
-                    <div className="p-4 bg-stone-50 dark:bg-gray-900/60 border border-stone-200 dark:border-gray-700/80 rounded-2xl space-y-2.5">
-                        <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-stone-700 dark:text-stone-300 font-heading">
+                    <div className="p-2 sm:p-4 bg-stone-50 dark:bg-gray-900/60 border border-stone-200 dark:border-gray-700/80 rounded-2xl space-y-3">
+                        <div className="flex flex-col gap-3 text-xs font-extrabold uppercase tracking-wider text-stone-700 dark:text-stone-300 font-heading">
                             <span className="flex items-center gap-1.5">
                                 <Receipt size={14} className="text-emerald-500" /> Extrato de
                                 Lançamentos ({payments?.length || 0})
                             </span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-emerald-600 dark:text-emerald-400 font-mono">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <span className="break-words text-emerald-800 dark:text-emerald-300 font-mono">
                                     Total Pago: R${' '}
                                     {(payments || [])
                                         .reduce((sum, p) => sum + (p.amount || 0), 0)
@@ -314,7 +345,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                                                       : 'full'
                                             );
                                         }}
-                                        className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold flex items-center gap-1 transition-all cursor-pointer font-heading shadow-2xs"
+                                        className="min-h-11 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer font-heading"
                                     >
                                         <Plus size={12} /> Adicionar
                                     </button>
@@ -324,163 +355,52 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
                         {/* Formulário de Adicionar Novo Lançamento no Form */}
                         {isAddingNew && setPayments && (
-                            <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border-2 border-emerald-500 shadow-md space-y-2.5 animate-fadeIn">
-                                <div className="flex items-center justify-between text-xs font-extrabold text-emerald-900 dark:text-emerald-300 font-heading">
-                                    <span className="flex items-center gap-1.5">
-                                        <Plus size={14} /> Novo Lançamento de Pagamento
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAddingNew(false)}
-                                        className="text-[11px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <label className="text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase">
-                                                Data
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={() => setNewDate(getTodayDateStr())}
-                                                className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
-                                            >
-                                                Hoje
-                                            </button>
-                                        </div>
-                                        <input
-                                            type="date"
-                                            value={newDate}
-                                            onChange={(e) => setNewDate(e.target.value)}
-                                            className="w-full text-xs font-bold p-2 rounded-lg border border-stone-300 dark:border-gray-600 bg-stone-50 dark:bg-gray-700 text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase mb-1">
-                                            Valor (R$)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={newAmount}
-                                            onChange={(e) => setNewAmount(e.target.value)}
-                                            placeholder="0,00"
-                                            className="w-full text-xs font-bold p-2 rounded-lg border border-stone-300 dark:border-gray-600 bg-stone-50 dark:bg-gray-700 text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Tipo do Lançamento */}
-                                <div>
-                                    <label className="block text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase mb-1">
-                                        Tipo do Pagamento
-                                    </label>
-                                    <div className="grid grid-cols-3 gap-1.5">
-                                        {[
-                                            { id: 'deposit', label: 'Sinal (Parcial)' },
-                                            { id: 'installment', label: 'Abatimento / Parcela' },
-                                            { id: 'full', label: 'Quitação Total' },
-                                        ].map((t) => (
-                                            <button
-                                                key={t.id}
-                                                type="button"
-                                                onClick={() => setNewType(t.id)}
-                                                className={`py-1.5 px-2 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer font-heading ${
-                                                    newType === t.id
-                                                        ? 'bg-emerald-600 text-white shadow-xs'
-                                                        : 'bg-stone-100 dark:bg-gray-700 text-stone-600 dark:text-gray-300 border border-stone-200 dark:border-gray-600'
-                                                }`}
-                                            >
-                                                {t.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Forma de Pagamento */}
-                                <div>
-                                    <label className="block text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase mb-1">
-                                        Forma de Pagamento
-                                    </label>
-                                    <div className="grid grid-cols-4 gap-1.5">
-                                        {(
-                                            ['pix', 'card', 'money', 'transfer'] as PaymentMethod[]
-                                        ).map((m) => (
-                                            <button
-                                                key={m}
-                                                type="button"
-                                                onClick={() => setNewMethod(m)}
-                                                className={`py-1.5 px-1 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer text-center font-heading ${
-                                                    newMethod === m
-                                                        ? 'bg-teal-600 text-white shadow-xs'
-                                                        : 'bg-stone-100 dark:bg-gray-700 text-stone-600 dark:text-gray-300 border border-stone-200 dark:border-gray-600'
-                                                }`}
-                                            >
-                                                {m === 'pix'
-                                                    ? 'PIX'
-                                                    : m === 'card'
-                                                      ? 'Cartão'
-                                                      : m === 'money'
-                                                        ? 'Dinheiro'
-                                                        : 'Transf.'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <input
-                                        type="text"
-                                        placeholder="Observação (opcional)"
-                                        value={newNotes}
-                                        onChange={(e) => setNewNotes(e.target.value)}
-                                        className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-gray-600 bg-stone-50 dark:bg-gray-700 text-stone-900 dark:text-white outline-none"
-                                    />
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const amt = parseFloat(newAmount) || 0;
-                                        if (amt <= 0) return;
-                                        const newRec: PaymentRecord = {
-                                            id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-                                            date: newDate || getTodayDateStr(),
-                                            amount: amt,
-                                            method: newMethod,
-                                            type: newType,
-                                            notes:
-                                                newNotes.trim() ||
-                                                (newType === 'deposit'
-                                                    ? 'Sinal'
-                                                    : newType === 'full'
-                                                      ? 'Quitação'
-                                                      : 'Abatimento parcial'),
-                                            createdAt: new Date().toISOString(),
-                                        };
-                                        const updated = [...(payments || []), newRec];
-                                        setPayments(updated);
-                                        const newTotal = updated.reduce((s, p) => s + p.amount, 0);
-                                        setDepositAmount(newTotal > 0 ? newTotal : '');
-                                        if (numericTotal > 0 && newTotal >= numericTotal) {
-                                            setPaymentStatus('paid');
-                                        } else if (newTotal > 0) {
-                                            setPaymentStatus('partial');
-                                        }
-                                        setIsAddingNew(false);
-                                        setNewNotes('');
-                                    }}
-                                    disabled={!newAmount || parseFloat(newAmount) <= 0}
-                                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-heading disabled:opacity-50"
-                                >
-                                    <Check size={14} /> Adicionar ao Extrato
-                                </button>
-                            </div>
+                            <PaymentRecordEditor
+                                title="Novo lançamento de pagamento"
+                                date={newDate}
+                                setDate={setNewDate}
+                                amount={newAmount}
+                                setAmount={setNewAmount}
+                                method={newMethod}
+                                setMethod={setNewMethod}
+                                type={newType}
+                                setType={setNewType}
+                                notes={newNotes}
+                                setNotes={setNewNotes}
+                                onCancel={() => setIsAddingNew(false)}
+                                submitLabel="Adicionar ao extrato"
+                                disabled={!newAmount || parseFloat(newAmount) <= 0}
+                                onSubmit={() => {
+                                    const amt = parseFloat(newAmount) || 0;
+                                    if (amt <= 0) return;
+                                    const newRec: PaymentRecord = {
+                                        id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                                        date: newDate || getTodayDateStr(),
+                                        amount: amt,
+                                        method: newMethod,
+                                        type: newType,
+                                        notes:
+                                            newNotes.trim() ||
+                                            (newType === 'deposit'
+                                                ? 'Sinal'
+                                                : newType === 'full'
+                                                  ? 'Quitação'
+                                                  : 'Abatimento parcial'),
+                                        createdAt: new Date().toISOString(),
+                                    };
+                                    const updated = [...(payments || []), newRec];
+                                    setPayments(updated);
+                                    const newTotal = updated.reduce((s, p) => s + p.amount, 0);
+                                    setDepositAmount(newTotal > 0 ? newTotal : '');
+                                    if (numericTotal > 0 && newTotal >= numericTotal) {
+                                        setPaymentStatus('paid');
+                                    } else if (newTotal > 0) {
+                                        setPaymentStatus('partial');
+                                    }
+                                    setIsAddingNew(false);
+                                    setNewNotes('');
+                                }}
+                            />
                         )}
 
                         {payments && payments.length > 0 && (
@@ -490,198 +410,65 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
                                     if (isEditingThis) {
                                         return (
-                                            <div
+                                            <PaymentRecordEditor
                                                 key={p.id}
-                                                className="p-3 rounded-xl bg-white dark:bg-gray-800 border-2 border-emerald-500/60 shadow-md space-y-2.5 animate-fadeIn"
-                                            >
-                                                <div className="flex items-center justify-between text-xs font-extrabold text-stone-800 dark:text-stone-200 font-heading">
-                                                    <span>Alterar Data / Dados do Lançamento</span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setEditingRecordId(null)}
-                                                        className="text-[11px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
-                                                    >
-                                                        Cancelar
-                                                    </button>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <label className="text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase">
-                                                                Data
-                                                            </label>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    setEditDate(getTodayDateStr())
-                                                                }
-                                                                className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
-                                                            >
-                                                                Hoje
-                                                            </button>
-                                                        </div>
-                                                        <input
-                                                            type="date"
-                                                            value={editDate}
-                                                            onChange={(e) =>
-                                                                setEditDate(e.target.value)
-                                                            }
-                                                            className="w-full text-xs font-bold p-2 rounded-lg border border-stone-300 dark:border-gray-600 bg-stone-50 dark:bg-gray-700 text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase mb-1">
-                                                            Valor (R$)
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.01"
-                                                            min="0"
-                                                            value={editAmount}
-                                                            onChange={(e) =>
-                                                                setEditAmount(e.target.value)
-                                                            }
-                                                            className="w-full text-xs font-bold p-2 rounded-lg border border-stone-300 dark:border-gray-600 bg-stone-50 dark:bg-gray-700 text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Tipo do Pagamento na Edição */}
-                                                <div>
-                                                    <label className="block text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase mb-1">
-                                                        Tipo do Pagamento
-                                                    </label>
-                                                    <div className="grid grid-cols-3 gap-1.5">
-                                                        {[
-                                                            {
-                                                                id: 'deposit',
-                                                                label: 'Sinal (Parcial)',
-                                                            },
-                                                            {
-                                                                id: 'installment',
-                                                                label: 'Abatimento / Parcela',
-                                                            },
-                                                            { id: 'full', label: 'Quitação Total' },
-                                                        ].map((t) => (
-                                                            <button
-                                                                key={t.id}
-                                                                type="button"
-                                                                onClick={() => setEditType(t.id)}
-                                                                className={`py-1.5 px-2 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer font-heading ${
-                                                                    editType === t.id
-                                                                        ? 'bg-emerald-600 text-white shadow-xs'
-                                                                        : 'bg-stone-100 dark:bg-gray-700 text-stone-600 dark:text-gray-300 border border-stone-200 dark:border-gray-600'
-                                                                }`}
-                                                            >
-                                                                {t.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* Forma de Pagamento na Edição */}
-                                                <div>
-                                                    <label className="block text-[10px] font-extrabold text-stone-500 dark:text-gray-400 uppercase mb-1">
-                                                        Forma de Pagamento
-                                                    </label>
-                                                    <div className="grid grid-cols-4 gap-1.5">
-                                                        {(
-                                                            [
-                                                                'pix',
-                                                                'card',
-                                                                'money',
-                                                                'transfer',
-                                                            ] as PaymentMethod[]
-                                                        ).map((m) => (
-                                                            <button
-                                                                key={m}
-                                                                type="button"
-                                                                onClick={() => setEditMethod(m)}
-                                                                className={`py-1.5 px-1 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer text-center font-heading ${
-                                                                    editMethod === m
-                                                                        ? 'bg-teal-600 text-white shadow-xs'
-                                                                        : 'bg-stone-100 dark:bg-gray-700 text-stone-600 dark:text-gray-300 border border-stone-200 dark:border-gray-600'
-                                                                }`}
-                                                            >
-                                                                {m === 'pix'
-                                                                    ? 'PIX'
-                                                                    : m === 'card'
-                                                                      ? 'Cartão'
-                                                                      : m === 'money'
-                                                                        ? 'Dinheiro'
-                                                                        : 'Transf.'}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Observação (opcional)"
-                                                        value={editNotes}
-                                                        onChange={(e) =>
-                                                            setEditNotes(e.target.value)
-                                                        }
-                                                        className="w-full text-xs p-2 rounded-lg border border-stone-300 dark:border-gray-600 bg-stone-50 dark:bg-gray-700 text-stone-900 dark:text-white outline-none"
-                                                    />
-                                                </div>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const updated = payments.map((item) =>
-                                                            item.id === p.id
-                                                                ? {
-                                                                      ...item,
-                                                                      date:
-                                                                          editDate ||
-                                                                          getTodayDateStr(),
-                                                                      amount:
-                                                                          parseFloat(editAmount) ||
-                                                                          0,
-                                                                      method: editMethod,
-                                                                      type: editType,
-                                                                      notes: editNotes,
-                                                                  }
-                                                                : item
-                                                        );
-                                                        setPayments?.(updated);
-                                                        const newTotal = updated.reduce(
-                                                            (sum, item) => sum + item.amount,
-                                                            0
-                                                        );
-                                                        setDepositAmount(
-                                                            newTotal > 0 ? newTotal : ''
-                                                        );
-                                                        if (
-                                                            numericTotal > 0 &&
-                                                            newTotal >= numericTotal
-                                                        ) {
-                                                            setPaymentStatus('paid');
-                                                        } else if (newTotal > 0) {
-                                                            setPaymentStatus('partial');
-                                                        } else {
-                                                            setPaymentStatus('pending');
-                                                        }
-                                                        if (setPaidAt && editDate) {
-                                                            setPaidAt(editDate);
-                                                        }
-                                                        setEditingRecordId(null);
-                                                    }}
-                                                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-heading"
-                                                >
-                                                    <Check size={14} /> Confirmar Alteração
-                                                </button>
-                                            </div>
+                                                title="Alterar lançamento"
+                                                date={editDate}
+                                                setDate={setEditDate}
+                                                amount={editAmount}
+                                                setAmount={setEditAmount}
+                                                method={editMethod}
+                                                setMethod={setEditMethod}
+                                                type={editType}
+                                                setType={setEditType}
+                                                notes={editNotes}
+                                                setNotes={setEditNotes}
+                                                onCancel={() => setEditingRecordId(null)}
+                                                submitLabel="Confirmar alteração"
+                                                onSubmit={() => {
+                                                    const updated = payments.map((item) =>
+                                                        item.id === p.id
+                                                            ? {
+                                                                  ...item,
+                                                                  date:
+                                                                      editDate || getTodayDateStr(),
+                                                                  amount:
+                                                                      parseFloat(editAmount) || 0,
+                                                                  method: editMethod,
+                                                                  type: editType,
+                                                                  notes: editNotes,
+                                                              }
+                                                            : item
+                                                    );
+                                                    setPayments?.(updated);
+                                                    const newTotal = updated.reduce(
+                                                        (sum, item) => sum + item.amount,
+                                                        0
+                                                    );
+                                                    setDepositAmount(newTotal > 0 ? newTotal : '');
+                                                    if (
+                                                        numericTotal > 0 &&
+                                                        newTotal >= numericTotal
+                                                    ) {
+                                                        setPaymentStatus('paid');
+                                                    } else if (newTotal > 0) {
+                                                        setPaymentStatus('partial');
+                                                    } else {
+                                                        setPaymentStatus('pending');
+                                                    }
+                                                    if (setPaidAt && editDate) {
+                                                        setPaidAt(editDate);
+                                                    }
+                                                    setEditingRecordId(null);
+                                                }}
+                                            />
                                         );
                                     }
 
                                     return (
                                         <div
                                             key={p.id}
-                                            className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-stone-200/80 dark:border-gray-700 text-xs hover:border-stone-300 transition-all"
+                                            className="flex flex-col gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 border border-stone-200/80 dark:border-gray-700 text-sm hover:border-stone-300 transition-colors"
                                         >
                                             <div className="flex items-center gap-1.5 flex-wrap">
                                                 <span className="font-mono font-extrabold text-stone-800 dark:text-stone-200 text-xs">
@@ -708,7 +495,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                                                 )}
                                             </div>
 
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
                                                 <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-extrabold">
                                                     + R${' '}
                                                     {p.amount.toLocaleString('pt-BR', {

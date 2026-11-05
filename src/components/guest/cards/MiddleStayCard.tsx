@@ -43,10 +43,12 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
+    const isIntegracao = config.propertyId === 'integracao';
+    const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
 
     return (
         <div
-            className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
+            className={`flex flex-col h-full ${theme.background} ${theme.backgroundGradient} p-4 rounded-3xl text-stone-50 shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
         >
             {/* Header: Title + Actions */}
             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -77,9 +79,9 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
             {/* Welcome Message */}
             <div className="mb-4 relative z-10 text-center">
                 <h3
-                    className={`text-lg font-heading font-bold ${theme.text.primary} flex items-center justify-center gap-2`}
+                    className={`text-xl font-display font-semibold ${theme.text.primary} flex items-center justify-center gap-2`}
                 >
-                    <Sparkles size={16} className="text-orange-400" />{' '}
+                    <Sparkles size={16} className="text-amber-400" />{' '}
                     {t('Aproveite sua estadia!', 'Enjoy your stay!', '¡Disfruta tu estadía!')}
                 </h3>
             </div>
@@ -113,28 +115,30 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         triggerConfetti(e.currentTarget as HTMLElement);
                         onCopyWifi();
                     }}
-                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group h-full ${wifiCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                    className={`col-span-1 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group h-full ${wifiCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
                     title={`${t('Senha', 'Pass', 'Clave')}: ${currentWifiPass}`}
                 >
                     <div
-                        className={`p-1.5 rounded-lg flex items-center justify-center mb-1 ${wifiCopied ? 'text-green-400' : 'text-blue-400'}`}
+                        className={`p-1.5 rounded-lg flex items-center justify-center mb-1 ${wifiCopied ? 'text-emerald-400' : isIntegracao ? 'text-sky-400' : 'text-amber-400'}`}
                     >
                         {wifiCopied ? <Check size={20} /> : <Wifi size={20} />}
                     </div>
                     <div className="w-full">
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
                             {t('Wi-Fi', 'Wi-Fi', 'Wi-Fi')}
                         </p>
                         <p
                             className={`text-xs font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
                         >
                             {isLoadingWifi ? (
-                                <span className="inline-block w-20 h-3 bg-gray-700/50 animate-pulse rounded" />
+                                <span className="inline-block w-20 h-3 bg-stone-700/50 animate-pulse rounded" />
                             ) : (
                                 currentWifiSSID
                             )}
                         </p>
-                        <p className="text-[9px] text-blue-400 font-medium">
+                        <p
+                            className={`text-[9px] font-medium ${isIntegracao ? 'text-sky-400' : 'text-amber-400'}`}
+                        >
                             {wifiCopied
                                 ? t('Copiado!', 'Copied!', '¡Copiado!')
                                 : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
@@ -148,7 +152,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         triggerConfetti(e.currentTarget as HTMLElement);
                         onCopyAddress();
                     }}
-                    className={`col-span-1 bg-[#252535] p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group relative h-full ${addressCopied ? 'ring-1 ring-green-500/50' : ''}`}
+                    className={`col-span-1 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group relative h-full ${addressCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
                     title="R. São José, 475B"
                 >
                     <div className="absolute top-2 right-2 z-20">
@@ -158,18 +162,18 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                                 onOpenDriverMode();
                             }}
                             aria-label="Modo Motorista"
-                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-stone-400 hover:text-white"
                         >
                             <Maximize2 size={14} />
                         </button>
                     </div>
                     <div
-                        className={`p-1.5 rounded-lg flex items-center justify-center mb-1 ${addressCopied ? 'text-green-400' : 'text-purple-400'}`}
+                        className={`p-1.5 rounded-lg flex items-center justify-center mb-1 ${addressCopied ? 'text-emerald-400' : 'text-orange-400'}`}
                     >
                         {addressCopied ? <Check size={20} /> : <MapPin size={20} />}
                     </div>
                     <div className="w-full">
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
                             {t('Endereço', 'Address', 'Dirección')}
                         </p>
                         <p
@@ -177,7 +181,7 @@ const MiddleStayCard: React.FC<MiddleStayCardProps> = ({
                         >
                             R. São José, 475B
                         </p>
-                        <p className="text-[9px] text-purple-400 font-medium">
+                        <p className="text-[9px] text-orange-400 font-medium">
                             {addressCopied
                                 ? t('Copiado!', 'Copied!', '¡Copiado!')
                                 : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}

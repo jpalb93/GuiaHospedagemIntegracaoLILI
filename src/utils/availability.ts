@@ -1,4 +1,5 @@
 import { Reservation, PropertyId } from '../types';
+import { reservationsOverlap } from './reservationStay';
 
 export interface FlatUnitAvailability {
     unit: string;
@@ -41,9 +42,15 @@ export const checkAvailabilityForPeriod = (
     checkoutDate: string,
     reservations: Reservation[],
     units: string[] = [],
-    currentEditingId?: string | null
+    currentEditingId?: string | null,
+    stay?: Pick<Reservation, 'stayType' | 'checkInTime' | 'checkOutTime'>
 ): PropertyAvailabilitySummary => {
-    if (!checkInDate || !checkoutDate || checkInDate >= checkoutDate) {
+    if (
+        !checkInDate ||
+        !checkoutDate ||
+        checkInDate > checkoutDate ||
+        (checkInDate === checkoutDate && stay?.stayType !== 'day_use')
+    ) {
         return {
             propertyId,
             isAvailable: true,
@@ -62,12 +69,7 @@ export const checkAvailabilityForPeriod = (
         const resProp = res.propertyId || 'lili';
         if (resProp !== propertyId) return false;
 
-        return isDateRangeOverlapping(
-            checkInDate,
-            checkoutDate,
-            res.checkInDate || '',
-            res.checkoutDate || ''
-        );
+        return reservationsOverlap({ propertyId, checkInDate, checkoutDate, ...stay }, res);
     });
 
     if (units.length === 0) {

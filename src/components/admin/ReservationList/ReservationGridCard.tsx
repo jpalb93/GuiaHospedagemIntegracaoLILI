@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { Reservation } from '../../../types';
 import { formatDateBR } from '../../../utils/helpers';
+import StayTypeBadge from '../StayTypeBadge';
+import { dayUsePhase } from '../../../utils/reservationStay';
 
 interface ReservationGridCardProps {
     reservation: Reservation;
@@ -94,9 +96,14 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
     const checkInISO = reservation.checkInDate || '';
     const checkOutISO = reservation.checkoutDate || '';
 
+    const phase = dayUsePhase(reservation);
     const isArrivingToday =
-        checkInISO === todayStr && reservation.status !== 'cancelled' && checkOutISO >= todayStr;
-    const isLeavingToday = checkOutISO === todayStr && reservation.status !== 'cancelled';
+        checkInISO === todayStr &&
+        reservation.status !== 'cancelled' &&
+        checkOutISO >= todayStr &&
+        (!phase || phase === 'upcoming');
+    const isLeavingToday =
+        checkOutISO === todayStr && reservation.status !== 'cancelled' && phase !== 'finished';
 
     let statusPill = {
         label: 'AGUARDANDO CHECK-IN',
@@ -112,7 +119,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
             text: 'text-red-700 dark:text-red-300',
             border: 'border-red-200 dark:border-red-800/40',
         };
-    } else if (checkOutISO < todayStr) {
+    } else if (checkOutISO < todayStr || phase === 'finished') {
         statusPill = {
             label: 'FINALIZADA',
             bg: 'bg-gray-100 dark:bg-gray-800',
@@ -128,7 +135,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
         };
     } else if (isLeavingToday) {
         statusPill = {
-            label: 'SAÍDA HOJE',
+            label: phase === 'active' ? 'DAY USE EM ANDAMENTO' : 'SAÍDA HOJE',
             bg: 'bg-amber-50 dark:bg-amber-950/60',
             text: 'text-amber-700 dark:text-amber-300',
             border: 'border-amber-200 dark:border-amber-800/40',
@@ -253,6 +260,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
                             <h3 className="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white font-heading truncate leading-snug">
                                 {reservation.guestName}
                             </h3>
+                            <StayTypeBadge reservation={reservation} />
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                                 <span className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 font-heading">
                                     {flatLabel}

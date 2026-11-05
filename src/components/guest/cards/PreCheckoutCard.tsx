@@ -35,10 +35,12 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
+    const isIntegracao = config.propertyId === 'integracao';
+    const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
 
     return (
         <div
-            className={`flex flex-col h-full ${theme.background} p-4 rounded-3xl text-white shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
+            className={`flex flex-col h-full ${theme.background} ${theme.backgroundGradient} p-4 rounded-3xl text-stone-50 shadow-2xl border ${theme.border} relative overflow-hidden w-full animate-gold-pulse`}
         >
             {/* Header: Title + Actions */}
             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -59,7 +61,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                             triggerConfetti(e.currentTarget as HTMLElement);
                             onCopyWifi();
                         }}
-                        className={`text-gray-300 flex items-center justify-center bg-white/5 border border-white/10 w-[32px] h-[32px] rounded-full hover:bg-white/10 transition-colors shadow-sm`}
+                        className="text-stone-300 flex items-center justify-center bg-white/5 border border-white/10 w-[32px] h-[32px] rounded-full hover:bg-white/10 transition-colors shadow-sm"
                         aria-label="Copiar Wi-Fi"
                     >
                         <Wifi size={14} />
@@ -69,7 +71,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                             if (navigator.vibrate) navigator.vibrate(50);
                             onCopyAddress();
                         }}
-                        className={`text-gray-300 flex items-center justify-center bg-white/5 border border-white/10 w-[32px] h-[32px] rounded-full hover:bg-white/10 transition-colors shadow-sm`}
+                        className="text-stone-300 flex items-center justify-center bg-white/5 border border-white/10 w-[32px] h-[32px] rounded-full hover:bg-white/10 transition-colors shadow-sm"
                         aria-label="Copiar Endereço"
                     >
                         <MapPin size={14} />
@@ -80,7 +82,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
             {/* Message */}
             <div className="mb-4 relative z-10 text-center">
                 <h3
-                    className={`text-lg font-heading font-bold ${theme.text.primary} flex items-center justify-center gap-2`}
+                    className={`text-xl font-display font-semibold ${theme.text.primary} flex items-center justify-center gap-2`}
                 >
                     {t(
                         'Sua estadia está chegando ao fim 🥲',
@@ -92,10 +94,10 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
 
             {/* CHECKOUT HIGHLIGHT */}
             <div
-                className={`bg-[#252535] p-4 rounded-xl border ${theme.border} shadow-lg relative overflow-hidden mb-3 text-center`}
+                className={`${subCardBg} p-4 rounded-xl border ${theme.border} shadow-lg relative overflow-hidden mb-3 text-center`}
             >
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-indigo-600 opacity-80" />
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-500 to-orange-600 opacity-85" />
+                <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-2">
                     {t('Check-out', 'Check-out', 'Check-out')}
                 </p>
                 <div className="flex flex-col items-center justify-center gap-1 mb-3">
@@ -104,7 +106,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                     >
                         {config.checkOutTime || '11:00'}
                     </p>
-                    <p className="text-xs text-gray-400 font-medium">
+                    <p className="text-xs text-stone-400 font-medium">
                         {t('Amanhã', 'Tomorrow', 'Mañana')}
                     </p>
                 </div>
@@ -115,7 +117,7 @@ const PreCheckoutCard: React.FC<PreCheckoutCardProps> = ({
                     }}
                     fullWidth
                     leftIcon={<LogOut size={16} />}
-                    className="py-3 bg-blue-600 hover:bg-blue-500 text-xs uppercase tracking-wide shadow-lg shadow-blue-900/20"
+                    className="py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-xs uppercase tracking-wide shadow-lg shadow-orange-950/30"
                 >
                     {t('Ver Checklist de Saída', 'View Exit Checklist', 'Ver Lista de Salida')}
                 </Button>

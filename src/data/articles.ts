@@ -18,6 +18,18 @@ export interface Article {
 
 export const articles: Article[] = [
     {
+        id: 'day-use-petrolina',
+        slug: 'day-use-petrolina',
+        title: 'Day use em Petrolina: 4 horas no Centro, sem pernoite',
+        description:
+            'Saiba como funciona o day use individual: das 8h às 12h, sem visitantes e com reserva antecipada. Consulte valores e disponibilidade.',
+        imageUrl: '/images/quarto-lavanderia.jpg',
+        category: 'Day use',
+        date: '2026-10-28',
+        readTime: '4 min de leitura',
+        locationLabel: 'Centro de Petrolina',
+    },
+    {
         id: 'roteiro-vinho',
         slug: 'roteiro-vinho-petrolina',
         title: 'Roteiro do Vinho: Como visitar as vinícolas?',

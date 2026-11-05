@@ -8,6 +8,7 @@ import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import GuideList from './pages/GuideList';
 import BododromoArticle from './pages/articles/Bododromo';
+import DayUseArticle from './pages/articles/DayUse';
 
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -308,6 +309,7 @@ const App: React.FC = () => {
                             path="/guia/aluguel-mensal-petrolina-flat-mobiliado"
                             element={<MonthlyStayArticle />}
                         />
+                        <Route path="/guia/day-use-petrolina" element={<DayUseArticle />} />
                         <Route path="/guia/:slug" element={<GuideArticleLoader />} />
                         <Route path="/politica-privacidade" element={<PrivacyPolicy />} />
                         <Route path="*" element={<Home />} />

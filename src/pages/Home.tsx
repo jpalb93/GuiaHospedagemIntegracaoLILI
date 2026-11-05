@@ -4,6 +4,7 @@ import Hero from '../components/LandingFlats/Hero';
 import TopTicker from '../components/layout/TopTicker';
 import SectionDivider from '../components/LandingFlats/SectionDivider';
 import FeaturesSection from '../components/LandingFlats/FeaturesSection';
+import DayUseSection from '../components/LandingFlats/DayUseSection';
 import GallerySection from '../components/LandingFlats/GallerySection';
 
 // Lazy Load Sections below the fold as a single chunk to reduce request chaining
@@ -141,6 +142,8 @@ const Home: React.FC = () => {
             <GallerySection />
             <SectionDivider />
             <FeaturesSection />
+            <SectionDivider />
+            <DayUseSection />
 
             <BelowTheFoldSections />
         </>

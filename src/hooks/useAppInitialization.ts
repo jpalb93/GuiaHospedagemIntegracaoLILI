@@ -163,11 +163,18 @@ export const useAppInitialization = () => {
                             const [year, month, day] = safeConfig.checkoutDate
                                 .split('-')
                                 .map(Number);
-                            const expirationDate = new Date(year, month - 1, day);
-                            expirationDate.setDate(expirationDate.getDate() + 1);
-                            expirationDate.setHours(23, 59, 59, 999);
+                            const expirationDate =
+                                safeConfig.stayType === 'day_use'
+                                    ? new Date(
+                                          `${safeConfig.checkoutDate}T${safeConfig.checkOutTime || '12:00'}:00-03:00`
+                                      )
+                                    : new Date(year, month - 1, day);
+                            if (safeConfig.stayType !== 'day_use') {
+                                expirationDate.setDate(expirationDate.getDate() + 1);
+                                expirationDate.setHours(23, 59, 59, 999);
+                            }
 
-                            if (now > expirationDate) {
+                            if (now >= expirationDate) {
                                 localStorage.removeItem('flat_lili_last_rid');
                                 setAppState({
                                     mode: 'EXPIRED',
@@ -180,7 +187,12 @@ export const useAppInitialization = () => {
                         setAppState({ mode: AppMode.GUEST, config: safeConfig });
 
                         if (reservationId && window.history.replaceState) {
-                            const newUrl = window.location.pathname;
+                            const newUrl =
+                                window.location.pathname === '/'
+                                    ? /^[A-Z0-9]{6}$/i.test(reservationId)
+                                        ? `/${reservationId}`
+                                        : `/?rid=${reservationId}`
+                                    : window.location.pathname;
                             window.history.replaceState({}, '', newUrl);
                         }
                     } catch (error) {
