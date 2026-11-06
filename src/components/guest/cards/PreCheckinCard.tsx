@@ -5,6 +5,7 @@ import { useGuestTheme } from '../../../hooks/useGuestTheme';
 import { useLanguage } from '../../../hooks/useLanguage';
 import Button from '../../ui/Button';
 import AccessTicket from './AccessTicket';
+import { PROPERTIES } from '../../../config/properties';
 
 interface PreCheckinCardProps {
     isPasswordReleased: boolean;
@@ -185,7 +186,8 @@ const PreCheckinCard: React.FC<PreCheckinCardProps> = ({
                                 className={`text-sm font-bold bg-white/5 px-3 py-1 rounded-full border border-white/10 mt-1 ${theme.text.accent}`}
                             >
                                 {t('A partir das', 'From', 'A partir de')}{' '}
-                                {config.checkInTime || '14:00'}
+                                {config.checkInTime ||
+                                    PROPERTIES[config.propertyId || 'lili'].defaults.checkInTime}
                             </p>
                         </div>
                     </div>

@@ -1,13 +1,14 @@
 import React from 'react';
-import { LogOut, Wifi, Check, MapPin, Maximize2, CalendarHeart, MessageCircle } from 'lucide-react';
+import { LogOut, CalendarHeart, MessageCircle } from 'lucide-react';
 import { GuestConfig } from '../../../types';
-import HolographicCard from '../../ui/HolographicCard';
+import QuickAccessUtilities from './QuickAccessUtilities';
 import Button from '../../ui/Button';
-import { triggerConfetti } from '../../../utils/confetti';
+
 import { getFirstName } from '../../../utils/helpers';
 import { useGuestTheme } from '../../../hooks/useGuestTheme';
 import { useLanguage } from '../../../hooks/useLanguage';
 import AccessTicket from './AccessTicket';
+import { PROPERTIES } from '../../../config/properties';
 
 interface CheckinCardProps {
     isSingleNight: boolean;
@@ -32,31 +33,27 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
     isSingleNight,
     config,
     safeCode,
-    wifiCopied,
-    addressCopied,
+
     currentWifiSSID,
     currentWifiPass,
     onOpenCheckin,
     onOpenSupport,
     onEmergency,
     onSaveAccess,
-    onCopyWifi,
-    onCopyAddress,
+
     onOpenDriverMode,
     onOpenCheckout,
     isLoadingWifi = false,
 }) => {
     const theme = useGuestTheme(config.propertyId || 'lili');
     const { t } = useLanguage();
-    const isIntegracao = config.propertyId === 'integracao';
-    const subCardBg = isIntegracao ? 'bg-[#1A2634]' : 'bg-[#28201D]';
 
     return (
         <div
             className={`flex flex-col ${theme.background} ${theme.backgroundGradient} p-4 rounded-3xl text-stone-50 shadow-2xl border ${theme.border} relative w-full animate-gold-pulse`}
         >
             {/* Header: Title + Actions */}
-            <div className="flex justify-between items-start mb-6 relative z-10">
+            <div className="quick-access-header flex justify-between items-start mb-6 relative z-10">
                 <h2
                     className={`text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] mt-1.5 ${isSingleNight ? 'text-amber-400' : theme.text.secondary}`}
                 >
@@ -154,95 +151,13 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                 />
             </div>
 
-            {/* GRID: WI-FI & LOCATION */}
-            <div className="grid grid-cols-2 gap-3 mb-4 relative z-10">
-                {/* Wi-Fi */}
-                <HolographicCard
-                    onClick={(e) => {
-                        triggerConfetti(e.currentTarget as HTMLElement);
-                        onCopyWifi();
-                    }}
-                    className={`col-span-1 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group ${wifiCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
-                    title={`${t('Senha', 'Pass', 'Clave')}: ${currentWifiPass}`}
-                >
-                    <div className="absolute top-2 right-2">
-                        <Maximize2
-                            size={10}
-                            className="text-stone-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        />
-                    </div>
-                    <div
-                        className={`p-2 rounded-lg flex items-center justify-center mb-2 ${wifiCopied ? 'text-emerald-400' : isIntegracao ? 'text-sky-400' : 'text-amber-400'}`}
-                    >
-                        {wifiCopied ? <Check size={24} /> : <Wifi size={24} />}
-                    </div>
-                    <div className="w-full">
-                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
-                            {t('Wi-Fi', 'Wi-Fi', 'Wi-Fi')}
-                        </p>
-                        <p
-                            className={`text-sm font-bold ${theme.text.primary} truncate leading-none mb-1 w-full`}
-                        >
-                            {isLoadingWifi ? (
-                                <span className="inline-block w-24 h-4 bg-stone-700/50 animate-pulse rounded" />
-                            ) : (
-                                currentWifiSSID
-                            )}
-                        </p>
-                        <p
-                            className={`text-[9px] font-medium ${isIntegracao ? 'text-sky-400' : 'text-amber-400'}`}
-                        >
-                            {wifiCopied
-                                ? t('Copiado!', 'Copied!', '¡Copiado!')
-                                : t('Copiar Senha', 'Copy Password', 'Copiar Contraseña')}
-                        </p>
-                    </div>
-                </HolographicCard>
-
-                {/* Location */}
-                <HolographicCard
-                    onClick={(e) => {
-                        triggerConfetti(e.currentTarget as HTMLElement);
-                        onCopyAddress();
-                    }}
-                    className={`col-span-1 ${subCardBg} p-3 rounded-xl border ${theme.border} shadow-lg flex flex-col items-center text-center justify-between cursor-pointer hover:bg-white/5 transition-all group relative ${addressCopied ? 'ring-1 ring-emerald-500/50' : ''}`}
-                    title="R. São José, 475B"
-                >
-                    <div className="absolute top-2 right-2 z-20">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onOpenDriverMode();
-                            }}
-                            aria-label="Modo Motorista"
-                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-stone-400 hover:text-white"
-                        >
-                            <Maximize2 size={14} />
-                        </button>
-                    </div>
-                    <div
-                        className={`p-2 rounded-lg flex items-center justify-center mb-2 ${addressCopied ? 'text-emerald-400' : 'text-orange-400'}`}
-                    >
-                        {addressCopied ? <Check size={24} /> : <MapPin size={24} />}
-                    </div>
-                    <div className="w-full">
-                        <p className="text-[9px] text-stone-400 font-bold uppercase tracking-wider mb-0.5">
-                            {t('Local', 'Local', 'Ubicación')}
-                        </p>
-                        <p
-                            className={`text-sm font-bold ${theme.text.primary} truncate leading-none mb-1`}
-                        >
-                            R. São José, 475B
-                        </p>
-                        <p className="text-[9px] text-orange-400 font-medium">
-                            {addressCopied
-                                ? t('Copiado!', 'Copied!', '¡Copiado!')
-                                : t('Copiar Endereço', 'Copy Address', 'Copiar Dirección')}
-                        </p>
-                    </div>
-                </HolographicCard>
-            </div>
-
+            <QuickAccessUtilities
+                propertyId={config.propertyId || 'lili'}
+                wifiSSID={currentWifiSSID}
+                wifiPass={currentWifiPass}
+                isLoadingWifi={isLoadingWifi}
+                onOpenDriverMode={onOpenDriverMode}
+            />
             {!isSingleNight && (
                 <Button
                     onClick={() => {
@@ -306,7 +221,8 @@ const CheckinCard: React.FC<CheckinCardProps> = ({
                             'Check-in available from',
                             'Check-in disponible desde'
                         )}{' '}
-                        {config.checkInTime || '14:00'}
+                        {config.checkInTime ||
+                            PROPERTIES[config.propertyId || 'lili'].defaults.checkInTime}
                     </p>
                 </div>
             )}
