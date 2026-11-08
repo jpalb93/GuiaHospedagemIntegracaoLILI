@@ -159,30 +159,39 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
 
             {/* FILTRO DE PROPRIEDADE */}
             {showPropertyFilter && (
-                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar snap-x snap-mandatory touch-pan-x">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5 touch-pan-x">
                     <button
                         type="button"
                         onClick={() => setPropertyFilter('all')}
-                        className={`snap-start min-h-[44px] px-5 py-2.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all active:scale-95 touch-manipulation ${propertyFilter === 'all' ? 'bg-gray-900 text-white shadow-lg dark:bg-white dark:text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'}`}
+                        className={`snap-start px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 touch-manipulation cursor-pointer flex items-center gap-1.5 ${
+                            propertyFilter === 'all'
+                                ? 'bg-stone-900 text-white shadow-sm dark:bg-white dark:text-stone-900'
+                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80'
+                        }`}
                     >
+                        <Building2 size={13} />
                         Todos os Flats
                     </button>
-                    {Object.values(PROPERTIES).map((prop) => (
-                        <button
-                            type="button"
-                            key={prop.id}
-                            onClick={() => setPropertyFilter(prop.id)}
-                            className={`snap-start min-h-[44px] px-5 py-2.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-2 active:scale-95 touch-manipulation border ${
-                                propertyFilter === prop.id
-                                    ? prop.id === 'lili'
-                                        ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/30'
-                                        : 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/30'
-                                    : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
-                        >
-                            <Building2 size={14} /> {prop.name}
-                        </button>
-                    ))}
+                    {Object.values(PROPERTIES).map((prop) => {
+                        const isSelected = propertyFilter === prop.id;
+                        return (
+                            <button
+                                type="button"
+                                key={prop.id}
+                                onClick={() => setPropertyFilter(prop.id)}
+                                className={`snap-start px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 active:scale-95 touch-manipulation cursor-pointer ${
+                                    isSelected
+                                        ? prop.id === 'lili'
+                                            ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/25'
+                                            : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25'
+                                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200/80 dark:border-gray-700/80'
+                                }`}
+                            >
+                                <Building2 size={13} />
+                                {prop.name}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
 

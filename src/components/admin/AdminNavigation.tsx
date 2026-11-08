@@ -22,6 +22,7 @@ import {
 import { UserPermission } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import { canUserAccessProperty } from '../../services/userManagement';
+import { hapticFeedback } from '../../utils/haptics';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 
 interface AdminNavigationProps {
@@ -206,45 +207,112 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({
             </div>
 
             {/* FLOATING BOTTOM DOCK (MOBILE + TABLET PORTRAIT & LANDSCAPE < 1280px) */}
-            <div className="xl:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 px-4 z-50 flex justify-center pointer-events-none animate-slideUp mobile-bottom-nav">
-                <div className="pointer-events-auto w-full max-w-md bg-gray-900/95 dark:bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 rounded-[2.5rem] p-2 pr-6 pl-6 flex justify-between items-center ring-1 ring-white/5">
-                    {mobileItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`relative flex flex-col items-center justify-center p-2 transition-all duration-500 ${
-                                activeTab === item.id
-                                    ? 'text-white -translate-y-4'
-                                    : 'text-gray-500 hover:text-gray-300'
-                            }`}
-                        >
-                            {/* BADGE DE LABEL BOIANDO ACIMA DO ÍCONE (PREVINE CORTE NA PARTE INFERIOR) */}
-                            {activeTab === item.id && (
-                                <span className="absolute -top-8 whitespace-nowrap text-[10px] font-extrabold text-gray-900 dark:text-white bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow-lg border border-gray-100 dark:border-gray-700 animate-fadeIn tracking-wide font-heading">
+            <div className="xl:hidden fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] left-0 right-0 px-4 z-50 flex justify-center pointer-events-none animate-slideUp">
+                <nav
+                    aria-label="Navegação mobile"
+                    className="pointer-events-auto w-full max-w-sm bg-stone-900/95 dark:bg-black/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50 rounded-[2.2rem] p-1.5 flex justify-around items-center ring-1 ring-white/10"
+                >
+                    {mobileItems.map((item) => {
+                        const isActive = activeTab === item.id;
+                        const isCreate = item.id === 'create';
+
+                        if (isCreate) {
+                            return (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => {
+                                        hapticFeedback('light');
+                                        setActiveTab(item.id);
+                                    }}
+                                    className="flex-1 flex flex-col items-center justify-center py-1 transition-all group"
+                                    aria-label="Nova Reserva"
+                                >
+                                    <div
+                                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                                            isActive
+                                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 scale-105'
+                                                : 'bg-orange-500/20 text-orange-400 group-hover:bg-orange-500/30 group-active:scale-95'
+                                        }`}
+                                    >
+                                        <PlusCircle size={21} strokeWidth={2.4} />
+                                    </div>
+                                    <span
+                                        className={`text-[10px] font-bold tracking-tight mt-0.5 transition-colors ${
+                                            isActive
+                                                ? 'text-orange-400 font-extrabold'
+                                                : 'text-stone-400 group-hover:text-stone-200'
+                                        }`}
+                                    >
+                                        Nova
+                                    </span>
+                                </button>
+                            );
+                        }
+
+                        return (
+                            <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => {
+                                    hapticFeedback('light');
+                                    setActiveTab(item.id);
+                                }}
+                                className="flex-1 flex flex-col items-center justify-center py-1 transition-all duration-200 group active:scale-95"
+                                aria-label={item.label}
+                            >
+                                <div
+                                    className={`w-10 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                                        isActive
+                                            ? 'bg-orange-500/15 text-orange-400'
+                                            : 'text-stone-400 group-hover:text-stone-200'
+                                    }`}
+                                >
+                                    <item.icon size={20} strokeWidth={isActive ? 2.4 : 1.9} />
+                                </div>
+                                <span
+                                    className={`text-[10px] font-bold tracking-tight mt-0.5 transition-colors ${
+                                        isActive
+                                            ? 'text-orange-400 font-extrabold'
+                                            : 'text-stone-400 group-hover:text-stone-200'
+                                    }`}
+                                >
                                     {item.label}
                                 </span>
-                            )}
+                            </button>
+                        );
+                    })}
 
-                            <div
-                                className={`transition-all duration-500 relative z-10 ${activeTab === item.id ? 'bg-orange-500 p-3.5 rounded-full shadow-lg shadow-orange-500/50 ring-4 ring-gray-50 dark:ring-gray-900 scale-110' : ''}`}
-                            >
-                                <item.icon
-                                    size={activeTab === item.id ? 24 : 24}
-                                    strokeWidth={activeTab === item.id ? 2.5 : 2}
-                                />
-                            </div>
-                        </button>
-                    ))}
-
+                    {/* MENU COMPLETO BUTTON */}
                     <button
-                        onClick={() => setIsMobileMenuOpen(true)}
-                        className={`relative flex flex-col items-center justify-center p-2 text-gray-500 hover:text-gray-300 transition-colors group ${isMobileMenuOpen ? 'text-orange-500' : ''}`}
+                        type="button"
+                        onClick={() => {
+                            hapticFeedback('light');
+                            setIsMobileMenuOpen(true);
+                        }}
+                        className="flex-1 flex flex-col items-center justify-center py-1 transition-all duration-200 group active:scale-95"
+                        aria-label="Menu Completo"
                     >
-                        <div className="group-active:scale-90 transition-transform p-1">
-                            <Menu size={26} strokeWidth={2} />
+                        <div
+                            className={`w-10 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                                isMobileMenuOpen
+                                    ? 'bg-orange-500/15 text-orange-400'
+                                    : 'text-stone-400 group-hover:text-stone-200'
+                            }`}
+                        >
+                            <Menu size={20} strokeWidth={isMobileMenuOpen ? 2.4 : 1.9} />
                         </div>
+                        <span
+                            className={`text-[10px] font-bold tracking-tight mt-0.5 transition-colors ${
+                                isMobileMenuOpen
+                                    ? 'text-orange-400 font-extrabold'
+                                    : 'text-stone-400 group-hover:text-stone-200'
+                            }`}
+                        >
+                            Menu
+                        </span>
                     </button>
-                </div>
+                </nav>
             </div>
 
             {/* MOBILE & TABLET MENU DRAWER (PREMIUM GLASS) */}

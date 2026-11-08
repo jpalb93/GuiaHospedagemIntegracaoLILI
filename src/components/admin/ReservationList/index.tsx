@@ -545,7 +545,7 @@ const ReservationList: React.FC<ReservationListProps> = ({
     const totalPages = Math.max(1, Math.ceil(allFiltered.length / pageSize));
 
     return (
-        <div className="w-full space-y-8 animate-fadeIn pb-[calc(11rem+env(safe-area-inset-bottom,0px))]">
+        <div className="w-full space-y-6 animate-fadeIn pb-4">
             {/* 1. FILTER & ACTION TOOLBAR (Search, Filters, Status, + Nova Reserva) */}
             <FilterBar
                 searchTerm={searchTerm}

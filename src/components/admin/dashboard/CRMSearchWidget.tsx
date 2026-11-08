@@ -17,14 +17,18 @@ export const CRMSearchWidget: React.FC<CRMSearchWidgetProps> = ({
         const term = searchTerm.trim().toLowerCase();
         if (!term) return [];
 
-        return reservations.filter((r) => {
-            const nameMatch = (r.guestName || '').toLowerCase().includes(term);
-            const phoneMatch = (r.guestPhone || '').toLowerCase().includes(term);
-            const flatMatch = (r.flatNumber || '').toLowerCase().includes(term);
-            const propertyMatch = ((r.propertyId || 'lili') === 'lili' ? 'lili' : 'integracao').includes(term);
+        return reservations
+            .filter((r) => {
+                const nameMatch = (r.guestName || '').toLowerCase().includes(term);
+                const phoneMatch = (r.guestPhone || '').toLowerCase().includes(term);
+                const flatMatch = (r.flatNumber || '').toLowerCase().includes(term);
+                const propertyMatch = (
+                    (r.propertyId || 'lili') === 'lili' ? 'lili' : 'integracao'
+                ).includes(term);
 
-            return nameMatch || phoneMatch || flatMatch || propertyMatch;
-        }).slice(0, 6);
+                return nameMatch || phoneMatch || flatMatch || propertyMatch;
+            })
+            .slice(0, 6);
     }, [reservations, searchTerm]);
 
     return (
@@ -37,8 +41,8 @@ export const CRMSearchWidget: React.FC<CRMSearchWidgetProps> = ({
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Busca rápida global de hóspedes por nome, telefone ou flat..."
-                    className="w-full pl-11 pr-10 py-3.5 bg-white/90 dark:bg-gray-800/80 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 rounded-2xl text-xs sm:text-sm font-semibold text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-lg shadow-gray-200/20 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                    placeholder="Buscar hóspede por nome, telefone ou flat..."
+                    className="w-full pl-11 pr-10 py-3 sm:py-3.5 bg-white/95 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/90 dark:border-gray-700/80 rounded-2xl text-xs sm:text-sm font-semibold text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-md shadow-gray-200/10 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all"
                 />
                 {searchTerm && (
                     <button
@@ -79,15 +83,23 @@ export const CRMSearchWidget: React.FC<CRMSearchWidgetProps> = ({
                                                     {res.guestName}
                                                 </p>
                                                 <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                                    {(res.propertyId || 'lili') === 'lili' ? 'Lili' : `Flat ${res.flatNumber}`}
+                                                    {(res.propertyId || 'lili') === 'lili'
+                                                        ? 'Lili'
+                                                        : `Flat ${res.flatNumber}`}
                                                 </span>
                                             </div>
                                             <p className="text-[11px] text-gray-400 flex items-center gap-2 mt-0.5 font-medium">
-                                                <span><Calendar size={10} className="inline mr-1" />{res.checkInDate} até {res.checkoutDate}</span>
+                                                <span>
+                                                    <Calendar size={10} className="inline mr-1" />
+                                                    {res.checkInDate} até {res.checkoutDate}
+                                                </span>
                                             </p>
                                         </div>
                                     </div>
-                                    <ArrowRight size={16} className="text-gray-400 group-hover:text-orange-500 transition-colors" />
+                                    <ArrowRight
+                                        size={16}
+                                        className="text-gray-400 group-hover:text-orange-500 transition-colors"
+                                    />
                                 </div>
                             ))}
                         </div>
