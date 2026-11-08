@@ -166,7 +166,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({
                         className={`snap-start px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 touch-manipulation cursor-pointer flex items-center gap-1.5 ${
                             propertyFilter === 'all'
                                 ? 'bg-stone-900 text-white shadow-sm dark:bg-white dark:text-stone-900'
-                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80'
+                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200/80 dark:border-gray-700/80'
                         }`}
                     >
                         <Building2 size={13} />

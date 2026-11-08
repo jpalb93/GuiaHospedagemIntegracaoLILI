@@ -213,7 +213,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
     return (
         <div
             onClick={() => onOpenQuickActions(reservation)}
-            className={`group p-6 sm:p-7 rounded-[2.5rem] border transition-all duration-300 cursor-pointer flex flex-col justify-between gap-5 relative overflow-hidden shadow-sm hover:shadow-xl ${
+            className={`group p-4 sm:p-7 rounded-3xl sm:rounded-[2.5rem] border transition-all duration-300 cursor-pointer flex flex-col justify-between gap-5 relative overflow-hidden shadow-sm hover:shadow-xl ${
                 isSelected
                     ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-lg bg-white dark:bg-gray-800/90'
                     : isArrivingToday
@@ -246,7 +246,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
 
                         {/* Avatar */}
                         <div
-                            className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-extrabold text-lg sm:text-xl font-heading shrink-0 shadow-md group-hover:scale-105 transition-transform ${
+                            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-extrabold text-base sm:text-xl font-heading shrink-0 shadow-md group-hover:scale-105 transition-transform ${
                                 isArrivingToday
                                     ? 'bg-gradient-to-br from-orange-600 to-amber-600 text-white border border-orange-400/50 shadow-orange-500/20'
                                     : 'bg-gradient-to-br from-stone-900 via-gray-800 to-stone-950 text-white border border-stone-700/60'
@@ -344,7 +344,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
                     <div className="space-y-2 pt-0.5">
                         {/* Observações Internas (Ex: Saíram dia 12/08...) */}
                         {reservation.adminNotes && (
-                            <div className="flex items-start gap-2 px-3.5 py-2 rounded-2xl bg-amber-100/90 dark:bg-amber-950/70 border border-amber-300/80 dark:border-amber-800/60 text-amber-950 dark:text-amber-200 text-xs font-semibold shadow-2xs">
+                            <div className="flex items-start gap-2 px-3.5 py-2 rounded-2xl bg-amber-100/90 dark:bg-amber-950/70 border border-amber-300/80 dark:border-amber-800/60 text-amber-950 dark:text-amber-200 text-xs font-semibold shadow-xs">
                                 <FileText
                                     size={14}
                                     className="text-amber-700 dark:text-amber-400 shrink-0 mt-0.5"
@@ -357,7 +357,7 @@ export const ReservationGridCard: React.FC<ReservationGridCardProps> = ({
 
                         {/* Recado Ativo do Hóspede */}
                         {reservation.guestAlertActive && (
-                            <div className="flex items-start gap-2 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-900 dark:text-blue-200 text-xs font-semibold shadow-2xs">
+                            <div className="flex items-start gap-2 px-3.5 py-2 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-900 dark:text-blue-200 text-xs font-semibold shadow-xs">
                                 <MessageSquare
                                     size={14}
                                     className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"

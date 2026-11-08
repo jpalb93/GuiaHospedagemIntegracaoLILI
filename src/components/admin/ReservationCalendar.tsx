@@ -458,8 +458,8 @@ const ReservationCalendar: React.FC<ReservationCalendarProps> = ({
                                             : isToday
                                               ? 'ring-2 ring-orange-500/50 bg-orange-50/30 dark:bg-orange-950/20 z-10'
                                               : isWeekend
-                                                ? 'bg-slate-50/40 dark:bg-gray-850'
-                                                : 'hover:bg-slate-50/60 dark:hover:bg-gray-750'
+                                                ? 'bg-slate-50/40 dark:bg-gray-800'
+                                                : 'hover:bg-slate-50/60 dark:hover:bg-gray-700'
                                     }`}
                                 >
                                     {/* CABEÇALHO DO DIA (NÚMERO DA DATA + BADGE SE HOJE OU TOTAL) */}

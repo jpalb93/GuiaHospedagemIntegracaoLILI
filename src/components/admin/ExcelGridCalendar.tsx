@@ -269,7 +269,7 @@ const ExcelGridCalendar: React.FC<ExcelGridCalendarProps> = ({
                                         return (
                                             <tr
                                                 key={unitKey}
-                                                className="border-b border-gray-200 dark:border-gray-700/60 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+                                                className="border-b border-gray-200 dark:border-gray-700/60 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                             >
                                                 <td className="py-1 px-2 font-bold font-mono border-r border-gray-200 dark:border-gray-700 w-12 text-gray-500 dark:text-gray-400">
                                                     {unitKey}
