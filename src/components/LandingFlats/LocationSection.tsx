@@ -1,33 +1,46 @@
-import { useRef, useEffect } from 'react';
-import { Navigation } from 'lucide-react';
+import React, { useRef, useEffect, useState, Suspense } from 'react';
+import { Navigation, MapPin, Car, Footprints, LocateFixed } from 'lucide-react';
+import { RADAR_SPOTS, type TravelMode } from './locationRoutesData';
 
-const RADAR_SPOTS = [
-    {
-        destination: 'Complexo Médico & Hospitais',
-        time: '3 min',
-        desc: 'Próximo ao Hospital Unimed, Neurocárdio e clínicas',
-    },
-    {
-        destination: 'Orla do Rio São Francisco',
-        time: '4 min',
-        desc: 'Passeios de barco, barquinha e pôr do sol',
-    },
-    {
-        destination: 'Bodódromo (Polo Gastronômico)',
-        time: '8 min',
-        desc: 'Restaurantes de carne de sol e culinária regional',
-    },
-    {
-        destination: 'Aeroporto Senador Nilo Coelho',
-        time: '15 min',
-        desc: 'Acesso direto pelas avenidas principais',
-    },
-] as const;
+const InteractiveRouteMap = React.lazy(() => import('./InteractiveRouteMap'));
 
 const LocationSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const textBlockRef = useRef<HTMLDivElement>(null);
     const mapBlockRef = useRef<HTMLDivElement>(null);
+    const [selectedSpotId, setSelectedSpotId] = useState<string>(RADAR_SPOTS[0].id);
+    const [travelMode, setTravelMode] = useState<TravelMode>('driving');
+    const [recenterNonce, setRecenterNonce] = useState(0);
+    const [shouldMountMap, setShouldMountMap] = useState(false);
+
+    const activeSpot = RADAR_SPOTS.find((s) => s.id === selectedSpotId) ?? RADAR_SPOTS[0];
+    const activeVariant = activeSpot[travelMode];
+    const maxMinutes = Math.max(...RADAR_SPOTS.map((spot) => spot[travelMode].minutes));
+
+    const originEncoded = encodeURIComponent(
+        'R. São José, 475 B - Centro, Petrolina - PE, 56302-270'
+    );
+    const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${originEncoded}&destination=${activeSpot.routeQuery}&travelmode=${travelMode}`;
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || shouldMountMap) return;
+        const target = sectionRef.current ?? mapBlockRef.current;
+        if (!target || typeof IntersectionObserver === 'undefined') {
+            setShouldMountMap(true);
+            return;
+        }
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    setShouldMountMap(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: '500px 0px' }
+        );
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [shouldMountMap]);
 
     useEffect(() => {
         let ctx: { revert: () => void } | undefined;
@@ -81,7 +94,7 @@ const LocationSection: React.FC = () => {
             className="py-20 md:py-28 bg-[#F5F2EB] text-[#181614] relative"
         >
             <div className="max-w-[1320px] mx-auto px-6 md:px-12 space-y-12">
-                {/* Header unificado: Localização + Radar de Distâncias */}
+                {/* Header unificado */}
                 <div
                     id="localizacao-radar"
                     className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end border-b border-[#E5E0D5] pb-10"
@@ -96,28 +109,34 @@ const LocationSection: React.FC = () => {
                     </div>
                     <div className="lg:col-span-5">
                         <p className="text-[#5C564E] text-base md:text-lg font-normal leading-relaxed">
-                            Calcule o tempo de deslocamento a partir do Centro para os principais
-                            pontos da cidade.
+                            Toque em um destino abaixo para calcular o trajeto a partir do flat no
+                            Centro.
                         </p>
                     </div>
                 </div>
 
-                {/* Split: Endereço + Tempos de Deslocamento | Mapa */}
+                {/* Split: Endereço + Radar Interativo | Mapa com Card de Rota */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
                     <div
                         ref={textBlockRef}
-                        className="lg:col-span-5 flex flex-col justify-between gap-8"
+                        className="lg:col-span-5 flex flex-col justify-between gap-6"
                     >
                         {/* Bloco de Endereço */}
-                        <div className="bg-white border border-[#E5E0D5] rounded-3xl p-7 md:p-8 space-y-5 shadow-sm">
+                        <div className="relative overflow-hidden bg-[#FAF8F3] border border-[#DFD8CA] rounded-[28px] p-7 md:p-8 space-y-5 shadow-[0_12px_36px_rgba(24,22,20,0.05)]">
+                            <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9E6B2B]/45 to-transparent"
+                            />
                             <h3 className="text-2xl font-heading font-semibold text-[#181614] leading-tight tracking-tight">
                                 Hospedagem no Centro de Petrolina
                             </h3>
-                            <div className="space-y-3 border-l-2 border-[#9E6B2B] pl-4">
-                                <p className="text-[#181614] font-medium leading-relaxed text-base">
+                            <div className="space-y-3 pt-1 border-t border-[#E5DEC9]">
+                                <p className="text-[#181614] font-medium leading-relaxed text-base pt-2">
                                     R. São José, 475 B
                                     <br />
-                                    Centro · Petrolina - PE · 56302-270
+                                    <span className="text-[#5C564E] font-normal">
+                                        Centro · Petrolina - PE · 56302-270
+                                    </span>
                                 </p>
                                 <p className="text-[#5C564E] font-normal text-sm leading-relaxed">
                                     Perto de hospitais, comércio e polos de trabalho. Menos tempo no
@@ -139,44 +158,198 @@ const LocationSection: React.FC = () => {
                             </a>
                         </div>
 
-                        {/* Lista Radar de Distâncias */}
-                        <div className="divide-y divide-[#E5E0D5] border-y border-[#E5E0D5]">
-                            {RADAR_SPOTS.map((spot) => (
+                        {/* Controle de Modo de Trajeto + Lista Radar Interativa */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-3">
+                                <span className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5C564E] font-semibold">
+                                    Trajeto por rua · Centro
+                                </span>
                                 <div
-                                    key={spot.destination}
-                                    className="py-4 flex items-start justify-between gap-4"
+                                    role="group"
+                                    aria-label="Modo de deslocamento"
+                                    className="inline-flex items-center p-1 rounded-full bg-[#FAF8F3] border border-[#DFD8CA]"
                                 >
-                                    <div className="space-y-1">
-                                        <h4 className="font-heading font-semibold text-base text-[#181614]">
-                                            {spot.destination}
-                                        </h4>
-                                        <p className="text-[#5C564E] text-xs md:text-sm leading-relaxed">
-                                            {spot.desc}
-                                        </p>
-                                    </div>
-                                    <span className="shrink-0 text-xs font-mono font-semibold bg-[#141210] text-[#E5C98B] px-3 py-1 rounded-full">
-                                        {spot.time}
-                                    </span>
+                                    <button
+                                        type="button"
+                                        aria-pressed={travelMode === 'driving'}
+                                        onClick={() => setTravelMode('driving')}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all touch-manipulation ${
+                                            travelMode === 'driving'
+                                                ? 'bg-[#141210] text-[#E5C98B] shadow-sm'
+                                                : 'text-[#5C564E] hover:text-[#181614]'
+                                        }`}
+                                    >
+                                        <Car size={13} aria-hidden="true" />
+                                        <span>De carro</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        aria-pressed={travelMode === 'walking'}
+                                        onClick={() => setTravelMode('walking')}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all touch-manipulation ${
+                                            travelMode === 'walking'
+                                                ? 'bg-[#141210] text-[#E5C98B] shadow-sm'
+                                                : 'text-[#5C564E] hover:text-[#181614]'
+                                        }`}
+                                    >
+                                        <Footprints size={13} aria-hidden="true" />
+                                        <span>A pé</span>
+                                    </button>
                                 </div>
-                            ))}
+                            </div>
+
+                            <div
+                                className="space-y-2.5"
+                                role="listbox"
+                                aria-label="Pontos estratégicos próximos ao flat"
+                            >
+                                {RADAR_SPOTS.map((spot) => {
+                                    const selected = spot.id === selectedSpotId;
+                                    const variant = spot[travelMode];
+                                    const barPct = Math.max(
+                                        14,
+                                        Math.round((variant.minutes / maxMinutes) * 100)
+                                    );
+                                    return (
+                                        <button
+                                            key={spot.id}
+                                            type="button"
+                                            role="option"
+                                            aria-selected={selected}
+                                            onClick={() => setSelectedSpotId(spot.id)}
+                                            className={`w-full text-left p-4 rounded-2xl border transition-all duration-300 ${
+                                                selected
+                                                    ? 'bg-[#141210] border-[#141210] text-white shadow-lg'
+                                                    : 'bg-[#FAF8F3] border-[#DFD8CA] hover:border-[#9E6B2B]/50 text-[#181614]'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="space-y-1 min-w-0">
+                                                    <h4 className="font-heading font-semibold text-base leading-snug">
+                                                        {spot.destination}
+                                                    </h4>
+                                                    <p
+                                                        className={`text-xs md:text-sm leading-relaxed ${
+                                                            selected
+                                                                ? 'text-stone-300'
+                                                                : 'text-[#5C564E]'
+                                                        }`}
+                                                    >
+                                                        {spot.desc}
+                                                    </p>
+                                                </div>
+                                                <div className="shrink-0 flex flex-col items-end gap-1">
+                                                    <span
+                                                        className={`text-xs font-mono font-semibold px-3 py-1 rounded-full tabular-nums ${
+                                                            selected
+                                                                ? 'bg-[#E5C98B] text-[#141210]'
+                                                                : 'bg-[#141210] text-[#E5C98B]'
+                                                        }`}
+                                                    >
+                                                        {variant.timeLabel}
+                                                    </span>
+                                                    <span
+                                                        className={`text-[11px] font-mono tabular-nums ${
+                                                            selected
+                                                                ? 'text-stone-300'
+                                                                : 'text-[#5C564E]'
+                                                        }`}
+                                                    >
+                                                        {variant.kmLabel}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`mt-3 h-1 rounded-full overflow-hidden ${
+                                                    selected ? 'bg-white/10' : 'bg-[#E5DEC9]'
+                                                }`}
+                                                aria-hidden="true"
+                                            >
+                                                <div
+                                                    className="h-full rounded-full bg-gradient-to-r from-[#9E6B2B] to-[#E5C98B] transition-all duration-500"
+                                                    style={{ width: `${barPct}%` }}
+                                                />
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
                     <div
                         ref={mapBlockRef}
-                        className="lg:col-span-7 relative min-h-[420px] lg:min-h-[540px] rounded-3xl overflow-hidden border border-[#E5E0D5] shadow-sm bg-[#E5E0D5]"
+                        className="lg:col-span-7 relative isolate min-h-[440px] lg:min-h-[600px] rounded-[28px] overflow-hidden border border-[#DFD8CA] shadow-[0_20px_50px_rgba(24,22,20,0.08)] bg-[#EAE4D7]"
                     >
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3935.538608226922!2d-40.505701!3d-9.395689!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x773708a0e3867ff%3A0x6a2c222c5e533c37!2sR.%20S%C3%A3o%20Jos%C3%A9%2C%20475%20B%20-%20Centro%2C%20Petrolina%20-%20PE%2C%2056302-270!5e0!3m2!1spt-BR!2sbr!4v1709664000000!5m2!1spt-BR!2sbr"
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title="Mapa Flats Integração, R. São José, 475 B, Centro, Petrolina"
-                            className="w-full h-full min-h-[420px]"
-                        />
+                        {shouldMountMap ? (
+                            <Suspense
+                                fallback={
+                                    <div className="w-full h-full min-h-[440px] lg:min-h-[600px] flex items-center justify-center bg-[#EAE4D7] text-[#5C564E] text-sm font-medium">
+                                        Carregando mapa e traçado da rota...
+                                    </div>
+                                }
+                            >
+                                <InteractiveRouteMap
+                                    selectedSpotId={selectedSpotId}
+                                    travelMode={travelMode}
+                                    recenterNonce={recenterNonce}
+                                    onSelectSpot={setSelectedSpotId}
+                                />
+                            </Suspense>
+                        ) : (
+                            <div className="w-full h-full min-h-[440px] lg:min-h-[600px] flex items-center justify-center bg-[#EAE4D7] text-[#5C564E] text-sm font-medium">
+                                Mapa interativo de Petrolina
+                            </div>
+                        )}
+
+                        {/* Pílula Superior: Modo + Distância + Recentrar */}
+                        <div className="pointer-events-none absolute top-3.5 left-3.5 right-14 z-[1100] flex flex-wrap items-center gap-2">
+                            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-[#141210]/90 backdrop-blur-md text-white border border-white/15 px-3.5 py-2 text-xs shadow-lg">
+                                <span className="w-2 h-2 rounded-full bg-[#E5C98B] animate-pulse" />
+                                <span className="font-mono uppercase tracking-[0.14em] text-[#E5C98B]">
+                                    {travelMode === 'driving' ? 'De carro' : 'A pé'}
+                                </span>
+                                <span className="text-stone-400">·</span>
+                                <span className="font-semibold tabular-nums">
+                                    {activeVariant.kmLabel}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setRecenterNonce((n) => n + 1)}
+                                title="Recentrar rota no mapa"
+                                className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-[#FAF8F3]/95 hover:bg-white text-[#181614] border border-[#DFD8CA] px-3 py-2 text-xs font-medium shadow-md transition-colors"
+                            >
+                                <LocateFixed size={13} className="text-[#9E6B2B]" aria-hidden />
+                                <span className="hidden sm:inline">Enquadrar rota</span>
+                            </button>
+                        </div>
+
+                        {/* Painel Flutuante de Rota Direta até o Ponto Selecionado */}
+                        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-lg z-[1100] bg-[#141210]/95 backdrop-blur-xl text-white border border-[#E5C98B]/30 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                                <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.16em] text-[#E5C98B]">
+                                    <MapPin size={12} aria-hidden="true" />
+                                    <span>
+                                        Trajeto real · {activeVariant.kmLabel} ·{' '}
+                                        {activeVariant.timeLabel}
+                                    </span>
+                                </div>
+                                <p className="font-heading font-semibold text-sm sm:text-base leading-snug">
+                                    {activeSpot.destination}
+                                </p>
+                            </div>
+                            <a
+                                href={routeUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] px-4 py-2.5 text-xs font-semibold transition-colors"
+                            >
+                                <span>Ver no GPS</span>
+                                <Navigation size={13} aria-hidden="true" />
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

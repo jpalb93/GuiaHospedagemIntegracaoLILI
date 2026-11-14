@@ -70,17 +70,21 @@ const FeaturesSection: React.FC = () => {
 
                 {/* Spread editorial: foto grande + coluna de momentos */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
-                    <article className="feature-stage group relative lg:col-span-7 min-h-[420px] md:min-h-[560px] rounded-3xl overflow-hidden bg-[#1B1916]">
+                    <article className="feature-stage group relative lg:col-span-7 min-h-[420px] md:min-h-[560px] rounded-[28px] overflow-hidden bg-[#1B1916] ring-1 ring-inset ring-white/10 hover:ring-[#E5C98B]/45 transition-all duration-700 shadow-[0_24px_60px_rgba(18,17,15,0.14)]">
                         <img
                             src="/assets/gallery/gallery-2.webp"
                             alt="Hospedagem em Petrolina: sala e estar do flat no Centro"
                             width={1200}
                             height={900}
                             loading="lazy"
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.04]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#12110F]/95 via-[#12110F]/35 to-transparent" />
                         <div className="absolute inset-x-0 bottom-0 p-8 md:p-11 space-y-3">
+                            <span
+                                aria-hidden="true"
+                                className="block h-px w-8 group-hover:w-16 bg-[#E5C98B]/75 transition-all duration-500"
+                            />
                             <p className="text-white text-3xl md:text-4xl font-heading font-semibold tracking-tight">
                                 Cozinha completa
                             </p>
@@ -92,17 +96,21 @@ const FeaturesSection: React.FC = () => {
                     </article>
 
                     <div className="lg:col-span-5 flex flex-col gap-5 md:gap-6">
-                        <article className="feature-stage group relative flex-1 min-h-[250px] md:min-h-[270px] rounded-3xl overflow-hidden bg-[#1B1916]">
+                        <article className="feature-stage group relative flex-1 min-h-[250px] md:min-h-[270px] rounded-[28px] overflow-hidden bg-[#1B1916] ring-1 ring-inset ring-white/10 hover:ring-[#E5C98B]/45 transition-all duration-700 shadow-[0_20px_50px_rgba(18,17,15,0.12)]">
                             <img
                                 src="/assets/gallery/gallery-4.webp"
                                 alt="Quarto da hospedagem Flats Integração em Petrolina"
                                 width={800}
                                 height={600}
                                 loading="lazy"
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.04]"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#12110F]/95 via-[#12110F]/40 to-transparent" />
-                            <div className="absolute inset-x-0 bottom-0 p-7 md:p-8 space-y-2">
+                            <div className="absolute inset-x-0 bottom-0 p-7 md:p-8 space-y-2.5">
+                                <span
+                                    aria-hidden="true"
+                                    className="block h-px w-7 group-hover:w-14 bg-[#E5C98B]/75 transition-all duration-500"
+                                />
                                 <p className="text-white text-2xl md:text-3xl font-heading font-semibold tracking-tight">
                                     Quarto de verdade
                                 </p>
@@ -113,12 +121,13 @@ const FeaturesSection: React.FC = () => {
                             </div>
                         </article>
 
-                        <article className="feature-stage flex-1 bg-white border border-[#E5E0D5] rounded-3xl p-7 md:p-8 flex flex-col justify-between gap-6">
+                        <article className="feature-stage relative flex-1 bg-[#FAF8F3] border border-[#DFD8CA] hover:border-[#9E6B2B]/40 rounded-[28px] p-7 md:p-8 flex flex-col justify-between gap-6 transition-colors duration-500 shadow-[0_12px_36px_rgba(24,22,20,0.05)] overflow-hidden">
+                            <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9E6B2B]/45 to-transparent"
+                            />
                             <div className="space-y-5">
                                 <div>
-                                    <p className="text-[#9E6B2B] text-xs font-semibold uppercase tracking-[0.18em] mb-2">
-                                        Trabalho &amp; noite
-                                    </p>
                                     <p className="text-[#181614] text-2xl font-heading font-semibold tracking-tight">
                                         Fibra + Smart TV
                                     </p>
@@ -127,7 +136,7 @@ const FeaturesSection: React.FC = () => {
                                         improvisação.
                                     </p>
                                 </div>
-                                <div className="h-px bg-[#E5E0D5]" />
+                                <div className="h-px bg-[#E5DEC9]" />
                                 <div>
                                     <p className="text-[#181614] text-2xl font-heading font-semibold tracking-tight">
                                         Centro monitorado

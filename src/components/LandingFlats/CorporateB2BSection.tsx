@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     FileCheck2,
     ArrowRight,
@@ -9,11 +9,56 @@ import {
     MapPin,
     Building2,
     Sparkles,
+    Briefcase,
+    HardHat,
+    Users,
 } from 'lucide-react';
 
 interface CorporateB2BSectionProps {
     onRequestQuote?: () => void;
 }
+
+const CORPORATE_PROFILES = [
+    {
+        id: 'obras',
+        label: 'Obras & Projetos',
+        icon: HardHat,
+        badge: 'Faturamento quinzenal ou mensal',
+        headline: 'Base pronta para engenheiros e frentes de serviço em Petrolina.',
+        detail: 'Wi-Fi fibra, cozinha completa e acesso rápido às saídas industriais e projetos de irrigação, sem perder tempo montando imóvel.',
+        bullets: [
+            'Check-in ágil sem fiador ou caução',
+            'Nota Fiscal PJ emitida diretamente no CNPJ',
+            'Redução real de custos frente a diárias de hotel',
+        ],
+    },
+    {
+        id: 'executivos',
+        label: 'Diretoria & Executivos',
+        icon: Briefcase,
+        badge: 'Privacidade no Centro',
+        headline: 'Privacidade residencial com padrão executivo e silêncio para trabalhar.',
+        detail: 'Ambiente climatizado, bancada dedicada para reuniões remotas, enxoval completo e manutenção inclusa para estadias tranquilas.',
+        bullets: [
+            'Bancada de trabalho + Wi-Fi fibra estável',
+            'Cozinha equipada para manter rotina alimentar',
+            'No Centro de Petrolina, próximo a bancos e hospitais',
+        ],
+    },
+    {
+        id: 'rodizio',
+        label: 'Equipes em Rodízio',
+        icon: Users,
+        badge: 'Gestão simplificada para RH',
+        headline: 'Controle previsível de centro de custos para equipes recorrentes.',
+        detail: 'Troca de hóspedes e renovação de enxoval com limpeza inclusa, evitando múltiplos recibos avulsos de hotelaria tradicional.',
+        bullets: [
+            'Pagamento via faturamento ou cartão corporativo',
+            'Tabela dedicada para estadias contínuas',
+            'Suporte direto sem intermediação de corretoras',
+        ],
+    },
+] as const;
 
 const PILLARS = [
     {
@@ -69,6 +114,9 @@ const MOBILE_COMPARISON = [
 ] as const;
 
 export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequestQuote }) => {
+    const [activeProfileIdx, setActiveProfileIdx] = useState(0);
+    const activeProfile = CORPORATE_PROFILES[activeProfileIdx];
+
     const handleQuoteClick = () => {
         if (onRequestQuote) onRequestQuote();
         window.dispatchEvent(new CustomEvent('open-corporate-modal'));
@@ -107,7 +155,7 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                             <button
                                 type="button"
                                 onClick={handleQuoteClick}
-                                className="px-7 py-3.5 bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] font-semibold text-sm rounded-full transition-all active:scale-[0.98] touch-manipulation inline-flex items-center justify-center gap-2 group shadow-lg"
+                                className="cta-sheen px-7 py-3.5 bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] font-semibold text-sm rounded-full transition-all active:scale-[0.98] touch-manipulation inline-flex items-center justify-center gap-2 group shadow-lg"
                             >
                                 <span>Solicitar cotação B2B</span>
                                 <ArrowRight
@@ -126,26 +174,38 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
 
                     {/* Showcase Fotográfico + Monolito de Métricas */}
                     <div className="lg:col-span-6 space-y-4">
-                        <div className="relative h-56 sm:h-64 rounded-3xl overflow-hidden border border-white/10 bg-[#1B1916] shadow-2xl">
+                        <div className="group relative h-56 sm:h-64 rounded-[28px] overflow-hidden border border-white/10 hover:border-[#E5C98B]/35 bg-[#1B1916] shadow-2xl transition-colors duration-500">
                             <img
                                 src="/assets/gallery/gallery-5.webp"
                                 alt="Flat corporativo equipado nos Flats Integração no Centro de Petrolina"
                                 width={1000}
                                 height={650}
                                 loading="lazy"
-                                className="w-full h-full object-cover object-center opacity-85"
+                                className="w-full h-full object-cover object-center opacity-85 transition-transform duration-1000 ease-out group-hover:scale-[1.04]"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#12110F]/85 via-[#12110F]/20 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#12110F]/90 via-[#12110F]/25 to-transparent" />
+                            <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between gap-3">
+                                <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#E5C98B]">
+                                    Pronto para operação imediata
+                                </span>
+                                <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-200 bg-black/45 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full">
+                                    Wi-Fi fibra · Cozinha equipada
+                                </span>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="bg-[#191714] border border-emerald-500/25 rounded-3xl p-6 md:p-7 flex flex-col justify-between gap-5 shadow-xl">
+                            <div className="relative overflow-hidden bg-[#171512] border border-white/10 hover:border-emerald-500/35 rounded-[24px] p-6 md:p-7 flex flex-col justify-between gap-5 shadow-xl transition-colors duration-300">
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/45 to-transparent"
+                                />
                                 <div className="flex items-center justify-between">
                                     <span className="p-2.5 bg-emerald-500/10 rounded-full text-emerald-400 border border-emerald-500/20">
                                         <TrendingDown size={18} aria-hidden />
                                     </span>
-                                    <span className="text-[10px] uppercase tracking-[0.18em] font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                                        REDUÇÃO
+                                    <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-emerald-400/90">
+                                        Economia real
                                     </span>
                                 </div>
                                 <div>
@@ -158,13 +218,17 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                                 </div>
                             </div>
 
-                            <div className="bg-[#191714] border border-[#E5C98B]/25 rounded-3xl p-6 md:p-7 flex flex-col justify-between gap-5 shadow-xl">
+                            <div className="relative overflow-hidden bg-[#171512] border border-white/10 hover:border-[#E5C98B]/40 rounded-[24px] p-6 md:p-7 flex flex-col justify-between gap-5 shadow-xl transition-colors duration-300">
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E5C98B]/45 to-transparent"
+                                />
                                 <div className="flex items-center justify-between">
                                     <span className="p-2.5 bg-[#E5C98B]/10 rounded-full text-[#E5C98B] border border-[#E5C98B]/25">
                                         <FileCheck2 size={18} aria-hidden />
                                     </span>
-                                    <span className="text-[10px] uppercase tracking-[0.18em] font-mono font-semibold text-[#E5C98B] bg-[#E5C98B]/10 border border-[#E5C98B]/25 px-2.5 py-1 rounded-full">
-                                        DIRETO
+                                    <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[#E5C98B]/90">
+                                        Faturamento direto
                                     </span>
                                 </div>
                                 <div>
@@ -180,29 +244,102 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                     </div>
                 </div>
 
-                {/* 2. Dossiê Executivo em 3 Colunas com Divisores Arquitetônicos */}
-                <div className="grid grid-cols-1 md:grid-cols-3 border-y border-white/15 divide-y md:divide-y-0 md:divide-x divide-white/15">
-                    {PILLARS.map((item) => (
-                        <div
-                            key={item.title}
-                            className="py-8 md:px-8 first:md:pl-0 last:md:pr-0 space-y-4 transition-colors"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="w-11 h-11 rounded-full bg-[#1B1916] border border-white/15 flex items-center justify-center text-[#E5C98B]">
-                                    <item.icon size={19} strokeWidth={1.75} aria-hidden />
-                                </div>
-                                <span className="font-mono text-xs tracking-[0.2em] text-stone-500">
-                                    {item.num}
-                                </span>
+                {/* 2. Dossiê Executivo + Seletor de Perfil Corporativo */}
+                <div className="space-y-10">
+                    <div className="bg-[#171512] border border-white/10 rounded-[28px] p-6 md:p-8 lg:p-10 space-y-7 shadow-2xl">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                            <div>
+                                <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#E5C98B] mb-1.5">
+                                    Operação por perfil de demanda
+                                </p>
+                                <h3 className="text-xl sm:text-2xl font-heading font-semibold text-white tracking-tight">
+                                    Como o flat atende sua equipe
+                                </h3>
                             </div>
-                            <h3 className="text-xl font-heading font-semibold text-white leading-snug">
-                                {item.title}
-                            </h3>
-                            <p className="text-stone-400 text-sm leading-relaxed font-normal">
-                                {item.body}
-                            </p>
+
+                            <div
+                                role="tablist"
+                                aria-label="Perfis de hospedagem corporativa"
+                                className="flex flex-wrap gap-2"
+                            >
+                                {CORPORATE_PROFILES.map((profile, idx) => {
+                                    const Icon = profile.icon;
+                                    const isSelected = idx === activeProfileIdx;
+                                    return (
+                                        <button
+                                            key={profile.id}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={isSelected}
+                                            onClick={() => setActiveProfileIdx(idx)}
+                                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all touch-manipulation border ${
+                                                isSelected
+                                                    ? 'bg-[#E5C98B] text-[#141210] border-[#E5C98B] shadow-md'
+                                                    : 'bg-white/[0.04] text-stone-300 border-white/10 hover:border-[#E5C98B]/40 hover:text-white'
+                                            }`}
+                                        >
+                                            <Icon size={14} aria-hidden />
+                                            <span>{profile.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    ))}
+
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+                            <div className="lg:col-span-7 space-y-3">
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.18em] text-[#E5C98B] bg-[#E5C98B]/10 border border-[#E5C98B]/25 px-3 py-1 rounded-full">
+                                    {activeProfile.badge}
+                                </span>
+                                <h4 className="text-xl md:text-2xl font-heading font-semibold text-white tracking-tight leading-snug pt-1">
+                                    {activeProfile.headline}
+                                </h4>
+                                <p className="text-stone-300/90 text-sm md:text-base leading-relaxed font-normal">
+                                    {activeProfile.detail}
+                                </p>
+                            </div>
+
+                            <ul className="lg:col-span-5 space-y-3 bg-[#12110F] border border-white/10 rounded-2xl p-5">
+                                {activeProfile.bullets.map((bullet) => (
+                                    <li
+                                        key={bullet}
+                                        className="flex items-start gap-3 text-sm text-stone-200 leading-snug"
+                                    >
+                                        <CheckCircle2
+                                            size={16}
+                                            className="text-[#E5C98B] shrink-0 mt-0.5"
+                                            aria-hidden
+                                        />
+                                        <span>{bullet}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 border-y border-white/15 divide-y md:divide-y-0 md:divide-x divide-white/15">
+                        {PILLARS.map((item) => (
+                            <div
+                                key={item.title}
+                                className="py-8 md:px-8 first:md:pl-0 last:md:pr-0 space-y-4 transition-colors"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="w-11 h-11 rounded-full bg-[#1B1916] border border-white/15 flex items-center justify-center text-[#E5C98B]">
+                                        <item.icon size={19} strokeWidth={1.75} aria-hidden />
+                                    </div>
+                                    <span className="font-mono text-xs tracking-[0.2em] text-stone-500">
+                                        {item.num}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-heading font-semibold text-white leading-snug">
+                                    {item.title}
+                                </h3>
+                                <p className="text-stone-400 text-sm leading-relaxed font-normal">
+                                    {item.body}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* 3. Comparativo + Chamada Corporativa Integrada */}
@@ -233,7 +370,7 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                                 <button
                                     type="button"
                                     onClick={handleQuoteClick}
-                                    className="w-full px-6 py-3.5 bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] font-semibold text-sm rounded-full transition-all active:scale-[0.98] touch-manipulation inline-flex items-center justify-center gap-2 group shadow-lg"
+                                    className="cta-sheen w-full px-6 py-3.5 bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] font-semibold text-sm rounded-full transition-all active:scale-[0.98] touch-manipulation inline-flex items-center justify-center gap-2 group shadow-lg"
                                 >
                                     <span>Solicitar cotação B2B</span>
                                     <ArrowRight
@@ -322,8 +459,13 @@ export const CorporateB2BSection: React.FC<CorporateB2BSectionProps> = ({ onRequ
                                         <th className="py-4 pr-4 font-semibold text-xs uppercase tracking-wider w-[18%]">
                                             Critério
                                         </th>
-                                        <th className="py-4 px-5 font-semibold text-[#E5C98B] bg-gradient-to-b from-[#E5C98B]/15 to-[#E5C98B]/10 border-t border-x border-[#E5C98B]/30 rounded-t-2xl text-center text-xs uppercase tracking-wider w-[34%]">
-                                            Flats Integração
+                                        <th className="py-4 px-5 font-semibold text-[#E5C98B] bg-gradient-to-b from-[#E5C98B]/20 to-[#E5C98B]/10 border-t border-x border-[#E5C98B]/35 rounded-t-2xl text-center text-xs uppercase tracking-wider w-[34%]">
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-[9px] font-mono tracking-[0.2em] bg-[#E5C98B] text-[#141210] px-2.5 py-0.5 rounded-full">
+                                                    Mais econômico
+                                                </span>
+                                                <span>Flats Integração</span>
+                                            </div>
                                         </th>
                                         <th className="py-4 px-4 font-semibold text-stone-400 text-center text-xs uppercase tracking-wider w-[23%]">
                                             Hotel
