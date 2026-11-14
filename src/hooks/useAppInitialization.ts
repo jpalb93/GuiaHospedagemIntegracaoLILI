@@ -35,10 +35,16 @@ export const useAppInitialization = () => {
             return { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } };
         }
 
-        // Optimization: Initialize directly to LANDING for public pages to avoid flush/reload
+        // Optimization: Initialize directly to LANDING / ADMIN / CMS to avoid flush/reload
         if (typeof window !== 'undefined') {
             const path = window.location.pathname;
             const params = new URLSearchParams(window.location.search);
+            if (path === '/cms' || params.get('mode') === 'cms') {
+                return { mode: AppMode.CMS, config: { guestName: '', lockCode: '' } };
+            }
+            if (path === '/admin') {
+                return { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } };
+            }
             if (!params.get('rid')) {
                 if (
                     path === '/' ||
@@ -76,19 +82,29 @@ export const useAppInitialization = () => {
             const isCMS = path === '/cms' || params.get('mode') === 'cms';
 
             if (isCMS) {
-                await minLoadingTime;
-                setAppState({ mode: AppMode.CMS, config: { guestName: '', lockCode: '' } });
+                setAppState((prev) =>
+                    prev.mode === AppMode.CMS
+                        ? prev
+                        : { mode: AppMode.CMS, config: { guestName: '', lockCode: '' } }
+                );
                 return;
             }
 
             if (isNative) {
-                setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
+                setAppState((prev) =>
+                    prev.mode === AppMode.ADMIN
+                        ? prev
+                        : { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } }
+                );
                 return;
             }
 
             if (path === '/admin') {
-                await minLoadingTime;
-                setAppState({ mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } });
+                setAppState((prev) =>
+                    prev.mode === AppMode.ADMIN
+                        ? prev
+                        : { mode: AppMode.ADMIN, config: { guestName: '', lockCode: '' } }
+                );
                 return;
             }
 

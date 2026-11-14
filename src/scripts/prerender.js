@@ -16,6 +16,14 @@ global.localStorage = {
 };
 global.sessionStorage = global.localStorage;
 
+// Routes whose client tree is eagerly loaded and hydration-safe without Suspense mismatches
+const HYDRATABLE_ROUTES = new Set([
+    '/',
+    '/guia',
+    '/guia/day-use-petrolina',
+    '/guia/onde-comer-petrolina-bododromo',
+]);
+
 async function generate() {
     console.log('🚀 Starting Robust Prerender...');
 
@@ -52,7 +60,12 @@ async function generate() {
 
         let html = templateWithoutHelmetDefaults
             .replace('<!--app-html-->', appHtml)
+            .replace(/<!--app-skeleton-start-->[\s\S]*?<!--app-skeleton-end-->/, '')
             .replace('<!--favicon-title-->', `${helmetHead}\n        <!--favicon-title-->`);
+
+        if (HYDRATABLE_ROUTES.has(url)) {
+            html = html.replace('<div id="root">', `<div id="root" data-ssr-route="${url}">`);
+        }
 
         // Determine output path
         const fileName = url === '/' ? 'index.html' : `${url.replace(/^\//, '')}/index.html`;

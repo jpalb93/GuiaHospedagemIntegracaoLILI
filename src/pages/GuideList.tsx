@@ -6,7 +6,7 @@ import { articles } from '../data/articles';
 
 const GuideList: React.FC = () => {
     return (
-        <div className="pt-24 pb-16 min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#F5F2EB] text-[#181614]">
             <Helmet>
                 <title>Guia de Petrolina: O que fazer e onde ir | Flats Integração</title>
                 <meta
@@ -51,38 +51,40 @@ const GuideList: React.FC = () => {
                                 '@type': 'ListItem',
                                 position: 1,
                                 name: 'Home',
-                                item: 'https://www.flatsintegracao.com.br'
+                                item: 'https://www.flatsintegracao.com.br',
                             },
                             {
                                 '@type': 'ListItem',
                                 position: 2,
                                 name: 'Guia de Petrolina',
-                                item: 'https://www.flatsintegracao.com.br/guia'
-                            }
-                        ]
+                                item: 'https://www.flatsintegracao.com.br/guia',
+                            },
+                        ],
                     })}
                 </script>
             </Helmet>
 
-            <div className="container mx-auto px-4 mb-12 text-center">
-                <span className="text-orange-500 font-bold uppercase tracking-wider text-sm mb-2 block">
-                    Blog de Viagem
-                </span>
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 font-heading mb-6">
-                    Guia do Viajante em Petrolina
-                </h1>
-                <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                    Dicas locais, segredos da cidade e roteiros imperdíveis selecionados para você
-                    viver a melhor experiência no Vale do São Francisco.
-                </p>
-            </div>
+            <header className="bg-[#12110F] text-white pt-32 md:pt-40 pb-16 md:pb-20 px-6 md:px-12 border-b border-white/10">
+                <div className="max-w-[1320px] mx-auto text-center">
+                    <span className="inline-block text-xs sm:text-sm font-medium text-[#E5C98B] tracking-[0.18em] uppercase mb-3">
+                        Blog de Viagem
+                    </span>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white font-heading tracking-tight mb-5">
+                        Guia do Viajante em Petrolina
+                    </h1>
+                    <p className="text-stone-400 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+                        Dicas locais, segredos da cidade e roteiros imperdíveis selecionados para
+                        você viver a melhor experiência no Vale do São Francisco.
+                    </p>
+                </div>
+            </header>
 
-            <div className="container mx-auto px-4 max-w-6xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12 py-16 md:py-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {articles.map((article) => (
                         <Link key={article.id} to={`/guia/${article.slug}`} className="group">
-                            <article className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-full flex flex-col">
-                                <div className="h-64 overflow-hidden relative">
+                            <article className="bg-white rounded-2xl overflow-hidden border border-[#E5E0D5] hover:border-[#9E6B2B]/40 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                                <div className="h-60 overflow-hidden relative bg-stone-200">
                                     <img
                                         src={article.imageUrl}
                                         alt={article.title}
@@ -93,27 +95,27 @@ const GuideList: React.FC = () => {
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
                                     {article.highlight && (
-                                        <div className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                                        <div className="absolute top-4 left-4 bg-[#141210]/90 text-[#E5C98B] border border-[#E5C98B]/30 text-[11px] font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
                                             Imperdível
                                         </div>
                                     )}
                                 </div>
                                 <div className="p-6 flex flex-col flex-1">
-                                    <div className="flex items-center gap-2 text-gray-500 text-sm mb-3">
+                                    <div className="flex items-center gap-2 text-[#5C564E] text-xs font-medium uppercase tracking-wider mb-3">
                                         {article.icon ? (
-                                            <article.icon size={14} />
+                                            <article.icon size={14} className="text-[#9E6B2B]" />
                                         ) : (
-                                            <MapPin size={14} />
+                                            <MapPin size={14} className="text-[#9E6B2B]" />
                                         )}
                                         <span>{article.locationLabel || article.category}</span>
                                     </div>
-                                    <h2 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors">
+                                    <h2 className="text-xl font-heading font-semibold text-[#181614] mb-3 group-hover:text-[#9E6B2B] transition-colors">
                                         {article.title}
                                     </h2>
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                                    <p className="text-[#5C564E] text-sm mb-5 line-clamp-3 leading-relaxed">
                                         {article.description}
                                     </p>
-                                    <div className="mt-auto flex items-center text-orange-500 font-bold text-sm">
+                                    <div className="mt-auto inline-flex items-center text-[#181614] group-hover:text-[#9E6B2B] font-semibold text-sm transition-colors">
                                         Ler Artigo{' '}
                                         <ArrowRight
                                             size={16}

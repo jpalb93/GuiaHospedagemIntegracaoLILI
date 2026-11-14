@@ -13,15 +13,9 @@ const Footer: React.FC = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-stone-950 text-stone-400 font-sans text-sm relative overflow-hidden border-t border-stone-900">
-            {/* Top Accent Gradient Bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600" />
-
-            {/* Ambient Background Glow */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-orange-500/5 rounded-full blur-[140px] pointer-events-none" />
-
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-20 pb-12 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-16 pb-16 border-b border-stone-900">
+        <footer className="bg-[#0E0D0B] text-stone-400 font-sans text-sm relative overflow-hidden border-t border-white/10">
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12 pt-16 pb-12 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-16 pb-14 border-b border-white/10">
                     {/* Brand & Location Info Column */}
                     <div className="lg:col-span-4 space-y-6">
                         <Link to="/" className="block w-fit group">
@@ -30,10 +24,10 @@ const Footer: React.FC = () => {
                                 alt="Flats Integração"
                                 width={160}
                                 height={44}
-                                className="h-11 w-auto brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
+                                className="h-10 w-auto brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
                             />
                         </Link>
-                        <p className="text-stone-400 text-sm leading-relaxed max-w-sm font-light">
+                        <p className="text-stone-400 text-sm leading-relaxed max-w-sm font-normal">
                             Hospedagem mobiliada no Centro de Petrolina: cozinha equipada, Wi-Fi
                             fibra 500M e ar-condicionado. A alternativa ideal ao hotel com autonomia
                             e faturamento PJ.
@@ -44,16 +38,16 @@ const Footer: React.FC = () => {
                             itemScope
                             itemType="https://schema.org/LocalBusiness"
                         >
-                            <div className="flex items-start gap-3 bg-stone-900/60 border border-stone-800/80 p-4 rounded-2xl max-w-sm">
+                            <div className="flex items-start gap-3 bg-[#161412] border border-white/10 p-4 rounded-2xl max-w-sm">
                                 <MapPin
-                                    className="text-orange-500 mt-0.5 flex-shrink-0"
+                                    className="text-[#E5C98B] mt-0.5 flex-shrink-0"
                                     size={20}
                                     aria-hidden
                                 />
                                 <div className="text-xs text-stone-300 space-y-1">
                                     <strong
                                         itemProp="name"
-                                        className="text-white font-heading font-bold text-sm block"
+                                        className="text-white font-heading font-semibold text-sm block"
                                     >
                                         Flats Integração
                                     </strong>
@@ -79,18 +73,18 @@ const Footer: React.FC = () => {
                                 href={WA_RESERVE}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-orange-500 text-white px-6 py-3.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-lg hover:shadow-[0_0_20px_rgba(249,115,22,0.3)] active:scale-[0.98]"
+                                className="inline-flex items-center gap-2.5 bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] px-6 py-3 rounded-full font-semibold text-xs uppercase tracking-wider transition-all shadow-md active:scale-[0.98]"
                             >
-                                <Phone size={16} aria-hidden />
+                                <Phone size={15} aria-hidden />
                                 Reservar no WhatsApp
-                                <ArrowUpRight size={16} />
+                                <ArrowUpRight size={15} />
                             </a>
                         </div>
                     </div>
 
                     {/* Column 2: Navigation */}
                     <div className="lg:col-span-2 space-y-5">
-                        <h3 className="text-white font-heading font-bold uppercase tracking-wider text-xs border-b border-stone-800/80 pb-3">
+                        <h3 className="text-white font-heading font-semibold uppercase tracking-wider text-xs border-b border-white/10 pb-3">
                             Navegação
                         </h3>
                         <nav aria-label="Rodapé, navegação rápida">
@@ -98,7 +92,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/"
-                                        className="hover:text-orange-400 transition-colors flex items-center gap-1.5"
+                                        className="hover:text-[#E5C98B] transition-colors flex items-center gap-1.5"
                                     >
                                         Início
                                     </Link>
@@ -106,7 +100,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <a
                                         href="/#galeria"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Galeria de Fotos
                                     </a>
@@ -114,7 +108,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <a
                                         href="/#empresas"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Empresas & Mensal
                                     </a>
@@ -122,7 +116,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <a
                                         href="/#hospede"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Área do Hóspede
                                     </a>
@@ -130,7 +124,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/guia"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Guia de Petrolina
                                     </Link>
@@ -138,7 +132,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/politica-privacidade"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Termos & Privacidade
                                     </Link>
@@ -149,7 +143,7 @@ const Footer: React.FC = () => {
 
                     {/* Column 3: Accommodation Types */}
                     <div className="lg:col-span-3 space-y-5">
-                        <h3 className="text-white font-heading font-bold uppercase tracking-wider text-xs border-b border-stone-800/80 pb-3">
+                        <h3 className="text-white font-heading font-semibold uppercase tracking-wider text-xs border-b border-white/10 pb-3">
                             Hospedagem em Petrolina
                         </h3>
                         <nav aria-label="Rodapé, modalidades de hospedagem">
@@ -157,7 +151,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/hospedagem-em-petrolina"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Hospedagem Geral em Petrolina
                                     </Link>
@@ -165,7 +159,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/flat-centro-petrolina"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Flat no Centro (Localização)
                                     </Link>
@@ -173,7 +167,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/guia/aluguel-mensal-petrolina-flat-mobiliado"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Aluguel Mensal Mobiliado
                                     </Link>
@@ -181,7 +175,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/guia/hospedagem-corporativa-empresas-petrolina"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Hospedagem Corporativa PJ
                                     </Link>
@@ -189,7 +183,7 @@ const Footer: React.FC = () => {
                                 <li>
                                     <Link
                                         to="/guia/hospedagem-proximo-hospitais-petrolina"
-                                        className="hover:text-orange-400 transition-colors"
+                                        className="hover:text-[#E5C98B] transition-colors"
                                     >
                                         Polo Médico & Hospitais
                                     </Link>
@@ -200,7 +194,7 @@ const Footer: React.FC = () => {
 
                     {/* Column 4: Trust & Social Badges */}
                     <div className="lg:col-span-3 space-y-6">
-                        <h3 className="text-white font-heading font-bold uppercase tracking-wider text-xs border-b border-stone-800/80 pb-3">
+                        <h3 className="text-white font-heading font-semibold uppercase tracking-wider text-xs border-b border-white/10 pb-3">
                             Confiança & Redes
                         </h3>
 
@@ -209,23 +203,23 @@ const Footer: React.FC = () => {
                             href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center justify-between bg-stone-900/80 border border-stone-800 hover:border-orange-500/40 p-4 rounded-2xl transition-all group"
+                            className="flex items-center justify-between bg-[#161412] border border-white/10 hover:border-[#E5C98B]/40 p-4 rounded-2xl transition-all group"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="bg-blue-600 text-white font-heading font-bold text-base px-2.5 py-1 rounded-xl">
+                                <div className="bg-[#E5C98B] text-[#141210] font-heading font-semibold text-base px-2.5 py-1 rounded-xl">
                                     9.0
                                 </div>
                                 <div>
-                                    <div className="flex items-center gap-1 text-orange-400 text-xs font-bold uppercase">
-                                        <Star size={12} className="fill-orange-400" />
+                                    <div className="flex items-center gap-1 text-[#E5C98B] text-xs font-semibold uppercase">
+                                        <Star size={12} className="fill-[#E5C98B]" />
                                         Excepcional
                                     </div>
-                                    <span className="text-[11px] text-stone-500">Booking.com</span>
+                                    <span className="text-[11px] text-stone-400">Booking.com</span>
                                 </div>
                             </div>
                             <ArrowUpRight
                                 size={16}
-                                className="text-stone-500 group-hover:text-orange-400 transition-colors"
+                                className="text-stone-400 group-hover:text-[#E5C98B] transition-colors"
                             />
                         </a>
 
@@ -234,19 +228,19 @@ const Footer: React.FC = () => {
                                 href="https://www.instagram.com/flatintegracao/"
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-orange-500/40 text-xs text-stone-300 hover:text-white transition-all group"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#161412] border border-white/10 hover:border-[#E5C98B]/40 text-xs text-stone-300 hover:text-white transition-all group"
                                 aria-label="Instagram Flats Integração"
                             >
                                 <Instagram
-                                    size={16}
-                                    className="text-orange-500 group-hover:scale-110 transition-transform"
+                                    size={15}
+                                    className="text-[#E5C98B] group-hover:scale-110 transition-transform"
                                 />
                                 <span>@flatintegracao</span>
                             </a>
                         </div>
 
-                        <div className="flex items-center gap-2 text-xs text-stone-500 pt-2">
-                            <ShieldCheck size={16} className="text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 text-xs text-stone-400 pt-2">
+                            <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
                             <span>Reserva Segura · Sem Taxas Ocultas</span>
                         </div>
                     </div>

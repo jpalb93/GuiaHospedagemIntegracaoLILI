@@ -32,8 +32,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 
-const root = ReactDOM.createRoot(rootElement);
-root.render(
+const appTree = (
     <React.StrictMode>
         <HelmetProvider>
             <QueryClientProvider client={queryClient}>
@@ -47,6 +46,22 @@ root.render(
         </HelmetProvider>
     </React.StrictMode>
 );
+
+const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+const searchParams = new URLSearchParams(window.location.search);
+const ssrRoute = rootElement.getAttribute('data-ssr-route');
+const canHydrate =
+    Boolean(ssrRoute) &&
+    ssrRoute === normalizedPath &&
+    !searchParams.get('rid') &&
+    searchParams.get('mode') !== 'cms';
+
+if (canHydrate) {
+    ReactDOM.hydrateRoot(rootElement, appTree);
+} else {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(appTree);
+}
 
 // Register Service Worker for offline support
 // DISABLE Service Worker to prevent Index.html caching on /lili route

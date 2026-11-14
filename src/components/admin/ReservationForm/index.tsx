@@ -153,13 +153,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     };
 
     return (
-        <div className="reservation-form p-2 sm:p-4 md:p-8 flex flex-col gap-6 relative max-w-4xl mx-auto">
+        <div className="reservation-form p-2 sm:p-4 md:p-6 flex flex-col gap-6 relative w-full max-w-6xl mx-auto">
             {/* BOTÃO LIMPAR / CANCELAR */}
             <button
                 onClick={resetForm}
                 type="button"
                 aria-label={editingId ? 'Cancelar edição' : 'Limpar formulário'}
-                className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8 min-w-11 min-h-11 p-2 text-gray-600 dark:text-gray-300 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-6 md:right-6 min-w-11 min-h-11 p-2 text-gray-600 dark:text-gray-300 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors z-10"
                 title="Limpar/Cancelar"
             >
                 {editingId ? <X size={20} className="text-red-500" /> : <Eraser size={20} />}
@@ -203,206 +203,216 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                 </div>
             )}
 
-            {/* CARD 1 — IDENTIFICAÇÃO DO HÓSPEDE */}
-            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    <User size={16} className="text-orange-500" /> 1. Quem é o Hóspede?
-                </div>
-                <GuestInfoSection
-                    guestName={form.guestName}
-                    setGuestName={form.setGuestName}
-                    guestPhone={form.guestPhone}
-                    setGuestPhone={form.setGuestPhone}
-                    previousGuests={previousGuests}
-                />
+            {/* GRID RESPONSIVO: 1 COLUNA NO MOBILE/TABLET, 2 COLUNAS NO DESKTOP (12 COLUNAS) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* COLUNA ESQUERDA — HÓSPEDE, DATAS & ESCOLHA DO FLAT */}
+                <div className="lg:col-span-7 flex flex-col gap-6 min-w-0">
+                    {/* CARD 1 — IDENTIFICAÇÃO DO HÓSPEDE */}
+                    <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <User size={16} className="text-orange-500" /> 1. Quem é o Hóspede?
+                        </div>
+                        <GuestInfoSection
+                            guestName={form.guestName}
+                            setGuestName={form.setGuestName}
+                            guestPhone={form.guestPhone}
+                            setGuestPhone={form.setGuestPhone}
+                            previousGuests={previousGuests}
+                        />
 
-                <CorporateLinkSection
-                    billingMode={form.billingMode}
-                    setBillingMode={form.setBillingMode}
-                    companyId={form.companyId}
-                    setCompanyId={form.setCompanyId}
-                    contractId={form.contractId}
-                    setContractId={form.setContractId}
-                    allocationId={form.allocationId}
-                    setAllocationId={form.setAllocationId}
-                    setPropertyId={form.setPropertyId}
-                    setFlatNumber={form.setFlatNumber}
-                    setPaymentStatus={form.setPaymentStatus}
-                    setTotalAmount={form.setTotalAmount}
-                    setDepositAmount={form.setDepositAmount}
-                    setPaymentMethod={form.setPaymentMethod}
-                />
-            </div>
-
-            {/* CARD 2 — ESTADIA, DATAS & DISPONIBILIDADE DO FLAT */}
-            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    <CalendarDays size={16} className="text-orange-500" /> 2. Datas & Escolha do
-                    Flat
-                </div>
-
-                {/* 1. SELEÇÃO DE DATAS DE CHECK-IN E CHECKOUT */}
-                {form.propertyId === 'integracao' && (
-                    <div className="space-y-2">
-                        <label
-                            htmlFor="reservation-stay-type"
-                            className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                        >
-                            Modalidade da reserva
-                        </label>
-                        <select
-                            id="reservation-stay-type"
-                            value={form.stayType}
-                            onChange={(e) =>
-                                form.setStayType(e.target.value as 'overnight' | 'day_use')
-                            }
-                            disabled={form.billingMode === 'corporate'}
-                            className="w-full min-h-11 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 px-3 py-3 font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
-                        >
-                            <option value="overnight">Hospedagem com pernoite</option>
-                            <option value="day_use">Day use — sem pernoite</option>
-                        </select>
-                        {form.billingMode === 'corporate' && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Day use é cadastrado como reserva avulsa, sem vínculo com contrato
-                                mensal.
-                            </p>
-                        )}
-                        {form.stayType === 'day_use' && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Individual, sem visitantes. Ao alterar a entrada, a saída é sugerida
-                                4 horas depois e pode ser ajustada manualmente. Manhã: 8h às 12h.
-                                Outros horários podem ser ajustados após confirmar disponibilidade.
-                                Informe o valor total do período.
-                            </p>
-                        )}
+                        <CorporateLinkSection
+                            billingMode={form.billingMode}
+                            setBillingMode={form.setBillingMode}
+                            companyId={form.companyId}
+                            setCompanyId={form.setCompanyId}
+                            contractId={form.contractId}
+                            setContractId={form.setContractId}
+                            allocationId={form.allocationId}
+                            setAllocationId={form.setAllocationId}
+                            setPropertyId={form.setPropertyId}
+                            setFlatNumber={form.setFlatNumber}
+                            setPaymentStatus={form.setPaymentStatus}
+                            setTotalAmount={form.setTotalAmount}
+                            setDepositAmount={form.setDepositAmount}
+                            setPaymentMethod={form.setPaymentMethod}
+                        />
                     </div>
-                )}
-                <DatesSection
-                    isDayUse={form.stayType === 'day_use'}
-                    checkInDate={form.checkInDate}
-                    setCheckInDate={form.setCheckInDate}
-                    checkoutDate={form.checkoutDate}
-                    setCheckoutDate={form.setCheckoutDate}
-                    checkInTime={form.checkInTime}
-                    setCheckInTime={form.setCheckInTime}
-                    checkOutTime={form.checkOutTime}
-                    setCheckOutTime={form.setCheckOutTime}
-                />
 
-                {/* 2. DISPONIBILIDADE EM TEMPO REAL, PROPRIEDADE E SELEÇÃO DE FLAT */}
-                <PropertySection
-                    stayType={form.stayType}
-                    checkInTime={form.checkInTime}
-                    checkOutTime={form.checkOutTime}
-                    propertyId={form.propertyId}
-                    setPropertyId={form.setPropertyId}
-                    flatNumber={form.flatNumber}
-                    setFlatNumber={form.setFlatNumber}
-                    lockCode={form.lockCode}
-                    setLockCode={form.setLockCode}
-                    guestCount={form.guestCount}
-                    setGuestCount={form.setGuestCount}
-                    checkInDate={form.checkInDate}
-                    checkoutDate={form.checkoutDate}
-                    reservations={previousGuests}
-                    editingId={editingId}
-                    userPermission={userPermission}
-                />
-            </div>
+                    {/* CARD 2 — ESTADIA, DATAS & DISPONIBILIDADE DO FLAT */}
+                    <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <CalendarDays size={16} className="text-orange-500" /> 2. Datas &amp;
+                            Escolha do Flat
+                        </div>
 
-            {/* CARD 3 — FINANCEIRO & PAGAMENTO */}
-            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    <DollarSign size={16} className="text-green-500" /> 3. Valor & Pagamento
+                        {/* 1. SELEÇÃO DE DATAS DE CHECK-IN E CHECKOUT */}
+                        {form.propertyId === 'integracao' && (
+                            <div className="space-y-2">
+                                <label
+                                    htmlFor="reservation-stay-type"
+                                    className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                >
+                                    Modalidade da reserva
+                                </label>
+                                <select
+                                    id="reservation-stay-type"
+                                    value={form.stayType}
+                                    onChange={(e) =>
+                                        form.setStayType(e.target.value as 'overnight' | 'day_use')
+                                    }
+                                    disabled={form.billingMode === 'corporate'}
+                                    className="w-full min-h-11 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 px-3 py-3 font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
+                                >
+                                    <option value="overnight">Hospedagem com pernoite</option>
+                                    <option value="day_use">Day use — sem pernoite</option>
+                                </select>
+                                {form.billingMode === 'corporate' && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                        Day use é cadastrado como reserva avulsa, sem vínculo com
+                                        contrato mensal.
+                                    </p>
+                                )}
+                                {form.stayType === 'day_use' && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                        Individual, sem visitantes. Ao alterar a entrada, a saída é
+                                        sugida 4 horas depois e pode ser ajustada manualmente.
+                                        Manhã: 8h às 12h. Outros horários podem ser ajustados após
+                                        confirmar disponibilidade. Informe o valor total do período.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        <DatesSection
+                            isDayUse={form.stayType === 'day_use'}
+                            checkInDate={form.checkInDate}
+                            setCheckInDate={form.setCheckInDate}
+                            checkoutDate={form.checkoutDate}
+                            setCheckoutDate={form.setCheckoutDate}
+                            checkInTime={form.checkInTime}
+                            setCheckInTime={form.setCheckInTime}
+                            checkOutTime={form.checkOutTime}
+                            setCheckOutTime={form.setCheckOutTime}
+                        />
+
+                        {/* 2. DISPONIBILIDADE EM TEMPO REAL, PROPRIEDADE E SELEÇÃO DE FLAT */}
+                        <PropertySection
+                            stayType={form.stayType}
+                            checkInTime={form.checkInTime}
+                            checkOutTime={form.checkOutTime}
+                            propertyId={form.propertyId}
+                            setPropertyId={form.setPropertyId}
+                            flatNumber={form.flatNumber}
+                            setFlatNumber={form.setFlatNumber}
+                            lockCode={form.lockCode}
+                            setLockCode={form.setLockCode}
+                            guestCount={form.guestCount}
+                            setGuestCount={form.setGuestCount}
+                            checkInDate={form.checkInDate}
+                            checkoutDate={form.checkoutDate}
+                            reservations={previousGuests}
+                            editingId={editingId}
+                            userPermission={userPermission}
+                        />
+                    </div>
                 </div>
-                <PaymentSection
-                    paymentMethod={form.paymentMethod}
-                    setPaymentMethod={form.setPaymentMethod}
-                    paymentStatus={form.paymentStatus}
-                    setPaymentStatus={form.setPaymentStatus}
-                    totalAmount={form.totalAmount}
-                    setTotalAmount={form.setTotalAmount}
-                    depositAmount={form.depositAmount}
-                    setDepositAmount={form.setDepositAmount}
-                    paidAt={form.paidAt}
-                    setPaidAt={form.setPaidAt}
-                    payments={form.payments}
-                    setPayments={form.setPayments}
-                    isCorporate={form.billingMode === 'corporate'}
-                />
-            </div>
 
-            {/* CARD 4 — OBSERVAÇÕES & ALERTAS DO GUIA */}
-            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    <FileText size={16} className="text-purple-500" /> 4. Observações & Alertas do
-                    Guia
+                {/* COLUNA DIREITA — FINANCEIRO, OBSERVAÇÕES & SALVAMENTO */}
+                <div className="lg:col-span-5 flex flex-col gap-6 min-w-0 lg:sticky lg:top-6">
+                    {/* CARD 3 — FINANCEIRO & PAGAMENTO */}
+                    <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <DollarSign size={16} className="text-green-500" /> 3. Valor &amp;
+                            Pagamento
+                        </div>
+                        <PaymentSection
+                            paymentMethod={form.paymentMethod}
+                            setPaymentMethod={form.setPaymentMethod}
+                            paymentStatus={form.paymentStatus}
+                            setPaymentStatus={form.setPaymentStatus}
+                            totalAmount={form.totalAmount}
+                            setTotalAmount={form.setTotalAmount}
+                            depositAmount={form.depositAmount}
+                            setDepositAmount={form.setDepositAmount}
+                            paidAt={form.paidAt}
+                            setPaidAt={form.setPaidAt}
+                            payments={form.payments}
+                            setPayments={form.setPayments}
+                            isCorporate={form.billingMode === 'corporate'}
+                        />
+                    </div>
+
+                    {/* CARD 4 — OBSERVAÇÕES & ALERTAS DO GUIA */}
+                    <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <FileText size={16} className="text-purple-500" /> 4. Observações &amp;
+                            Alertas do Guia
+                        </div>
+
+                        <AlertSection
+                            guestName={form.guestName}
+                            guestAlertActive={form.guestAlertActive}
+                            setGuestAlertActive={form.setGuestAlertActive}
+                            guestAlertText={form.guestAlertText}
+                            setGuestAlertText={form.setGuestAlertText}
+                        />
+
+                        <NotesSection
+                            propertyId={form.propertyId}
+                            welcomeMessage={form.welcomeMessage}
+                            setWelcomeMessage={form.setWelcomeMessage}
+                            adminNotes={form.adminNotes}
+                            setAdminNotes={form.setAdminNotes}
+                            guestRating={form.guestRating}
+                            setGuestRating={form.setGuestRating}
+                            guestFeedback={form.guestFeedback}
+                            setGuestFeedback={form.setGuestFeedback}
+                        />
+
+                        <DangerZone
+                            editingId={editingId}
+                            manualDeactivation={form.manualDeactivation}
+                            setManualDeactivation={form.setManualDeactivation}
+                            handleSaveReservation={handleSaveReservation}
+                        />
+                    </div>
+
+                    {/* BOTÃO PRINCIPAL DE SALVAR */}
+                    <Button
+                        onClick={() => handleSaveReservation()}
+                        disabled={isSaving}
+                        fullWidth
+                        leftIcon={
+                            isSaving ? (
+                                <Loader2 className="animate-spin" />
+                            ) : editingId ? (
+                                <Save size={20} />
+                            ) : (
+                                <Sparkles className="text-yellow-400 animate-pulse" />
+                            )
+                        }
+                        className={`py-4 text-base font-extrabold rounded-2xl shadow-xl transition-all ${
+                            editingId
+                                ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                                : 'bg-gray-900 hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
+                        }`}
+                    >
+                        {isSaving
+                            ? 'Salvando...'
+                            : editingId
+                              ? 'Salvar Alterações da Reserva'
+                              : '⚡ Salvar Reserva & Gerar Guia Digital'}
+                    </Button>
+
+                    {/* AÇÕES DE LINK GERADO */}
+                    <GeneratedLinkActions
+                        generatedLink={generatedLink}
+                        editingId={editingId}
+                        guestName={form.guestName}
+                        guestPhone={form.guestPhone}
+                        showToast={showToast}
+                    />
                 </div>
-
-                <AlertSection
-                    guestName={form.guestName}
-                    guestAlertActive={form.guestAlertActive}
-                    setGuestAlertActive={form.setGuestAlertActive}
-                    guestAlertText={form.guestAlertText}
-                    setGuestAlertText={form.setGuestAlertText}
-                />
-
-                <NotesSection
-                    propertyId={form.propertyId}
-                    welcomeMessage={form.welcomeMessage}
-                    setWelcomeMessage={form.setWelcomeMessage}
-                    adminNotes={form.adminNotes}
-                    setAdminNotes={form.setAdminNotes}
-                    guestRating={form.guestRating}
-                    setGuestRating={form.setGuestRating}
-                    guestFeedback={form.guestFeedback}
-                    setGuestFeedback={form.setGuestFeedback}
-                />
-
-                <DangerZone
-                    editingId={editingId}
-                    manualDeactivation={form.manualDeactivation}
-                    setManualDeactivation={form.setManualDeactivation}
-                    handleSaveReservation={handleSaveReservation}
-                />
             </div>
-
-            {/* BOTÃO PRINCIPAL DE SALVAR */}
-            <Button
-                onClick={() => handleSaveReservation()}
-                disabled={isSaving}
-                fullWidth
-                leftIcon={
-                    isSaving ? (
-                        <Loader2 className="animate-spin" />
-                    ) : editingId ? (
-                        <Save size={20} />
-                    ) : (
-                        <Sparkles className="text-yellow-400 animate-pulse" />
-                    )
-                }
-                className={`py-4 text-base font-extrabold rounded-2xl shadow-xl transition-all ${
-                    editingId
-                        ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                        : 'bg-gray-900 hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
-                }`}
-            >
-                {isSaving
-                    ? 'Salvando...'
-                    : editingId
-                      ? 'Salvar Alterações da Reserva'
-                      : '⚡ Salvar Reserva & Gerar Guia Digital'}
-            </Button>
-
-            {/* AÇÕES DE LINK GERADO */}
-            <GeneratedLinkActions
-                generatedLink={generatedLink}
-                editingId={editingId}
-                guestName={form.guestName}
-                guestPhone={form.guestPhone}
-                showToast={showToast}
-            />
         </div>
     );
 };

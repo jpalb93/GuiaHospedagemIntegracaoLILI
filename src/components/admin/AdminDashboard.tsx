@@ -25,8 +25,9 @@ import ConfirmModal from './ConfirmModal';
 import ModernLoadingScreen from '../ModernLoadingScreen';
 import flatsLogo from '../../assets/flats-integracao-logo.png';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface AdminDashboardProps {}
+interface AdminDashboardProps {
+    onAuthLoadingChange?: (loading: boolean) => void;
+}
 
 const FallbackLoader = () => (
     <div className="h-full w-full flex flex-col items-center justify-center min-h-[50vh] animate-fadeIn">
@@ -38,11 +39,15 @@ const FallbackLoader = () => (
     </div>
 );
 
-const AdminDashboard: React.FC<AdminDashboardProps> = () => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ onAuthLoadingChange }) => {
     const { auth, data, form, blocks, ui } = useAdminDashboard();
     const content = useAdminContent();
     const settings = useAdminSettings();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        onAuthLoadingChange?.(auth.authLoading);
+    }, [auth.authLoading, onAuthLoadingChange]);
 
     // Counter para forçar re-render quando necessário
     const [refreshKey, setRefreshKey] = useState(0);
@@ -94,7 +99,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     }, []);
 
     if (auth.authLoading) {
-        return <ModernLoadingScreen variant="admin" />;
+        return onAuthLoadingChange ? null : <ModernLoadingScreen variant="admin" />;
     }
 
     if (!auth.user) {
@@ -375,7 +380,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                             )}
 
                             {activeTab === 'create' && (
-                                <div className="max-w-2xl mx-auto">
+                                <div className="w-full max-w-6xl mx-auto">
                                     <ReservationForm
                                         form={{
                                             ...form,

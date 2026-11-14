@@ -1,11 +1,10 @@
 import { useRef, useEffect } from 'react';
-import { Star, Quote, CheckCircle2 } from 'lucide-react';
+import { Star, Quote, CheckCircle2, ArrowRight } from 'lucide-react';
 
 const REAL_REVIEWS = [
     {
         name: 'Pedro',
         initials: 'P',
-        avatarBg: 'bg-amber-600/30 text-amber-300 border-amber-500/40',
         country: 'Brasil',
         flag: '🇧🇷',
         rating: '10',
@@ -18,7 +17,6 @@ const REAL_REVIEWS = [
     {
         name: 'Gisele',
         initials: 'G',
-        avatarBg: 'bg-sky-600/30 text-sky-300 border-sky-500/40',
         country: 'Brasil',
         flag: '🇧🇷',
         rating: '10',
@@ -30,7 +28,6 @@ const REAL_REVIEWS = [
     {
         name: 'Edvanderson',
         initials: 'E',
-        avatarBg: 'bg-orange-600/30 text-orange-300 border-orange-500/40',
         country: 'Brasil',
         flag: '🇧🇷',
         rating: '9,0',
@@ -67,14 +64,14 @@ const ReputationSection: React.FC = () => {
                     const tl = gsap.timeline({
                         scrollTrigger: {
                             trigger: sectionRef.current,
-                            start: 'top 95%',
+                            start: 'top 92%',
                             toggleActions: 'play none none none',
                         },
                     });
 
                     tl.fromTo(
                         '.reputation-text',
-                        { y: 20, opacity: 0 },
+                        { y: 18, opacity: 0 },
                         {
                             y: 0,
                             opacity: 1,
@@ -90,7 +87,7 @@ const ReputationSection: React.FC = () => {
                         { textContent: 0 },
                         {
                             textContent: 9.0,
-                            duration: 1.2,
+                            duration: 1.1,
                             ease: 'power1.out',
                             snap: { textContent: 0.1 },
                             onUpdate: function () {
@@ -106,12 +103,12 @@ const ReputationSection: React.FC = () => {
 
                     tl.fromTo(
                         '.review-card',
-                        { y: 20, opacity: 0 },
+                        { y: 18, opacity: 0 },
                         {
                             y: 0,
                             opacity: 1,
                             duration: 0.5,
-                            stagger: 0.15,
+                            stagger: 0.12,
                             ease: 'power2.out',
                             clearProps: 'all',
                         },
@@ -145,24 +142,20 @@ const ReputationSection: React.FC = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} className="py-24 md:py-32 bg-stone-950 relative overflow-hidden">
-            <div className="absolute top-0 right-0 text-[400px] font-heading font-bold text-white/5 leading-none select-none -z-0 pointer-events-none">
-                9
-            </div>
-
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 space-y-16">
+        <section ref={sectionRef} className="py-20 md:py-28 bg-[#12110F] text-stone-200">
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12 space-y-14">
                 {/* Header com Nota do Booking */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center border-b border-stone-800/80 pb-16">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center border-b border-white/10 pb-14">
                     <div className="lg:col-span-6 space-y-5">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-heading font-bold uppercase tracking-[0.2em]">
-                            <Star size={12} className="fill-orange-400" />
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5C98B]/10 border border-[#E5C98B]/25 text-[#E5C98B] text-xs font-semibold uppercase tracking-[0.18em]">
+                            <Star size={12} className="fill-[#E5C98B]" />
                             Prova no Booking
                         </div>
-                        <h2 className="reputation-text text-4xl md:text-6xl font-heading font-bold text-white leading-[1.1] tracking-tight">
+                        <h2 className="reputation-text text-4xl md:text-5xl font-heading font-semibold text-white leading-[1.1] tracking-tight">
                             Nota 9.0:{' '}
-                            <span className="text-stone-500 font-medium">quem ficou recomenda</span>
+                            <span className="text-stone-400 font-normal">quem ficou recomenda</span>
                         </h2>
-                        <p className="reputation-text text-lg text-stone-400 font-light max-w-lg leading-relaxed">
+                        <p className="reputation-text text-base md:text-lg text-stone-400 font-normal max-w-lg leading-relaxed">
                             Avaliações 100% autênticas de hóspedes que se hospedaram em nossos flats
                             em Petrolina através do Booking.com.
                         </p>
@@ -173,31 +166,31 @@ const ReputationSection: React.FC = () => {
                             href="https://www.booking.com/hotel/br/flat-integracao-petrolina.pt-br.html"
                             target="_blank"
                             rel="noreferrer"
-                            className="group w-full max-w-md bg-stone-900/60 border border-stone-800 hover:border-orange-500/40 p-8 md:p-10 rounded-[2rem] transition-all duration-500 shadow-xl hover:shadow-[0_10px_30px_rgba(249,115,22,0.15)]"
+                            className="group w-full max-w-md bg-[#1B1916] border border-white/10 hover:border-[#E5C98B]/40 p-8 md:p-10 rounded-3xl transition-all duration-300 shadow-2xl"
                         >
                             <div className="flex items-start gap-3">
                                 <span
                                     ref={scoreRef}
-                                    className="text-[7rem] md:text-[8.5rem] leading-none font-heading font-medium text-white tracking-tighter group-hover:text-orange-500 transition-colors"
+                                    className="text-[6.5rem] md:text-[8rem] leading-none font-heading font-semibold text-white tracking-tighter group-hover:text-[#E5C98B] transition-colors"
                                 >
                                     9.0
                                 </span>
                                 <Star
-                                    className="w-8 h-8 mt-6 text-orange-500 fill-orange-500 shrink-0"
+                                    className="w-7 h-7 mt-5 text-[#E5C98B] fill-[#E5C98B] shrink-0"
                                     aria-hidden
                                 />
                             </div>
-                            <div className="flex items-end justify-between mt-4 border-t border-stone-800 pt-5 gap-4">
+                            <div className="flex items-end justify-between mt-5 border-t border-white/10 pt-5 gap-4">
                                 <div>
-                                    <p className="uppercase text-xs tracking-[0.15em] font-bold text-stone-200">
+                                    <p className="uppercase text-xs tracking-[0.15em] font-semibold text-white">
                                         Excepcional
                                     </p>
-                                    <p className="text-stone-500 text-xs mt-1">
+                                    <p className="text-stone-400 text-xs mt-1">
                                         Avaliações públicas no Booking.com
                                     </p>
                                 </div>
-                                <span className="text-orange-500 text-sm font-medium shrink-0 group-hover:translate-x-0.5 transition-transform">
-                                    Ver notas →
+                                <span className="inline-flex items-center gap-1.5 text-[#E5C98B] text-sm font-medium shrink-0 group-hover:translate-x-0.5 transition-transform">
+                                    Ver notas <ArrowRight size={14} aria-hidden />
                                 </span>
                             </div>
                         </a>
@@ -209,57 +202,51 @@ const ReputationSection: React.FC = () => {
                     {REAL_REVIEWS.map((review, idx) => (
                         <div
                             key={idx}
-                            className="review-card bg-stone-900/60 border border-stone-800 hover:border-orange-500/40 rounded-3xl p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl relative overflow-hidden group opacity-100"
+                            className="review-card bg-[#1B1916] border border-white/10 hover:border-[#E5C98B]/30 rounded-3xl p-7 flex flex-col justify-between transition-all duration-300 relative overflow-hidden group opacity-100"
                         >
-                            {/* Watermark Quote Icon */}
-                            <Quote className="absolute top-5 right-5 text-white/5 w-16 h-16 pointer-events-none group-hover:text-orange-500/10 transition-colors" />
+                            <Quote className="absolute top-5 right-5 text-white/[0.04] w-14 h-14 pointer-events-none" />
 
                             <div className="space-y-4 relative z-10">
-                                {/* Header do Hóspede */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div
-                                            className={`w-10 h-10 rounded-full ${review.avatarBg} border flex items-center justify-center font-heading font-bold text-sm shrink-0`}
-                                        >
+                                        <div className="w-10 h-10 rounded-full bg-[#E5C98B]/15 text-[#E5C98B] border border-[#E5C98B]/30 flex items-center justify-center font-heading font-semibold text-sm shrink-0">
                                             {review.initials}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5">
-                                                <span className="font-heading font-bold text-white text-base">
+                                                <span className="font-heading font-semibold text-white text-base">
                                                     {review.name}
                                                 </span>
                                                 <span className="text-sm" title={review.country}>
                                                     {review.flag}
                                                 </span>
                                             </div>
-                                            <span className="text-[11px] text-stone-500 flex items-center gap-1">
+                                            <span className="text-[11px] text-stone-400 flex items-center gap-1">
                                                 <CheckCircle2
                                                     size={11}
-                                                    className="text-emerald-500"
+                                                    className="text-emerald-400"
                                                 />
                                                 Hóspede Verificado
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div className="bg-blue-600 text-white font-heading font-bold text-sm px-3 py-1 rounded-xl shadow-md">
+                                    <div className="bg-[#E5C98B] text-[#141210] font-heading font-semibold text-xs px-3 py-1 rounded-full">
                                         {review.rating}
                                     </div>
                                 </div>
 
-                                {/* Conteúdo do Depoimento */}
                                 <div className="space-y-2 pt-2">
-                                    <h3 className="font-heading font-bold text-stone-100 text-base leading-snug">
+                                    <h3 className="font-heading font-semibold text-white text-base leading-snug">
                                         "{review.title}"
                                     </h3>
-                                    <p className="text-stone-300 text-sm font-light leading-relaxed">
+                                    <p className="text-stone-300 text-sm font-normal leading-relaxed">
                                         {review.comment}
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Rodapé com data e contexto */}
-                            <div className="pt-6 mt-6 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 relative z-10">
+                            <div className="pt-5 mt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-stone-400 relative z-10">
                                 <span>{review.date}</span>
                                 <span>{review.tripType}</span>
                             </div>

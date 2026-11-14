@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
 import ArticleScrollReset from '../../components/ArticleScrollReset';
+import { ArticleCategoryBadge, ArticleFinalCTA } from '../../components/articles/ArticleChrome';
 
 const MedicalStayArticle: React.FC = () => {
     const slug = 'hospedagem-proximo-hospitais-petrolina';
@@ -20,7 +21,7 @@ const MedicalStayArticle: React.FC = () => {
         'Buscando onde ficar para tratamento médico em Petrolina? Guia completo sobre hospedagem perto do Hospital Dom Malan, HEMOPE e Memorial com flats mobiliados.';
 
     return (
-        <article className="pt-24 pb-16 min-h-screen bg-stone-950 text-stone-200">
+        <article className="pt-32 md:pt-40 pb-20 min-h-screen bg-[#12110F] text-stone-200">
             <ArticleScrollReset />
             <Helmet>
                 <title>{pageTitle}</title>
@@ -135,14 +136,11 @@ const MedicalStayArticle: React.FC = () => {
 
             {/* Header do Artigo */}
             <header className="container mx-auto px-4 max-w-3xl mb-12 text-center">
-                <div className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-500 px-4 py-1 rounded-full text-sm font-bold mb-6 border border-orange-500/20">
-                    <HeartPulse size={16} />
-                    <span>Saúde e Bem-estar</span>
-                </div>
-                <h1 className="text-3xl md:text-5xl font-bold text-white font-heading mb-6 leading-tight">
+                <ArticleCategoryBadge icon={<HeartPulse size={15} />} label="Saúde e Bem-estar" />
+                <h1 className="text-3xl md:text-5xl font-semibold text-white font-heading mb-6 leading-tight tracking-tight">
                     Hospedagem para Tratamento Médico em Petrolina: Guia Perto dos Hospitais
                 </h1>
-                <p className="text-xl text-stone-400 leading-relaxed italic">
+                <p className="text-lg md:text-xl text-stone-400 leading-relaxed italic">
                     Conforto, silêncio e praticidade para pacientes e acompanhantes no Polo Médico
                     de Petrolina.
                 </p>
@@ -150,18 +148,18 @@ const MedicalStayArticle: React.FC = () => {
 
             {/* Imagem Principal */}
             <div className="container mx-auto px-4 max-w-4xl mb-12">
-                <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+                <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#191714]">
                     <img
                         src="/images/quarto-lavanderia.jpg"
                         alt="Quarto silencioso e confortável do flat, ideal para recuperação e descanso"
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#12110F]/80 to-transparent"></div>
                 </div>
             </div>
 
             {/* Conteúdo do Artigo */}
-            <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-orange prose-headings:font-heading prose-headings:font-bold text-stone-300">
+            <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-headings:font-heading prose-headings:font-semibold prose-a:text-[#E5C98B] text-stone-300">
                 <section>
                     <p>
                         <strong>
@@ -180,7 +178,7 @@ const MedicalStayArticle: React.FC = () => {
                 </section>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <MapPin className="text-orange-500" size={28} />
+                    <MapPin className="text-[#E5C98B]" size={26} />
                     Onde ficam os principais hospitais de Petrolina?
                 </h2>
                 <p>
@@ -197,7 +195,7 @@ const MedicalStayArticle: React.FC = () => {
                 </p>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <Utensils className="text-orange-500" size={28} />A importância de uma cozinha
+                    <Utensils className="text-[#E5C98B]" size={26} />A importância de uma cozinha
                     para o paciente
                 </h2>
                 <p>
@@ -206,28 +204,28 @@ const MedicalStayArticle: React.FC = () => {
                     permite que o acompanhante prepare refeições leves e frescas, seguindo à risca
                     as orientações médicas.
                 </p>
-                <div className="bg-orange-500/5 p-6 rounded-2xl border border-orange-500/20 my-8">
-                    <h3 className="text-orange-400 font-bold mb-3 flex items-center gap-2">
+                <div className="bg-[#191714] p-6 md:p-8 rounded-2xl border border-[#E5C98B]/25 my-8 not-prose">
+                    <h3 className="text-[#E5C98B] font-semibold font-heading text-lg mb-4 flex items-center gap-2">
                         <ShieldCheck size={20} /> Vantagens do Flat vs Hotel:
                     </h3>
                     <ul className="list-none pl-0 space-y-3 text-stone-300 text-sm md:text-base">
                         <li>
-                            <span className="text-orange-500 font-bold">✓</span>{' '}
+                            <span className="text-[#E5C98B] font-bold">✓</span>{' '}
                             <strong>Silêncio:</strong> Ambiente privativo, longe do fluxo intenso de
                             recepções de hotéis.
                         </li>
                         <li>
-                            <span className="text-orange-500 font-bold">✓</span>{' '}
+                            <span className="text-[#E5C98B] font-bold">✓</span>{' '}
                             <strong>Economia:</strong> Preparar refeições no flat reduz
                             drasticamente o custo da viagem.
                         </li>
                         <li>
-                            <span className="text-orange-500 font-bold">✓</span>{' '}
+                            <span className="text-[#E5C98B] font-bold">✓</span>{' '}
                             <strong>Home Feel:</strong> A sensação de estar em casa ajuda na
                             recuperação emocional do paciente.
                         </li>
                         <li>
-                            <span className="text-orange-500 font-bold">✓</span>{' '}
+                            <span className="text-[#E5C98B] font-bold">✓</span>{' '}
                             <strong>Higiene:</strong> Controle total sobre a limpeza e o preparo dos
                             alimentos.
                         </li>
@@ -235,7 +233,7 @@ const MedicalStayArticle: React.FC = () => {
                 </div>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <Stethoscope className="text-orange-500" size={28} />
+                    <Stethoscope className="text-[#E5C98B]" size={26} />
                     Por que ficar no Centro de Petrolina?
                 </h2>
                 <p>
@@ -260,30 +258,30 @@ const MedicalStayArticle: React.FC = () => {
                     </li>
                 </ul>
 
-                <div className="mt-12 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 shadow-2xl">
-                    <h2 className="text-white text-2xl md:text-3xl mb-6">
+                <div className="mt-12 bg-[#191714] border border-white/10 rounded-3xl p-8 shadow-2xl not-prose">
+                    <h2 className="text-white font-heading font-semibold text-2xl md:text-3xl mb-4">
                         Informações Úteis para sua Reserva
                     </h2>
                     <p className="text-stone-400">
                         Se você está vindo para Petrolina para tratamento médico, o{' '}
-                        <strong>Flats Integração</strong> oferece unidades pensadas para o seu
-                        conforto:
+                        <strong className="text-white">Flats Integração</strong> oferece unidades
+                        pensadas para o seu conforto:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                         <div className="flex gap-4">
-                            <Clock className="text-orange-500 shrink-0" />
+                            <Clock className="text-[#E5C98B] shrink-0" />
                             <div>
-                                <h4 className="font-bold text-white">Check-in Flexível</h4>
-                                <p className="text-sm text-stone-400">
+                                <h4 className="font-semibold text-white">Check-in Flexível</h4>
+                                <p className="text-sm text-stone-400 mt-1">
                                     Entendemos que horários de exames podem mudar. Fale conosco.
                                 </p>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <ShieldCheck className="text-orange-500 shrink-0" />
+                            <ShieldCheck className="text-[#E5C98B] shrink-0" />
                             <div>
-                                <h4 className="font-bold text-white">Ambiente Calmo</h4>
-                                <p className="text-sm text-stone-400">
+                                <h4 className="font-semibold text-white">Ambiente Calmo</h4>
+                                <p className="text-sm text-stone-400 mt-1">
                                     Ideal para repouso pós-procedimentos e sono tranquilo.
                                 </p>
                             </div>
@@ -294,10 +292,10 @@ const MedicalStayArticle: React.FC = () => {
 
             {/* Interlinking */}
             <div className="container mx-auto px-4 max-w-[800px] mt-12 pt-8 border-t border-white/10">
-                <h3 className="text-xl font-bold mb-4 text-white">Leia também:</h3>
+                <h3 className="text-xl font-semibold font-heading mb-4 text-white">Leia também:</h3>
                 <a href="/guia/hospedagem-corporativa-empresas-petrolina" className="block group">
-                    <div className="flex gap-4 items-center bg-white/5 p-4 rounded-xl border border-white/10 hover:border-orange-500/50 hover:bg-white/10 transition-all">
-                        <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                    <div className="flex gap-4 items-center bg-[#191714] p-4 rounded-2xl border border-white/10 hover:border-[#E5C98B]/40 transition-all">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
                             <img
                                 src="/images/quarto-lavanderia.jpg"
                                 alt="Corporativo"
@@ -305,39 +303,29 @@ const MedicalStayArticle: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <span className="text-orange-500 text-xs font-bold uppercase tracking-wider">
+                            <span className="text-[#E5C98B] text-xs font-semibold uppercase tracking-wider">
                                 Negócios
                             </span>
-                            <h4 className="font-bold text-white group-hover:text-orange-500 transition-colors">
+                            <h4 className="font-semibold text-white group-hover:text-[#E5C98B] transition-colors">
                                 Vem a trabalho? Veja as vantagens de ficar no Centro
                             </h4>
                         </div>
-                        <ArrowRight className="ml-auto text-stone-500 group-hover:text-orange-500" />
+                        <ArrowRight className="ml-auto text-stone-500 group-hover:text-[#E5C98B] transition-colors" />
                     </div>
                 </a>
             </div>
 
-            {/* CTA Final */}
-            <div className="bg-orange-600 text-white py-16 mt-16 text-center">
-                <div className="container mx-auto px-4 max-w-2xl">
-                    <h3 className="text-3xl font-bold mb-4 font-heading">
-                        Precisa de um lugar tranquilo para se recuperar?
-                    </h3>
-                    <p className="text-white/80 mb-10 text-lg">
-                        Estamos localizados no coração do Polo Médico de Petrolina. Fale conosco
-                        para condições especiais de estadia prolongada.
-                    </p>
-                    <a
-                        href={`https://wa.me/${HOST_PHONE}?text=Olá!%20Estou%20indo%20a%20Petrolina%20para%20tratamento%20médico%20e%20gostaria%20de%20verificar%20disponibilidade.`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-3 bg-white text-orange-600 px-10 py-5 rounded-full font-extrabold text-xl transition-all transform hover:scale-105 shadow-xl shadow-black/40"
-                    >
-                        <HeartPulse size={24} />
-                        Consultar Disponibilidade
-                    </a>
-                </div>
-            </div>
+            <ArticleFinalCTA
+                eyebrow="Polo Médico · Centro"
+                heading="Precisa de um lugar tranquilo para se recuperar?"
+                description="Estamos localizados no coração do Polo Médico de Petrolina. Fale conosco para condições especiais de estadia prolongada."
+                primary={{
+                    href: `https://wa.me/${HOST_PHONE}?text=Olá!%20Estou%20indo%20a%20Petrolina%20para%20tratamento%20médico%20e%20gostaria%20de%20verificar%20disponibilidade.`,
+                    label: 'Consultar Disponibilidade',
+                    icon: <HeartPulse size={18} />,
+                    external: true,
+                }}
+            />
         </article>
     );
 };

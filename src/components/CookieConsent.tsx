@@ -28,17 +28,17 @@ const CookieConsent: React.FC = () => {
                     exit={{ y: 100, opacity: 0 }}
                     className="fixed bottom-0 left-0 right-0 z-50 p-4"
                 >
-                    <div className="max-w-4xl mx-auto bg-gray-900/95 backdrop-blur-md text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-gray-700 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                        <div className="bg-gray-800 p-3 rounded-full hidden sm:block">
-                            <Cookie className="text-amber-400" size={24} />
+                    <div className="max-w-4xl mx-auto bg-[#161412]/95 backdrop-blur-xl text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-white/15 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                        <div className="bg-white/5 border border-white/10 p-3 rounded-full hidden sm:block">
+                            <Cookie className="text-[#E5C98B]" size={22} />
                         </div>
                         <div className="flex-1 text-center sm:text-left">
-                            <p className="text-sm text-gray-300 leading-relaxed">
+                            <p className="text-sm text-stone-300 leading-relaxed">
                                 Utilizamos cookies para melhorar sua experiência e analisar o
                                 tráfego do site. Ao continuar navegando, você concorda com nossa{' '}
                                 <a
                                     href="/politica-privacidade"
-                                    className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+                                    className="text-[#E5C98B] hover:text-[#f1ddb0] underline underline-offset-2"
                                 >
                                     Política de Privacidade
                                 </a>
@@ -48,7 +48,7 @@ const CookieConsent: React.FC = () => {
                         <div className="flex gap-3 w-full sm:w-auto">
                             <button
                                 onClick={handleAccept}
-                                className="flex-1 sm:flex-none bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-2.5 px-6 rounded-xl transition-colors shadow-lg shadow-black/20 text-sm whitespace-nowrap"
+                                className="flex-1 sm:flex-none bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] font-semibold py-2.5 px-6 rounded-full transition-colors shadow-lg shadow-black/20 text-sm whitespace-nowrap"
                             >
                                 Aceitar e Fechar
                             </button>

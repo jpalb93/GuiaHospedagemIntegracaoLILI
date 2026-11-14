@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 
 import { AppMode } from './types';
 import { useAppInitialization } from './hooks/useAppInitialization';
@@ -80,6 +80,7 @@ const App: React.FC = () => {
     const { appState, setAppState } = useAppInitialization();
     const { showManualLogin, setShowManualLogin, manualInput, setManualInput, handleManualSubmit } =
         useManualAuth(setAppState);
+    const [isAdminAuthLoading, setIsAdminAuthLoading] = useState(true);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -172,11 +173,14 @@ const App: React.FC = () => {
 
     if (appState.mode === AppMode.ADMIN || appState.mode === AppMode.CMS) {
         return withGlobalProviders(
-            <Suspense fallback={<ModernLoadingScreen variant="admin" />}>
-                <PageTransition>
-                    <AdminDashboard />
-                </PageTransition>
-            </Suspense>
+            <>
+                {isAdminAuthLoading && <ModernLoadingScreen variant="admin" />}
+                <Suspense fallback={null}>
+                    <PageTransition>
+                        <AdminDashboard onAuthLoadingChange={setIsAdminAuthLoading} />
+                    </PageTransition>
+                </Suspense>
+            </>
         );
     }
 

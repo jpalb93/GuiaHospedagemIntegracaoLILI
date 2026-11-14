@@ -119,35 +119,36 @@ export const AdminSkeleton = () => (
  * LandingSkeleton - skeleton para landing page
  */
 export const LandingSkeleton = () => (
-    <div className="min-h-screen bg-stone-900 relative overflow-hidden">
-        {/* Background Image Layer - Matches index.html */}
+    <div className="min-h-[100dvh] bg-[#12110F] relative overflow-hidden flex flex-col justify-between">
+        {/* Background Image Layer - Matches Hero */}
         <picture>
-            <source media="(max-width: 799px)" srcSet="/hero-bg-mobile.webp" />
-            <source media="(min-width: 800px)" srcSet="/hero-bg.webp" />
+            <source media="(max-width: 800px)" srcSet="/hero-bg-mobile1.webp" type="image/webp" />
             <img
-                src="/hero-bg-mobile.webp"
-                alt="Background"
-                className="absolute inset-0 w-full h-full object-cover opacity-60"
+                src="/hero-bg-nova1.webp"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-85"
             />
         </picture>
-        <div className="absolute inset-0 bg-stone-950/40 z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent z-10"></div>
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 to-transparent z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#12110F]/90 via-[#12110F]/50 to-[#12110F]/15 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#12110F]/45 via-transparent to-[#12110F]/95 z-10" />
 
-        {/* Content Layer - Matches index.html App Shell */}
-        <div className="container mx-auto px-4 h-full flex flex-col justify-center relative z-20 pt-24 md:pt-32">
-            <div className="max-w-4xl">
-                <div className="flex items-center gap-4 mb-6">
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-tight tracking-tight drop-shadow-lg">
-                        Hospedagem <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
-                            em Petrolina
-                        </span>
-                    </h1>
-                </div>
-                <span className="text-xl md:text-3xl font-light text-stone-300 block mt-6 mb-8">
-                    Flat para hospedagem em Petrolina (Centro) – próximos a hospitais e orla.
+        {/* Content Layer - Matches New Hero */}
+        <div className="max-w-[1320px] w-full mx-auto px-6 md:px-12 relative z-20 flex-1 flex flex-col justify-center pt-28 sm:pt-32 md:pt-36 pb-10">
+            <div className="max-w-2xl">
+                <span className="inline-block text-xs sm:text-sm font-medium text-[#E5C98B] tracking-[0.18em] uppercase mb-3">
+                    Flats Integração
                 </span>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-heading font-semibold text-white leading-[1.06] tracking-[-0.025em]">
+                    Hospedagem em Petrolina
+                </h1>
+                <p className="mt-5 text-base sm:text-lg md:text-[1.125rem] font-normal text-stone-200/90 leading-relaxed max-w-lg">
+                    Hospedagem mobiliada no Centro: cozinha, Wi-Fi fibra e melhor custo-benefício
+                    que hotel. Lazer ou empresa.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3.5">
+                    <div className="h-12 w-44 rounded-full bg-[#E5C98B]/80 animate-pulse" />
+                    <div className="h-12 w-44 rounded-full bg-white/10 border border-white/20 animate-pulse" />
+                </div>
             </div>
         </div>
     </div>

@@ -9,13 +9,22 @@ const PrivacyPolicy: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8 font-sans text-gray-800">
+        <div className="bg-[#F5F2EB] min-h-screen pt-32 md:pt-40 pb-20 px-4 sm:px-6 lg:px-8 font-sans text-[#181614]">
             <Helmet>
                 <title>Política de Privacidade | Flats Integração</title>
-                <meta name="description" content="Saiba como protegemos seus dados e sua privacidade durante sua estadia. Leia nossa Política de Privacidade baseada na LGPD." />
-                <link rel="canonical" href="https://www.flatsintegracao.com.br/politica-privacidade" />
+                <meta
+                    name="description"
+                    content="Saiba como protegemos seus dados e sua privacidade durante sua estadia. Leia nossa Política de Privacidade baseada na LGPD."
+                />
+                <link
+                    rel="canonical"
+                    href="https://www.flatsintegracao.com.br/politica-privacidade"
+                />
                 <meta name="robots" content="index, follow" />
-                <meta property="og:url" content="https://www.flatsintegracao.com.br/politica-privacidade" />
+                <meta
+                    property="og:url"
+                    content="https://www.flatsintegracao.com.br/politica-privacidade"
+                />
                 <meta property="og:type" content="website" />
                 <meta property="og:title" content="Política de Privacidade | Flats Integração" />
                 <meta
@@ -38,23 +47,23 @@ const PrivacyPolicy: React.FC = () => {
                     content="https://www.flatsintegracao.com.br/android-chrome-512x512.png"
                 />
             </Helmet>
-            <div className="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100">
+            <div className="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-3xl shadow-sm border border-[#E5E0D5]">
                 <header className="mb-10 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 text-green-600 rounded-full mb-4">
-                        <Shield size={32} />
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-[#141210] text-[#E5C98B] rounded-full mb-4 border border-[#E5C98B]/30">
+                        <Shield size={28} />
                     </div>
-                    <h1 className="text-3xl sm:text-4xl font-heading font-bold text-gray-900 mb-2">
+                    <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-[#181614] mb-2 tracking-tight">
                         Política de Privacidade
                     </h1>
-                    <p className="text-gray-500 text-sm uppercase tracking-wide font-semibold">
+                    <p className="text-[#5C564E] text-xs uppercase tracking-[0.16em] font-semibold">
                         Última atualização: {new Date().toLocaleDateString('pt-BR')}
                     </p>
                 </header>
 
-                <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed space-y-8">
+                <div className="prose prose-lg max-w-none text-[#5C564E] prose-strong:text-[#181614] prose-headings:text-[#181614] prose-headings:font-heading leading-relaxed space-y-8">
                     <section>
-                        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
-                            <Lock className="text-orange-500" size={24} />
+                        <h2 className="flex items-center gap-2.5 text-xl font-semibold text-[#181614] mb-4">
+                            <Lock className="text-[#9E6B2B]" size={22} />
                             1. Introdução e Compromisso
                         </h2>
                         <p>
@@ -74,8 +83,8 @@ const PrivacyPolicy: React.FC = () => {
                     </section>
 
                     <section>
-                        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
-                            <Eye className="text-orange-500" size={24} />
+                        <h2 className="flex items-center gap-2.5 text-xl font-semibold text-[#181614] mb-4">
+                            <Eye className="text-[#9E6B2B]" size={22} />
                             2. Quais dados coletamos?
                         </h2>
                         <p>
@@ -103,8 +112,8 @@ const PrivacyPolicy: React.FC = () => {
                     </section>
 
                     <section>
-                        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
-                            <Database className="text-orange-500" size={24} />
+                        <h2 className="flex items-center gap-2.5 text-xl font-semibold text-[#181614] mb-4">
+                            <Database className="text-[#9E6B2B]" size={22} />
                             3. Como usamos seus dados
                         </h2>
                         <p>Suas informações são utilizadas exclusivamente para:</p>
@@ -117,15 +126,15 @@ const PrivacyPolicy: React.FC = () => {
                             <li>Comunicação sobre sua estadia (dicas, avisos e suporte).</li>
                             <li>Melhorias no nosso site e serviços.</li>
                         </ul>
-                        <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mt-6 text-sm text-orange-900 font-medium">
+                        <div className="bg-[#F5F2EB] border-l-4 border-[#9E6B2B] p-4 mt-6 rounded-r-xl text-sm text-[#181614] font-medium">
                             Nós <strong>NUNCA</strong> vendemos ou compartilhamos seus dados
                             pessoais com terceiros para fins publicitários.
                         </div>
                     </section>
 
                     <section>
-                        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
-                            <Server className="text-orange-500" size={24} />
+                        <h2 className="flex items-center gap-2.5 text-xl font-semibold text-[#181614] mb-4">
+                            <Server className="text-[#9E6B2B]" size={22} />
                             4. Armazenamento e Segurança
                         </h2>
                         <p>
@@ -137,7 +146,9 @@ const PrivacyPolicy: React.FC = () => {
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">5. Seus Direitos</h2>
+                        <h2 className="text-xl font-semibold text-[#181614] mb-4">
+                            5. Seus Direitos
+                        </h2>
                         <p>
                             Você tem total controle sobre seus dados. A qualquer momento, você pode
                             solicitar:
@@ -153,15 +164,17 @@ const PrivacyPolicy: React.FC = () => {
                         </ul>
                     </section>
 
-                    <div className="pt-8 border-t border-gray-200 mt-12">
-                        <p className="font-bold text-gray-900 mb-2">Dúvidas sobre seus dados?</p>
+                    <div className="pt-8 border-t border-[#E5E0D5] mt-12">
+                        <p className="font-semibold text-[#181614] mb-2">
+                            Dúvidas sobre seus dados?
+                        </p>
                         <p>
                             Entre em contato conosco diretamente pelo WhatsApp para qualquer
                             solicitação relacionada à sua privacidade.
                         </p>
                         <a
                             href={`https://wa.me/${HOST_PHONE}?text=Olá,%20tenho%20dúvidas%20sobre%20a%20política%20de%20privacidade.`}
-                            className="inline-block mt-4 bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
+                            className="inline-flex items-center justify-center mt-4 bg-[#141210] hover:bg-[#2a2621] text-[#E5C98B] px-7 py-3.5 rounded-full font-semibold text-sm transition-colors no-underline"
                         >
                             Contatar Encarregado de Dados
                         </a>

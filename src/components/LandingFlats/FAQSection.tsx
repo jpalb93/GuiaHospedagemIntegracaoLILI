@@ -31,7 +31,7 @@ const FAQSection: React.FC = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="py-24 md:py-28 bg-stone-950" id="faq">
+        <section className="py-20 md:py-28 bg-[#F5F2EB] text-[#181614]" id="faq">
             <Helmet>
                 <script type="application/ld+json">
                     {JSON.stringify({
@@ -49,63 +49,65 @@ const FAQSection: React.FC = () => {
                 </script>
             </Helmet>
 
-            <div className="max-w-3xl mx-auto px-6 md:px-12">
-                <div className="mb-12 space-y-3">
-                    <p className="text-orange-500 font-heading font-bold text-xs uppercase tracking-[0.2em]">
-                        Dúvidas
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
-                        Dúvidas sobre a hospedagem em Petrolina
-                    </h2>
-                </div>
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+                    <div className="lg:col-span-4 space-y-3">
+                        <p className="text-[#9E6B2B] font-semibold text-xs uppercase tracking-[0.18em]">
+                            Dúvidas
+                        </p>
+                        <h2 className="text-3xl md:text-4xl font-heading font-semibold text-[#181614] tracking-tight leading-tight">
+                            Dúvidas sobre a hospedagem em Petrolina
+                        </h2>
+                    </div>
 
-                <div className="divide-y divide-stone-800 border-y border-stone-800">
-                    {FAQS.map((faq, index) => {
-                        const isOpen = openIndex === index;
-                        return (
-                            <div key={faq.question}>
-                                <button
-                                    type="button"
-                                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                                    aria-expanded={isOpen}
-                                    aria-controls={`faq-answer-${index}`}
-                                    className="w-full flex items-start justify-between gap-6 py-5 text-left group"
-                                >
-                                    <span
-                                        id={`faq-question-${index}`}
-                                        className={`font-heading font-medium text-base md:text-lg transition-colors ${
-                                            isOpen
-                                                ? 'text-white'
-                                                : 'text-stone-300 group-hover:text-white'
+                    <div className="lg:col-span-8 divide-y divide-[#E5E0D5] border-y border-[#E5E0D5]">
+                        {FAQS.map((faq, index) => {
+                            const isOpen = openIndex === index;
+                            return (
+                                <div key={faq.question}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpenIndex(isOpen ? null : index)}
+                                        aria-expanded={isOpen}
+                                        aria-controls={`faq-answer-${index}`}
+                                        className="w-full flex items-start justify-between gap-6 py-5 text-left group"
+                                    >
+                                        <span
+                                            id={`faq-question-${index}`}
+                                            className={`font-heading font-semibold text-base md:text-lg transition-colors ${
+                                                isOpen
+                                                    ? 'text-[#181614]'
+                                                    : 'text-[#3F3A34] group-hover:text-[#181614]'
+                                            }`}
+                                        >
+                                            {faq.question}
+                                        </span>
+                                        <ChevronDown
+                                            className={`shrink-0 mt-1 text-[#5C564E] transition-transform duration-300 ${
+                                                isOpen ? 'rotate-180 text-[#9E6B2B]' : ''
+                                            }`}
+                                            size={20}
+                                            aria-hidden
+                                        />
+                                    </button>
+                                    <div
+                                        id={`faq-answer-${index}`}
+                                        role="region"
+                                        aria-labelledby={`faq-question-${index}`}
+                                        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                                            isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                                         }`}
                                     >
-                                        {faq.question}
-                                    </span>
-                                    <ChevronDown
-                                        className={`shrink-0 mt-1 text-stone-500 transition-transform duration-300 ${
-                                            isOpen ? 'rotate-180 text-orange-500' : ''
-                                        }`}
-                                        size={20}
-                                        aria-hidden
-                                    />
-                                </button>
-                                <div
-                                    id={`faq-answer-${index}`}
-                                    role="region"
-                                    aria-labelledby={`faq-question-${index}`}
-                                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                                        isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                                    }`}
-                                >
-                                    <div className="overflow-hidden">
-                                        <p className="pb-5 pr-8 text-stone-400 leading-relaxed text-sm md:text-base">
-                                            {faq.answer}
-                                        </p>
+                                        <div className="overflow-hidden">
+                                            <p className="pb-5 pr-8 text-[#5C564E] leading-relaxed text-sm md:text-base">
+                                                {faq.answer}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </section>

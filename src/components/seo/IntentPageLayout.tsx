@@ -66,7 +66,7 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
     )}`;
 
     return (
-        <article className="bg-stone-950 text-stone-300">
+        <article className="bg-[#12110F] text-stone-200">
             <Helmet>
                 <title>{title}</title>
                 <meta name="description" content={description} />
@@ -119,41 +119,42 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
                 </script>
             </Helmet>
 
-            <header className="relative min-h-[680px] flex items-end overflow-hidden">
+            <header className="relative min-h-[620px] md:min-h-[680px] flex items-end overflow-hidden bg-[#12110F]">
                 <img
                     src={heroImage}
                     alt={heroImageAlt}
                     width={1920}
                     height={1080}
                     fetchPriority="high"
-                    className="absolute inset-0 h-full w-full object-cover opacity-50"
+                    className="absolute inset-0 h-full w-full object-cover opacity-80"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/65 to-stone-950/20" />
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 pt-36 pb-20 md:pb-28">
-                    <p className="text-orange-500 text-xs font-heading font-bold uppercase tracking-[0.2em] mb-5">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#12110F]/95 via-[#12110F]/60 to-[#12110F]/20" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#12110F]/50 via-transparent to-[#12110F]" />
+                <div className="relative z-10 w-full max-w-[1320px] mx-auto px-6 md:px-12 pt-36 md:pt-44 pb-16 md:pb-24">
+                    <span className="inline-block text-xs sm:text-sm font-medium text-[#E5C98B] tracking-[0.18em] uppercase mb-4">
                         {eyebrow}
-                    </p>
-                    <h1 className="max-w-5xl text-4xl sm:text-5xl md:text-7xl font-heading font-bold text-white leading-[1.05] tracking-tight">
+                    </span>
+                    <h1 className="max-w-4xl text-4xl sm:text-5xl md:text-6xl font-heading font-semibold text-white leading-[1.06] tracking-[-0.025em]">
                         {heading}
                     </h1>
-                    <p className="mt-7 max-w-2xl text-lg md:text-xl text-stone-300 font-light leading-relaxed">
+                    <p className="mt-6 max-w-2xl text-base sm:text-lg md:text-xl text-stone-300 font-light leading-relaxed">
                         {lead}
                     </p>
-                    <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                    <div className="mt-9 flex flex-col sm:flex-row gap-3.5">
                         <a
                             href={whatsappUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-3 bg-stone-100 hover:bg-white text-stone-950 px-8 py-5 text-xs font-bold uppercase tracking-[0.15em] transition-colors"
+                            className="inline-flex items-center justify-center gap-2.5 rounded-full bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] px-7 py-3.5 text-sm font-semibold transition-all shadow-lg"
                         >
-                            <MessageCircle size={18} aria-hidden />
+                            <MessageCircle size={17} aria-hidden />
                             Consultar disponibilidade
                         </a>
                         <Link
                             to="/#galeria"
-                            className="inline-flex items-center justify-center gap-3 border border-white/25 hover:border-white/60 text-white px-8 py-5 text-xs font-bold uppercase tracking-[0.15em] transition-colors"
+                            className="inline-flex items-center justify-center gap-2.5 rounded-full border border-white/25 hover:bg-white/10 text-white px-7 py-3.5 text-sm font-medium transition-colors"
                         >
-                            Ver os flats <ArrowRight size={18} aria-hidden />
+                            Ver os flats <ArrowRight size={17} aria-hidden />
                         </Link>
                     </div>
                 </div>
@@ -161,17 +162,17 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
 
             <nav
                 aria-label="Opções de hospedagem"
-                className="border-y border-stone-800 bg-stone-950"
+                className="border-y border-white/10 bg-[#12110F]"
             >
-                <div className="max-w-7xl mx-auto px-6 md:px-12 py-6 flex gap-x-8 gap-y-4 overflow-x-auto">
+                <div className="max-w-[1320px] mx-auto px-6 md:px-12 py-4 flex gap-3 overflow-x-auto no-scrollbar">
                     {CLUSTER_LINKS.map((link) => (
                         <Link
                             key={link.to}
                             to={link.to}
-                            className={`whitespace-nowrap text-xs uppercase tracking-[0.14em] font-bold transition-colors ${
+                            className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium tracking-wide transition-colors ${
                                 link.to === canonicalPath
-                                    ? 'text-orange-500'
-                                    : 'text-stone-500 hover:text-stone-200'
+                                    ? 'bg-[#E5C98B]/15 border border-[#E5C98B]/40 text-[#E5C98B]'
+                                    : 'border border-white/10 text-stone-400 hover:border-white/25 hover:text-white'
                             }`}
                         >
                             {link.label}
@@ -180,29 +181,32 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
                 </div>
             </nav>
 
-            <section className="max-w-7xl mx-auto px-6 md:px-12 py-24 md:py-32">
-                <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
-                    <div className="lg:col-span-5">
-                        <h2 className="text-3xl md:text-5xl font-heading font-bold text-white leading-tight tracking-tight">
+            <section className="bg-[#F5F2EB] text-[#181614] py-20 md:py-28 border-b border-[#E5E0D5]">
+                <div className="max-w-[1320px] mx-auto px-6 md:px-12 grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                    <div className="lg:col-span-5 space-y-4">
+                        <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-[#9E6B2B]">
+                            Estrutura completa
+                        </span>
+                        <h2 className="text-3xl md:text-5xl font-heading font-semibold text-[#181614] leading-tight tracking-tight">
                             {featuresHeading}
                         </h2>
-                        <p className="mt-6 text-stone-400 text-lg leading-relaxed">
+                        <p className="text-[#5C564E] text-base md:text-lg leading-relaxed">
                             {featuresLead}
                         </p>
                     </div>
-                    <div className="lg:col-span-7 grid sm:grid-cols-2 border-t border-stone-800">
-                        {features.map((feature, index) => (
+                    <div className="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+                        {features.map((feature) => (
                             <div
                                 key={feature.title}
-                                className={`py-8 sm:px-7 border-b border-stone-800 ${
-                                    index % 2 === 0 ? 'sm:border-r' : ''
-                                }`}
+                                className="rounded-2xl bg-white border border-[#E5E0D5] p-6 md:p-7 hover:border-[#9E6B2B]/40 transition-colors"
                             >
-                                <Check size={20} className="text-orange-500 mb-5" aria-hidden />
-                                <h3 className="text-xl text-white font-heading font-medium">
+                                <div className="w-10 h-10 rounded-full bg-[#F5F2EB] border border-[#E5E0D5] flex items-center justify-center mb-5">
+                                    <Check size={18} className="text-[#9E6B2B]" aria-hidden />
+                                </div>
+                                <h3 className="text-lg text-[#181614] font-heading font-semibold">
                                     {feature.title}
                                 </h3>
-                                <p className="mt-3 text-sm text-stone-400 leading-relaxed">
+                                <p className="mt-2.5 text-sm text-[#5C564E] leading-relaxed">
                                     {feature.description}
                                 </p>
                             </div>
@@ -211,15 +215,17 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
                 </div>
             </section>
 
-            <section className="border-y border-stone-800 bg-stone-900/40">
-                <div className="max-w-7xl mx-auto px-6 md:px-12 py-24 md:py-28 grid lg:grid-cols-12 gap-12 lg:gap-16">
+            <section className="bg-[#12110F] text-stone-200 border-b border-white/10">
+                <div className="max-w-[1320px] mx-auto px-6 md:px-12 py-20 md:py-28 grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
                     <div className="lg:col-span-5">
-                        <MapPin size={28} className="text-orange-500 mb-6" aria-hidden />
-                        <h2 className="text-3xl md:text-5xl font-heading font-bold text-white leading-tight tracking-tight">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#E5C98B]/10 border border-[#E5C98B]/25 text-[#E5C98B] mb-6">
+                            <MapPin size={22} aria-hidden />
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-heading font-semibold text-white leading-tight tracking-tight">
                             {detailHeading}
                         </h2>
                     </div>
-                    <div className="lg:col-span-7 space-y-6 text-lg text-stone-400 font-light leading-relaxed">
+                    <div className="lg:col-span-7 space-y-6 text-base md:text-lg text-stone-300 font-light leading-relaxed">
                         {detailParagraphs.map((paragraph) => (
                             <p key={paragraph}>{paragraph}</p>
                         ))}
@@ -227,28 +233,41 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
                 </div>
             </section>
 
-            <section className="max-w-4xl mx-auto px-6 md:px-12 py-24 md:py-28">
-                <h2 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
-                    Perguntas frequentes
-                </h2>
-                <div className="mt-10 divide-y divide-stone-800 border-y border-stone-800">
-                    {faqs.map((faq) => (
-                        <div key={faq.question} className="py-7">
-                            <h3 className="text-lg font-heading font-medium text-stone-100">
-                                {faq.question}
-                            </h3>
-                            <p className="mt-3 text-stone-400 leading-relaxed">{faq.answer}</p>
-                        </div>
-                    ))}
+            <section className="bg-[#F5F2EB] text-[#181614] py-20 md:py-28 border-b border-[#E5E0D5]">
+                <div className="max-w-4xl mx-auto px-6 md:px-12">
+                    <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-[#9E6B2B] mb-3">
+                        Dúvidas rápidas
+                    </span>
+                    <h2 className="text-3xl md:text-4xl font-heading font-semibold text-[#181614] tracking-tight">
+                        Perguntas frequentes
+                    </h2>
+                    <div className="mt-10 space-y-3">
+                        {faqs.map((faq) => (
+                            <div
+                                key={faq.question}
+                                className="rounded-2xl bg-white border border-[#E5E0D5] p-6 md:p-7"
+                            >
+                                <h3 className="text-lg font-heading font-semibold text-[#181614]">
+                                    {faq.question}
+                                </h3>
+                                <p className="mt-2.5 text-[#5C564E] leading-relaxed text-sm md:text-base">
+                                    {faq.answer}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            <section className="border-t border-stone-800">
-                <div className="max-w-7xl mx-auto px-6 md:px-12 py-20 text-center">
-                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-white">
+            <section className="bg-[#12110F] py-20 md:py-24 px-6 md:px-12">
+                <div className="max-w-[1320px] mx-auto rounded-[2rem] border border-white/10 bg-[#191714] px-6 py-14 md:py-20 text-center">
+                    <span className="inline-block text-xs font-medium uppercase tracking-[0.18em] text-[#E5C98B] mb-3">
+                        Atendimento direto
+                    </span>
+                    <h2 className="text-3xl md:text-5xl font-heading font-semibold text-white tracking-tight">
                         Reserve direto em Petrolina
                     </h2>
-                    <p className="mt-5 mx-auto max-w-xl text-stone-400 text-lg">
+                    <p className="mt-4 mx-auto max-w-xl text-stone-400 text-base md:text-lg">
                         Fale com os Flats Integração para consultar datas, estadias mensais ou
                         condições para empresas.
                     </p>
@@ -256,7 +275,7 @@ const IntentPageLayout: React.FC<IntentPageLayoutProps> = ({
                         href={whatsappUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 text-xs font-bold uppercase tracking-[0.15em] transition-colors"
+                        className="mt-8 inline-flex items-center justify-center gap-2.5 rounded-full bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] px-8 py-4 text-sm font-semibold transition-all shadow-lg"
                     >
                         Reservar pelo WhatsApp <ArrowRight size={17} aria-hidden />
                     </a>

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
 import ArticleScrollReset from '../../components/ArticleScrollReset';
+import { ArticleCategoryBadge, ArticleFinalCTA } from '../../components/articles/ArticleChrome';
 
 const FlatVsHotelArticle: React.FC = () => {
     const slug = 'flat-ou-hotel-petrolina-comparativo';
@@ -21,7 +22,7 @@ const FlatVsHotelArticle: React.FC = () => {
         'Comparativo completo entre hotel e flat por temporada em Petrolina. Veja preços, vantagens e qual opção vale mais a pena para sua viagem ao Sertão.';
 
     return (
-        <article className="pt-24 pb-16 min-h-screen bg-stone-950 text-stone-200">
+        <article className="pt-32 md:pt-40 pb-20 min-h-screen bg-[#12110F] text-stone-200">
             <ArticleScrollReset />
             <Helmet>
                 <title>{pageTitle}</title>
@@ -136,14 +137,11 @@ const FlatVsHotelArticle: React.FC = () => {
 
             {/* Header do Artigo */}
             <header className="container mx-auto px-4 max-w-3xl mb-12 text-center">
-                <div className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-500 px-4 py-1 rounded-full text-sm font-bold mb-6 border border-orange-500/20">
-                    <Zap size={16} />
-                    <span>Guia de Viagem</span>
-                </div>
-                <h1 className="text-3xl md:text-5xl font-bold text-white font-heading mb-6 leading-tight">
+                <ArticleCategoryBadge icon={<Zap size={15} />} label="Guia de Viagem" />
+                <h1 className="text-3xl md:text-5xl font-semibold text-white font-heading mb-6 leading-tight tracking-tight">
                     Flat ou Hotel em Petrolina? Qual a Melhor Opção Para Você?
                 </h1>
-                <p className="text-xl text-stone-400 leading-relaxed">
+                <p className="text-lg md:text-xl text-stone-400 leading-relaxed">
                     Comparamos preços, conforto e autonomia para você decidir onde se hospedar no
                     Vale do São Francisco.
                 </p>
@@ -151,27 +149,27 @@ const FlatVsHotelArticle: React.FC = () => {
 
             {/* Comparativo Visual */}
             <div className="container mx-auto px-4 max-w-4xl mb-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Hotel Card */}
-                    <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
-                        <Hotel className="text-stone-500 mb-4" size={40} />
-                        <h3 className="text-2xl font-bold mb-4 text-white font-heading">
+                    <div className="bg-[#191714] rounded-3xl p-8 border border-white/10">
+                        <Hotel className="text-stone-500 mb-4" size={38} />
+                        <h3 className="text-2xl font-semibold mb-4 text-white font-heading">
                             Hotel Tradicional
                         </h3>
                         <ul className="space-y-3">
-                            <li className="flex items-start gap-2 text-stone-400">
-                                <CheckCircle2 size={18} className="text-stone-600 mt-1 shrink-0" />
+                            <li className="flex items-start gap-2.5 text-stone-400">
+                                <CheckCircle2 size={18} className="text-stone-500 mt-1 shrink-0" />
                                 <span>Café da manhã incluso</span>
                             </li>
-                            <li className="flex items-start gap-2 text-stone-400">
-                                <CheckCircle2 size={18} className="text-stone-600 mt-1 shrink-0" />
+                            <li className="flex items-start gap-2.5 text-stone-400">
+                                <CheckCircle2 size={18} className="text-stone-500 mt-1 shrink-0" />
                                 <span>Recepção 24 horas</span>
                             </li>
-                            <li className="flex items-start gap-2 text-stone-600 italic text-sm">
+                            <li className="flex items-start gap-2.5 text-stone-500 italic text-sm">
                                 <Zap size={18} className="mt-1 shrink-0" />
                                 <span>Menos privacidade (corredores cheios)</span>
                             </li>
-                            <li className="flex items-start gap-2 text-stone-600 italic text-sm">
+                            <li className="flex items-start gap-2.5 text-stone-500 italic text-sm">
                                 <Zap size={18} className="mt-1 shrink-0" />
                                 <span>Sem cozinha no quarto</span>
                             </li>
@@ -179,29 +177,29 @@ const FlatVsHotelArticle: React.FC = () => {
                     </div>
 
                     {/* Flat Card */}
-                    <div className="bg-orange-600/10 rounded-3xl p-8 border border-orange-500/30 shadow-2xl shadow-orange-500/5 relative overflow-hidden">
-                        <div className="absolute top-4 right-4 bg-orange-500 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-tighter">
+                    <div className="bg-[#191714] rounded-3xl p-8 border border-[#E5C98B]/40 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-5 right-5 bg-[#E5C98B] text-[#141210] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                             Melhor Escolha
                         </div>
-                        <Home className="text-orange-500 mb-4" size={40} />
-                        <h3 className="text-2xl font-bold mb-4 text-white font-heading">
+                        <Home className="text-[#E5C98B] mb-4" size={38} />
+                        <h3 className="text-2xl font-semibold mb-4 text-white font-heading">
                             Flat Mobiliado
                         </h3>
                         <ul className="space-y-3">
-                            <li className="flex items-start gap-2 text-stone-200">
-                                <CheckCircle2 size={18} className="text-orange-500 mt-1 shrink-0" />
+                            <li className="flex items-start gap-2.5 text-stone-200">
+                                <CheckCircle2 size={18} className="text-[#E5C98B] mt-1 shrink-0" />
                                 <span>Cozinha completa e autonomia</span>
                             </li>
-                            <li className="flex items-start gap-2 text-stone-200">
-                                <CheckCircle2 size={18} className="text-orange-500 mt-1 shrink-0" />
+                            <li className="flex items-start gap-2.5 text-stone-200">
+                                <CheckCircle2 size={18} className="text-[#E5C98B] mt-1 shrink-0" />
                                 <span>Mais espaço e sensação de casa</span>
                             </li>
-                            <li className="flex items-start gap-2 text-stone-200">
-                                <CheckCircle2 size={18} className="text-orange-500 mt-1 shrink-0" />
+                            <li className="flex items-start gap-2.5 text-stone-200">
+                                <CheckCircle2 size={18} className="text-[#E5C98B] mt-1 shrink-0" />
                                 <span>Melhor preço para famílias/grupos</span>
                             </li>
-                            <li className="flex items-start gap-2 text-stone-200 font-bold">
-                                <CheckCircle2 size={18} className="text-orange-500 mt-1 shrink-0" />
+                            <li className="flex items-start gap-2.5 text-white font-semibold">
+                                <CheckCircle2 size={18} className="text-[#E5C98B] mt-1 shrink-0" />
                                 <span>Privacidade total</span>
                             </li>
                         </ul>
@@ -210,7 +208,7 @@ const FlatVsHotelArticle: React.FC = () => {
             </div>
 
             {/* Conteúdo do Artigo */}
-            <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-orange prose-headings:font-heading prose-headings:font-bold text-stone-300">
+            <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-headings:font-heading prose-headings:font-semibold prose-a:text-[#E5C98B] text-stone-300">
                 <section>
                     <p>
                         Petrolina oferece hoje uma rede hoteleira robusta, mas o crescimento do{' '}
@@ -220,7 +218,7 @@ const FlatVsHotelArticle: React.FC = () => {
                 </section>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <DollarSign className="text-orange-500" size={28} />
+                    <DollarSign className="text-[#E5C98B]" size={26} />
                     Entendendo os preços em Petrolina
                 </h2>
                 <p>
@@ -235,7 +233,7 @@ const FlatVsHotelArticle: React.FC = () => {
                 </p>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <Coffee className="text-orange-500" size={28} />
+                    <Coffee className="text-[#E5C98B]" size={26} />
                     Quando o Hotel faz mais sentido?
                 </h2>
                 <p>
@@ -246,7 +244,7 @@ const FlatVsHotelArticle: React.FC = () => {
                 </p>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <UtensilsCrossed className="text-orange-500" size={28} />A liberdade do Flat e a
+                    <UtensilsCrossed className="text-[#E5C98B]" size={26} />A liberdade do Flat e a
                     economia real
                 </h2>
                 <p>
@@ -255,11 +253,11 @@ const FlatVsHotelArticle: React.FC = () => {
                     próprio jantar ou ter um frigobar para suas compras de mercado faz toda a
                     diferença em estadias de 3 dias ou mais.
                 </p>
-                <div className="bg-white/5 border-l-4 border-orange-500 p-8 my-10 rounded-r-3xl">
-                    <h3 className="m-0 text-xl font-bold text-white mb-2">
+                <div className="bg-[#191714] border-l-4 border-[#E5C98B] p-8 my-10 rounded-r-3xl border-y border-r border-white/10 not-prose">
+                    <h3 className="m-0 text-xl font-semibold font-heading text-white mb-2">
                         Custo-benefício calculado
                     </h3>
-                    <p className="m-0 text-stone-400 italic">
+                    <p className="m-0 text-stone-300 italic leading-relaxed">
                         "Estudos mostram que viajantes em flats economizam até 40% do orçamento
                         total da viagem ao reduzir gastos com restaurantes e taxas de serviço de
                         hotéis."
@@ -267,7 +265,7 @@ const FlatVsHotelArticle: React.FC = () => {
                 </div>
 
                 <h2 className="flex items-center gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4">
-                    <Users className="text-orange-500" size={28} />
+                    <Users className="text-[#E5C98B]" size={26} />
                     Veredito: Qual escolher?
                 </h2>
                 <p>
@@ -288,34 +286,21 @@ const FlatVsHotelArticle: React.FC = () => {
                 </ul>
             </div>
 
-            {/* CTA Final */}
-            <div className="bg-stone-900 border-t border-white/5 text-white py-20 mt-20 text-center">
-                <div className="container mx-auto px-4 max-w-3xl">
-                    <h3 className="text-3xl md:text-4xl font-bold mb-6 font-heading">
-                        Quer a liberdade de um flat com preço de hotel econômico?
-                    </h3>
-                    <p className="text-stone-400 mb-12 text-xl">
-                        Nossos flats no Centro de Petrolina são a escolha lógica para quem busca o
-                        melhor custo-benefício.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a
-                            href={`https://wa.me/${HOST_PHONE}?text=Olá!%20Li%20o%20artigo%20comparativo%20de%20preços%20e%20quero%20um%20orçamento.`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="bg-orange-600 hover:bg-orange-500 text-white px-10 py-5 rounded-full font-extrabold text-xl transition-all shadow-xl shadow-orange-600/40"
-                        >
-                            Ver Preços e Fotos
-                        </a>
-                        <a
-                            href="/guia"
-                            className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-10 py-5 rounded-full font-bold text-xl transition-all"
-                        >
-                            Ver Outras Dicas
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <ArticleFinalCTA
+                eyebrow="Comparativo de Estadia"
+                heading="Quer a liberdade de um flat com preço de hotel econômico?"
+                description="Nossos flats no Centro de Petrolina são a escolha lógica para quem busca o melhor custo-benefício."
+                primary={{
+                    href: `https://wa.me/${HOST_PHONE}?text=Olá!%20Li%20o%20artigo%20comparativo%20de%20preços%20e%20quero%20um%20orçamento.`,
+                    label: 'Ver Preços e Fotos',
+                    external: true,
+                }}
+                secondary={{
+                    href: '/guia',
+                    label: 'Ver Outras Dicas',
+                    internal: true,
+                }}
+            />
         </article>
     );
 };

@@ -1,47 +1,36 @@
 import React from 'react';
 
-// Ordem otimizada para Alta Conversão e Storytelling do Usuário:
-// 1. Prova Social no Booking (Reputation)
-// 2. Radar de Distâncias no Centro (Hospitais, Orla, Bodódromo)
-// 3. Empresas & Longa Estadia (B2B / Conveniência)
-// 4. Guia Local & Opções de Hospedagem (Blog)
-// 5. Como funciona o flat / Regras (Info)
-// 6. Dúvidas Frequentes (FAQ)
-// 7. Localização no Mapa
-// 8. Chamada Final de Reserva (FinalCTA)
-// 9. Acesso do Hóspede (GuestAccess)
+// Ordem realocada com ritmo editorial alternado (Deep Charcoal <-> Warm Alabaster):
+// 1. Prova Social no Booking (Reputation — Charcoal)
+// 2. Modalidades de Estadia + Day Use + Horários e Regras (StayOptions + DayUse + Info — Alabaster)
+// 3. Empresas & Longa Estadia (Corporate B2B — Charcoal)
+// 4. Localização + Radar de Distâncias + Mapa (LocationSection unificada — Alabaster)
+// 5. Guia Local de Petrolina (LocalGuide — Charcoal)
+// 6. Dúvidas Frequentes (FAQ — Alabaster)
+// 7. Chamada Final de Reserva & Acesso do Hóspede (FinalCTA + GuestAccess — Charcoal)
 
-import SectionDivider from '../components/LandingFlats/SectionDivider';
 import ReputationSection from '../components/LandingFlats/ReputationSection';
-import DistanceRadarSection from '../components/LandingFlats/DistanceRadarSection';
+import { StayOptionsSection, LocalGuideSection } from '../components/LandingFlats/BlogSection';
+import DayUseSection from '../components/LandingFlats/DayUseSection';
 import CorporateB2BSection from '../components/LandingFlats/CorporateB2BSection';
-import BlogSection from '../components/LandingFlats/BlogSection';
+import LocationSection from '../components/LandingFlats/LocationSection';
 import InfoSection from '../components/LandingFlats/InfoSection';
 import FAQSection from '../components/LandingFlats/FAQSection';
-import LocationSection from '../components/LandingFlats/LocationSection';
 import FinalCTA from '../components/LandingFlats/FinalCTA';
 import GuestAccessSection from '../components/LandingFlats/GuestAccessSection';
 
 const BelowTheFoldSections: React.FC = () => {
     return (
         <>
-            <SectionDivider />
             <ReputationSection />
-            <SectionDivider />
-            <DistanceRadarSection />
-            <SectionDivider />
-            <CorporateB2BSection />
-            <SectionDivider />
-            <BlogSection />
-            <SectionDivider />
+            <StayOptionsSection />
+            <DayUseSection />
             <InfoSection />
-            <SectionDivider />
-            <FAQSection />
-            <SectionDivider />
+            <CorporateB2BSection />
             <LocationSection />
-            <SectionDivider />
+            <LocalGuideSection />
+            <FAQSection />
             <FinalCTA />
-            <SectionDivider />
             <GuestAccessSection />
         </>
     );

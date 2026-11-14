@@ -9,7 +9,7 @@ const HospedagemPetrolina: React.FC = () => (
         eyebrow="Flats Integração · Centro"
         heading="Hospedagem em Petrolina com autonomia de casa"
         lead="Flats mobiliados no Centro para quem vem a lazer, trabalho, consultas ou estadias longas. Cozinha, Wi-Fi fibra e reserva direta em um só lugar."
-        heroImage="/hero-bg-nova.webp"
+        heroImage="/hero-bg-nova1.webp"
         heroImageAlt="Hospedagem em Petrolina nos Flats Integração, no Centro"
         featuresHeading="O que está incluso na hospedagem"
         featuresLead="Estrutura para viver a cidade com mais independência e controlar melhor os custos do que em uma diária tradicional de hotel."

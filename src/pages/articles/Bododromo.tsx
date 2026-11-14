@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
 import ArticleScrollReset from '../../components/ArticleScrollReset';
+import { ArticleFinalCTA } from '../../components/articles/ArticleChrome';
 
 const MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Bod%C3%B3dromo%20Petrolina%20PE';
 
@@ -84,7 +85,7 @@ const dishes = [
 
 const BododromoArticle: React.FC = () => {
     return (
-        <article className="pt-24 pb-16 min-h-screen bg-stone-950 text-stone-300">
+        <article className="pt-32 md:pt-40 pb-20 min-h-screen bg-[#12110F] text-stone-200">
             <ArticleScrollReset />
             <Helmet>
                 <title>Onde Comer em Petrolina: Guia do Bodódromo e Gastronomia do Vale</title>
@@ -202,21 +203,21 @@ const BododromoArticle: React.FC = () => {
 
             {/* Header do Artigo */}
             <header className="container mx-auto px-4 max-w-4xl mb-10 text-center">
-                <h1 className="text-5xl md:text-7xl font-bold text-white font-heading mb-8 leading-[1.1] tracking-tight">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold text-white font-heading mb-6 leading-[1.08] tracking-tight">
                     Onde Comer em <br />
-                    <span className="text-orange-500">Petrolina</span>
+                    <span className="text-[#E5C98B]">Petrolina</span>
                 </h1>
-                <p className="text-xl md:text-2xl text-stone-400 leading-relaxed max-w-3xl mx-auto font-light">
+                <p className="text-lg md:text-2xl text-stone-400 leading-relaxed max-w-3xl mx-auto font-light">
                     Do autêntico bode assado em brasas aos vinhos premiados do Vale. O guia
                     definitivo para saborear o Sertão.
                 </p>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-bold uppercase tracking-[0.15em] text-stone-500">
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold uppercase tracking-[0.15em] text-stone-400">
                     <span className="inline-flex items-center gap-2">
-                        <Utensils size={14} className="text-orange-500" aria-hidden /> Guia local
+                        <Utensils size={14} className="text-[#E5C98B]" aria-hidden /> Guia local
                     </span>
                     <span className="h-1 w-1 rounded-full bg-stone-700" aria-hidden />
                     <span className="inline-flex items-center gap-2">
-                        <Clock size={14} className="text-orange-500" aria-hidden /> 4 min de leitura
+                        <Clock size={14} className="text-[#E5C98B]" aria-hidden /> 4 min de leitura
                     </span>
                     <span className="h-1 w-1 rounded-full bg-stone-700" aria-hidden />
                     <span>Petrolina + Juazeiro</span>
@@ -225,7 +226,7 @@ const BododromoArticle: React.FC = () => {
 
             {/* Imagem Principal */}
             <figure className="container mx-auto px-4 max-w-5xl mb-12">
-                <div className="aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-stone-900">
+                <div className="aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-[#191714]">
                     <img
                         src="/assets/blog/bododromo-petrolina.webp"
                         width={1200}
@@ -236,7 +237,7 @@ const BododromoArticle: React.FC = () => {
                         className="w-full h-full object-cover"
                     />
                 </div>
-                <figcaption className="mt-3 px-1 text-sm text-stone-500">
+                <figcaption className="mt-3 px-1 text-sm text-stone-400">
                     Sabores sertanejos para começar a explorar a gastronomia do Vale do São
                     Francisco.
                 </figcaption>
@@ -244,8 +245,8 @@ const BododromoArticle: React.FC = () => {
 
             <nav aria-label="Neste guia" className="container mx-auto mb-14 max-w-5xl px-4">
                 <div className="flex flex-col gap-4 border-y border-white/10 py-5 md:flex-row md:items-center md:gap-8">
-                    <div className="flex shrink-0 items-center gap-2 text-sm font-bold text-white">
-                        <List size={18} className="text-orange-500" aria-hidden />
+                    <div className="flex shrink-0 items-center gap-2 text-sm font-semibold text-white">
+                        <List size={18} className="text-[#E5C98B]" aria-hidden />
                         Neste guia
                     </div>
                     <div className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto pb-1 text-sm text-stone-400">
@@ -253,7 +254,7 @@ const BododromoArticle: React.FC = () => {
                             <a
                                 key={section.id}
                                 href={`#${section.id}`}
-                                className="shrink-0 rounded-full border border-white/10 px-4 py-2 transition-colors hover:border-orange-500/60 hover:text-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                                className="shrink-0 rounded-full border border-white/10 px-4 py-2 transition-colors hover:border-[#E5C98B]/50 hover:text-[#E5C98B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
                             >
                                 {section.label}
                             </a>
@@ -263,8 +264,8 @@ const BododromoArticle: React.FC = () => {
             </nav>
 
             {/* Conteúdo do Artigo */}
-            <div className="container mx-auto px-4 max-w-3xl prose prose-invert prose-orange prose-lg">
-                <p className="lead text-stone-300 text-xl">
+            <div className="container mx-auto px-4 max-w-3xl prose prose-invert prose-headings:font-heading prose-headings:font-semibold prose-a:text-[#E5C98B] prose-lg text-stone-300">
+                <p className="lead text-stone-200 text-xl">
                     Petrolina é uma surpresa gastronômica. A cidade mais populosa do Sertão
                     pernambucano guarda uma cena alimentar que vai do bode assado em brasas a vinhos
                     premiados produzidos a menos de 50 km do centro. Se você está chegando pela
@@ -275,22 +276,22 @@ const BododromoArticle: React.FC = () => {
 
                 <section
                     aria-labelledby="resumo-heading"
-                    className="not-prose my-14 rounded-3xl border border-orange-500/25 bg-orange-500/[0.06] p-6 md:p-8"
+                    className="not-prose my-14 rounded-3xl border border-[#E5C98B]/25 bg-[#191714] p-6 md:p-8"
                 >
                     <div className="mb-6 flex items-start justify-between gap-4">
                         <div>
-                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-400">
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#E5C98B]">
                                 Para decidir em 30 segundos
                             </p>
                             <h2
                                 id="resumo-heading"
-                                className="text-2xl font-bold text-white md:text-3xl"
+                                className="text-2xl font-semibold font-heading text-white md:text-3xl"
                             >
                                 O melhor programa depende do seu apetite
                             </h2>
                         </div>
                         <ArrowDown
-                            className="mt-1 hidden shrink-0 text-orange-500 md:block"
+                            className="mt-1 hidden shrink-0 text-[#E5C98B] md:block"
                             size={24}
                             aria-hidden
                         />
@@ -319,10 +320,12 @@ const BododromoArticle: React.FC = () => {
                             },
                         ].map((item) => (
                             <div key={item.label} className="border-t border-white/10 pt-4">
-                                <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">
                                     {item.label}
                                 </p>
-                                <p className="mb-1 text-lg font-bold text-white">{item.value}</p>
+                                <p className="mb-1 text-lg font-semibold text-white">
+                                    {item.value}
+                                </p>
                                 <p className="text-sm leading-relaxed text-stone-400">
                                     {item.detail}
                                 </p>
@@ -343,26 +346,27 @@ const BododromoArticle: React.FC = () => {
                         de referência obrigatório para qualquer visitante.
                     </p>
 
-                    <div className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-[2.5rem] not-prose mb-12 relative overflow-hidden">
+                    <div className="bg-[#191714] border border-white/10 p-8 md:p-12 rounded-[2.5rem] not-prose mb-12 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-5">
                             <Utensils size={120} />
                         </div>
 
-                        <h3 className="text-white text-3xl font-bold mb-8 flex items-center gap-3">
-                            <ChefHat className="text-orange-500" size={32} /> Sugestões do Chef
+                        <h3 className="text-white text-3xl font-semibold font-heading mb-8 flex items-center gap-3">
+                            <ChefHat className="text-[#E5C98B]" size={30} /> Sugestões do Chef
                         </h3>
 
                         <p className="text-stone-300 text-lg mb-10 leading-relaxed">
-                            O símbolo da casa é o <strong>bode assado</strong>, mas a{' '}
-                            <strong>carne de carneiro</strong> é a campeã de pedidos pela sua
-                            suavidade.
+                            O símbolo da casa é o{' '}
+                            <strong className="text-white">bode assado</strong>, mas a{' '}
+                            <strong className="text-white">carne de carneiro</strong> é a campeã de
+                            pedidos pela sua suavidade.
                         </p>
 
                         <div className="space-y-8">
                             {dishes.map((dish) => (
                                 <div key={dish.name} className="group">
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="text-white font-bold text-xl group-hover:text-orange-500 transition-colors">
+                                        <span className="text-white font-semibold text-xl group-hover:text-[#E5C98B] transition-colors">
                                             {dish.name}
                                         </span>
                                         <div className="flex-1 border-b border-white/10 mx-4 mb-1.5 border-dotted"></div>
@@ -374,8 +378,8 @@ const BododromoArticle: React.FC = () => {
 
                         <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <h4 className="text-white font-bold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
-                                    <MapPin className="text-orange-500" size={16} /> Localização
+                                <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
+                                    <MapPin className="text-[#E5C98B]" size={16} /> Localização
                                 </h4>
                                 <p className="text-stone-400 text-sm">
                                     Av. São Francisco, Bairro Areia Branca, Petrolina – PE
@@ -384,14 +388,14 @@ const BododromoArticle: React.FC = () => {
                                     href={MAP_URL}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-orange-400 transition-colors hover:text-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                                    className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#E5C98B] transition-colors hover:text-[#edd6a1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
                                 >
                                     Abrir no mapa <ExternalLink size={15} aria-hidden />
                                 </a>
                             </div>
                             <div>
-                                <h4 className="text-white font-bold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
-                                    <Wallet className="text-orange-500" size={16} /> Faixa de Preço
+                                <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
+                                    <Wallet className="text-[#E5C98B]" size={16} /> Faixa de Preço
                                 </h4>
                                 <p className="text-stone-400 text-sm">R$ 80 a R$ 200+ por pessoa</p>
                             </div>
@@ -410,8 +414,8 @@ const BododromoArticle: React.FC = () => {
                         Ponte Presidente Dutra, a Orla de Juazeiro (BA) complementa a experiência
                         com culinária focada em peixes de água doce.
                     </p>
-                    <div className="my-12 border-y border-orange-500/30 py-8">
-                        <p className="text-orange-200 m-0 italic">
+                    <div className="my-12 border-y border-[#E5C98B]/30 py-8">
+                        <p className="text-stone-200 m-0 italic">
                             "O prato-chefe é o surubim — peixe de couro sem espinhas, carne firme e
                             sabor delicado, nativo do São Francisco. Aparece grelhado, frito ou em
                             moqueca, uma das preparações mais admiradas da região."
@@ -451,11 +455,11 @@ const BododromoArticle: React.FC = () => {
                         ].map((item, index) => (
                             <div
                                 key={index}
-                                className="bg-white/5 border border-white/10 p-6 rounded-2xl flex gap-4"
+                                className="bg-[#191714] border border-white/10 p-6 rounded-2xl flex gap-4"
                             >
-                                <div className="text-orange-500 shrink-0">{item.icon}</div>
+                                <div className="text-[#E5C98B] shrink-0">{item.icon}</div>
                                 <div>
-                                    <h4 className="text-white font-bold mb-1">{item.title}</h4>
+                                    <h4 className="text-white font-semibold mb-1">{item.title}</h4>
                                     <p className="text-stone-400 text-sm leading-relaxed">
                                         {item.desc}
                                     </p>
@@ -471,18 +475,20 @@ const BododromoArticle: React.FC = () => {
 
                 <section id="vinhos" className="scroll-mt-32 my-20">
                     <h2 className="text-white mb-6">Vinhos do Vale do São Francisco</h2>
-                    <div className="bg-gradient-to-r from-stone-900 to-stone-800 border border-white/10 p-8 rounded-3xl flex flex-col md:flex-row gap-8 items-center mb-8">
-                        <div className="bg-orange-500/20 p-6 rounded-2xl">
-                            <Wine className="text-orange-500" size={48} />
+                    <div className="bg-[#191714] border border-white/10 p-8 rounded-3xl flex flex-col md:flex-row gap-8 items-center mb-8 not-prose">
+                        <div className="bg-[#E5C98B]/10 border border-[#E5C98B]/20 p-6 rounded-2xl shrink-0">
+                            <Wine className="text-[#E5C98B]" size={44} />
                         </div>
                         <div>
                             <p className="text-stone-300 m-0 leading-relaxed mb-4">
                                 Petrolina fica no coração do único polo vitícola tropical do mundo
                                 em escala comercial. As vinícolas do Vale —{' '}
-                                <strong>Miolo, Rio Sol, Ouro Verde, Santa Maria</strong> — produzem
-                                uvas em regime de duas safras por ano.
+                                <strong className="text-white">
+                                    Miolo, Rio Sol, Ouro Verde, Santa Maria
+                                </strong>{' '}
+                                — produzem uvas em regime de duas safras por ano.
                             </p>
-                            <p className="text-stone-400 text-sm mt-4 italic">
+                            <p className="text-stone-400 text-sm mt-4 italic mb-0">
                                 Você pode visitar uma vinícola em plena caatinga e tomar vinho
                                 produzido a menos de 50 km do seu prato.
                             </p>
@@ -523,11 +529,11 @@ const BododromoArticle: React.FC = () => {
                         ].map((tip, index) => (
                             <div
                                 key={index}
-                                className="flex gap-3 items-start p-4 bg-white/5 rounded-xl border border-white/10"
+                                className="flex gap-3 items-start p-5 bg-[#191714] rounded-2xl border border-white/10"
                             >
-                                <div className="text-orange-500 mt-0.5">{tip.icon}</div>
+                                <div className="text-[#E5C98B] mt-0.5">{tip.icon}</div>
                                 <div>
-                                    <span className="text-white font-bold block mb-1">
+                                    <span className="text-white font-semibold block mb-1">
                                         {tip.title}
                                     </span>
                                     <p className="text-stone-400 text-sm">{tip.desc}</p>
@@ -537,29 +543,31 @@ const BododromoArticle: React.FC = () => {
                     </div>
                 </section>
 
-                <aside className="not-prose my-14 rounded-3xl border border-white/10 bg-white/[0.04] p-6 md:p-8">
+                <aside className="not-prose my-14 rounded-3xl border border-white/10 bg-[#191714] p-6 md:p-8">
                     <div className="mb-6 flex items-center gap-3">
-                        <Navigation className="text-orange-500" size={22} aria-hidden />
-                        <h3 className="text-2xl font-bold text-white">Planeje sua ida</h3>
+                        <Navigation className="text-[#E5C98B]" size={22} aria-hidden />
+                        <h3 className="text-2xl font-semibold font-heading text-white">
+                            Planeje sua ida
+                        </h3>
                     </div>
                     <div className="grid gap-5 sm:grid-cols-3">
                         <div className="border-t border-white/10 pt-4">
-                            <CalendarClock className="mb-3 text-orange-500" size={20} aria-hidden />
-                            <p className="mb-1 text-sm font-bold text-white">Melhor momento</p>
+                            <CalendarClock className="mb-3 text-[#E5C98B]" size={20} aria-hidden />
+                            <p className="mb-1 text-sm font-semibold text-white">Melhor momento</p>
                             <p className="text-sm leading-relaxed text-stone-400">
                                 À noite, especialmente de quinta a domingo.
                             </p>
                         </div>
                         <div className="border-t border-white/10 pt-4">
-                            <CircleParking className="mb-3 text-orange-500" size={20} aria-hidden />
-                            <p className="mb-1 text-sm font-bold text-white">Estacionamento</p>
+                            <CircleParking className="mb-3 text-[#E5C98B]" size={20} aria-hidden />
+                            <p className="mb-1 text-sm font-semibold text-white">Estacionamento</p>
                             <p className="text-sm leading-relaxed text-stone-400">
                                 O complexo conta com estacionamento amplo e gratuito.
                             </p>
                         </div>
                         <div className="border-t border-white/10 pt-4">
-                            <MapPin className="mb-3 text-orange-500" size={20} aria-hidden />
-                            <p className="mb-1 text-sm font-bold text-white">Endereço</p>
+                            <MapPin className="mb-3 text-[#E5C98B]" size={20} aria-hidden />
+                            <p className="mb-1 text-sm font-semibold text-white">Endereço</p>
                             <p className="text-sm leading-relaxed text-stone-400">
                                 Av. São Francisco, Areia Branca, Petrolina – PE.
                             </p>
@@ -569,7 +577,7 @@ const BododromoArticle: React.FC = () => {
                         href={MAP_URL}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-orange-400 transition-colors hover:text-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#E5C98B] transition-colors hover:text-[#edd6a1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
                     >
                         Traçar rota no Google Maps <ChevronRight size={16} aria-hidden />
                     </a>
@@ -580,11 +588,11 @@ const BododromoArticle: React.FC = () => {
                     <div className="not-prose divide-y divide-white/10 border-y border-white/10">
                         {faqItems.map((item) => (
                             <details key={item.question} className="group py-5">
-                                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 [&::-webkit-details-marker]:hidden">
+                                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B] [&::-webkit-details-marker]:hidden">
                                     <span>{item.question}</span>
                                     <ChevronRight
                                         size={19}
-                                        className="shrink-0 text-orange-500 transition-transform group-open:rotate-90"
+                                        className="shrink-0 text-[#E5C98B] transition-transform group-open:rotate-90"
                                         aria-hidden
                                     />
                                 </summary>
@@ -596,19 +604,18 @@ const BododromoArticle: React.FC = () => {
                     </div>
                 </section>
 
-                <div className="bg-gradient-to-br from-orange-600/20 to-orange-900/20 border border-orange-500/30 p-8 md:p-12 rounded-[2rem] not-prose my-12 shadow-2xl relative overflow-hidden">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 blur-[60px] rounded-full"></div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                <div className="bg-[#191714] border border-[#E5C98B]/25 p-8 md:p-12 rounded-[2rem] not-prose my-12 shadow-2xl relative overflow-hidden">
+                    <h3 className="text-2xl md:text-3xl font-semibold font-heading text-white mb-6">
                         Hospedagem perto de tudo isso 🏡
                     </h3>
                     <p className="text-stone-300 mb-10 text-lg leading-relaxed">
-                        O <strong>Flats Integração</strong> fica no centro de Petrolina, a cerca de
-                        10 minutos de carro do Bodódromo e 8 minutos da Orla.
+                        O <strong className="text-white">Flats Integração</strong> fica no centro de
+                        Petrolina, a cerca de 10 minutos de carro do Bodódromo e 8 minutos da Orla.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="flex items-start gap-4">
-                            <div className="bg-orange-500 text-white p-3 rounded-2xl shadow-lg shadow-orange-500/20">
-                                <Utensils size={24} />
+                            <div className="bg-[#E5C98B]/15 border border-[#E5C98B]/30 text-[#E5C98B] p-3 rounded-2xl shrink-0">
+                                <Utensils size={22} />
                             </div>
                             <div>
                                 <strong className="text-white block mb-1 text-lg">
@@ -621,8 +628,8 @@ const BododromoArticle: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-start gap-4">
-                            <div className="bg-orange-500 text-white p-3 rounded-2xl shadow-lg shadow-orange-500/20">
-                                <MapPin size={24} />
+                            <div className="bg-[#E5C98B]/15 border border-[#E5C98B]/30 text-[#E5C98B] p-3 rounded-2xl shrink-0">
+                                <MapPin size={22} />
                             </div>
                             <div>
                                 <strong className="text-white block mb-1 text-lg">
@@ -638,35 +645,21 @@ const BododromoArticle: React.FC = () => {
                 </div>
             </div>
 
-            {/* CTA Final */}
-            <div className="container mx-auto px-4 max-w-4xl mt-20">
-                <div className="bg-gradient-to-br from-stone-900 to-black p-10 md:p-16 rounded-[2.5rem] border border-white/10 text-center shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 blur-[100px] -z-10"></div>
-                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-6 font-heading">
-                        Sinta-se em casa no coração de Petrolina
-                    </h3>
-                    <p className="text-stone-400 text-lg mb-10 max-w-lg mx-auto">
-                        O Flats Integração oferece o conforto de um lar com a praticidade que sua
-                        viagem exige.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a
-                            href="/reservas"
-                            className="inline-flex items-center justify-center gap-3 bg-orange-500 text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-orange-600 transition-all transform hover:scale-105"
-                        >
-                            Ver disponibilidade <ArrowRight size={22} />
-                        </a>
-                        <a
-                            href={`https://wa.me/${HOST_PHONE}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-3 bg-white/10 text-white border border-white/20 px-10 py-5 rounded-full font-bold text-lg hover:bg-white/20 transition-all"
-                        >
-                            Dúvidas? Chame no Whats
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <ArticleFinalCTA
+                eyebrow="Gastronomia do Vale"
+                heading="Sinta-se em casa no coração de Petrolina"
+                description="O Flats Integração oferece o conforto de um lar com a praticidade que sua viagem exige."
+                primary={{
+                    href: '/reservas',
+                    label: 'Ver disponibilidade',
+                    icon: <ArrowRight size={18} />,
+                }}
+                secondary={{
+                    href: `https://wa.me/${HOST_PHONE}`,
+                    label: 'Dúvidas? Chame no Whats',
+                    external: true,
+                }}
+            />
         </article>
     );
 };

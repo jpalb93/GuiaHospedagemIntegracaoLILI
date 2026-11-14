@@ -1,10 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import Hero from '../components/LandingFlats/Hero';
-import TopTicker from '../components/layout/TopTicker';
-import SectionDivider from '../components/LandingFlats/SectionDivider';
+import { PetrolinaCinemaSection } from '../components/LandingFlats/PetrolinaCinemaSection';
 import FeaturesSection from '../components/LandingFlats/FeaturesSection';
-import DayUseSection from '../components/LandingFlats/DayUseSection';
 import GallerySection from '../components/LandingFlats/GallerySection';
 
 // Lazy Load Sections below the fold as a single chunk to reduce request chaining
@@ -38,10 +36,10 @@ const Home: React.FC = () => {
                 <meta property="og:type" content="website" />
                 <meta
                     property="og:image"
-                    content="https://www.flatsintegracao.com.br/hero-bg-nova.webp"
+                    content="https://www.flatsintegracao.com.br/hero-bg-nova1.webp"
                 />
-                <meta property="og:image:width" content="1200" />
-                <meta property="og:image:height" content="630" />
+                <meta property="og:image:width" content="1672" />
+                <meta property="og:image:height" content="941" />
                 <meta property="og:locale" content="pt_BR" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta
@@ -54,7 +52,7 @@ const Home: React.FC = () => {
                 />
                 <meta
                     name="twitter:image"
-                    content="https://www.flatsintegracao.com.br/hero-bg-nova.webp"
+                    content="https://www.flatsintegracao.com.br/hero-bg-nova1.webp"
                 />
 
                 {/* Structured Data (JSON-LD) */}
@@ -134,16 +132,15 @@ const Home: React.FC = () => {
                 </script>
             </Helmet>
 
-            {/* Primeira dobra: hero + ticker sempre visíveis juntos */}
-            <div className="flex flex-col h-[100dvh] min-h-[636px] md:min-h-[736px]">
+            {/* Palco integrado: Hero recua em 3D enquanto a cortina cinematográfica do Vale sobe por cima */}
+            <div className="relative bg-[#12110F]">
                 <Hero />
-                <TopTicker />
+                <PetrolinaCinemaSection />
             </div>
-            <GallerySection />
-            <SectionDivider />
+
+            {/* O flat e ambientes: Warm Alabaster */}
             <FeaturesSection />
-            <SectionDivider />
-            <DayUseSection />
+            <GallerySection />
 
             <BelowTheFoldSections />
         </>

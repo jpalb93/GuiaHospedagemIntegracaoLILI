@@ -40,20 +40,20 @@ const GuestAccessSection: React.FC = () => {
     };
 
     return (
-        <section id="hospede" className="py-14 md:py-16 bg-stone-950">
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+        <section id="hospede" className="py-14 md:py-16 bg-[#12110F] border-t border-white/10">
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12">
                 <div className="flex flex-col lg:flex-row lg:items-end gap-8 lg:gap-16">
-                    <div className="lg:w-[40%] space-y-3 shrink-0">
-                        <div className="flex items-center gap-2 text-stone-500">
-                            <KeyRound size={16} className="stroke-1" aria-hidden />
-                            <p className="text-xs font-heading font-bold uppercase tracking-[0.2em]">
+                    <div className="lg:w-[40%] space-y-2.5 shrink-0">
+                        <div className="flex items-center gap-2 text-[#E5C98B]">
+                            <KeyRound size={15} className="stroke-[1.75]" aria-hidden />
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
                                 Já reservou?
                             </p>
                         </div>
-                        <h2 className="text-xl md:text-2xl font-heading font-medium text-stone-300 tracking-tight">
+                        <h2 className="text-xl md:text-2xl font-heading font-semibold text-white tracking-tight">
                             Acesse o guia do hóspede
                         </h2>
-                        <p className="text-sm text-stone-500 leading-relaxed max-w-sm">
+                        <p className="text-sm text-stone-400 leading-relaxed max-w-sm">
                             Use o código da confirmação para abrir Wi-Fi, senhas e o guia da
                             propriedade.
                         </p>
@@ -62,11 +62,11 @@ const GuestAccessSection: React.FC = () => {
                     <form onSubmit={handleSubmit} className="flex-1 max-w-lg w-full space-y-3">
                         <label
                             htmlFor="guest-access-code"
-                            className="block text-xs font-bold tracking-[0.15em] text-stone-500 uppercase"
+                            className="block text-xs font-semibold tracking-[0.14em] text-stone-400 uppercase"
                         >
                             Código da reserva
                         </label>
-                        <div className="flex items-center gap-3 border-b border-stone-700 focus-within:border-orange-500/60 transition-colors">
+                        <div className="flex items-center gap-3 border-b border-white/20 focus-within:border-[#E5C98B] transition-colors">
                             <input
                                 id="guest-access-code"
                                 type="text"
@@ -74,18 +74,18 @@ const GuestAccessSection: React.FC = () => {
                                 onChange={(e) => setCode(e.target.value)}
                                 placeholder="Cole o código ou o link com rid=…"
                                 autoComplete="off"
-                                className="flex-1 bg-transparent text-lg font-light text-white py-3 focus:outline-none placeholder:text-stone-700"
+                                className="flex-1 bg-transparent text-base md:text-lg font-normal text-white py-3 focus:outline-none placeholder:text-stone-600"
                             />
                             <button
                                 type="submit"
                                 aria-label="Entrar no guia do hóspede"
                                 disabled={isLoading || !code.trim()}
-                                className="shrink-0 text-stone-400 hover:text-orange-500 disabled:text-stone-700 disabled:pointer-events-none transition-colors p-1"
+                                className="shrink-0 text-stone-300 hover:text-[#E5C98B] disabled:text-stone-700 disabled:pointer-events-none transition-colors p-1.5"
                             >
                                 {isLoading ? (
-                                    <Loader2 className="animate-spin" size={22} />
+                                    <Loader2 className="animate-spin" size={20} />
                                 ) : (
-                                    <ArrowRight size={22} className="stroke-1" />
+                                    <ArrowRight size={20} />
                                 )}
                             </button>
                         </div>
@@ -94,7 +94,7 @@ const GuestAccessSection: React.FC = () => {
                                 {error}
                             </p>
                         ) : (
-                            <p className="text-stone-600 text-xs">
+                            <p className="text-stone-500 text-xs">
                                 O código chega na confirmação via WhatsApp.
                             </p>
                         )}

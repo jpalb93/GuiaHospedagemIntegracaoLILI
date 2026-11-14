@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { CalendarCheck, Clock, HelpCircle, MapPin, MessageCircle, Sun } from 'lucide-react';
 import ArticleScrollReset from '../../components/ArticleScrollReset';
+import { ArticleCategoryBadge, ArticleFinalCTA } from '../../components/articles/ArticleChrome';
 import {
     DAY_USE_DESCRIPTION,
     DAY_USE_FAQS,
@@ -15,11 +16,11 @@ const canonicalUrl = `${siteUrl}${DAY_USE_PATH}`;
 const articleImage = '/images/quarto-lavanderia.jpg';
 const sectionHeadingClass =
     'flex items-start gap-3 mt-12 mb-6 text-2xl md:text-3xl text-white border-b border-white/10 pb-4';
-const sectionIconClass = 'mt-1 shrink-0 text-orange-500';
+const sectionIconClass = 'mt-1 shrink-0 text-[#E5C98B]';
 
 export default function DayUseArticle() {
     return (
-        <article className="pt-24 pb-16 min-h-screen bg-stone-950 text-stone-200">
+        <article className="pt-32 md:pt-40 pb-20 min-h-screen bg-[#12110F] text-stone-200">
             <ArticleScrollReset />
             <Helmet>
                 <title>{DAY_USE_TITLE}</title>
@@ -100,18 +101,21 @@ export default function DayUseArticle() {
                     </Link>
                 </nav>
                 <header className="mb-12 text-center">
-                    <h1 className="text-3xl md:text-5xl font-bold text-white font-heading mb-6 leading-tight">
+                    <ArticleCategoryBadge icon={<Sun size={15} />} label="Day Use Individual" />
+                    <h1 className="text-3xl md:text-5xl font-semibold text-white font-heading mb-6 leading-tight tracking-tight">
                         {DAY_USE_TITLE}
                     </h1>
-                    <p className="text-xl text-stone-400 leading-relaxed italic">
+                    <p className="text-lg md:text-xl text-stone-400 leading-relaxed italic">
                         Uma pausa entre compromissos, sem precisar passar a noite. Conheça o day use
                         individual do Flats Integração e saiba o que consultar antes de reservar.
                     </p>
-                    <p className="mt-4 text-sm text-stone-400">Por Flats Integração</p>
+                    <p className="mt-4 text-xs uppercase tracking-[0.16em] text-stone-500">
+                        Por Flats Integração
+                    </p>
                 </header>
             </div>
             <div className="container mx-auto px-4 max-w-4xl mb-12">
-                <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+                <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#191714]">
                     <img
                         src={articleImage}
                         alt="Interior de um flat do Flats Integração, no Centro de Petrolina"
@@ -123,7 +127,7 @@ export default function DayUseArticle() {
                     />
                 </div>
             </div>
-            <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-orange prose-headings:font-heading prose-headings:font-bold text-stone-300">
+            <div className="container mx-auto px-4 max-w-[800px] prose prose-lg prose-invert prose-headings:font-heading prose-headings:font-semibold prose-a:text-[#E5C98B] text-stone-300">
                 <div className="space-y-10 text-lg leading-relaxed [&_p+p]:mt-4">
                     <section>
                         <h2 className={sectionHeadingClass}>
@@ -141,7 +145,7 @@ export default function DayUseArticle() {
                             viajar acompanhado, veja as{' '}
                             <Link
                                 to="/hospedagem-em-petrolina"
-                                className="text-orange-400 underline underline-offset-4"
+                                className="text-[#E5C98B] hover:text-[#edd6a1] underline underline-offset-4"
                             >
                                 opções de hospedagem em Petrolina
                             </Link>{' '}
@@ -153,7 +157,7 @@ export default function DayUseArticle() {
                             <Clock className={sectionIconClass} size={28} aria-hidden="true" />
                             Horário e regras do day use em Petrolina
                         </h2>
-                        <div className="bg-orange-500/5 p-6 md:p-8 rounded-2xl border border-orange-500/20 my-8">
+                        <div className="bg-[#191714] p-6 md:p-8 rounded-2xl border border-[#E5C98B]/25 my-8">
                             <ul className="list-disc space-y-2 pl-6">
                                 <li>
                                     <strong className="text-white">
@@ -189,7 +193,7 @@ export default function DayUseArticle() {
                             Veja mais sobre a{' '}
                             <Link
                                 to="/flat-centro-petrolina"
-                                className="text-orange-400 underline underline-offset-4"
+                                className="text-[#E5C98B] hover:text-[#edd6a1] underline underline-offset-4"
                             >
                                 localização do flat no Centro de Petrolina
                             </Link>{' '}
@@ -222,40 +226,31 @@ export default function DayUseArticle() {
                             <HelpCircle className={sectionIconClass} size={28} aria-hidden="true" />
                             Dúvidas sobre day use no Flats Integração
                         </h2>
-                        <dl className="space-y-6">
+                        <dl className="space-y-4">
                             {DAY_USE_FAQS.map((faq) => (
                                 <div
                                     key={faq.question}
-                                    className="bg-white/5 p-6 rounded-2xl border border-white/10"
+                                    className="bg-[#191714] p-6 rounded-2xl border border-white/10"
                                 >
                                     <dt className="font-semibold text-white">{faq.question}</dt>
-                                    <dd className="mt-2">{faq.answer}</dd>
+                                    <dd className="mt-2 text-stone-300">{faq.answer}</dd>
                                 </div>
                             ))}
                         </dl>
                     </section>
                 </div>
             </div>
-            <div className="bg-orange-600 text-white py-16 mt-16 text-center">
-                <div className="container mx-auto px-4 max-w-2xl">
-                    <h2 className="text-3xl font-bold mb-4 font-heading">
-                        Precisa de uma pausa em Petrolina?
-                    </h2>
-                    <p className="text-white mb-10 text-lg leading-relaxed">
-                        Consulte o day use individual das 8h às 12h. Reserva antecipada, sem
-                        visitantes e sem pernoite. Outros horários sujeitos à disponibilidade.
-                    </p>
-                    <a
-                        href={DAY_USE_WHATSAPP}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-12 max-w-full items-center justify-center gap-3 bg-white text-orange-700 px-6 md:px-10 py-5 rounded-full font-extrabold text-lg md:text-xl transition-colors hover:bg-orange-50 shadow-xl shadow-black/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                    >
-                        <MessageCircle size={24} className="shrink-0" aria-hidden="true" />
-                        Consultar day use no WhatsApp
-                    </a>
-                </div>
-            </div>
+            <ArticleFinalCTA
+                eyebrow="Day Use · Centro de Petrolina"
+                heading="Precisa de uma pausa em Petrolina?"
+                description="Consulte o day use individual das 8h às 12h. Reserva antecipada, sem visitantes e sem pernoite. Outros horários sujeitos à disponibilidade."
+                primary={{
+                    href: DAY_USE_WHATSAPP,
+                    label: 'Consultar day use no WhatsApp',
+                    icon: <MessageCircle size={18} className="shrink-0" aria-hidden="true" />,
+                    external: true,
+                }}
+            />
         </article>
     );
 }

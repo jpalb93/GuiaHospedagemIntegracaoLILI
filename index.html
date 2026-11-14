@@ -82,7 +82,7 @@
         /* INICIALIZAÇÃO CRÍTICA - Previne Flash Branco */
         html,
         body {
-            background-color: #0c0a09 !important;
+            background-color: #12110f !important;
             color: white;
             margin: 0;
             padding: 0;
@@ -104,8 +104,8 @@
         /* 1. Base Reset with HARDCODED Colors for Speed */
         html,
         body {
-            background-color: #0c0a09 !important;
-            /* Hardcoded stone-950 */
+            background-color: #12110f !important;
+            /* Hardcoded obsidian */
             color: white;
             margin: 0;
             padding: 0;
@@ -119,7 +119,7 @@
             display: block !important;
             opacity: 1 !important;
             visibility: visible !important;
-            background-color: #0c0a09;
+            background-color: #12110f;
         }
 
         /* 2. Critical Utilities */
@@ -396,31 +396,51 @@
 </head>
 
 <body>
-    <div id="root"><!--app-html-->
+    <div id="root"><!--app-html--><!--app-skeleton-start-->
         <!-- APP SHELL / SKELETON (Instant FCP) -->
         <div id="app-skeleton"
-            style="background-color: #0c0a09; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-family: 'Inter', sans-serif;">
-            <div
-                style="position: relative; height: 100vh; min-height: 600px; width: 100%; display: flex; flex-direction: column; justify-content: center; padding-top: 6rem;">
-                <div style="padding: 0 1rem; max-width: 56rem; margin: 0 auto; width: 100%;">
+            style="background-color: #12110f; min-height: 100dvh; width: 100%; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; box-sizing: border-box;">
+            <!-- Top Floating Glass Pill Skeleton -->
+            <div style="padding: 1.25rem 1.5rem 0; display: flex; justify-content: center;">
+                <div
+                    style="width: 100%; max-width: 64rem; height: 3.5rem; border-radius: 9999px; background: rgba(22, 20, 18, 0.55); border: 1px solid rgba(255, 255, 255, 0.14); padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+                    <div style="height: 2rem; width: 96px; border-radius: 9999px; background: rgba(255, 255, 255, 0.08);"></div>
+                    <div style="height: 2.25rem; width: 96px; border-radius: 9999px; background: rgba(229, 201, 139, 0.35);"></div>
+                </div>
+            </div>
+
+            <!-- Left-aligned Hero Content Skeleton -->
+            <div style="max-width: 1320px; width: 100%; margin: 0 auto; padding: 3rem 1.5rem 2rem; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div style="max-width: 40rem;">
                     <div
-                        style="height: 3rem; width: 200px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 2rem;">
+                        style="height: 0.875rem; width: 150px; background: rgba(229, 201, 139, 0.35); border-radius: 9999px; margin-bottom: 1rem;">
                     </div>
                     <div
-                        style="height: 5rem; width: 80%; background: linear-gradient(90deg, #332b28 0%, #443a35 50%, #332b28 100%); background-size: 200% 100%; animation: pulse 2s infinite; border-radius: 8px; margin-bottom: 1rem;">
+                        style="height: 3.5rem; width: 88%; background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 100%); background-size: 200% 100%; animation: pulse 1.8s infinite; border-radius: 14px; margin-bottom: 0.75rem;">
                     </div>
                     <div
-                        style="height: 5rem; width: 60%; background: linear-gradient(90deg, #ea580c 0%, #fb923c 50%, #ea580c 100%); background-size: 200% 100%; animation: pulse 2s infinite; border-radius: 8px; margin-bottom: 2rem;">
+                        style="height: 3.5rem; width: 58%; background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 100%); background-size: 200% 100%; animation: pulse 1.8s infinite; border-radius: 14px; margin-bottom: 1.5rem;">
                     </div>
                     <div
-                        style="height: 2rem; width: 90%; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 2rem;">
+                        style="height: 1.125rem; width: 78%; background: rgba(255, 255, 255, 0.07); border-radius: 8px; margin-bottom: 0.5rem;">
                     </div>
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="height: 3.5rem; width: 160px; background: #ea580c; border-radius: 2px;"></div>
-                        <div
-                            style="height: 3.5rem; width: 160px; background: rgba(255,255,255,0.1); border-radius: 2px;">
-                        </div>
+                    <div
+                        style="height: 1.125rem; width: 62%; background: rgba(255, 255, 255, 0.06); border-radius: 8px; margin-bottom: 2rem;">
                     </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.875rem;">
+                        <div style="height: 3rem; width: 170px; background: rgba(229, 201, 139, 0.42); border-radius: 9999px;"></div>
+                        <div style="height: 3rem; width: 170px; background: rgba(255, 255, 255, 0.09); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 9999px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Architectural Strip Skeleton -->
+            <div style="max-width: 1320px; width: 100%; margin: 0 auto; padding: 0 1.5rem 2rem; box-sizing: border-box;">
+                <div style="border-top: 1px solid rgba(255, 255, 255, 0.16); padding-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem;">
+                    <div style="height: 2.25rem; width: 75%; background: rgba(255, 255, 255, 0.06); border-radius: 8px;"></div>
+                    <div style="height: 2.25rem; width: 80%; background: rgba(255, 255, 255, 0.06); border-radius: 9999px;"></div>
+                    <div style="height: 2.25rem; width: 80%; background: rgba(255, 255, 255, 0.06); border-radius: 9999px;"></div>
+                    <div style="height: 2.25rem; width: 75%; background: rgba(229, 201, 139, 0.14); border-radius: 9999px;"></div>
                 </div>
             </div>
             <style>
@@ -434,7 +454,7 @@
                     }
                 }
             </style>
-        </div>
+        </div><!--app-skeleton-end-->
     </div>
     <script type="module" src="/src/index.tsx"></script>
 </body>

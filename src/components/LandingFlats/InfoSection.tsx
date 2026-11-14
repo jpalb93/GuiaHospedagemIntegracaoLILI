@@ -45,30 +45,19 @@ const InfoSection: React.FC = () => {
 
             mm.add('(min-width: 801px)', () => {
                 ctx = gsap.context(() => {
-                    gsap.fromTo(
-                        '.info-reveal',
-                        { y: 16, opacity: 0 },
-                        {
-                            y: 0,
-                            opacity: 1,
-                            duration: 0.5,
-                            stagger: 0.08,
-                            ease: 'power2.out',
-                            scrollTrigger: {
-                                trigger: sectionRef.current,
-                                start: 'top 90%',
-                                toggleActions: 'play none none reverse',
-                            },
-                        }
-                    );
+                    gsap.from('.info-reveal', {
+                        y: 12,
+                        duration: 0.45,
+                        stagger: 0.06,
+                        ease: 'power2.out',
+                        clearProps: 'transform',
+                        scrollTrigger: {
+                            trigger: sectionRef.current,
+                            start: 'top 95%',
+                            toggleActions: 'play none none none',
+                        },
+                    });
                 }, sectionRef);
-            });
-
-            mm.add('(max-width: 800px)', () => {
-                sectionRef.current?.querySelectorAll('.info-reveal').forEach((el) => {
-                    (el as HTMLElement).style.opacity = '1';
-                    (el as HTMLElement).style.transform = 'translateY(0)';
-                });
             });
         };
 
@@ -87,72 +76,74 @@ const InfoSection: React.FC = () => {
         <section
             ref={sectionRef}
             id="info"
-            className="py-24 md:py-32 bg-stone-950 relative overflow-hidden"
+            className="pt-8 md:pt-12 pb-20 md:pb-28 bg-[#F5F2EB] text-[#181614] relative overflow-hidden"
         >
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 space-y-16">
-                <div className="info-reveal max-w-2xl space-y-4 border-b border-stone-800 pb-10">
-                    <p className="text-orange-500 font-heading font-bold text-xs uppercase tracking-[0.2em]">
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12 relative z-10 space-y-12">
+                <div className="info-reveal max-w-2xl space-y-3 border-t border-b border-[#E5E0D5] pt-14 pb-8">
+                    <p className="text-[#9E6B2B] font-semibold text-xs uppercase tracking-[0.18em]">
                         Antes de reservar
                     </p>
-                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-white leading-[1.1] tracking-tight">
+                    <h2 className="text-3xl md:text-5xl font-heading font-semibold text-[#181614] leading-[1.1] tracking-tight">
                         Horários e regras da hospedagem
                     </h2>
-                    <p className="text-stone-400 text-base md:text-lg leading-relaxed max-w-xl">
+                    <p className="text-[#5C564E] text-base md:text-lg leading-relaxed max-w-xl">
                         Informações práticas para planejar sua estadia em Petrolina, sem surpresa na
                         chegada.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-                    <div className="info-reveal lg:col-span-4 space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+                    <div className="info-reveal lg:col-span-4 bg-white border border-[#E5E0D5] rounded-3xl p-7 md:p-8 space-y-7 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <Clock size={22} className="text-orange-500 stroke-1" aria-hidden />
-                            <h3 className="text-xl font-heading font-medium text-white">
+                            <Clock size={20} className="text-[#9E6B2B]" aria-hidden />
+                            <h3 className="text-xl font-heading font-semibold text-[#181614]">
                                 Horários
                             </h3>
                         </div>
 
-                        <div className="space-y-6 border-t border-stone-800 pt-6">
+                        <div className="space-y-5 border-t border-[#E5E0D5] pt-5">
                             <div>
-                                <p className="text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-2">
+                                <p className="text-xs font-semibold text-[#5C564E] uppercase tracking-[0.15em] mb-1.5">
                                     Check-in
                                 </p>
-                                <p className="text-4xl font-heading font-bold text-white">15:00</p>
-                                <p className="text-stone-500 text-sm mt-1">A partir das 15h</p>
+                                <p className="text-4xl font-heading font-semibold text-[#181614]">
+                                    15:00
+                                </p>
+                                <p className="text-[#5C564E] text-sm mt-1">A partir das 15h</p>
                             </div>
-                            <div className="h-px w-full bg-stone-800" />
+                            <div className="h-px w-full bg-[#E5E0D5]" />
                             <div>
-                                <p className="text-xs font-bold text-stone-500 uppercase tracking-[0.15em] mb-2">
+                                <p className="text-xs font-semibold text-[#5C564E] uppercase tracking-[0.15em] mb-1.5">
                                     Check-out
                                 </p>
-                                <p className="text-4xl font-heading font-bold text-white">13:00</p>
-                                <p className="text-stone-500 text-sm mt-1">Até as 13h</p>
+                                <p className="text-4xl font-heading font-semibold text-[#181614]">
+                                    13:00
+                                </p>
+                                <p className="text-[#5C564E] text-sm mt-1">Até as 13h</p>
                             </div>
                         </div>
 
-                        <p className="text-sm text-stone-400 leading-relaxed border-l-2 border-orange-500/40 pl-4">
-                            <span className="text-stone-200 font-medium">Early / late:</span> valor
+                        <p className="text-sm text-[#5C564E] leading-relaxed border-l-2 border-[#9E6B2B] pl-4">
+                            <span className="text-[#181614] font-medium">Early / late:</span> valor
                             a combinar conforme disponibilidade.
                         </p>
                     </div>
 
-                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 border-t border-stone-800">
+                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 border-t border-[#E5E0D5]">
                         {RULES.map((rule, i) => (
                             <div
                                 key={rule.title}
-                                className={`info-reveal py-8 sm:px-6 space-y-4 ${
-                                    i % 2 === 0 ? 'sm:border-r border-stone-800' : ''
-                                } ${i < 2 ? 'border-b border-stone-800' : ''}`}
+                                className={`info-reveal py-7 sm:px-6 space-y-3 ${
+                                    i % 2 === 0 ? 'sm:border-r border-[#E5E0D5]' : ''
+                                } ${i < 2 ? 'border-b border-[#E5E0D5]' : ''}`}
                             >
-                                <rule.icon
-                                    size={22}
-                                    className="text-orange-500 stroke-1"
-                                    aria-hidden
-                                />
-                                <h4 className="text-lg font-heading font-medium text-white">
+                                <div className="w-10 h-10 rounded-full bg-white border border-[#E5E0D5] flex items-center justify-center text-[#9E6B2B]">
+                                    <rule.icon size={18} strokeWidth={1.8} aria-hidden />
+                                </div>
+                                <h4 className="text-lg font-heading font-semibold text-[#181614]">
                                     {rule.title}
                                 </h4>
-                                <p className="text-sm text-stone-400 leading-relaxed max-w-xs">
+                                <p className="text-sm text-[#5C564E] leading-relaxed max-w-xs">
                                     {rule.body}
                                 </p>
                             </div>

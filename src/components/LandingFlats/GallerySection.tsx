@@ -1,16 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
-// GSAP dynamically imported
 
 const PHOTOS = [
     '/assets/gallery/gallery-1.webp',
     '/assets/gallery/gallery-2.webp',
     '/assets/gallery/gallery-3.webp',
     '/assets/gallery/gallery-4.webp',
-    '/assets/gallery/gallery-5.webp', // Corpoartivo
+    '/assets/gallery/gallery-5.webp',
     '/assets/gallery/gallery-6.webp',
     '/assets/gallery/gallery-7.webp',
-    '/assets/gallery/gallery-3.webp', // Repeat for grid balance
 ];
 
 const GallerySection: React.FC = () => {
@@ -39,52 +37,19 @@ const GallerySection: React.FC = () => {
 
             mm.add('(min-width: 801px)', () => {
                 ctx = gsap.context(() => {
-                    const tl = gsap.timeline({
+                    gsap.from('.gallery-item', {
+                        y: 14,
+                        duration: 0.45,
+                        stagger: 0.04,
+                        ease: 'power2.out',
+                        clearProps: 'transform',
                         scrollTrigger: {
                             trigger: sectionRef.current,
                             start: 'top 95%',
-                            toggleActions: 'play none none reverse',
+                            toggleActions: 'play none none none',
                         },
                     });
-
-                    tl.fromTo(
-                        '.gallery-header',
-                        { y: 15, opacity: 0 },
-                        {
-                            y: 0,
-                            opacity: 1,
-                            duration: 0.5,
-                            stagger: 0.1,
-                            ease: 'power2.out',
-                        }
-                    ).fromTo(
-                        '.gallery-item',
-                        { y: 20, opacity: 0 },
-                        {
-                            y: 0,
-                            opacity: 1,
-                            duration: 0.5,
-                            stagger: 0.05,
-                            ease: 'power2.out',
-                        },
-                        '-=0.3'
-                    );
                 }, sectionRef);
-            });
-
-            mm.add('(max-width: 800px)', () => {
-                if (sectionRef.current) {
-                    const headers = sectionRef.current.querySelectorAll('.gallery-header');
-                    const items = sectionRef.current.querySelectorAll('.gallery-item');
-                    headers.forEach((el) => {
-                        (el as HTMLElement).style.opacity = '1';
-                        (el as HTMLElement).style.transform = 'translateY(0)';
-                    });
-                    items.forEach((el) => {
-                        (el as HTMLElement).style.opacity = '1';
-                        (el as HTMLElement).style.transform = 'translateY(0)';
-                    });
-                }
             });
         };
 
@@ -100,69 +65,82 @@ const GallerySection: React.FC = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} id="galeria" className="py-0 bg-stone-950">
-            {/* Header com padding, mas galeria sangrada */}
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-32 pb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div className="gallery-header">
-                    <span className="text-stone-400 font-bold tracking-widest uppercase text-xs mb-4 block">
-                        Tour visual
-                    </span>
-                    <h2 className="text-4xl md:text-6xl font-heading font-black text-white tracking-tighter">
-                        Ambientes da hospedagem
-                    </h2>
+        <section
+            ref={sectionRef}
+            id="galeria"
+            className="pb-20 md:pb-28 pt-6 md:pt-8 bg-[#F5F2EB] text-[#181614]"
+        >
+            <div className="max-w-[1320px] mx-auto px-6 md:px-12">
+                <div className="border-t border-[#E5E0D5] pt-16 pb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="gallery-header">
+                        <span className="text-[#9E6B2B] font-semibold tracking-[0.18em] uppercase text-xs mb-3 block">
+                            Tour visual
+                        </span>
+                        <h2 className="text-3xl md:text-5xl font-heading font-semibold text-[#181614] tracking-tight">
+                            Ambientes da hospedagem
+                        </h2>
+                    </div>
+                    <div className="gallery-header">
+                        <p className="text-[#5C564E] max-w-sm md:text-right text-base md:text-lg leading-relaxed">
+                            Flats mobiliados no Centro de Petrolina: cozinha, quarto e estar.
+                        </p>
+                    </div>
                 </div>
-                <div className="gallery-header">
-                    <p className="text-stone-400 max-w-sm text-right text-lg">
-                        Flats mobiliados no Centro de Petrolina: cozinha, quarto e estar.
-                    </p>
-                </div>
-            </div>
 
-            {/* Grid Otimizado para Fotos Verticais */}
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 pb-20">
-                <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {PHOTOS.map((photo, index) => (
-                        <button
-                            key={index}
-                            onClick={() => openLightbox(photo)}
-                            aria-label={`Ver foto ampliada do ambiente ${index + 1}`}
-                            className="gallery-item aspect-[3/4] group relative overflow-hidden bg-stone-900 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-800"
-                        >
-                            <img
-                                src={photo}
-                                alt={`Hospedagem em Petrolina: ambiente do flat ${index + 1}`}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter hover:contrast-110 opacity-90 group-hover:opacity-100"
-                                loading="lazy"
-                                width="600"
-                                height="800"
-                            />
-                            {/* Overlay sutil apenas no hover para indicar interatividade */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                        </button>
-                    ))}
+                {/* Grid Arquitetônico Curado (7 fotos únicas, sem repetição) */}
+                <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-12 gap-4">
+                    {PHOTOS.map((photo, index) => {
+                        const spanClass =
+                            index === 0
+                                ? 'col-span-2 md:col-span-6 aspect-[16/10] md:aspect-auto md:h-[380px]'
+                                : index <= 2
+                                  ? 'col-span-1 md:col-span-3 aspect-[3/4] md:aspect-auto md:h-[380px]'
+                                  : 'col-span-1 md:col-span-3 aspect-[3/4]';
+
+                        return (
+                            <button
+                                key={photo}
+                                type="button"
+                                onClick={() => openLightbox(photo)}
+                                aria-label={`Ver foto ampliada do ambiente ${index + 1}`}
+                                className={`gallery-item ${spanClass} group relative overflow-hidden bg-[#E5E0D5] rounded-2xl transition-all duration-300 border border-[#DFD9CC] hover:border-[#9E6B2B]/50 shadow-sm`}
+                            >
+                                <img
+                                    src={photo}
+                                    alt={`Hospedagem em Petrolina: ambiente do flat ${index + 1}`}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    loading="lazy"
+                                    width="600"
+                                    height="800"
+                                />
+                                <div className="absolute inset-0 bg-[#12110F]/0 group-hover:bg-[#12110F]/15 transition-colors duration-300" />
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
             {/* Lightbox Overlay */}
             {selectedImage && (
                 <div
-                    className="fixed inset-0 z-[60] bg-black/98 flex items-center justify-center p-4 animate-fadeIn backdrop-blur-sm"
+                    className="fixed inset-0 z-[120] bg-[#12110F]/95 flex items-center justify-center p-4 animate-fadeIn backdrop-blur-md"
                     onClick={closeLightbox}
                     role="dialog"
                     aria-modal="true"
                     aria-label="Visualização da hospedagem em Petrolina"
                 >
                     <button
+                        type="button"
                         onClick={closeLightbox}
                         aria-label="Fechar galeria"
-                        className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full"
+                        className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/10 hover:bg-[#E5C98B] text-white hover:text-[#141210] transition-colors flex items-center justify-center"
                     >
-                        <X size={40} />
+                        <X size={22} />
                     </button>
                     <img
                         src={selectedImage}
                         alt="Foto do ambiente em tamanho ampliado"
-                        className="max-w-full max-h-[90vh] object-contain shadow-2xl animate-scaleIn border border-stone-800 rounded-md"
+                        className="max-w-full max-h-[88vh] object-contain shadow-2xl animate-scaleIn border border-white/10 rounded-2xl"
                         onClick={(e) => e.stopPropagation()}
                     />
                 </div>

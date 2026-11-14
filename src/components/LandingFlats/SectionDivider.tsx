@@ -5,10 +5,10 @@ import React from 'react';
  * com marca curta em gradiente à esquerda.
  */
 const SectionDivider: React.FC<{ className?: string }> = ({ className = '' }) => (
-    <div className={`w-full bg-stone-950 ${className}`} aria-hidden="true">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-            <div className="relative h-px w-full bg-stone-800/80">
-                <span className="absolute left-0 top-0 h-px w-16 md:w-24 bg-gradient-to-r from-orange-500 to-amber-500" />
+    <div className={`w-full bg-[#12110F] ${className}`} aria-hidden="true">
+        <div className="max-w-[1320px] mx-auto px-6 md:px-12">
+            <div className="relative h-px w-full bg-white/10">
+                <span className="absolute left-0 top-0 h-px w-16 md:w-24 bg-gradient-to-r from-[#E5C98B] to-[#E5C98B]/20" />
             </div>
         </div>
     </div>
