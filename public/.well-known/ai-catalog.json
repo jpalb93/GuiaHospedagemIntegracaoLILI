@@ -1,0 +1,23 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Flats Integração",
+    "identifier": "www.flatsintegracao.com.br",
+    "documentationUrl": "https://www.flatsintegracao.com.br/llms.txt",
+    "logoUrl": "https://www.flatsintegracao.com.br/flats-logo.png"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:flatsintegracao:docs:llms-txt",
+      "displayName": "Flats Integração — Resumo para Agentes (llms.txt)",
+      "type": "text/markdown",
+      "url": "https://www.flatsintegracao.com.br/llms.txt"
+    },
+    {
+      "identifier": "urn:air:flatsintegracao:docs:llms-full",
+      "displayName": "Flats Integração — Documentação Completa (llms-full.txt)",
+      "type": "text/markdown",
+      "url": "https://www.flatsintegracao.com.br/llms-full.txt"
+    }
+  ]
+}
