@@ -110,6 +110,7 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
  */
 export const PetrolinaCinemaSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
+    const mobileDwellRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<HTMLDivElement>(null);
     const galleryRef = useRef<HTMLDivElement>(null);
     const bladeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -146,17 +147,63 @@ export const PetrolinaCinemaSection: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        imgRefs.current.forEach((img, idx) => {
-            if (!img || !img.complete) return;
-            if (img.naturalWidth > 0) {
-                markBladeLoaded(idx, img);
-            } else {
-                // Recover images whose pre-hydration SSR request failed before React attached onError
-                handleImageError(idx);
-            }
-        });
+        const syncExistingImages = () => {
+            imgRefs.current.forEach((img, idx) => {
+                if (!img) return;
+                if (img.loading === 'lazy') {
+                    img.loading = 'eager';
+                }
+                if (!img.complete) return;
+                if (img.naturalWidth > 0) {
+                    markBladeLoaded(idx, img);
+                } else {
+                    // Recover images whose pre-hydration SSR request failed before React attached onError
+                    handleImageError(idx);
+                }
+            });
+        };
+
+        syncExistingImages();
+
+        // Pre-warm cache after Hero paints so mobile browsers never defer lazy clipped frames (esp. blade 0)
+        const prewarmImages: HTMLImageElement[] = [];
+        const warmTimer = window.setTimeout(() => {
+            PETROLINA_PHOTOS.forEach((photo, idx) => {
+                const domImg = imgRefs.current[idx];
+                if (domImg && domImg.complete && domImg.naturalWidth > 0) {
+                    markBladeLoaded(idx, domImg);
+                    return;
+                }
+                const pre = new Image();
+                pre.decoding = 'async';
+                pre.onload = () => markBladeLoaded(idx, imgRefs.current[idx] ?? pre);
+                pre.onerror = () => handleImageError(idx);
+                pre.src = photo.src;
+                prewarmImages.push(pre);
+            });
+        }, 120);
+
+        let observer: IntersectionObserver | undefined;
+        if (sectionRef.current && typeof IntersectionObserver !== 'undefined') {
+            observer = new IntersectionObserver(
+                (entries) => {
+                    if (entries.some((entry) => entry.isIntersecting)) {
+                        syncExistingImages();
+                    }
+                },
+                { rootMargin: '750px 0px' }
+            );
+            observer.observe(sectionRef.current);
+        }
+
         const timers = retryTimersRef.current;
         return () => {
+            window.clearTimeout(warmTimer);
+            if (observer) observer.disconnect();
+            prewarmImages.forEach((img) => {
+                img.onload = null;
+                img.onerror = null;
+            });
             Object.values(timers).forEach((timerId) => window.clearTimeout(timerId));
         };
     }, [markBladeLoaded, handleImageError]);
@@ -211,6 +258,11 @@ export const PetrolinaCinemaSection: React.FC = () => {
         }
 
         let rafId = 0;
+        let lastVw = window.innerWidth || 1280;
+        let stableVh =
+            lastVw < 1024
+                ? document.documentElement.clientHeight || window.innerHeight || 720
+                : window.innerHeight || 900;
 
         // Initial hidden state until first rAF aligns progress with scroll position
         bladeRefs.current.forEach((el) => {
@@ -219,33 +271,33 @@ export const PetrolinaCinemaSection: React.FC = () => {
         });
 
         const syncStickyTop = () => {
-            const vh = window.innerHeight || 0;
             const h = section.offsetHeight || 0;
-            section.style.top = `${Math.min(0, vh - h)}px`;
+            section.style.top = `${Math.min(0, stableVh - h)}px`;
         };
 
         const applyFrame = () => {
             rafId = 0;
             const rect = section.getBoundingClientRect();
-            const vh = window.innerHeight || 1;
             const vw = window.innerWidth || 1280;
             const isDesktop = vw >= 1024;
+            const vh = isDesktop ? window.innerHeight || 1 : stableVh || 1;
 
             // Smooth curved top bevel that flattens as section reaches the top edge
             const bevel = rect.top > 0 ? Math.min(1, rect.top / (vh * 0.38)) : 0;
-            const rPx = `${Math.round(bevel * 38)}px`;
+            const rPx = `${Math.round(bevel * (isDesktop ? 38 : 28))}px`;
             section.style.borderTopLeftRadius = rPx;
             section.style.borderTopRightRadius = rPx;
 
             // Exit trigger tied strictly to the next cream section climbing over the full-screen sticky showcase
-            const nextEl = section.nextElementSibling as HTMLElement | null;
+            const nextEl = (mobileDwellRef.current?.nextElementSibling ??
+                section.nextElementSibling) as HTMLElement | null;
             const nextTop = nextEl ? nextEl.getBoundingClientRect().top : vh * 2;
             const exitRaw = nextEl ? clamp01((vh * 0.94 - nextTop) / (vh * 0.88)) : 0;
             const exitEased = easeOutCubic(exitRaw);
             const exitPulse = Math.sin(exitRaw * Math.PI);
 
             // Overall crest emergence progress: 0 at bottom of screen -> 1 when well inside viewport
-            const entryRaw = clamp01((vh * 0.98 - rect.top) / (vh * 0.56));
+            const entryRaw = clamp01((vh * 0.98 - rect.top) / (vh * (isDesktop ? 0.56 : 0.44)));
             const entryP = easeOutCubic(entryRaw);
             // Crest catchlight peaks dramatically while sweeping across Hero, then settles into quiet horizon glow
             const crestPulse = Math.sin(clamp01((vh - rect.top) / (vh * 0.92)) * Math.PI);
@@ -270,15 +322,22 @@ export const PetrolinaCinemaSection: React.FC = () => {
                 const exitGlowOp = baseGlow * (1 - exitRaw * 0.92) + 0.36 * exitPulse;
                 const glowScale = 0.68 + 0.36 * entryP + 0.22 * exitPulse;
                 glowRef.current.style.opacity = clamp01(exitGlowOp).toFixed(3);
-                glowRef.current.style.transform = `scale(${glowScale.toFixed(3)})`;
+                glowRef.current.style.transform = `scale3d(${glowScale.toFixed(3)}, ${glowScale.toFixed(3)}, 1)`;
             }
 
             if (stageRef.current) {
                 if (exitEased > 0.001) {
-                    const stageScale = 1 - 0.095 * exitEased;
-                    const stageRotateX = 7.2 * exitEased;
-                    const stageShiftY = -34 * exitEased;
-                    stageRef.current.style.transform = `perspective(1400px) translate3d(0, ${stageShiftY.toFixed(2)}px, 0) rotateX(${stageRotateX.toFixed(2)}deg) scale3d(${stageScale.toFixed(4)}, ${stageScale.toFixed(4)}, 1)`;
+                    if (isDesktop) {
+                        const stageScale = 1 - 0.095 * exitEased;
+                        const stageRotateX = 7.2 * exitEased;
+                        const stageShiftY = -34 * exitEased;
+                        stageRef.current.style.transform = `perspective(1400px) translate3d(0, ${stageShiftY.toFixed(2)}px, 0) rotateX(${stageRotateX.toFixed(2)}deg) scale3d(${stageScale.toFixed(4)}, ${stageScale.toFixed(4)}, 1)`;
+                    } else {
+                        // Pure compositor transform on mobile (no 3D perspective thrash)
+                        const stageScale = 1 - 0.055 * exitEased;
+                        const stageShiftY = -18 * exitEased;
+                        stageRef.current.style.transform = `translate3d(0, ${stageShiftY.toFixed(2)}px, 0) scale3d(${stageScale.toFixed(4)}, ${stageScale.toFixed(4)}, 1)`;
+                    }
                 } else {
                     stageRef.current.style.transform = '';
                 }
@@ -293,15 +352,15 @@ export const PetrolinaCinemaSection: React.FC = () => {
             }
 
             if (headlineRef.current) {
-                const headRaw = clamp01((vh * 0.93 - rect.top) / (vh * 0.42));
+                const headRaw = clamp01((vh * (isDesktop ? 0.93 : 0.98) - rect.top) / (vh * 0.38));
                 const headP = easeOutCubic(headRaw);
                 const headExit = clamp01(exitRaw / 0.52);
                 const headExitEased = easeOutCubic(headExit);
                 const headOpacity = Math.max(0.08, headP) * (1 - headExitEased);
-                const headY = (1 - headP) * 32 - headExitEased * 28;
-                const headScale = (0.965 + 0.035 * headP) * (1 - 0.04 * headExitEased);
+                const headY = (1 - headP) * (isDesktop ? 32 : 22) - headExitEased * 22;
+                const headScale = (0.97 + 0.03 * headP) * (1 - 0.035 * headExitEased);
                 headlineRef.current.style.opacity = headOpacity.toFixed(3);
-                headlineRef.current.style.transform = `translate3d(0, ${headY.toFixed(2)}px, 0) scale(${headScale.toFixed(4)})`;
+                headlineRef.current.style.transform = `translate3d(0, ${headY.toFixed(2)}px, 0) scale3d(${headScale.toFixed(4)}, ${headScale.toFixed(4)}, 1)`;
             }
 
             // Parallax factor in [-1..1] around viewport center
@@ -310,6 +369,13 @@ export const PetrolinaCinemaSection: React.FC = () => {
                 -1,
                 1
             );
+
+            // Calm pinned dwell progress on mobile (between section lock at top and cream exit arrival)
+            const dwellSpan = mobileDwellRef.current?.offsetHeight || 1;
+            const dwellP =
+                !isDesktop && rect.top <= 1 && nextEl
+                    ? clamp01(1 - Math.max(0, nextTop - vh) / dwellSpan)
+                    : 0;
 
             for (let i = 0; i < PETROLINA_PHOTOS.length; i++) {
                 const blade = bladeRefs.current[i];
@@ -374,54 +440,42 @@ export const PetrolinaCinemaSection: React.FC = () => {
                         }
                     }
                 } else {
-                    const rowIdx = i === 0 ? 0 : Math.ceil(i / 2);
-                    const startTop = vh * (0.74 - rowIdx * 0.24);
-                    const bladeRaw = clamp01((startTop - rect.top) / (vh * 0.34));
+                    // Mobile compositor-only path (zero clip-path rasterization / 3D texture drops)
+                    const rowIdx = i === 0 ? 0 : i <= 3 ? 1 : 2;
+                    const startTop = vh * (0.98 - rowIdx * 0.16);
+                    const bladeRaw = clamp01((startTop - rect.top) / (vh * 0.36));
                     const bladeEased = easeOutCubic(bladeRaw);
-                    const colSide = i === 0 ? 0 : i % 2 === 1 ? -1 : 1;
 
-                    const exitDelay = (3 - rowIdx) * 0.08;
+                    const exitDelay = (2 - rowIdx) * 0.08;
                     const bladeExit =
                         exitRaw > 0
                             ? easeOutCubic(clamp01((exitRaw - exitDelay) / (1 - exitDelay)))
                             : 0;
 
-                    const isEntering = bladeRaw < 0.995;
-                    if (isEntering) {
-                        const clipX = (1 - bladeEased) * 44;
-                        const clipY = (1 - bladeEased) * 12;
-                        blade.style.clipPath = `inset(${clipY.toFixed(2)}% ${clipX.toFixed(2)}% ${clipY.toFixed(2)}% ${clipX.toFixed(2)}% round 18px)`;
-                    } else {
+                    if (blade.style.clipPath) {
                         blade.style.clipPath = '';
                     }
+                    if (imgEl && imgEl.style.transform) {
+                        imgEl.style.transform = '';
+                    }
 
-                    const spreadX = colSide * (1 - bladeEased) * -10 + colSide * bladeExit * -16;
-                    const liftBase = 18 + rowIdx * 6;
-                    const liftY = (1 - bladeEased) * liftBase - bladeExit * 20;
-                    const scale = (0.94 + 0.06 * bladeEased) * (1 - 0.1 * bladeExit);
+                    const colDir = i === 0 ? 0 : ((i - 1) % 3) - 1;
+                    const spreadX = colDir * (1 - bladeEased) * 6 - colDir * bladeExit * 10;
+                    const dwellBreath =
+                        dwellP > 0 && bladeExit < 0.05
+                            ? Math.sin(dwellP * Math.PI) * (i % 2 === 0 ? -4 : 4)
+                            : 0;
+                    const liftY =
+                        (1 - bladeEased) * (18 + rowIdx * 8) +
+                        dwellBreath -
+                        bladeExit * (16 + rowIdx * 6);
+                    const scale = (0.93 + 0.07 * bladeEased) * (1 - 0.07 * bladeExit);
                     const entryOpacity =
-                        bladeRaw <= 0 ? 0 : clamp01(Math.pow(bladeRaw, 0.42) * 1.45);
-                    const finalOpacity = entryOpacity * (1 - Math.pow(bladeExit, 1.4));
-
-                    const enterRotateY = colSide * (1 - bladeEased) * -20;
-                    const enterRotateX = (1 - bladeEased) * 8;
-                    const totalRotateX = enterRotateX + bladeExit * 5;
+                        bladeRaw <= 0 ? 0 : clamp01(Math.pow(bladeRaw, 0.5) * 1.35);
+                    const finalOpacity = entryOpacity * (1 - Math.pow(bladeExit, 1.35));
 
                     blade.style.opacity = finalOpacity.toFixed(3);
-                    if (isEntering || bladeExit > 0.001) {
-                        blade.style.transform = `perspective(900px) translate3d(${spreadX.toFixed(2)}px, ${liftY.toFixed(2)}px, 0) rotateY(${enterRotateY.toFixed(2)}deg) rotateX(${totalRotateX.toFixed(2)}deg) scale3d(${scale.toFixed(4)}, ${scale.toFixed(4)}, 1)`;
-                    } else {
-                        blade.style.transform = `translate3d(${spreadX.toFixed(2)}px, ${liftY.toFixed(2)}px, 0) scale3d(${scale.toFixed(4)}, ${scale.toFixed(4)}, 1)`;
-                    }
-
-                    if (imgEl) {
-                        if (isEntering) {
-                            const lensZoom = 1 + (1 - bladeEased) * 0.14;
-                            imgEl.style.transform = `scale(${lensZoom.toFixed(4)})`;
-                        } else {
-                            imgEl.style.transform = '';
-                        }
-                    }
+                    blade.style.transform = `translate3d(${spreadX.toFixed(2)}px, ${liftY.toFixed(2)}px, 0) scale3d(${scale.toFixed(4)}, ${scale.toFixed(4)}, 1)`;
                 }
             }
         };
@@ -433,7 +487,20 @@ export const PetrolinaCinemaSection: React.FC = () => {
         };
 
         const handleResize = () => {
-            syncStickyTop();
+            const nextVw = window.innerWidth || 1280;
+            const nextVh =
+                nextVw < 1024
+                    ? document.documentElement.clientHeight || window.innerHeight || stableVh
+                    : window.innerHeight || stableVh;
+            const widthChanged = Math.abs(nextVw - lastVw) > 2;
+            const majorHeightChanged = Math.abs(nextVh - stableVh) > 150;
+
+            // Ignore subtle mobile URL-bar height shifts during vertical scroll
+            if (nextVw >= 1024 || widthChanged || majorHeightChanged) {
+                lastVw = nextVw;
+                stableVh = nextVh;
+                syncStickyTop();
+            }
             scheduleFrame();
         };
 
@@ -451,335 +518,350 @@ export const PetrolinaCinemaSection: React.FC = () => {
     }, []);
 
     return (
-        <section
-            ref={sectionRef}
-            aria-label="Retratos de Petrolina e do Vale do São Francisco"
-            className="sticky top-0 motion-reduce:relative z-10 min-h-[100dvh] flex flex-col justify-center bg-[#12110F] rounded-t-[28px] md:rounded-t-[40px] border-t border-[#E5C98B]/20 shadow-[0_-24px_80px_rgba(0,0,0,0.75)] overflow-hidden pt-20 sm:pt-24 pb-12 md:pb-14"
-        >
-            {/* Luminous rising champagne crest line & sunrise halo sweeping over receding Hero */}
-            <div
-                ref={crestLineRef}
-                aria-hidden="true"
-                className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[78%] max-w-4xl h-px bg-gradient-to-r from-transparent via-[#E5C98B]/85 to-transparent will-change-[opacity] motion-reduce:hidden"
-            />
-            <div
-                ref={crestGlowRef}
-                aria-hidden="true"
-                className="pointer-events-none absolute -top-2 left-0 right-0 h-44 bg-[radial-gradient(ellipse_62%_100%_at_50%_0%,rgba(229,201,139,0.22)_0%,transparent_72%)] will-change-[opacity,transform] motion-reduce:hidden"
-            />
-
-            {/* Palco 3D retrátil para a saída rumo à seção clara do flat */}
-            <div
-                ref={stageRef}
-                className="relative origin-center will-change-transform motion-reduce:!transform-none"
+        <>
+            <section
+                ref={sectionRef}
+                aria-label="Retratos de Petrolina e do Vale do São Francisco"
+                className="sticky top-0 motion-reduce:relative z-10 min-h-[100svh] lg:min-h-[100dvh] flex flex-col justify-center bg-[#12110F] rounded-t-[28px] md:rounded-t-[40px] border-t border-[#E5C98B]/20 shadow-[0_-24px_80px_rgba(0,0,0,0.75)] overflow-hidden pt-16 sm:pt-24 pb-8 md:pb-14"
             >
-                {/* Ambient warm horizon glow behind center blade */}
+                {/* Luminous rising champagne crest line & sunrise halo sweeping over receding Hero */}
                 <div
-                    ref={glowRef}
+                    ref={crestLineRef}
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_52%_58%_at_50%_54%,rgba(229,201,139,0.16)_0%,transparent_72%)] motion-reduce:hidden"
+                    className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[78%] max-w-4xl h-px bg-gradient-to-r from-transparent via-[#E5C98B]/85 to-transparent will-change-[opacity] motion-reduce:hidden"
+                />
+                <div
+                    ref={crestGlowRef}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-2 left-0 right-0 h-44 bg-[radial-gradient(ellipse_62%_100%_at_50%_0%,rgba(229,201,139,0.22)_0%,transparent_72%)] will-change-[opacity,transform] motion-reduce:hidden"
                 />
 
-                <div className="relative z-10 max-w-[1380px] mx-auto px-4 sm:px-6 md:px-10 space-y-8 sm:space-y-10 md:space-y-12">
-                    {/* Editorial invitation */}
+                {/* Palco 3D retrátil para a saída rumo à seção clara do flat */}
+                <div
+                    ref={stageRef}
+                    className="relative origin-center will-change-transform motion-reduce:!transform-none"
+                >
+                    {/* Ambient warm horizon glow behind center blade */}
                     <div
-                        ref={headlineRef}
-                        className="text-center max-w-2xl mx-auto px-2 will-change-[opacity,transform] motion-reduce:!opacity-100 motion-reduce:!transform-none"
-                    >
-                        <div className="inline-flex items-center gap-3 mb-2.5">
-                            <span className="w-5 sm:w-7 h-px bg-[#E5C98B]/55" aria-hidden="true" />
-                            <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.26em] uppercase text-[#E5C98B]">
-                                Petrolina · Vale do São Francisco
-                            </span>
-                            <span className="w-5 sm:w-7 h-px bg-[#E5C98B]/55" aria-hidden="true" />
+                        ref={glowRef}
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_52%_58%_at_50%_54%,rgba(229,201,139,0.16)_0%,transparent_72%)] motion-reduce:hidden"
+                    />
+
+                    <div className="relative z-10 max-w-[1380px] mx-auto px-4 sm:px-6 md:px-10 space-y-5 sm:space-y-8 md:space-y-12">
+                        {/* Editorial invitation */}
+                        <div
+                            ref={headlineRef}
+                            className="text-center max-w-2xl mx-auto px-2 will-change-[opacity,transform] motion-reduce:!opacity-100 motion-reduce:!transform-none"
+                        >
+                            <div className="inline-flex items-center gap-3 mb-2">
+                                <span
+                                    className="w-5 sm:w-7 h-px bg-[#E5C98B]/55"
+                                    aria-hidden="true"
+                                />
+                                <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.26em] uppercase text-[#E5C98B]">
+                                    Petrolina · Vale do São Francisco
+                                </span>
+                                <span
+                                    className="w-5 sm:w-7 h-px bg-[#E5C98B]/55"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                            <p className="text-[19px] sm:text-2xl md:text-[30px] font-semibold tracking-tight text-white leading-[1.18]">
+                                Viva o Vale do Rio São Francisco.{' '}
+                                <span className="text-[#E5C98B] font-normal block sm:inline">
+                                    Entre o rio dourado, o sol e as vinícolas.
+                                </span>
+                            </p>
                         </div>
-                        <p className="text-xl sm:text-2xl md:text-[30px] font-semibold tracking-tight text-white leading-[1.18]">
-                            Viva o Vale do Rio São Francisco.{' '}
-                            <span className="text-[#E5C98B] font-normal block sm:inline">
-                                Entre o rio dourado, o sol e as vinícolas.
-                            </span>
-                        </p>
-                    </div>
 
-                    {/* Tight side-by-side cinema blades (7 columns on desktop; asymmetric 1+6 mosaic below lg) */}
-                    <div
-                        ref={galleryRef}
-                        className="group/gallery grid grid-cols-2 lg:grid-cols-7 items-center gap-2.5 sm:gap-3 xl:gap-3.5"
-                    >
-                        {PETROLINA_PHOTOS.map((photo, idx) => {
-                            const isLeadMobile = idx === 0;
-                            const isCenterDesktop = idx === 3;
+                        {/* Tight side-by-side cinema blades (7 columns on desktop; compact 1+3x2 bento within 100svh on mobile) */}
+                        <div
+                            ref={galleryRef}
+                            className="group/gallery grid grid-cols-3 lg:grid-cols-7 items-center gap-2 sm:gap-3 xl:gap-3.5"
+                        >
+                            {PETROLINA_PHOTOS.map((photo, idx) => {
+                                const isLeadMobile = idx === 0;
+                                const isCenterDesktop = idx === 3;
 
-                            return (
-                                <div
-                                    key={photo.src}
-                                    ref={(el) => {
-                                        bladeRefs.current[idx] = el;
-                                    }}
-                                    className={`group/blade relative rounded-[18px] sm:rounded-[20px] md:rounded-[22px] will-change-[transform,opacity] motion-reduce:!opacity-100 motion-reduce:!transform-none lg:hover:z-20 ${
-                                        isLeadMobile
-                                            ? 'col-span-2 aspect-[5/4] lg:col-span-1 lg:aspect-auto'
-                                            : 'aspect-[3/4] lg:aspect-auto'
-                                    } ${DESKTOP_RIBBON_HEIGHTS[idx]}`}
-                                >
-                                    <button
-                                        type="button"
-                                        onClick={() => openLightbox(idx)}
-                                        aria-label={`Ampliar foto: ${photo.title}`}
-                                        className="relative block w-full h-full overflow-hidden rounded-[18px] sm:rounded-[20px] md:rounded-[22px] bg-[#181613] shadow-[0_24px_60px_rgba(0,0,0,0.62)] transition-[opacity,transform] duration-500 ease-out cursor-pointer lg:group-hover/gallery:opacity-55 lg:group-hover/blade:!opacity-100 lg:group-hover/blade:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
+                                return (
+                                    <div
+                                        key={photo.src}
+                                        ref={(el) => {
+                                            bladeRefs.current[idx] = el;
+                                        }}
+                                        className={`group/blade relative rounded-[16px] sm:rounded-[20px] md:rounded-[22px] will-change-[transform,opacity] motion-reduce:!opacity-100 motion-reduce:!transform-none lg:hover:z-20 ${
+                                            isLeadMobile
+                                                ? 'col-span-3 aspect-[16/9] sm:aspect-[2/1] lg:col-span-1 lg:aspect-auto'
+                                                : 'aspect-[4/5] sm:aspect-[3/4] lg:aspect-auto'
+                                        } ${DESKTOP_RIBBON_HEIGHTS[idx]}`}
                                     >
-                                        {!loadedBlades[idx] && (
+                                        <button
+                                            type="button"
+                                            onClick={() => openLightbox(idx)}
+                                            aria-label={`Ampliar foto: ${photo.title}`}
+                                            className="relative block w-full h-full overflow-hidden rounded-[16px] sm:rounded-[20px] md:rounded-[22px] bg-[#181613] shadow-[0_24px_60px_rgba(0,0,0,0.62)] transition-[opacity,transform] duration-500 ease-out cursor-pointer lg:group-hover/gallery:opacity-55 lg:group-hover/blade:!opacity-100 lg:group-hover/blade:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
+                                        >
+                                            {!loadedBlades[idx] && (
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#231F1A] via-[#181613] to-[#262019] animate-pulse"
+                                                />
+                                            )}
+                                            <span className="relative z-[1] block w-full h-full transition-transform duration-700 ease-out lg:group-hover/blade:scale-[1.05]">
+                                                <img
+                                                    ref={(el) => {
+                                                        imgRefs.current[idx] = el;
+                                                        // Switch to eager post-hydration so React 19 SSR never hoists below-fold <link rel="preload"> ahead of Hero
+                                                        if (el && el.loading === 'lazy') {
+                                                            el.loading = 'eager';
+                                                        }
+                                                    }}
+                                                    src={
+                                                        retryCounts[idx]
+                                                            ? `${photo.src}?retry=${retryCounts[idx]}`
+                                                            : photo.src
+                                                    }
+                                                    alt={photo.alt}
+                                                    width={photo.width}
+                                                    height={photo.height}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    onLoad={(e) =>
+                                                        markBladeLoaded(idx, e.currentTarget)
+                                                    }
+                                                    onError={() => handleImageError(idx)}
+                                                    className="w-full h-full object-cover object-center select-none will-change-transform motion-reduce:!transform-none"
+                                                />
+                                            </span>
+
+                                            {/* Subtle vignette gradient for cinematic depth */}
+                                            <div
+                                                aria-hidden="true"
+                                                className={`pointer-events-none absolute inset-0 z-[2] transition-opacity duration-500 ${
+                                                    isCenterDesktop
+                                                        ? 'bg-gradient-to-t from-[#12110F]/45 via-transparent to-transparent'
+                                                        : 'bg-gradient-to-t from-[#12110F]/55 via-[#12110F]/10 to-transparent lg:group-hover/blade:opacity-40'
+                                                }`}
+                                            />
+
+                                            {/* Warm champagne architectural hairline border */}
+                                            <div
+                                                aria-hidden="true"
+                                                className={`pointer-events-none absolute inset-0 z-[3] rounded-[16px] sm:rounded-[20px] md:rounded-[22px] border transition-colors duration-500 ${
+                                                    isCenterDesktop
+                                                        ? 'border-[#E5C98B]/20 lg:border-[#E5C98B]/50'
+                                                        : isLeadMobile
+                                                          ? 'border-[#E5C98B]/45 lg:border-[#E5C98B]/20 lg:group-hover/blade:border-[#E5C98B]/65'
+                                                          : 'border-[#E5C98B]/20 lg:group-hover/blade:border-[#E5C98B]/65'
+                                                }`}
+                                            />
+
+                                            {/* Subtle hover-only expand affordance */}
                                             <span
                                                 aria-hidden="true"
-                                                className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#231F1A] via-[#181613] to-[#262019] animate-pulse"
-                                            />
-                                        )}
-                                        <span className="relative z-[1] block w-full h-full transition-transform duration-700 ease-out lg:group-hover/blade:scale-[1.05]">
-                                            <img
-                                                ref={(el) => {
-                                                    imgRefs.current[idx] = el;
-                                                    // Switch to eager post-hydration so React 19 SSR never hoists below-fold <link rel="preload"> ahead of Hero
-                                                    if (el && el.loading === 'lazy') {
-                                                        el.loading = 'eager';
-                                                        el.decoding = 'sync';
-                                                    }
-                                                }}
-                                                src={
-                                                    retryCounts[idx]
-                                                        ? `${photo.src}?retry=${retryCounts[idx]}`
-                                                        : photo.src
-                                                }
-                                                alt={photo.alt}
-                                                width={photo.width}
-                                                height={photo.height}
-                                                loading="lazy"
-                                                decoding="async"
-                                                onLoad={(e) =>
-                                                    markBladeLoaded(idx, e.currentTarget)
-                                                }
-                                                onError={() => handleImageError(idx)}
-                                                className="w-full h-full object-cover object-center select-none will-change-transform motion-reduce:!transform-none"
-                                            />
-                                        </span>
-
-                                        {/* Subtle vignette gradient for cinematic depth */}
-                                        <div
-                                            aria-hidden="true"
-                                            className={`pointer-events-none absolute inset-0 z-[2] transition-opacity duration-500 ${
-                                                isCenterDesktop
-                                                    ? 'bg-gradient-to-t from-[#12110F]/45 via-transparent to-transparent'
-                                                    : 'bg-gradient-to-t from-[#12110F]/55 via-[#12110F]/10 to-transparent lg:group-hover/blade:opacity-40'
-                                            }`}
-                                        />
-
-                                        {/* Warm champagne architectural hairline border */}
-                                        <div
-                                            aria-hidden="true"
-                                            className={`pointer-events-none absolute inset-0 z-[3] rounded-[18px] sm:rounded-[20px] md:rounded-[22px] border transition-colors duration-500 ${
-                                                isCenterDesktop
-                                                    ? 'border-[#E5C98B]/50'
-                                                    : 'border-[#E5C98B]/20 lg:group-hover/blade:border-[#E5C98B]/65'
-                                            }`}
-                                        />
-
-                                        {/* Subtle hover-only expand affordance */}
-                                        <span
-                                            aria-hidden="true"
-                                            className="pointer-events-none hidden lg:inline-flex items-center justify-center absolute bottom-3 right-3 z-[4] w-7 h-7 rounded-full bg-[#12110F]/75 backdrop-blur-md border border-[#E5C98B]/35 text-[#E5C98B] opacity-0 group-hover/blade:opacity-100 transition-opacity duration-300"
-                                        >
-                                            <Expand size={13} />
-                                        </span>
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            {/* Véu atmosférico progressivo na saída da vitrine antes da cortina clara */}
-            <div
-                ref={exitVeilRef}
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 z-[15] bg-gradient-to-b from-[#12110F] via-[#12110F]/95 to-[#1B1712] will-change-[opacity] motion-reduce:hidden"
-                style={{ opacity: 0 }}
-            />
-
-            {lightboxIdx !== null &&
-                typeof document !== 'undefined' &&
-                createPortal(
-                    <div
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label={PETROLINA_PHOTOS[lightboxIdx].title}
-                        onClick={closeLightbox}
-                        className="fixed inset-0 z-[100] bg-[#0B0A08] flex flex-col justify-between p-4 sm:p-6 md:p-8 overflow-hidden"
-                    >
-                        {/* Subtle ambient studio tint echoing only the active photograph (never page bleed) */}
-                        <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 overflow-hidden"
-                        >
-                            <img
-                                src={PETROLINA_PHOTOS[lightboxIdx].src}
-                                alt=""
-                                className="w-full h-full object-cover opacity-[0.12] blur-3xl scale-125 saturate-150"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-b from-[#0B0A08]/80 via-[#0B0A08]/65 to-[#0B0A08]/95" />
-                        </div>
-
-                        {/* Top bar: index badge + close */}
-                        <div
-                            className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="inline-flex items-center gap-3">
-                                <span className="text-xs font-mono tracking-[0.22em] uppercase text-[#E5C98B] tabular-nums">
-                                    0{lightboxIdx + 1} / 0{PETROLINA_PHOTOS.length}
-                                </span>
-                                <span className="hidden sm:inline-block w-6 h-px bg-[#E5C98B]/40" />
-                                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs tracking-[0.14em] uppercase text-stone-300/85">
-                                    <MapPin
-                                        size={12}
-                                        className="text-[#E5C98B]"
-                                        aria-hidden="true"
-                                    />
-                                    {PETROLINA_PHOTOS[lightboxIdx].location}
-                                </span>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={closeLightbox}
-                                aria-label="Fechar foto ampliada"
-                                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1B1814]/85 hover:bg-[#E5C98B] text-[#F5F2EB] hover:text-[#141210] border border-[#E5C98B]/25 transition-colors flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
-                            >
-                                <X size={19} aria-hidden="true" />
-                            </button>
-                        </div>
-
-                        {/* Center curated showcase: portrait frame + editorial caption */}
-                        <div
-                            className="relative flex-1 min-h-0 max-w-6xl w-full mx-auto flex items-center justify-center my-3 sm:my-4"
-                            onClick={(e) => e.stopPropagation()}
-                            onTouchStart={(e) => {
-                                touchStartXRef.current = e.touches[0]?.clientX ?? null;
-                            }}
-                            onTouchEnd={(e) => {
-                                if (touchStartXRef.current === null) return;
-                                const dx =
-                                    (e.changedTouches[0]?.clientX ?? touchStartXRef.current) -
-                                    touchStartXRef.current;
-                                touchStartXRef.current = null;
-                                if (dx > 45) showPrevLightbox();
-                                if (dx < -45) showNextLightbox();
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={showPrevLightbox}
-                                aria-label="Foto anterior"
-                                className="hidden md:flex absolute left-0 lg:left-2 z-20 w-11 h-11 rounded-full bg-[#1B1814]/85 hover:bg-[#E5C98B] text-[#F5F2EB] hover:text-[#141210] border border-[#E5C98B]/25 transition-colors items-center justify-center backdrop-blur-md shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
-                            >
-                                <ChevronLeft size={20} aria-hidden="true" />
-                            </button>
-
-                            <div className="relative flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 max-h-full px-1 sm:px-10">
-                                {/* Warm radial aura behind expanded portrait */}
-                                <div
-                                    aria-hidden="true"
-                                    className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[460px] rounded-full bg-[#E5C98B]/10 blur-3xl"
-                                />
-
-                                <div className="relative shrink-0 rounded-[22px] sm:rounded-[26px] overflow-hidden border border-[#E5C98B]/30 bg-[#181613] shadow-[0_30px_90px_rgba(0,0,0,0.8)]">
-                                    <img
-                                        key={PETROLINA_PHOTOS[lightboxIdx].src}
-                                        src={PETROLINA_PHOTOS[lightboxIdx].src}
-                                        alt={PETROLINA_PHOTOS[lightboxIdx].alt}
-                                        className="block max-h-[54vh] sm:max-h-[62vh] md:max-h-[68vh] w-auto max-w-[88vw] md:max-w-[52vw] object-contain"
-                                    />
-                                </div>
-
-                                <div className="relative max-w-sm text-center md:text-left space-y-2.5 px-2">
-                                    <span className="inline-flex sm:hidden items-center gap-1.5 text-[11px] font-mono tracking-[0.14em] uppercase text-[#E5C98B]">
-                                        <MapPin size={11} aria-hidden="true" />
-                                        {PETROLINA_PHOTOS[lightboxIdx].location}
-                                    </span>
-                                    <div
-                                        className="hidden md:block w-8 h-px bg-[#E5C98B]/60 mb-3"
-                                        aria-hidden="true"
-                                    />
-                                    <h3 className="text-xl sm:text-2xl md:text-3xl font-heading font-semibold text-white tracking-tight leading-tight">
-                                        {PETROLINA_PHOTOS[lightboxIdx].title}
-                                    </h3>
-                                    <p className="text-stone-300/90 text-sm sm:text-base font-normal leading-relaxed">
-                                        {PETROLINA_PHOTOS[lightboxIdx].caption}
-                                    </p>
-
-                                    {/* Mobile prev/next arrows cleanly below caption */}
-                                    <div className="flex md:hidden items-center justify-center gap-3 pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={showPrevLightbox}
-                                            aria-label="Foto anterior"
-                                            className="w-10 h-10 rounded-full bg-[#1B1814] border border-[#E5C98B]/25 text-[#E5C98B] flex items-center justify-center active:scale-95 transition-transform"
-                                        >
-                                            <ChevronLeft size={18} aria-hidden="true" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={showNextLightbox}
-                                            aria-label="Próxima foto"
-                                            className="w-10 h-10 rounded-full bg-[#1B1814] border border-[#E5C98B]/25 text-[#E5C98B] flex items-center justify-center active:scale-95 transition-transform"
-                                        >
-                                            <ChevronRight size={18} aria-hidden="true" />
+                                                className="pointer-events-none hidden lg:inline-flex items-center justify-center absolute bottom-3 right-3 z-[4] w-7 h-7 rounded-full bg-[#12110F]/75 backdrop-blur-md border border-[#E5C98B]/35 text-[#E5C98B] opacity-0 group-hover/blade:opacity-100 transition-opacity duration-300"
+                                            >
+                                                <Expand size={13} />
+                                            </span>
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={showNextLightbox}
-                                aria-label="Próxima foto"
-                                className="hidden md:flex absolute right-0 lg:right-2 z-20 w-11 h-11 rounded-full bg-[#1B1814]/85 hover:bg-[#E5C98B] text-[#F5F2EB] hover:text-[#141210] border border-[#E5C98B]/25 transition-colors items-center justify-center backdrop-blur-md shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
-                            >
-                                <ChevronRight size={20} aria-hidden="true" />
-                            </button>
-                        </div>
-
-                        {/* Bottom refined thumbnail strip */}
-                        <div
-                            className="relative z-10 max-w-full mx-auto flex items-center gap-2 sm:gap-2.5 overflow-x-auto py-1 px-2"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {PETROLINA_PHOTOS.map((thumb, idx) => {
-                                const isCurrent = idx === lightboxIdx;
-                                return (
-                                    <button
-                                        key={thumb.src}
-                                        type="button"
-                                        onClick={() => setLightboxIdx(idx)}
-                                        aria-label={`Ver ${thumb.title}`}
-                                        aria-current={isCurrent ? 'true' : undefined}
-                                        className={`!min-w-0 !min-h-0 relative w-11 h-14 sm:w-12 sm:h-16 rounded-xl overflow-hidden border transition-all duration-300 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B] ${
-                                            isCurrent
-                                                ? 'border-[#E5C98B] scale-105 opacity-100 shadow-[0_6px_18px_rgba(229,201,139,0.28)]'
-                                                : 'border-white/15 opacity-45 hover:opacity-85'
-                                        }`}
-                                    >
-                                        <img
-                                            src={thumb.src}
-                                            alt=""
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </button>
                                 );
                             })}
                         </div>
-                    </div>,
-                    document.body
-                )}
-        </section>
+                    </div>
+                </div>
+
+                {/* Véu atmosférico progressivo na saída da vitrine antes da cortina clara */}
+                <div
+                    ref={exitVeilRef}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-[15] bg-gradient-to-b from-[#12110F] via-[#12110F]/95 to-[#1B1712] will-change-[opacity] motion-reduce:hidden"
+                    style={{ opacity: 0 }}
+                />
+
+                {lightboxIdx !== null &&
+                    typeof document !== 'undefined' &&
+                    createPortal(
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={PETROLINA_PHOTOS[lightboxIdx].title}
+                            onClick={closeLightbox}
+                            className="fixed inset-0 z-[100] bg-[#0B0A08] flex flex-col justify-between p-4 sm:p-6 md:p-8 overflow-hidden"
+                        >
+                            {/* Subtle ambient studio tint echoing only the active photograph (never page bleed) */}
+                            <div
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-0 overflow-hidden"
+                            >
+                                <img
+                                    src={PETROLINA_PHOTOS[lightboxIdx].src}
+                                    alt=""
+                                    className="w-full h-full object-cover opacity-[0.12] blur-3xl scale-125 saturate-150"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-b from-[#0B0A08]/80 via-[#0B0A08]/65 to-[#0B0A08]/95" />
+                            </div>
+
+                            {/* Top bar: index badge + close */}
+                            <div
+                                className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="inline-flex items-center gap-3">
+                                    <span className="text-xs font-mono tracking-[0.22em] uppercase text-[#E5C98B] tabular-nums">
+                                        0{lightboxIdx + 1} / 0{PETROLINA_PHOTOS.length}
+                                    </span>
+                                    <span className="hidden sm:inline-block w-6 h-px bg-[#E5C98B]/40" />
+                                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs tracking-[0.14em] uppercase text-stone-300/85">
+                                        <MapPin
+                                            size={12}
+                                            className="text-[#E5C98B]"
+                                            aria-hidden="true"
+                                        />
+                                        {PETROLINA_PHOTOS[lightboxIdx].location}
+                                    </span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={closeLightbox}
+                                    aria-label="Fechar foto ampliada"
+                                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1B1814]/85 hover:bg-[#E5C98B] text-[#F5F2EB] hover:text-[#141210] border border-[#E5C98B]/25 transition-colors flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
+                                >
+                                    <X size={19} aria-hidden="true" />
+                                </button>
+                            </div>
+
+                            {/* Center curated showcase: portrait frame + editorial caption */}
+                            <div
+                                className="relative flex-1 min-h-0 max-w-6xl w-full mx-auto flex items-center justify-center my-3 sm:my-4"
+                                onClick={(e) => e.stopPropagation()}
+                                onTouchStart={(e) => {
+                                    touchStartXRef.current = e.touches[0]?.clientX ?? null;
+                                }}
+                                onTouchEnd={(e) => {
+                                    if (touchStartXRef.current === null) return;
+                                    const dx =
+                                        (e.changedTouches[0]?.clientX ?? touchStartXRef.current) -
+                                        touchStartXRef.current;
+                                    touchStartXRef.current = null;
+                                    if (dx > 45) showPrevLightbox();
+                                    if (dx < -45) showNextLightbox();
+                                }}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={showPrevLightbox}
+                                    aria-label="Foto anterior"
+                                    className="hidden md:flex absolute left-0 lg:left-2 z-20 w-11 h-11 rounded-full bg-[#1B1814]/85 hover:bg-[#E5C98B] text-[#F5F2EB] hover:text-[#141210] border border-[#E5C98B]/25 transition-colors items-center justify-center backdrop-blur-md shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
+                                >
+                                    <ChevronLeft size={20} aria-hidden="true" />
+                                </button>
+
+                                <div className="relative flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 max-h-full px-1 sm:px-10">
+                                    {/* Warm radial aura behind expanded portrait */}
+                                    <div
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[460px] rounded-full bg-[#E5C98B]/10 blur-3xl"
+                                    />
+
+                                    <div className="relative shrink-0 rounded-[22px] sm:rounded-[26px] overflow-hidden border border-[#E5C98B]/30 bg-[#181613] shadow-[0_30px_90px_rgba(0,0,0,0.8)]">
+                                        <img
+                                            key={PETROLINA_PHOTOS[lightboxIdx].src}
+                                            src={PETROLINA_PHOTOS[lightboxIdx].src}
+                                            alt={PETROLINA_PHOTOS[lightboxIdx].alt}
+                                            className="block max-h-[54vh] sm:max-h-[62vh] md:max-h-[68vh] w-auto max-w-[88vw] md:max-w-[52vw] object-contain"
+                                        />
+                                    </div>
+
+                                    <div className="relative max-w-sm text-center md:text-left space-y-2.5 px-2">
+                                        <span className="inline-flex sm:hidden items-center gap-1.5 text-[11px] font-mono tracking-[0.14em] uppercase text-[#E5C98B]">
+                                            <MapPin size={11} aria-hidden="true" />
+                                            {PETROLINA_PHOTOS[lightboxIdx].location}
+                                        </span>
+                                        <div
+                                            className="hidden md:block w-8 h-px bg-[#E5C98B]/60 mb-3"
+                                            aria-hidden="true"
+                                        />
+                                        <h3 className="text-xl sm:text-2xl md:text-3xl font-heading font-semibold text-white tracking-tight leading-tight">
+                                            {PETROLINA_PHOTOS[lightboxIdx].title}
+                                        </h3>
+                                        <p className="text-stone-300/90 text-sm sm:text-base font-normal leading-relaxed">
+                                            {PETROLINA_PHOTOS[lightboxIdx].caption}
+                                        </p>
+
+                                        {/* Mobile prev/next arrows cleanly below caption */}
+                                        <div className="flex md:hidden items-center justify-center gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={showPrevLightbox}
+                                                aria-label="Foto anterior"
+                                                className="w-10 h-10 rounded-full bg-[#1B1814] border border-[#E5C98B]/25 text-[#E5C98B] flex items-center justify-center active:scale-95 transition-transform"
+                                            >
+                                                <ChevronLeft size={18} aria-hidden="true" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={showNextLightbox}
+                                                aria-label="Próxima foto"
+                                                className="w-10 h-10 rounded-full bg-[#1B1814] border border-[#E5C98B]/25 text-[#E5C98B] flex items-center justify-center active:scale-95 transition-transform"
+                                            >
+                                                <ChevronRight size={18} aria-hidden="true" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={showNextLightbox}
+                                    aria-label="Próxima foto"
+                                    className="hidden md:flex absolute right-0 lg:right-2 z-20 w-11 h-11 rounded-full bg-[#1B1814]/85 hover:bg-[#E5C98B] text-[#F5F2EB] hover:text-[#141210] border border-[#E5C98B]/25 transition-colors items-center justify-center backdrop-blur-md shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B]"
+                                >
+                                    <ChevronRight size={20} aria-hidden="true" />
+                                </button>
+                            </div>
+
+                            {/* Bottom refined thumbnail strip */}
+                            <div
+                                className="relative z-10 max-w-full mx-auto flex items-center gap-2 sm:gap-2.5 overflow-x-auto py-1 px-2"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {PETROLINA_PHOTOS.map((thumb, idx) => {
+                                    const isCurrent = idx === lightboxIdx;
+                                    return (
+                                        <button
+                                            key={thumb.src}
+                                            type="button"
+                                            onClick={() => setLightboxIdx(idx)}
+                                            aria-label={`Ver ${thumb.title}`}
+                                            aria-current={isCurrent ? 'true' : undefined}
+                                            className={`!min-w-0 !min-h-0 relative w-11 h-14 sm:w-12 sm:h-16 rounded-xl overflow-hidden border transition-all duration-300 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C98B] ${
+                                                isCurrent
+                                                    ? 'border-[#E5C98B] scale-105 opacity-100 shadow-[0_6px_18px_rgba(229,201,139,0.28)]'
+                                                    : 'border-white/15 opacity-45 hover:opacity-85'
+                                            }`}
+                                        >
+                                            <img
+                                                src={thumb.src}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>,
+                        document.body
+                    )}
+            </section>
+            {/* Respiro exclusivo no mobile para a vitrine permanecer em foco antes da próxima seção */}
+            <div
+                ref={mobileDwellRef}
+                aria-hidden="true"
+                className="h-[48svh] lg:hidden bg-[#12110F] pointer-events-none motion-reduce:hidden"
+            />
+        </>
     );
 };
