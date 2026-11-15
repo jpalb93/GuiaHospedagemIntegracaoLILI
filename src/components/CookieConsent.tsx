@@ -8,9 +8,23 @@ const CookieConsent: React.FC = () => {
     useEffect(() => {
         const consent = localStorage.getItem('cookie_consent');
         if (!consent) {
-            // Pequeno delay para não assustar o usuário assim que entra
-            const timer = setTimeout(() => setIsVisible(true), 1500);
-            return () => clearTimeout(timer);
+            let shown = false;
+            const reveal = () => {
+                if (shown) return;
+                shown = true;
+                setIsVisible(true);
+                window.removeEventListener('scroll', reveal);
+                window.removeEventListener('pointerdown', reveal);
+            };
+            // Reveal on first interaction or after hero settles without hijacking initial paint
+            window.addEventListener('scroll', reveal, { passive: true, once: true });
+            window.addEventListener('pointerdown', reveal, { passive: true, once: true });
+            const timer = setTimeout(reveal, 3500);
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener('scroll', reveal);
+                window.removeEventListener('pointerdown', reveal);
+            };
         }
     }, []);
 
@@ -26,7 +40,7 @@ const CookieConsent: React.FC = () => {
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-0 left-0 right-0 z-50 p-4"
+                    className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 [&_p]:text-xs [&_p]:leading-snug"
                 >
                     <div className="max-w-4xl mx-auto bg-[#161412]/95 backdrop-blur-xl text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-white/15 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                         <div className="bg-white/5 border border-white/10 p-3 rounded-full hidden sm:block">

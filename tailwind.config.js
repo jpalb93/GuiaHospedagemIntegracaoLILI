@@ -5,8 +5,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
-                heading: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'sans-serif'],
+                sans: ['Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', 'Inter', 'Inter Fallback', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                heading: ['Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', 'Inter', 'Inter Fallback', '-apple-system', 'sans-serif'],
                 display: ['Fraunces', 'Georgia', 'serif'],
                 mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
             },

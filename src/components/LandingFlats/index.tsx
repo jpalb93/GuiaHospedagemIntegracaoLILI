@@ -98,16 +98,16 @@ const LandingFlatsIntegracao: React.FC = () => {
                         telephone: '+5587988283273',
                         address: {
                             '@type': 'PostalAddress',
-                            streetAddress: 'Av. Cardoso de Sá',
+                            streetAddress: 'R. São José, 475 B, Centro',
                             addressLocality: 'Petrolina',
                             addressRegion: 'PE',
-                            postalCode: '56328-020',
+                            postalCode: '56302-270',
                             addressCountry: 'BR',
                         },
                         geo: {
                             '@type': 'GeoCoordinates',
-                            latitude: -9.3941,
-                            longitude: -40.5036,
+                            latitude: -9.3996078,
+                            longitude: -40.4935178,
                         },
                         sameAs: [
                             'https://www.instagram.com/flatintegracao/',

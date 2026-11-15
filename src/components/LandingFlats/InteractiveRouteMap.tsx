@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FLAT_ORIGIN, RADAR_SPOTS, type TravelMode } from './locationRoutesData';
+import { FLAT_ORIGIN, RADAR_SPOTS, type RadarSpot, type TravelMode } from './locationRoutesData';
+import { LOCATION_ROUTE_PATHS } from './locationPathsData';
 
 interface InteractiveRouteMapProps {
+    visibleSpots: RadarSpot[];
     selectedSpotId: string;
     travelMode: TravelMode;
     recenterNonce: number;
@@ -18,6 +20,7 @@ const escapeHtml = (value: string) =>
         .replace(/"/g, '&quot;');
 
 const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
+    visibleSpots,
     selectedSpotId,
     travelMode,
     recenterNonce,
@@ -37,7 +40,11 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         if (!containerRef.current || mapRef.current) return;
 
         const initialSpot = RADAR_SPOTS.find((s) => s.id === selectedSpotId) ?? RADAR_SPOTS[0];
-        const initialBounds = L.latLngBounds(initialSpot[travelMode].path);
+        const initialPath = LOCATION_ROUTE_PATHS[initialSpot.id]?.[travelMode] ?? [
+            FLAT_ORIGIN.coords,
+            initialSpot.coords,
+        ];
+        const initialBounds = L.latLngBounds(initialPath);
 
         const map = L.map(containerRef.current, {
             zoomControl: false,
@@ -82,14 +89,21 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         const markersLayer = markersLayerRef.current;
         if (!map || !routeLayer || !markersLayer) return;
 
-        const activeSpot = RADAR_SPOTS.find((s) => s.id === selectedSpotId) ?? RADAR_SPOTS[0];
-        const variant = activeSpot[travelMode];
+        const activeSpot =
+            visibleSpots.find((s) => s.id === selectedSpotId) ??
+            RADAR_SPOTS.find((s) => s.id === selectedSpotId) ??
+            visibleSpots[0] ??
+            RADAR_SPOTS[0];
+        const activePath = LOCATION_ROUTE_PATHS[activeSpot.id]?.[travelMode] ?? [
+            FLAT_ORIGIN.coords,
+            activeSpot.coords,
+        ];
 
         routeLayer.clearLayers();
         markersLayer.clearLayers();
 
         // Traçado real pelas ruas: borda obsidian + núcleo champagne/bronze + fluxo sutil
-        L.polyline(variant.path, {
+        L.polyline(activePath, {
             color: '#141210',
             weight: 8,
             opacity: 0.78,
@@ -98,7 +112,7 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         }).addTo(routeLayer);
 
         if (travelMode === 'walking') {
-            L.polyline(variant.path, {
+            L.polyline(activePath, {
                 color: '#E5C98B',
                 weight: 4,
                 opacity: 0.96,
@@ -107,7 +121,7 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
                 lineJoin: 'round',
             }).addTo(routeLayer);
         } else {
-            L.polyline(variant.path, {
+            L.polyline(activePath, {
                 color: '#E5C98B',
                 weight: 4,
                 opacity: 0.96,
@@ -115,7 +129,7 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
                 lineJoin: 'round',
             }).addTo(routeLayer);
 
-            L.polyline(variant.path, {
+            L.polyline(activePath, {
                 color: '#FFFDF7',
                 weight: 2,
                 opacity: 0.75,
@@ -131,11 +145,11 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
             iconSize: [0, 0],
             iconAnchor: [0, 0],
             html: `
-                <div style="position:relative;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;white-space:nowrap;pointer-events:auto;">
+                <div style="position:relative;width:30px;height:30px;transform:translate(-50%,-50%);pointer-events:auto;">
                     <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9999px;background:#141210;border:2px solid #E5C98B;box-shadow:0 8px 22px rgba(20,18,16,0.45);color:#E5C98B;font-family:monospace;font-size:10px;font-weight:700;letter-spacing:0.06em;">
                         FI
                     </span>
-                    <span style="padding:4px 9px;border-radius:9999px;background:rgba(20,18,16,0.92);color:#FFFFFF;border:1px solid rgba(229,201,139,0.45);font-size:11px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,0.28);">
+                    <span style="position:absolute;left:calc(100% + 6px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 9px;border-radius:9999px;background:rgba(20,18,16,0.92);color:#FFFFFF;border:1px solid rgba(229,201,139,0.45);font-size:11px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,0.28);">
                         Flats Integração
                     </span>
                 </div>
@@ -147,8 +161,8 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
             zIndexOffset: 1000,
         }).addTo(markersLayer);
 
-        // Pinos dos Destinos Estratégicos (clicáveis no mapa)
-        RADAR_SPOTS.forEach((spot) => {
+        // Pinos apenas dos destinos da categoria ativa (mantém o mapa sempre limpo e legível)
+        visibleSpots.forEach((spot) => {
             const isSelected = spot.id === activeSpot.id;
             const spotVariant = spot[travelMode];
             const safeLabel = escapeHtml(spot.shortLabel);
@@ -186,7 +200,7 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
             });
         });
 
-        const bounds = L.latLngBounds(variant.path);
+        const bounds = L.latLngBounds(activePath);
         if (!hasInitialFitRef.current) {
             hasInitialFitRef.current = true;
             map.fitBounds(bounds, {
@@ -203,7 +217,7 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
                 duration: 0.75,
             });
         }
-    }, [selectedSpotId, travelMode, recenterNonce]);
+    }, [visibleSpots, selectedSpotId, travelMode, recenterNonce]);
 
     return (
         <div className="relative w-full h-full min-h-[440px] lg:min-h-[600px]">

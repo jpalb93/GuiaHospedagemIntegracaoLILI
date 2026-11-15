@@ -49,7 +49,7 @@ const FeaturesSection: React.FC = () => {
         <section
             ref={sectionRef}
             id="features"
-            className="relative z-20 -mt-[16dvh] md:-mt-[22dvh] motion-reduce:mt-0 rounded-t-[28px] md:rounded-t-[40px] border-t border-white/60 pt-14 md:pt-20 pb-20 md:pb-24 bg-[#F5F2EB] text-[#181614] scroll-mt-16"
+            className="relative z-20 rounded-t-[28px] md:rounded-t-[40px] border-t border-[#E5C98B]/35 shadow-[0_-24px_70px_rgba(18,17,15,0.48)] pt-14 md:pt-20 pb-20 md:pb-24 bg-[#F5F2EB] text-[#181614] scroll-mt-16"
         >
             <div className="max-w-[1320px] mx-auto px-6 md:px-12 space-y-12 md:space-y-14">
                 <div className="feature-stage grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
@@ -89,8 +89,8 @@ const FeaturesSection: React.FC = () => {
                                 Cozinha completa
                             </p>
                             <p className="text-stone-200/90 text-base font-normal max-w-md leading-relaxed">
-                                Frigobar, micro-ondas, utensílios. Café e janta no flat: você
-                                economiza o que o hotel gasta em room service.
+                                Frigobar, micro-ondas e utensílios para você preparar suas próprias
+                                refeições no flat e economizar frente ao room service.
                             </p>
                         </div>
                     </article>

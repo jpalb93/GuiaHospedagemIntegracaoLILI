@@ -84,10 +84,10 @@ export const StayOptionsSection: React.FC = () => {
     return (
         <section
             id="hospedagem"
-            className="pt-20 md:pt-28 pb-12 md:pb-16 bg-[#F5F2EB] text-[#181614]"
+            className="pt-2 md:pt-4 pb-12 md:pb-16 bg-[#F5F2EB] text-[#181614]"
         >
             <div className="max-w-[1320px] mx-auto px-6 md:px-12 space-y-12">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="border-t border-[#E5E0D5] pt-16 md:pt-20 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="max-w-2xl space-y-3">
                         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#181614]/5 border border-[#181614]/10 text-[#9E6B2B] text-xs font-semibold uppercase tracking-[0.18em]">
                             <Sparkles size={13} />
@@ -152,7 +152,7 @@ export const StayOptionsSection: React.FC = () => {
 
 export const LocalGuideSection: React.FC = () => {
     return (
-        <section className="py-20 md:py-28 bg-[#12110F] text-stone-200 relative overflow-hidden">
+        <section className="py-20 md:py-28 bg-[#12110F] text-stone-200 border-t border-white/10 relative overflow-hidden">
             <div className="max-w-[1320px] mx-auto px-6 md:px-12 space-y-12 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-3 max-w-xl">

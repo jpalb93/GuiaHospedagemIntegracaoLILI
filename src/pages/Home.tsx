@@ -54,6 +54,22 @@ const Home: React.FC = () => {
                     name="twitter:image"
                     content="https://www.flatsintegracao.com.br/hero-bg-nova1.webp"
                 />
+                <link
+                    rel="preload"
+                    as="image"
+                    href="/hero-bg-mobile1.webp"
+                    type="image/webp"
+                    media="(max-width: 800px)"
+                    fetchPriority="high"
+                />
+                <link
+                    rel="preload"
+                    as="image"
+                    href="/hero-bg-nova1.webp"
+                    type="image/webp"
+                    media="(min-width: 801px)"
+                    fetchPriority="high"
+                />
 
                 {/* Structured Data (JSON-LD) */}
                 <script type="application/ld+json">
@@ -101,8 +117,8 @@ const Home: React.FC = () => {
                         },
                         geo: {
                             '@type': 'GeoCoordinates',
-                            latitude: -9.395781,
-                            longitude: -40.502621,
+                            latitude: -9.3996078,
+                            longitude: -40.4935178,
                         },
                         priceRange: '$$',
                         currenciesAccepted: 'BRL',
@@ -132,14 +148,14 @@ const Home: React.FC = () => {
                 </script>
             </Helmet>
 
-            {/* Palco integrado: Hero recua em 3D enquanto a cortina cinematográfica do Vale sobe por cima */}
+            {/* Palco integrado: Hero recua em 3D, a vitrine do Vale floresce e fecha em leque para a chegada do flat */}
             <div className="relative bg-[#12110F]">
                 <Hero />
                 <PetrolinaCinemaSection />
+                <FeaturesSection />
             </div>
 
-            {/* O flat e ambientes: Warm Alabaster */}
-            <FeaturesSection />
+            {/* Galeria de ambientes */}
             <GallerySection />
 
             <BelowTheFoldSections />

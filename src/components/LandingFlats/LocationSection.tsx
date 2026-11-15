@@ -1,21 +1,45 @@
 import React, { useRef, useEffect, useState, Suspense } from 'react';
 import { Navigation, MapPin, Car, Footprints, LocateFixed } from 'lucide-react';
-import { RADAR_SPOTS, type TravelMode } from './locationRoutesData';
+import {
+    RADAR_SPOTS,
+    SPOT_CATEGORIES,
+    type SpotCategory,
+    type TravelMode,
+} from './locationRoutesData';
 
 const InteractiveRouteMap = React.lazy(() => import('./InteractiveRouteMap'));
+
+const getSpotsForCategory = (category: SpotCategory) =>
+    category === 'destaques'
+        ? RADAR_SPOTS.filter((spot) => spot.featured)
+        : RADAR_SPOTS.filter((spot) => spot.category === category);
 
 const LocationSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const textBlockRef = useRef<HTMLDivElement>(null);
     const mapBlockRef = useRef<HTMLDivElement>(null);
+    const [activeCategory, setActiveCategory] = useState<SpotCategory>('destaques');
     const [selectedSpotId, setSelectedSpotId] = useState<string>(RADAR_SPOTS[0].id);
     const [travelMode, setTravelMode] = useState<TravelMode>('driving');
     const [recenterNonce, setRecenterNonce] = useState(0);
     const [shouldMountMap, setShouldMountMap] = useState(false);
 
-    const activeSpot = RADAR_SPOTS.find((s) => s.id === selectedSpotId) ?? RADAR_SPOTS[0];
+    const visibleSpots = getSpotsForCategory(activeCategory);
+    const activeSpot =
+        visibleSpots.find((s) => s.id === selectedSpotId) ??
+        RADAR_SPOTS.find((s) => s.id === selectedSpotId) ??
+        visibleSpots[0] ??
+        RADAR_SPOTS[0];
     const activeVariant = activeSpot[travelMode];
-    const maxMinutes = Math.max(...RADAR_SPOTS.map((spot) => spot[travelMode].minutes));
+    const maxMinutes = Math.max(...visibleSpots.map((spot) => spot[travelMode].minutes), 1);
+
+    const handleCategoryChange = (category: SpotCategory) => {
+        setActiveCategory(category);
+        const nextSpots = getSpotsForCategory(category);
+        if (nextSpots.length > 0 && !nextSpots.some((spot) => spot.id === selectedSpotId)) {
+            setSelectedSpotId(nextSpots[0].id);
+        }
+    };
 
     const originEncoded = encodeURIComponent(
         'R. São José, 475 B - Centro, Petrolina - PE, 56302-270'
@@ -109,8 +133,8 @@ const LocationSection: React.FC = () => {
                     </div>
                     <div className="lg:col-span-5">
                         <p className="text-[#5C564E] text-base md:text-lg font-normal leading-relaxed">
-                            Toque em um destino abaixo para calcular o trajeto a partir do flat no
-                            Centro.
+                            Explore {RADAR_SPOTS.length} pontos estratégicos de Petrolina por
+                            categoria e calcule a rota por rua a partir do flat no Centro.
                         </p>
                     </div>
                 </div>
@@ -158,22 +182,70 @@ const LocationSection: React.FC = () => {
                             </a>
                         </div>
 
+                        {/* Filtro por Categoria (16 pontos auditados em Petrolina) */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5C564E] font-semibold">
+                                    Categorias · {RADAR_SPOTS.length} lugares
+                                </span>
+                                <span className="text-[11px] font-mono text-[#767067]">
+                                    {visibleSpots.length}{' '}
+                                    {visibleSpots.length === 1 ? 'local' : 'locais'}
+                                </span>
+                            </div>
+                            <div
+                                className="flex flex-wrap gap-1.5"
+                                role="tablist"
+                                aria-label="Filtrar lugares por categoria"
+                            >
+                                {SPOT_CATEGORIES.map((category) => {
+                                    const isActive = activeCategory === category.id;
+                                    const count = getSpotsForCategory(category.id).length;
+                                    return (
+                                        <button
+                                            key={category.id}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={isActive}
+                                            onClick={() => handleCategoryChange(category.id)}
+                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] ${
+                                                isActive
+                                                    ? 'bg-[#141210] text-[#E5C98B] border-[#141210] shadow-xs'
+                                                    : 'bg-[#FAF8F3] text-[#4E4942] border-[#E6E0D5] hover:border-[#D4AF37]/60 hover:text-[#141210]'
+                                            }`}
+                                        >
+                                            <span>{category.label}</span>
+                                            <span
+                                                className={`text-[10px] font-mono tabular-nums px-1.5 py-0.2 rounded-full ${
+                                                    isActive
+                                                        ? 'bg-[#2C2721] text-[#E5C98B]'
+                                                        : 'bg-[#EFECE4] text-[#6B655D]'
+                                                }`}
+                                            >
+                                                {count}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
                         {/* Controle de Modo de Trajeto + Lista Radar Interativa */}
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between gap-3">
-                                <span className="text-[11px] font-mono uppercase tracking-[0.16em] text-[#5C564E] font-semibold">
-                                    Trajeto por rua · Centro
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-[#5C564E] font-semibold whitespace-nowrap">
+                                    Trajeto por rua
                                 </span>
                                 <div
                                     role="group"
                                     aria-label="Modo de deslocamento"
-                                    className="inline-flex items-center p-1 rounded-full bg-[#FAF8F3] border border-[#DFD8CA]"
+                                    className="inline-flex shrink-0 items-center p-1 rounded-full bg-[#FAF8F3] border border-[#DFD8CA]"
                                 >
                                     <button
                                         type="button"
                                         aria-pressed={travelMode === 'driving'}
                                         onClick={() => setTravelMode('driving')}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all touch-manipulation ${
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all touch-manipulation ${
                                             travelMode === 'driving'
                                                 ? 'bg-[#141210] text-[#E5C98B] shadow-sm'
                                                 : 'text-[#5C564E] hover:text-[#181614]'
@@ -186,7 +258,7 @@ const LocationSection: React.FC = () => {
                                         type="button"
                                         aria-pressed={travelMode === 'walking'}
                                         onClick={() => setTravelMode('walking')}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all touch-manipulation ${
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all touch-manipulation ${
                                             travelMode === 'walking'
                                                 ? 'bg-[#141210] text-[#E5C98B] shadow-sm'
                                                 : 'text-[#5C564E] hover:text-[#181614]'
@@ -203,7 +275,7 @@ const LocationSection: React.FC = () => {
                                 role="listbox"
                                 aria-label="Pontos estratégicos próximos ao flat"
                             >
-                                {RADAR_SPOTS.map((spot) => {
+                                {visibleSpots.map((spot) => {
                                     const selected = spot.id === selectedSpotId;
                                     const variant = spot[travelMode];
                                     const barPct = Math.max(
@@ -290,6 +362,7 @@ const LocationSection: React.FC = () => {
                                 }
                             >
                                 <InteractiveRouteMap
+                                    visibleSpots={visibleSpots}
                                     selectedSpotId={selectedSpotId}
                                     travelMode={travelMode}
                                     recenterNonce={recenterNonce}

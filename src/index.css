@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'Plus Jakarta Sans Fallback';
+    src: local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), local('Arial');
+    size-adjust: 103.5%;
+    ascent-override: 95%;
+    descent-override: 24%;
+    line-gap-override: 0%;
+}
+
+@font-face {
+    font-family: 'Inter Fallback';
+    src: local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), local('Arial');
+    size-adjust: 106%;
+    ascent-override: 92%;
+    descent-override: 23%;
+    line-gap-override: 0%;
+}
+
 @layer base {
     h1,
     h2,

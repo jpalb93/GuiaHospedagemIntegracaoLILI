@@ -34,23 +34,30 @@ const Hero: React.FC = () => {
             const vh = window.innerHeight || 1;
             const overflow = Math.max(0, container.offsetHeight - vh);
             const scrolledIntoExit = Math.max(0, window.scrollY - overflow);
-            const p = Math.min(1, scrolledIntoExit / Math.max(vh * 0.9, 1));
+            const p = Math.min(1, scrolledIntoExit / Math.max(vh * 0.92, 1));
+            const easedP = 1 - Math.pow(1 - p, 2.2);
 
-            // 3D depth retreat while PetrolinaCinemaSection glides up over Hero
-            const stageScale = 1 - p * 0.095;
-            stage.style.transform = `scale(${stageScale.toFixed(4)})`;
-            stage.style.borderRadius = `${(p * 28).toFixed(1)}px`;
+            // Deep 3D cinema stage retreat + subtle backward tilt while PetrolinaCinemaSection rises
+            const stageScale = 1 - easedP * 0.115;
+            const stageRotateX = easedP * 2.2;
+            const stageY = -easedP * 16;
+            stage.style.transform = `perspective(1400px) translate3d(0, ${stageY.toFixed(1)}px, 0) rotateX(${stageRotateX.toFixed(2)}deg) scale(${stageScale.toFixed(4)})`;
+            stage.style.borderRadius = `${(easedP * 34).toFixed(1)}px`;
+            stage.style.boxShadow =
+                p > 0.01
+                    ? `inset 0 0 0 1px rgba(229,201,139,${(Math.min(1, p * 2.2) * 0.22).toFixed(3)}), 0 36px 90px rgba(0,0,0,0.85)`
+                    : 'none';
 
             if (bgRef.current) {
-                bgRef.current.style.transform = `translate3d(0, ${(p * 42).toFixed(1)}px, 0) scale(${(1 + p * 0.1).toFixed(4)})`;
+                bgRef.current.style.transform = `translate3d(0, ${(easedP * 48).toFixed(1)}px, 0) scale(${(1 + easedP * 0.12).toFixed(4)})`;
             }
 
             if (theaterVeilRef.current) {
-                theaterVeilRef.current.style.opacity = (Math.pow(p, 1.05) * 0.88).toFixed(3);
+                theaterVeilRef.current.style.opacity = (Math.pow(p, 1.05) * 0.84).toFixed(3);
             }
 
-            const fgOpacity = Math.max(0, 1 - p * 1.35).toFixed(3);
-            const fgY = (-p * 22).toFixed(2);
+            const fgOpacity = Math.max(0, 1 - p * 1.45).toFixed(3);
+            const fgY = (-easedP * 28).toFixed(2);
 
             if (textRef.current) {
                 textRef.current.style.opacity = fgOpacity;

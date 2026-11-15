@@ -24,6 +24,8 @@ const Footer: React.FC = () => {
                                 alt="Flats Integração"
                                 width={160}
                                 height={44}
+                                loading="lazy"
+                                decoding="async"
                                 className="h-10 w-auto brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
                             />
                         </Link>
@@ -268,6 +270,8 @@ const Footer: React.FC = () => {
                                     alt="Eximus Digital"
                                     width={90}
                                     height={18}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="h-3.5 w-auto"
                                 />
                             </a>
