@@ -74,13 +74,13 @@ const GuestAccessSection: React.FC = () => {
                                 onChange={(e) => setCode(e.target.value)}
                                 placeholder="Cole o código ou o link com rid=…"
                                 autoComplete="off"
-                                className="flex-1 bg-transparent text-base md:text-lg font-normal text-white py-3 focus:outline-none placeholder:text-stone-600"
+                                className="flex-1 bg-transparent text-base md:text-lg font-normal text-white py-3 focus:outline-none placeholder:text-stone-400/80"
                             />
                             <button
                                 type="submit"
                                 aria-label="Entrar no guia do hóspede"
                                 disabled={isLoading || !code.trim()}
-                                className="shrink-0 text-stone-300 hover:text-[#E5C98B] disabled:text-stone-700 disabled:pointer-events-none transition-colors p-1.5"
+                                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-stone-300 hover:text-[#E5C98B] disabled:text-stone-600 disabled:pointer-events-none transition-colors"
                             >
                                 {isLoading ? (
                                     <Loader2 className="animate-spin" size={20} />
@@ -94,7 +94,7 @@ const GuestAccessSection: React.FC = () => {
                                 {error}
                             </p>
                         ) : (
-                            <p className="text-stone-500 text-xs">
+                            <p className="text-stone-400 text-xs">
                                 O código chega na confirmação via WhatsApp.
                             </p>
                         )}

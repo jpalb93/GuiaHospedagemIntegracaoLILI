@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Cookie } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 const CookieConsent: React.FC = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const shouldReduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        document.documentElement.dataset.cookieConsent = isVisible ? 'open' : 'closed';
+        window.dispatchEvent(new CustomEvent('cookie-consent-visibility', { detail: isVisible }));
+    }, [isVisible]);
 
     useEffect(() => {
         const consent = localStorage.getItem('cookie_consent');
@@ -37,12 +43,13 @@ const CookieConsent: React.FC = () => {
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ y: 100, opacity: 0 }}
+                    initial={shouldReduceMotion ? { opacity: 1 } : { y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 [&_p]:text-xs [&_p]:leading-snug"
+                    exit={shouldReduceMotion ? { opacity: 0 } : { y: 100, opacity: 0 }}
+                    transition={shouldReduceMotion ? { duration: 0.01 } : undefined}
+                    className="fixed bottom-0 left-0 right-0 z-[60] p-3 sm:p-4 [&_p]:text-xs [&_p]:leading-snug"
                 >
-                    <div className="max-w-4xl mx-auto bg-[#161412]/95 backdrop-blur-xl text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-white/15 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                    <div className="max-w-4xl mx-auto bg-[#161412] sm:bg-[#161412]/95 sm:backdrop-blur-xl text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-white/15 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                         <div className="bg-white/5 border border-white/10 p-3 rounded-full hidden sm:block">
                             <Cookie className="text-[#E5C98B]" size={22} />
                         </div>

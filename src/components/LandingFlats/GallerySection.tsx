@@ -1,6 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Expand, ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { useDesktopGsap } from '../../hooks/useDesktopGsap';
+import { useDialogAccessibility } from '../../hooks/useDialogAccessibility';
 
 type RoomCategory = 'todos' | 'cozinha' | 'quarto' | 'banheiro';
 
@@ -68,6 +70,8 @@ const GallerySection: React.FC = () => {
     const [activeIndex, setActiveIndex] = useState<number>(0);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const sectionRef = useRef<HTMLElement>(null);
+    const lightboxRef = useRef<HTMLDivElement>(null);
+    const touchStartXRef = useRef<number | null>(null);
 
     const filteredPhotos = useMemo(
         () =>
@@ -99,61 +103,28 @@ const GallerySection: React.FC = () => {
         []
     );
 
-    useEffect(() => {
-        if (lightboxIndex === null) return;
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowLeft') showPrevLightbox();
-            if (e.key === 'ArrowRight') showNextLightbox();
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [lightboxIndex, closeLightbox, showPrevLightbox, showNextLightbox]);
+    useDialogAccessibility({
+        isOpen: lightboxIndex !== null,
+        dialogRef: lightboxRef,
+        onClose: closeLightbox,
+        onPrev: showPrevLightbox,
+        onNext: showNextLightbox,
+    });
 
-    useEffect(() => {
-        let ctx: { revert: () => void } | undefined;
-        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
-
-        const initGsap = async () => {
-            const [gsapModule, scrollTriggerModule] = await Promise.all([
-                import('gsap'),
-                import('gsap/ScrollTrigger'),
-            ]);
-
-            const gsap = gsapModule.default;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            gsap.registerPlugin(ScrollTrigger);
-
-            mm = gsap.matchMedia();
-
-            mm.add('(min-width: 801px)', () => {
-                ctx = gsap.context(() => {
-                    gsap.from('.gallery-stage-reveal', {
-                        y: 16,
-                        duration: 0.55,
-                        stagger: 0.06,
-                        ease: 'power3.out',
-                        clearProps: 'transform',
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top 92%',
-                            toggleActions: 'play none none none',
-                        },
-                    });
-                }, sectionRef);
-            });
-        };
-
-        const timer = setTimeout(() => {
-            initGsap();
-        }, 100);
-
-        return () => {
-            clearTimeout(timer);
-            if (ctx) ctx.revert();
-            if (mm) mm.revert();
-        };
-    }, []);
+    useDesktopGsap(sectionRef, (gsap) => {
+        gsap.from('.gallery-stage-reveal', {
+            y: 16,
+            duration: 0.55,
+            stagger: 0.06,
+            ease: 'power3.out',
+            clearProps: 'transform',
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: 'top 92%',
+                toggleActions: 'play none none none',
+            },
+        });
+    });
 
     return (
         <section
@@ -231,7 +202,7 @@ const GallerySection: React.FC = () => {
                                         )
                                     }
                                     aria-label="Ambiente anterior"
-                                    className="w-9 h-9 rounded-full bg-[#12110F]/75 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 backdrop-blur-md flex items-center justify-center transition-colors"
+                                    className="w-11 h-11 sm:w-9 sm:h-9 rounded-full bg-[#12110F]/80 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 md:backdrop-blur-md flex items-center justify-center transition-colors"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
@@ -241,7 +212,7 @@ const GallerySection: React.FC = () => {
                                         setActiveIndex((activeIndex + 1) % filteredPhotos.length)
                                     }
                                     aria-label="Próximo ambiente"
-                                    className="w-9 h-9 rounded-full bg-[#12110F]/75 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 backdrop-blur-md flex items-center justify-center transition-colors"
+                                    className="w-11 h-11 sm:w-9 sm:h-9 rounded-full bg-[#12110F]/80 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 md:backdrop-blur-md flex items-center justify-center transition-colors"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
@@ -336,7 +307,9 @@ const GallerySection: React.FC = () => {
                 typeof document !== 'undefined' &&
                 createPortal(
                     <div
-                        className="fixed inset-0 z-[200] bg-[#12110F]/95 flex flex-col items-center justify-between p-4 sm:p-6 animate-fadeIn backdrop-blur-md"
+                        ref={lightboxRef}
+                        tabIndex={-1}
+                        className="fixed inset-0 z-[200] bg-[#12110F] md:bg-[#12110F]/95 md:backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fadeIn outline-none"
                         onClick={closeLightbox}
                         role="dialog"
                         aria-modal="true"
@@ -365,14 +338,26 @@ const GallerySection: React.FC = () => {
                         </div>
 
                         <div
-                            className="relative flex items-center justify-center w-full max-w-5xl flex-1 my-3"
+                            className="relative flex items-center justify-center w-full max-w-5xl flex-1 my-3 touch-pan-y"
                             onClick={(e) => e.stopPropagation()}
+                            onTouchStart={(e) => {
+                                touchStartXRef.current = e.touches[0]?.clientX ?? null;
+                            }}
+                            onTouchEnd={(e) => {
+                                const startX = touchStartXRef.current;
+                                const endX = e.changedTouches[0]?.clientX ?? null;
+                                touchStartXRef.current = null;
+                                if (startX === null || endX === null) return;
+                                const diff = startX - endX;
+                                if (diff > 45) showNextLightbox();
+                                else if (diff < -45) showPrevLightbox();
+                            }}
                         >
                             <button
                                 type="button"
                                 onClick={showPrevLightbox}
                                 aria-label="Foto anterior"
-                                className="hidden sm:flex absolute left-2 md:left-4 z-10 w-11 h-11 rounded-full bg-[#1B1916]/85 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 transition-colors items-center justify-center backdrop-blur-md"
+                                className="flex absolute left-2 md:left-4 z-10 w-11 h-11 rounded-full bg-[#1B1916]/90 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 transition-colors items-center justify-center md:backdrop-blur-md"
                             >
                                 <ChevronLeft size={20} />
                             </button>
@@ -387,7 +372,7 @@ const GallerySection: React.FC = () => {
                                 type="button"
                                 onClick={showNextLightbox}
                                 aria-label="Próxima foto"
-                                className="hidden sm:flex absolute right-2 md:right-4 z-10 w-11 h-11 rounded-full bg-[#1B1916]/85 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 transition-colors items-center justify-center backdrop-blur-md"
+                                className="flex absolute right-2 md:right-4 z-10 w-11 h-11 rounded-full bg-[#1B1916]/90 hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/15 transition-colors items-center justify-center md:backdrop-blur-md"
                             >
                                 <ChevronRight size={20} />
                             </button>

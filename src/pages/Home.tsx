@@ -5,7 +5,7 @@ import { PetrolinaCinemaSection } from '../components/LandingFlats/PetrolinaCine
 import FeaturesSection from '../components/LandingFlats/FeaturesSection';
 import GallerySection from '../components/LandingFlats/GallerySection';
 
-// Lazy Load Sections below the fold as a single chunk to reduce request chaining
+// Mantido síncrono para preservar todas as seções abaixo da dobra no HTML pré-renderizado (SSR)
 import BelowTheFoldSections from './BelowTheFoldSections';
 
 const Home: React.FC = () => {

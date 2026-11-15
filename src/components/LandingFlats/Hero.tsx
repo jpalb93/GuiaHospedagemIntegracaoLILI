@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { ArrowRight, BadgePercent, Building2, Clock } from 'lucide-react';
-// GSAP is now dynamically imported to save initial bundle size
 
 const Hero: React.FC = () => {
     const containerRef = useRef<HTMLElement>(null);
@@ -11,45 +10,78 @@ const Hero: React.FC = () => {
     const theaterVeilRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         let rafId = 0;
+        let isDesktop = window.innerWidth >= 1024;
+        let cachedVh = isDesktop
+            ? window.innerHeight || 900
+            : document.documentElement.clientHeight || window.innerHeight || 720;
+        let cachedOverflow = 0;
+        let wasSettled = false;
 
         const prefersReduced =
             typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        const syncStickyTop = () => {
+        const measureLayout = () => {
             const container = containerRef.current;
             if (!container) return;
-            const vh = window.innerHeight || 0;
-            const overflow = Math.max(0, container.offsetHeight - vh);
-            container.style.top = overflow > 0 ? `${-overflow}px` : '0px';
+            isDesktop = window.innerWidth >= 1024;
+            cachedVh = isDesktop
+                ? window.innerHeight || 900
+                : document.documentElement.clientHeight || window.innerHeight || 720;
+            cachedOverflow = Math.max(0, container.offsetHeight - cachedVh);
+            container.style.top = cachedOverflow > 0 ? `${-cachedOverflow}px` : '0px';
+        };
+
+        const clearDesktopStageStyles = () => {
+            const stage = stageRef.current;
+            if (stage) {
+                stage.style.transform = '';
+                stage.style.borderRadius = '';
+                stage.style.boxShadow = '';
+            }
+            if (bgRef.current) {
+                bgRef.current.style.transform = '';
+            }
         };
 
         const updateExitCinema = () => {
             rafId = 0;
-            const container = containerRef.current;
             const stage = stageRef.current;
-            if (!container || !stage || prefersReduced) return;
+            if (!stage || prefersReduced) return;
 
-            const vh = window.innerHeight || 1;
-            const overflow = Math.max(0, container.offsetHeight - vh);
-            const scrolledIntoExit = Math.max(0, window.scrollY - overflow);
-            const p = Math.min(1, scrolledIntoExit / Math.max(vh * 0.92, 1));
+            const scrolledIntoExit = Math.max(0, window.scrollY - cachedOverflow);
+            const p = Math.min(1, scrolledIntoExit / Math.max(cachedVh * 0.92, 1));
+
+            // Evita trabalho contínuo em scroll quando o Hero já saiu completamente de cena
+            if (p >= 1) {
+                if (wasSettled) return;
+                wasSettled = true;
+            } else {
+                wasSettled = false;
+            }
+
             const easedP = 1 - Math.pow(1 - p, 2.2);
 
-            // Deep 3D cinema stage retreat + subtle backward tilt while PetrolinaCinemaSection rises
-            const stageScale = 1 - easedP * 0.115;
-            const stageRotateX = easedP * 2.2;
-            const stageY = -easedP * 16;
-            stage.style.transform = `perspective(1400px) translate3d(0, ${stageY.toFixed(1)}px, 0) rotateX(${stageRotateX.toFixed(2)}deg) scale(${stageScale.toFixed(4)})`;
-            stage.style.borderRadius = `${(easedP * 34).toFixed(1)}px`;
-            stage.style.boxShadow =
-                p > 0.01
-                    ? `inset 0 0 0 1px rgba(229,201,139,${(Math.min(1, p * 2.2) * 0.22).toFixed(3)}), 0 36px 90px rgba(0,0,0,0.85)`
-                    : 'none';
+            if (isDesktop) {
+                // Recuo 3D cinematográfico apenas no desktop
+                const stageScale = 1 - easedP * 0.115;
+                const stageRotateX = easedP * 2.2;
+                const stageY = -easedP * 16;
+                stage.style.transform = `perspective(1400px) translate3d(0, ${stageY.toFixed(1)}px, 0) rotateX(${stageRotateX.toFixed(2)}deg) scale(${stageScale.toFixed(4)})`;
+                stage.style.borderRadius = `${(easedP * 34).toFixed(1)}px`;
+                stage.style.boxShadow =
+                    p > 0.01
+                        ? `inset 0 0 0 1px rgba(229,201,139,${(Math.min(1, p * 2.2) * 0.22).toFixed(3)}), 0 36px 90px rgba(0,0,0,0.85)`
+                        : 'none';
 
-            if (bgRef.current) {
-                bgRef.current.style.transform = `translate3d(0, ${(easedP * 48).toFixed(1)}px, 0) scale(${(1 + easedP * 0.12).toFixed(4)})`;
+                if (bgRef.current) {
+                    bgRef.current.style.transform = `translate3d(0, ${(easedP * 48).toFixed(1)}px, 0) scale(${(1 + easedP * 0.12).toFixed(4)})`;
+                }
+            } else {
+                clearDesktopStageStyles();
             }
 
             if (theaterVeilRef.current) {
@@ -57,15 +89,18 @@ const Hero: React.FC = () => {
             }
 
             const fgOpacity = Math.max(0, 1 - p * 1.45).toFixed(3);
-            const fgY = (-easedP * 28).toFixed(2);
 
             if (textRef.current) {
                 textRef.current.style.opacity = fgOpacity;
-                textRef.current.style.transform = `translate3d(0, ${fgY}px, 0)`;
+                textRef.current.style.transform = isDesktop
+                    ? `translate3d(0, ${(-easedP * 28).toFixed(2)}px, 0)`
+                    : '';
             }
             if (bottomStripRef.current) {
                 bottomStripRef.current.style.opacity = fgOpacity;
-                bottomStripRef.current.style.transform = `translate3d(0, ${(-p * 12).toFixed(2)}px, 0)`;
+                bottomStripRef.current.style.transform = isDesktop
+                    ? `translate3d(0, ${(-p * 12).toFixed(2)}px, 0)`
+                    : '';
             }
         };
 
@@ -76,12 +111,13 @@ const Hero: React.FC = () => {
         };
 
         const handleResize = () => {
-            syncStickyTop();
+            wasSettled = false;
+            measureLayout();
             scheduleExit();
         };
 
         if (!prefersReduced) {
-            syncStickyTop();
+            measureLayout();
             updateExitCinema();
             window.addEventListener('scroll', scheduleExit, { passive: true });
             window.addEventListener('resize', handleResize, { passive: true });
@@ -98,11 +134,11 @@ const Hero: React.FC = () => {
         <section
             id="inicio"
             ref={containerRef}
-            className="sticky top-0 z-0 motion-reduce:relative min-h-[100dvh] w-full bg-[#12110F]"
+            className="sticky top-0 z-0 motion-reduce:relative min-h-[100svh] lg:min-h-[100dvh] w-full bg-[#12110F]"
         >
             <div
                 ref={stageRef}
-                className="relative min-h-[100dvh] w-full overflow-hidden bg-[#12110F] flex flex-col justify-between origin-center will-change-[transform,border-radius]"
+                className="relative min-h-[100svh] lg:min-h-[100dvh] w-full overflow-hidden bg-[#12110F] flex flex-col justify-between origin-center lg:will-change-[transform,border-radius]"
             >
                 {/* Background com Picture para Imagens Responsivas */}
                 <div ref={bgRef} className="absolute inset-0">
@@ -111,6 +147,8 @@ const Hero: React.FC = () => {
                             media="(max-width: 800px)"
                             srcSet="/hero-bg-mobile1.webp"
                             type="image/webp"
+                            width={750}
+                            height={1000}
                         />
                         <img
                             src="/hero-bg-nova1.webp"
@@ -118,8 +156,8 @@ const Hero: React.FC = () => {
                             alt="Hospedagem em Petrolina: Flats Integração no Centro, próximos a hospitais"
                             loading="eager"
                             fetchPriority="high"
-                            width="1672"
-                            height="941"
+                            width={1672}
+                            height={941}
                         />
                     </picture>
                 </div>
@@ -127,7 +165,7 @@ const Hero: React.FC = () => {
                 {/* Luz solar quente sutil + scrims cinematográficos */}
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -top-24 right-[8%] w-[520px] h-[520px] rounded-full bg-[radial-gradient(circle,rgba(229,201,139,0.16)_0%,rgba(229,201,139,0)_70%)] blur-2xl z-10 hero-ambient-glow"
+                    className="hidden lg:block pointer-events-none absolute -top-24 right-[8%] w-[520px] h-[520px] rounded-full bg-[radial-gradient(circle,rgba(229,201,139,0.16)_0%,rgba(229,201,139,0)_70%)] blur-2xl z-10 hero-ambient-glow"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#12110F]/90 via-[#12110F]/50 to-[#12110F]/15 z-10 pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-b from-[#12110F]/45 via-transparent to-[#12110F]/95 z-10 pointer-events-none" />
@@ -135,13 +173,13 @@ const Hero: React.FC = () => {
                 <div
                     ref={theaterVeilRef}
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 z-[15] bg-[#12110F] will-change-[opacity]"
+                    className="pointer-events-none absolute inset-0 z-[15] bg-[#12110F] lg:will-change-[opacity]"
                     style={{ opacity: 0 }}
                 />
 
                 {/* Conteúdo Principal Alinhado à Esquerda */}
                 <div className="max-w-[1320px] w-full mx-auto px-6 md:px-12 relative z-20 flex-1 flex flex-col justify-center pt-28 sm:pt-32 md:pt-36 pb-10">
-                    <div ref={textRef} className="max-w-2xl will-change-[transform,opacity]">
+                    <div ref={textRef} className="max-w-2xl lg:will-change-[transform,opacity]">
                         <div className="inline-flex items-center gap-3 mb-3 hero-rise hero-delay-1">
                             <span
                                 className="w-7 h-px bg-[#E5C98B] hero-line-reveal hero-delay-1"
@@ -183,7 +221,7 @@ const Hero: React.FC = () => {
                             </a>
                             <a
                                 href="#empresas"
-                                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 py-3.5 rounded-full text-sm font-medium border border-white/20 transition-all duration-300 inline-flex items-center justify-center active:scale-[0.98]"
+                                className="bg-white/15 lg:bg-white/10 hover:bg-white/20 lg:backdrop-blur-md text-white px-6 py-3.5 rounded-full text-sm font-medium border border-white/20 transition-all duration-300 inline-flex items-center justify-center active:scale-[0.98]"
                             >
                                 Cotação empresas
                             </a>
@@ -208,7 +246,7 @@ const Hero: React.FC = () => {
                 {/* Faixa Inferior Arquitetônica — Realoca os destaques, ticker e Day Use */}
                 <div
                     ref={bottomStripRef}
-                    className="max-w-[1320px] w-full mx-auto px-6 md:px-12 relative z-20 pb-7 md:pb-9 hero-rise hero-delay-5 will-change-[transform,opacity]"
+                    className="max-w-[1320px] w-full mx-auto px-6 md:px-12 relative z-20 pb-7 md:pb-9 hero-rise hero-delay-5 lg:will-change-[transform,opacity]"
                 >
                     <div className="relative pt-6 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                         <span

@@ -1,11 +1,14 @@
-import React, { useRef, useEffect, useState, Suspense } from 'react';
-import { Navigation, MapPin, Car, Footprints, LocateFixed } from 'lucide-react';
+import React, { useRef, useEffect, useState, useCallback, useId, Suspense } from 'react';
+import { createPortal } from 'react-dom';
+import { Navigation, MapPin, Car, Footprints, LocateFixed, Maximize2, X } from 'lucide-react';
 import {
     RADAR_SPOTS,
     SPOT_CATEGORIES,
     type SpotCategory,
     type TravelMode,
 } from './locationRoutesData';
+import { useDesktopGsap } from '../../hooks/useDesktopGsap';
+import { useDialogAccessibility } from '../../hooks/useDialogAccessibility';
 
 const InteractiveRouteMap = React.lazy(() => import('./InteractiveRouteMap'));
 
@@ -18,13 +21,40 @@ const LocationSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
     const textBlockRef = useRef<HTMLDivElement>(null);
     const mapBlockRef = useRef<HTMLDivElement>(null);
+    const expandedDialogRef = useRef<HTMLDivElement>(null);
+    const expandedTitleId = useId();
     const [activeCategory, setActiveCategory] = useState<SpotCategory>('destaques');
     const [selectedSpotId, setSelectedSpotId] = useState<string>(RADAR_SPOTS[0].id);
     const [travelMode, setTravelMode] = useState<TravelMode>('driving');
     const [recenterNonce, setRecenterNonce] = useState(0);
-    const [shouldMountMap, setShouldMountMap] = useState(false);
+    const [isMapExpanded, setIsMapExpanded] = useState(false);
+    const [showAllInExpanded, setShowAllInExpanded] = useState(false);
+    const [showMapTouchHint, setShowMapTouchHint] = useState(false);
+    const hintTimerRef = useRef<number>(0);
+    const [shouldMountMap, setShouldMountMap] = useState(
+        () => typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined'
+    );
+
+    const handleLockedTouchAttempt = useCallback(() => {
+        setShowMapTouchHint(true);
+        window.clearTimeout(hintTimerRef.current);
+        hintTimerRef.current = window.setTimeout(() => {
+            setShowMapTouchHint(false);
+        }, 2400);
+    }, []);
+
+    useEffect(() => {
+        return () => window.clearTimeout(hintTimerRef.current);
+    }, []);
+
+    useDialogAccessibility({
+        isOpen: isMapExpanded,
+        dialogRef: expandedDialogRef,
+        onClose: () => setIsMapExpanded(false),
+    });
 
     const visibleSpots = getSpotsForCategory(activeCategory);
+    const expandedSpots = showAllInExpanded ? RADAR_SPOTS : visibleSpots;
     const activeSpot =
         visibleSpots.find((s) => s.id === selectedSpotId) ??
         RADAR_SPOTS.find((s) => s.id === selectedSpotId) ??
@@ -34,6 +64,7 @@ const LocationSection: React.FC = () => {
     const maxMinutes = Math.max(...visibleSpots.map((spot) => spot[travelMode].minutes), 1);
 
     const handleCategoryChange = (category: SpotCategory) => {
+        setShowAllInExpanded(false);
         setActiveCategory(category);
         const nextSpots = getSpotsForCategory(category);
         if (nextSpots.length > 0 && !nextSpots.some((spot) => spot.id === selectedSpotId)) {
@@ -47,11 +78,17 @@ const LocationSection: React.FC = () => {
     const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${originEncoded}&destination=${activeSpot.routeQuery}&travelmode=${travelMode}`;
 
     useEffect(() => {
-        if (typeof window === 'undefined' || shouldMountMap) return;
-        const target = sectionRef.current ?? mapBlockRef.current;
-        if (!target || typeof IntersectionObserver === 'undefined') {
-            setShouldMountMap(true);
+        if (
+            typeof window === 'undefined' ||
+            shouldMountMap ||
+            typeof IntersectionObserver === 'undefined'
+        ) {
             return;
+        }
+        const target = sectionRef.current ?? mapBlockRef.current;
+        if (!target) {
+            const rafId = window.requestAnimationFrame(() => setShouldMountMap(true));
+            return () => window.cancelAnimationFrame(rafId);
         }
         const observer = new IntersectionObserver(
             (entries) => {
@@ -66,50 +103,20 @@ const LocationSection: React.FC = () => {
         return () => observer.disconnect();
     }, [shouldMountMap]);
 
-    useEffect(() => {
-        let ctx: { revert: () => void } | undefined;
-        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
-
-        const initGsap = async () => {
-            const [gsapModule, scrollTriggerModule] = await Promise.all([
-                import('gsap'),
-                import('gsap/ScrollTrigger'),
-            ]);
-
-            const gsap = gsapModule.default;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            gsap.registerPlugin(ScrollTrigger);
-
-            mm = gsap.matchMedia();
-
-            mm.add('(min-width: 801px)', () => {
-                ctx = gsap.context(() => {
-                    gsap.from([textBlockRef.current, mapBlockRef.current], {
-                        y: 16,
-                        duration: 0.6,
-                        stagger: 0.12,
-                        ease: 'power3.out',
-                        clearProps: 'transform',
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top 92%',
-                            toggleActions: 'play none none none',
-                        },
-                    });
-                }, sectionRef);
-            });
-        };
-
-        const timer = setTimeout(() => {
-            initGsap();
-        }, 100);
-
-        return () => {
-            clearTimeout(timer);
-            if (ctx) ctx.revert();
-            if (mm) mm.revert();
-        };
-    }, []);
+    useDesktopGsap(sectionRef, (gsap) => {
+        gsap.from([textBlockRef.current, mapBlockRef.current], {
+            y: 16,
+            duration: 0.6,
+            stagger: 0.12,
+            ease: 'power3.out',
+            clearProps: 'transform',
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: 'top 92%',
+                toggleActions: 'play none none none',
+            },
+        });
+    });
 
     return (
         <section
@@ -367,6 +374,8 @@ const LocationSection: React.FC = () => {
                                     travelMode={travelMode}
                                     recenterNonce={recenterNonce}
                                     onSelectSpot={setSelectedSpotId}
+                                    interactionMode="inline"
+                                    onLockedTouchAttempt={handleLockedTouchAttempt}
                                 />
                             </Suspense>
                         ) : (
@@ -375,9 +384,24 @@ const LocationSection: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Pílula Superior: Modo + Distância + Recentrar */}
-                        <div className="pointer-events-none absolute top-3.5 left-3.5 right-14 z-[1100] flex flex-wrap items-center gap-2">
-                            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-[#141210]/90 backdrop-blur-md text-white border border-white/15 px-3.5 py-2 text-xs shadow-lg">
+                        {/* Dica breve e não bloqueante caso tentem arrastar horizontalmente com 1 dedo no mapa inline */}
+                        {showMapTouchHint && (
+                            <div
+                                role="status"
+                                aria-live="polite"
+                                className="pointer-events-none lg:hidden absolute inset-x-6 top-1/2 -translate-y-1/2 z-[1150] flex justify-center animate-fadeIn"
+                            >
+                                <span className="rounded-full bg-[#141210]/95 text-white border border-[#E5C98B]/40 px-4 py-2 text-xs font-medium shadow-xl text-center">
+                                    Use <strong className="text-[#E5C98B]">2 dedos</strong> para
+                                    mover ou toque em{' '}
+                                    <strong className="text-[#E5C98B]">Expandir</strong>
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Pílula Superior: Modo + Distância + Recentrar + Expandir em tela cheia */}
+                        <div className="pointer-events-none absolute top-3.5 left-3.5 right-16 z-[1100] flex flex-wrap items-center gap-2">
+                            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-[#141210]/95 lg:bg-[#141210]/90 lg:backdrop-blur-md text-white border border-white/15 px-3.5 py-2 text-xs shadow-lg min-h-[44px] lg:min-h-0">
                                 <span className="w-2 h-2 rounded-full bg-[#E5C98B] animate-pulse" />
                                 <span className="font-mono uppercase tracking-[0.14em] text-[#E5C98B]">
                                     {travelMode === 'driving' ? 'De carro' : 'A pé'}
@@ -392,15 +416,30 @@ const LocationSection: React.FC = () => {
                                 type="button"
                                 onClick={() => setRecenterNonce((n) => n + 1)}
                                 title="Recentrar rota no mapa"
-                                className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-[#FAF8F3]/95 hover:bg-white text-[#181614] border border-[#DFD8CA] px-3 py-2 text-xs font-medium shadow-md transition-colors"
+                                aria-label="Enquadrar rota no mapa"
+                                className="pointer-events-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-[#FAF8F3]/95 hover:bg-white text-[#181614] border border-[#DFD8CA] px-3 py-2 text-xs font-medium shadow-md transition-colors min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0"
                             >
-                                <LocateFixed size={13} className="text-[#9E6B2B]" aria-hidden />
+                                <LocateFixed size={14} className="text-[#9E6B2B]" aria-hidden />
                                 <span className="hidden sm:inline">Enquadrar rota</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowMapTouchHint(false);
+                                    setIsMapExpanded(true);
+                                }}
+                                title="Expandir mapa em tela cheia"
+                                aria-label="Expandir mapa em tela cheia"
+                                className="pointer-events-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-[#141210] hover:bg-[#24201C] text-white border border-[#E5C98B]/60 px-3.5 py-2 text-xs font-semibold shadow-lg transition-colors min-w-[44px] min-h-[44px] lg:min-w-0 lg:min-h-0"
+                            >
+                                <Maximize2 size={13} className="text-[#E5C98B]" aria-hidden />
+                                <span>Expandir</span>
                             </button>
                         </div>
 
                         {/* Painel Flutuante de Rota Direta até o Ponto Selecionado */}
-                        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-lg z-[1100] bg-[#141210]/95 backdrop-blur-xl text-white border border-[#E5C98B]/30 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-lg z-[1100] bg-[#141210] lg:bg-[#141210]/95 lg:backdrop-blur-xl text-white border border-[#E5C98B]/30 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="space-y-1">
                                 <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.16em] text-[#E5C98B]">
                                     <MapPin size={12} aria-hidden="true" />
@@ -426,6 +465,240 @@ const LocationSection: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {isMapExpanded &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                    <div
+                        ref={expandedDialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={expandedTitleId}
+                        tabIndex={-1}
+                        className="fixed inset-0 z-[200] flex flex-col bg-[#12110F] text-white outline-none animate-fadeIn h-[100dvh]"
+                    >
+                        {/* Barra superior do mapa expandido */}
+                        <header className="shrink-0 flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-[#141210] border-b border-white/10">
+                            <div className="min-w-0 flex items-center gap-2.5">
+                                <span className="w-2 h-2 rounded-full bg-[#E5C98B] shrink-0" />
+                                <div className="min-w-0">
+                                    <h3
+                                        id={expandedTitleId}
+                                        className="font-heading font-semibold text-sm sm:text-base text-white truncate"
+                                    >
+                                        Mapa de Rotas · Flats Integração
+                                    </h3>
+                                    <p className="hidden sm:block text-xs text-stone-400 truncate">
+                                        {activeSpot.destination} · {activeVariant.kmLabel} ·{' '}
+                                        {activeVariant.timeLabel}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <div
+                                    role="group"
+                                    aria-label="Modo de deslocamento"
+                                    className="inline-flex items-center rounded-full bg-[#1C1A17] border border-white/10 p-1"
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => setTravelMode('driving')}
+                                        aria-pressed={travelMode === 'driving'}
+                                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors min-h-[36px] ${
+                                            travelMode === 'driving'
+                                                ? 'bg-[#E5C98B] text-[#141210] font-semibold'
+                                                : 'text-stone-300 hover:text-white'
+                                        }`}
+                                    >
+                                        <Car size={13} aria-hidden />
+                                        <span className="hidden sm:inline">De carro</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setTravelMode('walking')}
+                                        aria-pressed={travelMode === 'walking'}
+                                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors min-h-[36px] ${
+                                            travelMode === 'walking'
+                                                ? 'bg-[#E5C98B] text-[#141210] font-semibold'
+                                                : 'text-stone-300 hover:text-white'
+                                        }`}
+                                    >
+                                        <Footprints size={13} aria-hidden />
+                                        <span className="hidden sm:inline">A pé</span>
+                                    </button>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setRecenterNonce((n) => n + 1)}
+                                    title="Enquadrar rota no mapa"
+                                    aria-label="Enquadrar rota no mapa"
+                                    className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#1C1A17] hover:bg-[#27241F] text-white border border-white/15 px-3 py-2 text-xs font-medium transition-colors min-w-[44px] min-h-[44px]"
+                                >
+                                    <LocateFixed size={14} className="text-[#E5C98B]" aria-hidden />
+                                    <span className="hidden md:inline">Enquadrar</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsMapExpanded(false)}
+                                    aria-label="Fechar mapa expandido"
+                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors"
+                                >
+                                    <X size={20} aria-hidden />
+                                </button>
+                            </div>
+                        </header>
+
+                        {/* Filtro de Categorias + Todos os pontos */}
+                        <div
+                            role="tablist"
+                            aria-label="Filtrar categorias no mapa expandido"
+                            className="shrink-0 flex items-center gap-1.5 overflow-x-auto px-4 sm:px-6 py-2.5 bg-[#171512] border-b border-white/10 no-scrollbar"
+                        >
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={showAllInExpanded}
+                                onClick={() => setShowAllInExpanded(true)}
+                                className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors min-h-[36px] ${
+                                    showAllInExpanded
+                                        ? 'bg-[#E5C98B] text-[#141210] border-[#E5C98B] font-semibold'
+                                        : 'bg-[#1F1C18] hover:bg-[#2A2621] text-stone-200 border-white/10'
+                                }`}
+                            >
+                                <span>Todos</span>
+                                <span
+                                    className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full ${
+                                        showAllInExpanded
+                                            ? 'bg-[#141210]/15 text-[#141210]'
+                                            : 'bg-white/10 text-stone-300'
+                                    }`}
+                                >
+                                    {RADAR_SPOTS.length}
+                                </span>
+                            </button>
+
+                            {SPOT_CATEGORIES.map((category) => {
+                                const isActive =
+                                    !showAllInExpanded && activeCategory === category.id;
+                                const count = getSpotsForCategory(category.id).length;
+                                return (
+                                    <button
+                                        key={category.id}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isActive}
+                                        onClick={() => handleCategoryChange(category.id)}
+                                        className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors min-h-[36px] ${
+                                            isActive
+                                                ? 'bg-[#E5C98B] text-[#141210] border-[#E5C98B] font-semibold'
+                                                : 'bg-[#1F1C18] hover:bg-[#2A2621] text-stone-200 border-white/10'
+                                        }`}
+                                    >
+                                        <span>{category.label}</span>
+                                        <span
+                                            className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full ${
+                                                isActive
+                                                    ? 'bg-[#141210]/15 text-[#141210]'
+                                                    : 'bg-white/10 text-stone-300'
+                                            }`}
+                                        >
+                                            {count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Área principal do mapa em tela cheia */}
+                        <div className="relative flex-1 min-h-0 bg-[#EAE4D7]">
+                            <Suspense
+                                fallback={
+                                    <div className="w-full h-full flex items-center justify-center bg-[#EAE4D7] text-[#5C564E] text-sm font-medium">
+                                        Carregando mapa expandido...
+                                    </div>
+                                }
+                            >
+                                <InteractiveRouteMap
+                                    visibleSpots={expandedSpots}
+                                    selectedSpotId={selectedSpotId}
+                                    travelMode={travelMode}
+                                    recenterNonce={recenterNonce}
+                                    onSelectSpot={setSelectedSpotId}
+                                    interactionMode="fullscreen"
+                                />
+                            </Suspense>
+
+                            {/* Barra inferior flutuante: Pílulas de destinos + Resumo da rota + GPS */}
+                            <div className="pointer-events-none absolute inset-x-3 sm:inset-x-5 bottom-3 sm:bottom-5 z-[1100] flex flex-col gap-2.5 max-w-5xl mx-auto">
+                                <div
+                                    role="tablist"
+                                    aria-label="Selecionar destino no mapa"
+                                    className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar"
+                                >
+                                    {expandedSpots.map((spot) => {
+                                        const isSelected = spot.id === selectedSpotId;
+                                        return (
+                                            <button
+                                                key={spot.id}
+                                                type="button"
+                                                role="tab"
+                                                aria-selected={isSelected}
+                                                onClick={() => setSelectedSpotId(spot.id)}
+                                                className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium border transition-colors min-h-[40px] shadow-md ${
+                                                    isSelected
+                                                        ? 'bg-[#E5C98B] text-[#141210] border-[#E5C98B] font-semibold'
+                                                        : 'bg-[#141210]/95 hover:bg-[#1E1B18] text-stone-200 border-white/15'
+                                                }`}
+                                            >
+                                                <span>{spot.shortLabel}</span>
+                                                <span
+                                                    className={`text-[10px] font-mono tabular-nums ${
+                                                        isSelected
+                                                            ? 'text-[#141210]/80'
+                                                            : 'text-[#E5C98B]'
+                                                    }`}
+                                                >
+                                                    {spot[travelMode].timeLabel}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="pointer-events-auto bg-[#141210] lg:bg-[#141210]/95 lg:backdrop-blur-xl text-white border border-[#E5C98B]/30 rounded-2xl p-3.5 sm:p-4 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="space-y-0.5 min-w-0">
+                                        <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.16em] text-[#E5C98B]">
+                                            <MapPin size={12} aria-hidden />
+                                            <span>
+                                                {travelMode === 'driving' ? 'De carro' : 'A pé'} ·{' '}
+                                                {activeVariant.kmLabel} · {activeVariant.timeLabel}
+                                            </span>
+                                        </div>
+                                        <p className="font-heading font-semibold text-sm sm:text-base leading-snug truncate">
+                                            {activeSpot.destination}
+                                        </p>
+                                        <p className="hidden sm:block text-xs text-stone-400 truncate">
+                                            {activeSpot.desc}
+                                        </p>
+                                    </div>
+                                    <a
+                                        href={routeUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-[#E5C98B] hover:bg-[#edd6a1] text-[#141210] px-4 py-2.5 text-xs font-semibold transition-colors min-h-[44px]"
+                                    >
+                                        <span>Ver no GPS</span>
+                                        <Navigation size={13} aria-hidden />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
         </section>
     );
 };

@@ -99,9 +99,12 @@ body,
     a,
     select,
     .touch-target {
+        touch-action: manipulation;
+    }
+
+    .touch-target {
         min-width: 44px;
         min-height: 44px;
-        touch-action: manipulation;
     }
 
     /* Checkboxes e Radios mantêm dimensões visuais elegantes (20px), com a label sendo o container tocável */
@@ -348,7 +351,7 @@ body {
 }
 
 .animate-pop-in {
-    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+    animation: pop-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 @keyframes fade-up {
@@ -966,12 +969,25 @@ input[type='number'] {
     animation-delay: 500ms;
 }
 
+@media (max-width: 1023px) {
+    .hero-ken-burns,
+    .hero-ambient-glow {
+        animation: none !important;
+        will-change: auto !important;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .hero-ken-burns,
     .hero-ambient-glow,
     .hero-rise,
     .hero-line-reveal,
-    .hero-scroll-beacon {
+    .hero-scroll-beacon,
+    .animate-fadeIn,
+    .animate-slideInUp,
+    .animate-pulse-subtle,
+    .animate-float,
+    .animate-pop-in {
         animation: none !important;
         transform: none !important;
         opacity: 1 !important;

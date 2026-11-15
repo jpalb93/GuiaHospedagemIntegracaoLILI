@@ -1,5 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Star, Quote, CheckCircle2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useDesktopGsap } from '../../hooks/useDesktopGsap';
 
 const REAL_REVIEWS = [
     {
@@ -46,78 +47,46 @@ const ReputationSection: React.FC = () => {
 
     const featured = REAL_REVIEWS[activeReview];
 
-    useEffect(() => {
-        let ctx: { revert: () => void } | undefined;
-        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
+    useDesktopGsap(sectionRef, (gsap) => {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: 'top 92%',
+                toggleActions: 'play none none none',
+            },
+        });
 
-        const initGsap = async () => {
-            const [gsapModule, scrollTriggerModule] = await Promise.all([
-                import('gsap'),
-                import('gsap/ScrollTrigger'),
-            ]);
+        tl.fromTo(
+            '.reputation-text',
+            { y: 18, opacity: 0 },
+            {
+                y: 0,
+                opacity: 1,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power3.out',
+                clearProps: 'all',
+            }
+        );
 
-            const gsap = gsapModule.default;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            gsap.registerPlugin(ScrollTrigger);
-
-            mm = gsap.matchMedia();
-
-            mm.add('(min-width: 801px)', () => {
-                ctx = gsap.context(() => {
-                    const tl = gsap.timeline({
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top 92%',
-                            toggleActions: 'play none none none',
-                        },
-                    });
-
-                    tl.fromTo(
-                        '.reputation-text',
-                        { y: 18, opacity: 0 },
-                        {
-                            y: 0,
-                            opacity: 1,
-                            duration: 0.6,
-                            stagger: 0.1,
-                            ease: 'power3.out',
-                            clearProps: 'all',
-                        }
-                    );
-
-                    tl.fromTo(
-                        scoreRef.current,
-                        { textContent: 0 },
-                        {
-                            textContent: 9.0,
-                            duration: 1.1,
-                            ease: 'power2.out',
-                            snap: { textContent: 0.1 },
-                            onUpdate: function () {
-                                if (scoreRef.current) {
-                                    const val = parseFloat(
-                                        this.targets()[0].textContent || '0'
-                                    ).toFixed(1);
-                                    scoreRef.current.textContent = val;
-                                }
-                            },
-                        },
-                        '-=0.4'
-                    );
-                }, sectionRef);
-            });
-        };
-
-        const timer = setTimeout(() => {
-            initGsap();
-        }, 100);
-
-        return () => {
-            clearTimeout(timer);
-            if (ctx) ctx.revert();
-            if (mm) mm.revert();
-        };
-    }, []);
+        tl.fromTo(
+            scoreRef.current,
+            { textContent: 0 },
+            {
+                textContent: 9.0,
+                duration: 1.1,
+                ease: 'power2.out',
+                snap: { textContent: 0.1 },
+                onUpdate: function () {
+                    if (scoreRef.current) {
+                        const val = parseFloat(this.targets()[0].textContent || '0').toFixed(1);
+                        scoreRef.current.textContent = val;
+                    }
+                },
+            },
+            '-=0.4'
+        );
+    });
 
     return (
         <section
@@ -260,7 +229,7 @@ const ReputationSection: React.FC = () => {
                                             )
                                         }
                                         aria-label="Avaliação anterior"
-                                        className="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/10 flex items-center justify-center transition-colors"
+                                        className="w-11 h-11 sm:w-9 sm:h-9 rounded-full bg-white/[0.06] hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/10 flex items-center justify-center transition-colors"
                                     >
                                         <ChevronLeft size={16} />
                                     </button>
@@ -272,7 +241,7 @@ const ReputationSection: React.FC = () => {
                                             )
                                         }
                                         aria-label="Próxima avaliação"
-                                        className="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/10 flex items-center justify-center transition-colors"
+                                        className="w-11 h-11 sm:w-9 sm:h-9 rounded-full bg-white/[0.06] hover:bg-[#E5C98B] text-white hover:text-[#141210] border border-white/10 flex items-center justify-center transition-colors"
                                     >
                                         <ChevronRight size={16} />
                                     </button>

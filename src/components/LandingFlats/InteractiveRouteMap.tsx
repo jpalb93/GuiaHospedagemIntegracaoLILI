@@ -1,8 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FLAT_ORIGIN, RADAR_SPOTS, type RadarSpot, type TravelMode } from './locationRoutesData';
 import { LOCATION_ROUTE_PATHS } from './locationPathsData';
+
+const checkIsTouchOrNarrow = () => {
+    if (typeof window === 'undefined') return false;
+    const isNarrow = window.innerWidth < 1024;
+    const isCoarse =
+        typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    return isNarrow || isCoarse;
+};
 
 interface InteractiveRouteMapProps {
     visibleSpots: RadarSpot[];
@@ -10,6 +18,8 @@ interface InteractiveRouteMapProps {
     travelMode: TravelMode;
     recenterNonce: number;
     onSelectSpot: (id: string) => void;
+    interactionMode?: 'inline' | 'fullscreen';
+    onLockedTouchAttempt?: () => void;
 }
 
 const escapeHtml = (value: string) =>
@@ -25,16 +35,30 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
     travelMode,
     recenterNonce,
     onSelectSpot,
+    interactionMode = 'inline',
+    onLockedTouchAttempt,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
     const routeLayerRef = useRef<L.LayerGroup | null>(null);
     const markersLayerRef = useRef<L.LayerGroup | null>(null);
     const hasInitialFitRef = useRef(false);
+    const [isTouchOrNarrow, setIsTouchOrNarrow] = useState(checkIsTouchOrNarrow);
+    const shouldLockTouch = interactionMode === 'inline' && isTouchOrNarrow;
+
     const onSelectSpotRef = useRef(onSelectSpot);
+    const onLockedTouchAttemptRef = useRef(onLockedTouchAttempt);
     useEffect(() => {
         onSelectSpotRef.current = onSelectSpot;
-    }, [onSelectSpot]);
+        onLockedTouchAttemptRef.current = onLockedTouchAttempt;
+    }, [onSelectSpot, onLockedTouchAttempt]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const sync = () => setIsTouchOrNarrow(checkIsTouchOrNarrow());
+        window.addEventListener('resize', sync, { passive: true });
+        return () => window.removeEventListener('resize', sync);
+    }, []);
 
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
@@ -46,10 +70,27 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         ];
         const initialBounds = L.latLngBounds(initialPath);
 
+        const initialLocked = interactionMode === 'inline' && checkIsTouchOrNarrow();
+
         const map = L.map(containerRef.current, {
             zoomControl: false,
-            scrollWheelZoom: false,
+            scrollWheelZoom: interactionMode === 'fullscreen',
+            dragging: !initialLocked,
+            touchZoom: true,
         });
+
+        let invalidateTimer = 0;
+        if (interactionMode === 'fullscreen') {
+            invalidateTimer = window.setTimeout(() => {
+                map.invalidateSize();
+                map.fitBounds(initialBounds, {
+                    paddingTopLeft: [56, 92],
+                    paddingBottomRight: [56, 150],
+                    maxZoom: 16,
+                    animate: false,
+                });
+            }, 60);
+        }
 
         map.fitBounds(initialBounds, {
             paddingTopLeft: [56, 92],
@@ -73,6 +114,7 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         mapRef.current = map;
 
         return () => {
+            window.clearTimeout(invalidateTimer);
             map.remove();
             mapRef.current = null;
             routeLayerRef.current = null;
@@ -82,6 +124,81 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         // Inicialização única do container Leaflet já enquadrada na rota inicial
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        const map = mapRef.current;
+        const el = containerRef.current;
+        if (!map || !el) return;
+
+        map.touchZoom.enable();
+
+        if (!shouldLockTouch) {
+            el.classList.remove('flats-map-locked');
+            map.dragging.enable();
+            return;
+        }
+
+        // Mobile inline: 1 dedo rola a página (touch-action: pan-y); 2 dedos movem/dão pinça no mapa
+        el.classList.add('flats-map-locked');
+        map.dragging.disable();
+
+        let startX = 0;
+        let startY = 0;
+        let notified = false;
+        let isTwoFingerGesture = false;
+
+        const handleTouchStart = (e: TouchEvent) => {
+            notified = false;
+            if (e.touches.length >= 2) {
+                isTwoFingerGesture = true;
+                el.classList.remove('flats-map-locked');
+                return;
+            }
+            isTwoFingerGesture = false;
+            const t = e.touches[0];
+            if (t) {
+                startX = t.clientX;
+                startY = t.clientY;
+            }
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+            if (e.touches.length >= 2 || isTwoFingerGesture) {
+                if (e.cancelable) e.preventDefault();
+                return;
+            }
+            if (notified) return;
+            const t = e.touches[0];
+            if (!t) return;
+            const dx = Math.abs(t.clientX - startX);
+            const dy = Math.abs(t.clientY - startY);
+            // Gesto horizontal com 1 dedo exibe dica rápida sem interferir no scroll vertical
+            if (dx > 22 && dx > dy * 1.45) {
+                onLockedTouchAttemptRef.current?.();
+                notified = true;
+            }
+        };
+
+        const handleTouchEnd = (e: TouchEvent) => {
+            if (e.touches.length === 0) {
+                isTwoFingerGesture = false;
+                el.classList.add('flats-map-locked');
+            }
+        };
+
+        el.addEventListener('touchstart', handleTouchStart, { capture: true, passive: true });
+        el.addEventListener('touchmove', handleTouchMove, { capture: true, passive: false });
+        el.addEventListener('touchend', handleTouchEnd, { capture: true, passive: true });
+        el.addEventListener('touchcancel', handleTouchEnd, { capture: true, passive: true });
+
+        return () => {
+            el.removeEventListener('touchstart', handleTouchStart, { capture: true });
+            el.removeEventListener('touchmove', handleTouchMove, { capture: true });
+            el.removeEventListener('touchend', handleTouchEnd, { capture: true });
+            el.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+            el.classList.remove('flats-map-locked');
+        };
+    }, [shouldLockTouch]);
 
     useEffect(() => {
         const map = mapRef.current;
@@ -201,7 +318,12 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         });
 
         const bounds = L.latLngBounds(activePath);
-        if (!hasInitialFitRef.current) {
+        const prefersReducedMotion =
+            typeof window !== 'undefined' &&
+            typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (!hasInitialFitRef.current || prefersReducedMotion) {
             hasInitialFitRef.current = true;
             map.fitBounds(bounds, {
                 paddingTopLeft: [56, 92],
@@ -219,8 +341,13 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
         }
     }, [visibleSpots, selectedSpotId, travelMode, recenterNonce]);
 
+    const sizeClass =
+        interactionMode === 'fullscreen'
+            ? 'w-full h-full min-h-[260px]'
+            : 'w-full h-full min-h-[440px] lg:min-h-[600px]';
+
     return (
-        <div className="relative w-full h-full min-h-[440px] lg:min-h-[600px]">
+        <div className={`relative ${sizeClass}`}>
             <style>{`
                 .flats-route-flow {
                     animation: flatsRouteDash 1.4s linear infinite;
@@ -238,6 +365,9 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
                 .flats-map-tiles .leaflet-tile-pane {
                     filter: grayscale(0.25) sepia(0.12) contrast(1.03) brightness(0.98);
                 }
+                .flats-map-locked.leaflet-container {
+                    touch-action: pan-y !important;
+                }
                 .leaflet-control-zoom {
                     border: 1px solid rgba(223, 216, 202, 0.9) !important;
                     border-radius: 14px !important;
@@ -250,9 +380,19 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
                     background: rgba(20, 18, 16, 0.92) !important;
                     color: #E5C98B !important;
                     border-color: rgba(255, 255, 255, 0.1) !important;
-                    width: 34px !important;
-                    height: 34px !important;
-                    line-height: 34px !important;
+                    width: 40px !important;
+                    height: 40px !important;
+                    line-height: 40px !important;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                }
+                @media (pointer: coarse) {
+                    .leaflet-control-zoom a {
+                        width: 44px !important;
+                        height: 44px !important;
+                        line-height: 44px !important;
+                    }
                 }
                 .leaflet-control-zoom a:hover {
                     background: #2A2622 !important;
@@ -268,7 +408,9 @@ const InteractiveRouteMap: React.FC<InteractiveRouteMapProps> = ({
             <div
                 ref={containerRef}
                 aria-label="Mapa interativo de rotas a partir do Flats Integração em Petrolina"
-                className="flats-map-tiles w-full h-full min-h-[440px] lg:min-h-[600px] z-0"
+                className={`flats-map-tiles ${sizeClass} z-0 ${
+                    shouldLockTouch ? 'flats-map-locked' : ''
+                }`}
             />
         </div>
     );

@@ -249,14 +249,16 @@ const Footer: React.FC = () => {
                 </div>
 
                 {/* Bottom Legal & Development Credits */}
-                <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500">
+                <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-400">
                     <p>© {currentYear} Flats Integração. Todos os direitos reservados.</p>
 
                     <div className="flex items-center gap-6">
                         <span>Petrolina · Vale do São Francisco</span>
-                        <span className="text-stone-800">•</span>
+                        <span className="text-stone-600" aria-hidden="true">
+                            •
+                        </span>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-wider text-stone-600">
+                            <span className="text-[10px] uppercase tracking-wider text-stone-400">
                                 Desenvolvido por
                             </span>
                             <a

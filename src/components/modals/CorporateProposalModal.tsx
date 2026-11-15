@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useId } from 'react';
 import {
     X,
     Building2,
@@ -11,6 +11,7 @@ import {
     User,
 } from 'lucide-react';
 import { HOST_PHONE } from '../../constants';
+import { useDialogAccessibility } from '../../hooks/useDialogAccessibility';
 
 interface CorporateProposalModalProps {
     isOpen: boolean;
@@ -29,6 +30,15 @@ export const CorporateProposalModal: React.FC<CorporateProposalModalProps> = ({
     const [duration, setDuration] = useState('1 mês (30 dias)');
     const [notes, setNotes] = useState('');
     const [isSent, setIsSent] = useState(false);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const titleId = useId();
+    const fieldId = useId();
+
+    useDialogAccessibility({
+        isOpen,
+        dialogRef,
+        onClose,
+    });
 
     if (!isOpen) return null;
 
@@ -60,22 +70,36 @@ export const CorporateProposalModal: React.FC<CorporateProposalModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-[#12110F]/85 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fadeIn">
-            <div className="bg-[#191714] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-white/15 animate-slideUp relative">
+        <div
+            className="fixed inset-0 bg-[#12110F]/95 md:bg-[#12110F]/85 md:backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fadeIn overflow-y-auto"
+            onClick={onClose}
+        >
+            <div
+                ref={dialogRef}
+                tabIndex={-1}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#191714] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-white/15 animate-slideUp relative outline-none my-auto"
+            >
                 {/* Header */}
                 <div className="bg-gradient-to-r from-[#141210] via-[#1C1A16] to-[#12110F] p-6 text-white border-b border-white/10 relative">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+                        className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
                         aria-label="Fechar modal"
                     >
                         <X size={18} />
                     </button>
-                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#E5C98B] mb-1.5">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#E5C98B] mb-1.5 pr-10">
                         <Building2 size={15} /> Atendimento B2B & Mensalistas
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-semibold font-heading tracking-tight">
+                    <h2
+                        id={titleId}
+                        className="text-xl sm:text-2xl font-semibold font-heading tracking-tight pr-8"
+                    >
                         Cotação Corporativa para Empresas
                     </h2>
                     <p className="text-xs text-stone-300 mt-1">
@@ -104,73 +128,96 @@ export const CorporateProposalModal: React.FC<CorporateProposalModalProps> = ({
                         className="p-6 space-y-4 max-h-[75vh] overflow-y-auto no-scrollbar"
                     >
                         <div>
-                            <label className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5">
+                            <label
+                                htmlFor={`${fieldId}-company`}
+                                className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5"
+                            >
                                 <Building2 size={14} className="text-[#E5C98B]" /> Nome da Empresa *
                             </label>
                             <input
+                                id={`${fieldId}-company`}
                                 type="text"
                                 required
+                                aria-required="true"
                                 value={companyName}
                                 onChange={(e) => setCompanyName(e.target.value)}
                                 placeholder="Ex: Construtora Vale do São Francisco"
-                                className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white placeholder:text-stone-500 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
+                                className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white placeholder:text-stone-400/80 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5">
+                                <label
+                                    htmlFor={`${fieldId}-cnpj`}
+                                    className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5"
+                                >
                                     <FileText size={14} className="text-[#E5C98B]" /> CNPJ
                                     (Opcional)
                                 </label>
                                 <input
+                                    id={`${fieldId}-cnpj`}
                                     type="text"
                                     value={cnpj}
                                     onChange={(e) => setCnpj(e.target.value)}
                                     placeholder="00.000.000/0001-00"
-                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white placeholder:text-stone-500 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
+                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white placeholder:text-stone-400/80 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5">
+                                <label
+                                    htmlFor={`${fieldId}-contact`}
+                                    className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5"
+                                >
                                     <User size={14} className="text-[#E5C98B]" /> Contato /
                                     Solicitante *
                                 </label>
                                 <input
+                                    id={`${fieldId}-contact`}
                                     type="text"
                                     required
+                                    aria-required="true"
                                     value={contactName}
                                     onChange={(e) => setContactName(e.target.value)}
                                     placeholder="Seu Nome / Cargo (RH/Gestor)"
-                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white placeholder:text-stone-500 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
+                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white placeholder:text-stone-400/80 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
                                 />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5">
+                                <label
+                                    htmlFor={`${fieldId}-phone`}
+                                    className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5"
+                                >
                                     <Phone size={14} className="text-[#E5C98B]" /> WhatsApp para
                                     Contato *
                                 </label>
                                 <input
+                                    id={`${fieldId}-phone`}
                                     type="tel"
                                     required
+                                    aria-required="true"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="(87) 99999-9999"
-                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white placeholder:text-stone-500 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
+                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white placeholder:text-stone-400/80 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5">
+                                <label
+                                    htmlFor={`${fieldId}-employees`}
+                                    className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5"
+                                >
                                     <Users size={14} className="text-[#E5C98B]" /> Nº de
                                     Colaboradores
                                 </label>
                                 <select
+                                    id={`${fieldId}-employees`}
                                     value={employeesCount}
                                     onChange={(e) => setEmployeesCount(e.target.value)}
-                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none font-medium"
+                                    className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none font-medium"
                                 >
                                     <option value="1 colaborador">1 colaborador</option>
                                     <option value="2 a 4 colaboradores">2 a 4 colaboradores</option>
@@ -185,14 +232,18 @@ export const CorporateProposalModal: React.FC<CorporateProposalModalProps> = ({
                         </div>
 
                         <div>
-                            <label className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5">
+                            <label
+                                htmlFor={`${fieldId}-duration`}
+                                className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5 flex items-center gap-1.5"
+                            >
                                 <Calendar size={14} className="text-[#E5C98B]" /> Período Estimado
                                 da Estadia
                             </label>
                             <select
+                                id={`${fieldId}-duration`}
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
-                                className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none font-medium"
+                                className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none font-medium"
                             >
                                 <option value="1 mês (30 dias)">1 mês (30 dias)</option>
                                 <option value="2 a 3 meses">2 a 3 meses</option>
@@ -207,15 +258,19 @@ export const CorporateProposalModal: React.FC<CorporateProposalModalProps> = ({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
+                            <label
+                                htmlFor={`${fieldId}-notes`}
+                                className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5"
+                            >
                                 Observações ou Requisitos Especiais
                             </label>
                             <textarea
+                                id={`${fieldId}-notes`}
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={2}
                                 placeholder="Ex: Necessitamos de flats individuais com garagem e emissão de Nota Fiscal mensal..."
-                                className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-sm text-white placeholder:text-stone-500 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
+                                className="w-full px-4 py-3 bg-[#12110F] border border-white/15 rounded-xl text-base sm:text-sm text-white placeholder:text-stone-400/80 focus:border-[#E5C98B] focus:ring-1 focus:ring-[#E5C98B] outline-none"
                             />
                         </div>
 

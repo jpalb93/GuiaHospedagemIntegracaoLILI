@@ -1,49 +1,27 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
+import { useDesktopGsap } from '../../hooks/useDesktopGsap';
 
 const FeaturesSection: React.FC = () => {
     const sectionRef = useRef<HTMLElement>(null);
 
-    useEffect(() => {
-        let ctx: { revert: () => void } | undefined;
-        let mm: { add: (query: string, func: () => void) => void; revert: () => void } | undefined;
-
-        const initGsap = async () => {
-            const [gsapModule, scrollTriggerModule] = await Promise.all([
-                import('gsap'),
-                import('gsap/ScrollTrigger'),
-            ]);
-
-            const gsap = gsapModule.default;
-            const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-            gsap.registerPlugin(ScrollTrigger);
-
-            mm = gsap.matchMedia();
-
-            mm.add('(min-width: 801px)', () => {
-                ctx = gsap.context(() => {
-                    gsap.from('.feature-stage', {
-                        y: 16,
-                        duration: 0.55,
-                        stagger: 0.08,
-                        ease: 'power3.out',
-                        clearProps: 'transform',
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top 95%',
-                            toggleActions: 'play none none none',
-                        },
-                    });
-                }, sectionRef);
+    useDesktopGsap(
+        sectionRef,
+        (gsap) => {
+            gsap.from('.feature-stage', {
+                y: 16,
+                duration: 0.55,
+                stagger: 0.08,
+                ease: 'power3.out',
+                clearProps: 'transform',
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: 'top 95%',
+                    toggleActions: 'play none none none',
+                },
             });
-        };
-
-        initGsap();
-
-        return () => {
-            if (ctx) ctx.revert();
-            if (mm) mm.revert();
-        };
-    }, []);
+        },
+        0
+    );
 
     return (
         <section
